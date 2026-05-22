@@ -1,78 +1,117 @@
 ---
 name: component-builder
-description: Build React/Next.js components for Edgar Sanchez's portfolio from Figma layer structure and tokens.json as the source of truth. Use this skill whenever the user wants to build, generate, or translate a Figma component into code — especially when they mention layer names like div.fill, a.menu-item, label, icon, or reference components.md or tokens.json. Always use this skill when the user says "build this component", "generate the component", "translate to code", or shares a layer structure to implement.
+description: Build React/Next.js components for Edgar Sanchez's portfolio from a Figma node link, using tokens.json and globals.css as the source of truth. Triggers when the user says "build this component", "generate the component", "translate to code", shares a Figma link, or references a layer structure to implement. Always requires a Figma link before starting.
 ---
 
 # Component Builder
 
 Builds Next.js + Tailwind components for Edgar Sanchez's portfolio using:
 
-- Figma layer names as the DOM structure guide
-- `tokens.json` as the single source of truth for all design values
-- `components.md` as the component spec
+- Figma MCP to read layer structure, hierarchy, and bound variables from the provided node
+- `design-system/tokens.json` as the single source of truth for all design tokens
+- `styles/globals.css` as the single source of truth for all declared CSS custom properties
+- `components/components.md` for layer structure, behavior, and variants (token references optional)
+- `components/built-components.md` as the registry of already-built components
 
-## Source of Truth Priority
+---
 
-1. `tokens.json` — all values (color, spacing, typography, radius, border)
-2. `components.md` — component spec, variants, behavior, token mappings
-3. Figma layer names — DOM structure and element types
-4. Never hardcode values. Every value must resolve to a CSS variable from tokens.json.
+## Before Writing Any Code — Required Gate
 
-## Step 1 — Read Tokens
+**Do not write any code until the following checklist is completed and confirmed by the user.**
 
-Before writing any code read:
+### Step 0 — Require a Figma Link
 
-- `design-system/tokens.json` — full token set
-- `design-system/components.md` — component entry for the target component
+If no Figma node link has been provided, stop immediately and ask:
 
-Extract and map the following into CSS custom properties:
+> "Please share the Figma link to the component node before I start building."
 
-### Token Resolution Order
+Do not proceed until a link is provided.
 
-Tokens are organized in sets. Resolve in this order:
+---
 
-1. `Semantic` — use these for all component values (color, spacing, radius, border)
-2. `Responsive/Desktop` and `Responsive/Mobile` — use for typography (font-size, line-height, letter-spacing)
-3. `Primitives` — only referenced by Semantic tokens, never used directly in components
+### Step 1 — Read Reference Files
+
+Read the following files before doing anything else:
+
+1. `components/built-components.md` — registry of already-built components
+2. `design-system/tokens.json` — full token set (Primitives, Semantic, Responsive/Desktop, Responsive/Mobile)
+3. `styles/globals.css` — all declared CSS custom properties
+4. `components/components.md` — find the entry for the target component (if present)
+
+---
+
+### Step 2 — Fetch the Figma Node
+
+Use Figma MCP to fetch the provided node. Extract:
+
+- Full layer hierarchy and layer names
+- For each layer: all bound Figma variables and their values
+- Any SVG assets (icons, decorative elements)
+
+---
+
+### Step 3 — Output the Pre-Build Checklist
+
+Before writing any code, output the following summary and wait for user confirmation:
+
+```
+## Pre-Build Checklist — [ComponentName]
+
+### Layers
+[List every layer name and its mapped HTML element]
+
+### Reused Components
+[List any layers that match an entry in built-components.md, or state "None"]
+
+### Token Bindings
+[List every Figma variable found → its resolved CSS custom property]
+[Flag any variable that cannot be resolved in globals.css]
+
+### Missing or Unresolved
+[List any token, layer type, or asset that could not be resolved, or state "None"]
+
+### components.md entry found?
+[Yes / No — if No, note that structure will be inferred from Figma layers only]
+
+Ready to build. Confirm to proceed.
+```
+
+**Wait for the user to confirm before writing any code.**
+
+---
+
+## Token Resolution — Source of Truth Chain
+
+Figma variables, tokens.json, and globals.css are three representations of the same data, pushed from Token Studio. Always resolve in this order:
+
+```
+Figma variable (e.g. nav/menu-item-text)
+  → tokens.json path (e.g. Semantic.nav.menu-item-text)
+  → CSS custom property (e.g. --nav-menu-item-text in globals.css)
+```
+
+### Rules
+
+- **Never copy a raw value from Figma** (hex, px, rem). Always resolve to the CSS custom property.
+- **Never reference Primitives tokens directly** in components. All values must come from Semantic tokens. If no Semantic token exists for a value, flag it in the checklist — do not reach into Primitives.
+- **Never hardcode** any color, spacing, radius, font-size, line-height, letter-spacing, or border value. Every visual value must reference a CSS custom property declared in `globals.css`.
+- **Verify before writing**: if a token path from Figma cannot be found in `tokens.json` or its CSS property cannot be found in `globals.css`, flag it — do not invent a fallback.
+- Tokens are global and can be used across any component or element. All entries in `tokens.json` are available to every component.
 
 ### CSS Variable Naming Convention
 
-Convert token paths to CSS variables using kebab-case:
+Convert token paths to CSS variables using kebab-case. Strip the `Semantic.` prefix. Convert remaining dots and camelCase to kebab-case:
 
 | Token path                                        | CSS variable                      |
 | ------------------------------------------------- | --------------------------------- |
-| `Semantic.nav.bg`                                 | `--nav-bg`                        |
 | `Semantic.nav.menu-item-text`                     | `--nav-menu-item-text`            |
 | `Semantic.spacing.nav-padding`                    | `--spacing-nav-padding`           |
 | `Semantic.radius.pill`                            | `--radius-pill`                   |
 | `Responsive/Desktop.typography.label-md.fontSize` | `--typography-label-md-font-size` |
 
-Declare all used variables in `:root` or as a scoped block at the top of the component file.
+### Typography Token Sources
 
-## Step 2 — Read Layer Structure
-
-Layer names map directly to HTML elements and CSS classes:
-
-| Layer name          | HTML element        | Notes                                 |
-| ------------------- | ------------------- | ------------------------------------- |
-| `nav`               | `<nav>`             | top-level nav frame                   |
-| `a.menu-item`       | `<a>`               | link, must have href                  |
-| `a.menu-item-hover` | —                   | hover variant, not a separate element |
-| `button.menu`       | `<button>`          | action trigger                        |
-| `div.fill`          | `<div>`             | visual layer, aria-hidden             |
-| `div.content`       | `<div>`             | layout wrapper                        |
-| `div.brand`         | `<div>`             | semantic grouping                     |
-| `div.meta`          | `<div>`             | semantic grouping                     |
-| `label`             | `<span>`            | inline text, uppercase                |
-| `icon`              | `<span>` or `<div>` | icon container                        |
-| `p`                 | `<p>`               | body text                             |
-| `h1`–`h4`           | `<h1>`–`<h4>`       | heading, match type scale role        |
-
-Variants (`a.menu-item` vs `a.menu-item-hover`) are the same element — implement as a single element with CSS hover pseudo-class, not two separate elements.
-
-## Step 3 — Map Typography
-
-Typography requires values from two token sets combined:
+Typography requires values combined from two token sets:
 
 ```
 font-family + font-weight  →  Primitives.typography.[role]
@@ -80,101 +119,148 @@ font-size + line-height + letter-spacing  →  Responsive/Desktop.typography.[ro
 text-transform  →  Primitives.typography.[role].textTransform (labels only)
 ```
 
-For responsive typography, apply `Responsive/Mobile` values inside a media query at the mobile breakpoint (`Semantic.breakpoint.mobile` = 393px).
+For responsive typography, declare `Responsive/Desktop` values as the default and apply `Responsive/Mobile` values inside `@media (max-width: 393px)`.
 
-## Step 4 — Build the Component
+### Motion Tokens
 
-### File conventions
+Motion tokens (duration, easing) are not yet defined in `tokens.json`. If a transition or animation is required:
 
-- Component files: PascalCase → `MenuNavItem.tsx`
-- Located in: `components/`
+- Use a clearly named CSS variable placeholder: `var(--motion-easing-default)`, `var(--motion-duration-default)`
+- Leave a `// TODO: define motion token` comment
+- Never hardcode easing or duration values
+
+---
+
+## Layer → DOM Mapping
+
+Layer names are DOM-semantic. The prefix determines the HTML element. The suffix becomes the CSS class name.
+
+### Mapping Rules
+
+| Layer prefix | HTML element | Notes                                             |
+| ------------ | ------------ | ------------------------------------------------- |
+| `div.foo`    | `<div>`      | Layout or visual wrapper                          |
+| `a.foo`      | `<a>`        | Must receive an `href` prop                       |
+| `button.foo` | `<button>`   | Action trigger                                    |
+| `label`      | `<span>`     | Inline text, typically uppercase                  |
+| `p`          | `<p>`        | Body text                                         |
+| `h1`–`h4`    | heading tag  | Match level to type scale role                    |
+| `icon`       | `<span>`     | Generic icon wrapper, always `aria-hidden="true"` |
+| `nav`        | `<nav>`      | Top-level navigation landmark                     |
+
+### Named SVG Assets
+
+Named SVG layers (e.g. `goArrow`, `logoMark`) are SVG assets, not layout elements. They do not follow the prefix mapping rule. Resolve them as follows:
+
+1. Check `public/icons/` — if the file exists, import it
+2. If not found, fetch the asset from Figma MCP and save it to `public/icons/[name].svg` before using it
+3. Always wrap in an `<span className="icon" aria-hidden="true">` container
+
+### Variants
+
+Figma variants (e.g. `a.menu-item` vs `a.menu-item-hover`) are the same HTML element. Implement as a single element with CSS `:hover` pseudo-class. Never create duplicate JSX for variants.
+
+### Layers with No Prefix
+
+If a layer has no recognized prefix and is not a named SVG asset, flag it in the pre-build checklist. Do not guess the element type.
+
+---
+
+## Reusing Built Components
+
+Before writing any code, check `components/built-components.md`. If a layer in the new component matches a registry entry:
+
+- Import the existing component — do not rebuild it
+- List the match in the Pre-Build Checklist under "Reused Components"
+
+### Registry Format
+
+```md
+| design-system name | file                    |
+| ------------------ | ----------------------- |
+| menu-item          | components/MenuItem.tsx |
+```
+
+---
+
+## Building the Component
+
+### File Conventions
+
+- Component files: PascalCase → `MenuItemList.tsx`
+- CSS module: same name → `MenuItemList.module.css`
+- Location: `components/`
 - One component per file
 
-### Component template
+### Tailwind Usage
+
+Use Tailwind **only** for layout utilities: `flex`, `grid`, `relative`, `absolute`, `overflow`, `z-index`, `transition`, `gap`.
+
+Use CSS custom properties for all token values (color, spacing, typography, radius, border):
 
 ```tsx
-// CSS variables declared at top — all values from tokens.json
-const styles = {
-  '--nav-menu-item-text': 'var(--color-nav-menu-item-text)',
-  // ... all tokens used by this component
-} as React.CSSProperties
-
-export default function ComponentName({ href, children }: Props) {
-  return (
-    // DOM structure mirrors Figma layer hierarchy
-  )
-}
-```
-
-### Tailwind usage
-
-Use Tailwind only for layout utilities (flex, grid, relative, absolute, overflow, z-index, transition). Use CSS variables for all token values (color, spacing, typography, radius, border).
-
-```tsx
-// Correct — layout in Tailwind, values from CSS vars
-<a className="relative flex items-center overflow-hidden"
-   style={{ borderBottom: '1px solid var(--nav-menu-item-border)' }}>
+// Correct
+<div className="relative flex flex-col overflow-hidden"
+     style={{ background: 'var(--nav-bg)', padding: 'var(--spacing-nav-padding)' }}>
 
 // Wrong — hardcoded values
-<a className="border-b border-gray-800 flex items-center">
+<div className="bg-black p-6 flex flex-col">
 ```
 
-### Hover and animation
+### Hover and Animation
 
-Implement hover states using CSS — either a `<style>` block in the component or a companion `.module.css` file. Never use JS for hover unless interaction requires state (e.g. toggling a menu open).
+Implement hover states in CSS (`.module.css` or a `<style>` block). Never use JS for hover unless toggling open/closed state is required.
 
-For `div.fill` slide-up animation:
+---
 
-```css
-.fill {
-  position: absolute;
-  inset: 0;
-  transform: translateY(100%);
-  transition: transform 0.3s ease;
-  background: var(--nav-menu-item-bg-hover);
-  z-index: 0;
-}
+## Flagging and Communication
 
-.menu-item:hover .fill {
-  transform: translateY(0);
-}
+When something cannot be resolved, stop and report using this format before continuing:
 
-.menu-item:hover .icon {
-  opacity: 1;
-}
+```
+⚠ MISSING TOKEN — Figma variable `[name]` could not be resolved in tokens.json or globals.css. Add the token or confirm a placeholder.
+
+⚠ MISSING ASSET — Layer `[name]` has no file in public/icons/. Fetching from Figma MCP node [id] — confirm before saving.
+
+⚠ UNRESOLVED LAYER — Layer `[name]` has no recognized prefix and no match in built-components.md. Confirm the HTML element type before proceeding.
+
+⚠ PRIMITIVE LEAK — Value for `[property]` resolves to a Primitive token. No Semantic token found. Flag for token system — do not use the Primitive directly.
 ```
 
-### z-index layering
+Always wait for user confirmation after flagging. Do not make a judgment call and continue.
 
-`div.fill` must sit behind `div.content`. Use `z-index: 0` on fill, `z-index: 1` on content. Root `a` must have `position: relative` and `overflow: hidden`.
+---
 
-## Step 5 — Responsive
+## After Building — Update the Registry
 
-Apply mobile typography tokens inside a media query. Layout changes (if any) are defined in `components.md`.
+After a component is successfully built, add it to `components/built-components.md`:
 
-```css
-@media (max-width: 393px) {
-  .label {
-    font-size: var(--typography-label-md-font-size-mobile);
-    line-height: var(--typography-label-md-line-height-mobile);
-  }
-}
+```md
+| [design-system name] | components/[ComponentName].tsx |
 ```
 
-## Step 6 — Output Checklist
+---
 
-Before returning the component verify:
+## Output Checklist
 
-- [ ] No hardcoded color, spacing, radius, or typography values
-- [ ] Every value traces back to a token in tokens.json
+Before returning the component, verify:
+
+- [ ] No hardcoded color, spacing, radius, font-size, or border values
+- [ ] Every visual value traces to a CSS custom property in `globals.css`
+- [ ] No Primitive tokens used directly — all values come from Semantic tokens
 - [ ] Layer hierarchy matches Figma structure
-- [ ] Variants implemented as CSS hover, not duplicate JSX
-- [ ] `div.fill` has `aria-hidden="true"`
-- [ ] Root `a` element has `href` prop
-- [ ] Component file is PascalCase in `components/`
-- [ ] Mobile typography tokens applied in media query
+- [ ] Variants implemented as CSS `:hover`, not duplicate JSX
+- [ ] Root `<a>` element (if present) receives an `href` prop
+- [ ] Named SVG assets imported from `public/icons/` or fetched and saved there
+- [ ] `components/built-components.md` updated with the new entry
+
+---
 
 ## Reference Files
 
-- `design-system/tokens.json` — always read before building
-- `design-system/components.md` — read the entry for the target component
+| File                             | Purpose                                              |
+| -------------------------------- | ---------------------------------------------------- |
+| `design-system/tokens.json`      | Token source of truth — read before every build      |
+| `styles/globals.css`             | CSS custom property declarations — verify vars here  |
+| `components/components.md`       | Layer structure and behavior specs (optional tokens) |
+| `components/built-components.md` | Registry of built components — check before building |

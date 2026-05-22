@@ -12,8 +12,8 @@ with 5 years of experience in B2B/Enterprise Products. It is built to attract to
 - GSAP — scroll-based and entrance animations
 - MDX — Writing structured case studies embedded with live components (written in Markdown, renders as React)
 - Vercel — deployment and hosting
-- Fonts — Clash Display (self-hosted in /public/fonts, weights: TBD),
-  Cabinet Grotesk (self-hosted in /public/fonts, weights: TBD),
+- Fonts — Clash Display (self-hosted in /public/fonts/clash-display, weights: Regular 400, Semibold 600, Bold 700),
+  Cabinet Grotesk (self-hosted in /public/fonts/cabinet-grotesk, weights: Regular 400, Medium→Semibold 600, Bold 700),
   fallback: system-ui
 
 ## Project Structure
@@ -94,14 +94,27 @@ portfolio/
 - [x] menu-item component built in Figma with Default and Hover variants
 - [x] component-builder skill written (SKILL.md)
 - [x] components.md started with menu-item entry
+- [x] Next.js 14.2.35 scaffolded with App Router, TypeScript, Tailwind, ESLint (no src/ dir)
+- [x] styles/globals.css — all tokens.json values declared as CSS custom properties (primitives + semantic); mobile typography overrides at @media (max-width: 393px)
+- [x] tailwind.config.ts — full token-driven config; colors replace default Tailwind palette; typography scale (text-display-2xl → text-label-sm) wired to CSS vars; font-display / font-body; spacing, radius, borderWidth, zIndex, icon sizes, screens (mobile: 393px, desktop: 1440px)
+- [x] app/layout.tsx — clean root layout importing styles/globals.css; Geist fonts removed; body uses font-body bg-surface-base text-primary
+- [x] app/page.tsx — minimal placeholder (no components yet)
+- [x] Clash Display + Cabinet Grotesk self-hosted in /public/fonts (woff2; Regular, Semibold/Medium, Bold)
+- [x] @font-face declarations added to styles/globals.css (font-display: swap)
+- [x] Figma MCP authenticated and connected (OAuth)
+- [x] MenuItem component built from Figma node 218:247 — components/MenuItem.tsx + MenuItem.module.css
+  - label-2xl typography (40px desktop / 24px mobile), spacing-3xl padding, radius-default border-radius
+  - div.fill slide-up hover animation, goArrow opacity transition, border-color transition
+  - goArrow SVG inlined as currentColor (source: Figma MCP asset)
+- [x] goArrow SVG asset saved to public/icons/go-arrow.svg
+- [x] MenuItem verified in browser at localhost:3001
 
 ## What's Next
 
-- [ ] Initialize Next.js 14 with App Router in Claude Code
-- [ ] Configure Tailwind with tokens as CSS variables
-- [ ] Build menu-item component
-- [ ] Build Navigation component
-- [ ] View in browser at localhost:3000
+- [ ] Build Navigation component (provide Figma link)
+- [ ] Build Hero section (provide Figma link)
+- [ ] Build CaseStudyCard component (provide Figma link)
+- [ ] Wire up app/page.tsx with real Navigation + Hero + Work section
 
 ## What's Deferred (Post-Launch)
 

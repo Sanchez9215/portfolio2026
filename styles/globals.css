@@ -1,0 +1,398 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================================
+   SELF-HOSTED FONTS
+   Source: /public/fonts/clash-display/ + /public/fonts/cabinet-grotesk/
+   font-display: swap — text renders in fallback until webfont loads,
+   then swaps without layout shift (FOUT, not FOIT).
+   ============================================================ */
+
+/* Clash Display — Regular */
+@font-face {
+  font-family: 'Clash Display';
+  src: url('/fonts/clash-display/ClashDisplay-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Clash Display — Semibold */
+@font-face {
+  font-family: 'Clash Display';
+  src: url('/fonts/clash-display/ClashDisplay-Semibold.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Clash Display — Bold */
+@font-face {
+  font-family: 'Clash Display';
+  src: url('/fonts/clash-display/ClashDisplay-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Cabinet Grotesk — Regular */
+@font-face {
+  font-family: 'Cabinet Grotesk';
+  src: url('/fonts/cabinet-grotesk/CabinetGrotesk-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Cabinet Grotesk — Medium (semibold role) */
+@font-face {
+  font-family: 'Cabinet Grotesk';
+  src: url('/fonts/cabinet-grotesk/CabinetGrotesk-Medium.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Cabinet Grotesk — Bold */
+@font-face {
+  font-family: 'Cabinet Grotesk';
+  src: url('/fonts/cabinet-grotesk/CabinetGrotesk-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ============================================================
+   DESIGN TOKENS — Source: design-system/tokens.json
+   All values expressed as CSS custom properties.
+   Desktop values are the default; mobile overrides follow
+   at the 393 px breakpoint.
+   ============================================================ */
+
+:root {
+
+  /* ----------------------------------------------------------
+     PRIMITIVES — Colors
+     ---------------------------------------------------------- */
+
+  /* Grey */
+  --color-grey-50:   #FBFCFF;
+  --color-grey-100:  #F7FAFF;
+  --color-grey-200:  #EEF5FF;
+  --color-grey-300:  #E6EFFE;
+  --color-grey-400:  #DEEAFE;
+  --color-grey-500:  #D6E5FE;
+  --color-grey-600:  #ABB7CB;
+  --color-grey-700:  #808998;
+  --color-grey-800:  #555C66;
+  --color-grey-900:  #2B2E33;
+  --color-grey-1000: #151719;
+  --color-grey-1100: #0B0B0D;
+
+  /* Blue */
+  --color-blue-50:   #E7F4FF;
+  --color-blue-100:  #CFE9FF;
+  --color-blue-200:  #9FD2FF;
+  --color-blue-300:  #6FBCFF;
+  --color-blue-400:  #3FA5FF;
+  --color-blue-500:  #0F8FFF;
+  --color-blue-600:  #0C72CC;
+  --color-blue-700:  #095699;
+  --color-blue-800:  #063966;
+  --color-blue-900:  #031D33;
+  --color-blue-1000: #020E1A;
+
+  /* Yellow */
+  --color-yellow-50:  #FFFBEC;
+  --color-yellow-100: #FFF7D8;
+  --color-yellow-200: #FFEEB1;
+  --color-yellow-300: #FFE68A;
+  --color-yellow-400: #FFDD63;
+  --color-yellow-500: #FFD53C;
+  --color-yellow-600: #F1BA30;
+  --color-yellow-700: #E3A024;
+  --color-yellow-800: #D48518;
+  --color-yellow-900: #BF5D06;
+
+  /* ----------------------------------------------------------
+     PRIMITIVES — Typography
+     ---------------------------------------------------------- */
+
+  --font-family-display: 'Clash Display', system-ui, sans-serif;
+  --font-family-body:    'Cabinet Grotesk', system-ui, sans-serif;
+
+  --font-weight-regular:  400;
+  --font-weight-semibold: 600;
+  --font-weight-bold:     700;
+
+  /* ----------------------------------------------------------
+     PRIMITIVES — Spacing
+     ---------------------------------------------------------- */
+
+  --spacing-xs:  4px;
+  --spacing-sm:  8px;
+  --spacing-md:  16px;
+  --spacing-lg:  24px;
+  --spacing-xl:  32px;
+  --spacing-2xl: 48px;
+  --spacing-3xl: 64px;
+  --spacing-4xl: 96px;
+  --spacing-5xl: 128px;
+
+  /* ----------------------------------------------------------
+     PRIMITIVES — Border radius
+     ---------------------------------------------------------- */
+
+  --border-radius-none: 0;
+  --border-radius-md:   16px;
+  --border-radius-lg:   48px;
+  --border-radius-full: 9999px;
+
+  /* ----------------------------------------------------------
+     PRIMITIVES — Border width
+     ---------------------------------------------------------- */
+
+  --border-width-none: 0;
+  --border-width-sm:   1px;
+  --border-width-md:   4px;
+  --border-width-lg:   8px;
+
+  /* ----------------------------------------------------------
+     PRIMITIVES — Icon sizes
+     ---------------------------------------------------------- */
+
+  --icon-sm:  16px;
+  --icon-md:  24px;
+  --icon-lg:  32px;
+  --icon-xl:  48px;
+  --icon-2xl: 64px;
+
+  /* ----------------------------------------------------------
+     SEMANTIC — Surface
+     ---------------------------------------------------------- */
+
+  --surface-base:              var(--color-grey-1100);
+  --surface-card:              var(--color-grey-1000);
+  --surface-card-border:       var(--color-grey-900);
+  --surface-card-border-hover: var(--color-yellow-500);
+
+  /* ----------------------------------------------------------
+     SEMANTIC — Nav
+     ---------------------------------------------------------- */
+
+  --nav-bg:                     var(--color-grey-1000);
+  --nav-link-text:              var(--color-grey-600);
+  --nav-button-bg:              var(--color-grey-1100);
+  --nav-button-border:          var(--color-yellow-500);
+  --nav-button-text:            var(--color-yellow-500);
+  --nav-menu-item-text:         var(--color-grey-50);
+  --nav-menu-item-border:       var(--color-grey-900);
+  --nav-menu-item-border-hover: var(--color-blue-500);
+  --nav-menu-item-bg-hover:     var(--color-blue-500);
+
+  /* ----------------------------------------------------------
+     SEMANTIC — Action
+     ---------------------------------------------------------- */
+
+  --action-primary-bg:             var(--color-yellow-500);
+  --action-primary-bg-hover:       var(--color-grey-1100);
+  --action-primary-border:         var(--color-yellow-500);
+  --action-primary-border-hover:   var(--color-yellow-500);
+  --action-primary-text:           var(--color-grey-1100);
+  --action-primary-text-hover:     var(--color-yellow-500);
+
+  --action-secondary-bg:             var(--color-grey-1100);
+  --action-secondary-bg-hover:       var(--color-grey-50);
+  --action-secondary-border:         var(--color-grey-1100);
+  --action-secondary-border-hover:   var(--color-grey-1100);
+  --action-secondary-text:           var(--color-grey-50);
+  --action-secondary-text-hover:     var(--color-grey-1100);
+
+  /* ----------------------------------------------------------
+     SEMANTIC — Text
+     ---------------------------------------------------------- */
+
+  --text-primary:   var(--color-grey-50);
+  --text-secondary: var(--color-grey-600);
+  --text-accent:    var(--color-blue-500);
+
+  /* ----------------------------------------------------------
+     SEMANTIC — Border
+     ---------------------------------------------------------- */
+
+  --border-card:         var(--border-width-sm);
+  --border-button:       var(--border-width-md);
+  --border-focus:        var(--border-width-lg);
+  --border-style-default: solid;
+
+  /* ----------------------------------------------------------
+     SEMANTIC — Border radius
+     ---------------------------------------------------------- */
+
+  --radius-default: var(--border-radius-md);
+  --radius-lg:      var(--border-radius-lg);
+  --radius-pill:    var(--border-radius-full);
+
+  /* ----------------------------------------------------------
+     SEMANTIC — Spacing
+     ---------------------------------------------------------- */
+
+  --spacing-nav-padding:         var(--spacing-md);
+  --spacing-section-padding-x:   var(--spacing-xl);
+  --spacing-section-padding-top: var(--spacing-3xl);
+  --spacing-card-padding:        var(--spacing-xl);
+
+  /* ----------------------------------------------------------
+     SEMANTIC — Z-index
+     ---------------------------------------------------------- */
+
+  --z-nav:     100;
+  --z-overlay: 200;
+  --z-modal:   300;
+
+  /* ----------------------------------------------------------
+     SEMANTIC — Breakpoints (reference only, not used in CSS media)
+     ---------------------------------------------------------- */
+
+  --breakpoint-mobile:  393px;
+  --breakpoint-desktop: 1440px;
+
+  /* ----------------------------------------------------------
+     TYPOGRAPHY SCALE — Desktop (default)
+     Responsive/Desktop token set
+     ---------------------------------------------------------- */
+
+  /* display-2xl */
+  --text-display-2xl-size:    72px;
+  --text-display-2xl-lh:      79px;
+  --text-display-2xl-ls:      -0.02em;
+
+  /* display-xl */
+  --text-display-xl-size:     64px;
+  --text-display-xl-lh:       70px;
+  --text-display-xl-ls:       -0.02em;
+
+  /* display-lg */
+  --text-display-lg-size:     48px;
+  --text-display-lg-lh:       53px;
+  --text-display-lg-ls:       -0.02em;
+
+  /* heading-xl */
+  --text-heading-xl-size:     32px;
+  --text-heading-xl-lh:       40px;
+  --text-heading-xl-ls:       -0.01em;
+
+  /* heading-lg */
+  --text-heading-lg-size:     24px;
+  --text-heading-lg-lh:       30px;
+  --text-heading-lg-ls:       -0.01em;
+
+  /* heading-md */
+  --text-heading-md-size:     18px;
+  --text-heading-md-lh:       22px;
+  --text-heading-md-ls:       -0.01em;
+
+  /* heading-sm */
+  --text-heading-sm-size:     16px;
+  --text-heading-sm-lh:       20px;
+  --text-heading-sm-ls:       -0.01em;
+
+  /* heading-xs */
+  --text-heading-xs-size:     14px;
+  --text-heading-xs-lh:       17px;
+  --text-heading-xs-ls:       -0.01em;
+
+  /* body-lg */
+  --text-body-lg-size:        16px;
+  --text-body-lg-lh:          24px;
+  --text-body-lg-ls:          0;
+
+  /* body-md */
+  --text-body-md-size:        14px;
+  --text-body-md-lh:          21px;
+  --text-body-md-ls:          0;
+
+  /* body-sm */
+  --text-body-sm-size:        12px;
+  --text-body-sm-lh:          18px;
+  --text-body-sm-ls:          0;
+
+  /* label-2xl */
+  --text-label-2xl-size:      40px;
+  --text-label-2xl-lh:        44px;
+  --text-label-2xl-ls:        0;
+
+  /* label-xl */
+  --text-label-xl-size:       24px;
+  --text-label-xl-lh:         30px;
+  --text-label-xl-ls:         0;
+
+  /* label-md */
+  --text-label-md-size:       16px;
+  --text-label-md-lh:         24px;
+  --text-label-md-ls:         0;
+
+  /* label-sm */
+  --text-label-sm-size:       14px;
+  --text-label-sm-lh:         21px;
+  --text-label-sm-ls:         0;
+}
+
+/* ----------------------------------------------------------
+   TYPOGRAPHY SCALE — Mobile overrides
+   Responsive/Mobile token set (max-width: 393px)
+   ---------------------------------------------------------- */
+
+@media (max-width: 393px) {
+  :root {
+    --text-display-2xl-size: 40px;
+    --text-display-2xl-lh:   44px;
+
+    --text-display-xl-size:  32px;
+    --text-display-xl-lh:    35px;
+
+    --text-display-lg-size:  28px;
+    --text-display-lg-lh:    31px;
+
+    --text-heading-xl-size:  20px;
+    --text-heading-xl-lh:    25px;
+
+    --text-heading-lg-size:  18px;
+    --text-heading-lg-lh:    22px;
+
+    --text-heading-md-size:  16px;
+    --text-heading-md-lh:    20px;
+
+    --text-heading-sm-size:  14px;
+    --text-heading-sm-lh:    17px;
+
+    --text-heading-xs-size:  12px;
+    --text-heading-xs-lh:    15px;
+
+    /* body sizes are unchanged between breakpoints */
+
+    --text-label-2xl-size:   24px;
+    --text-label-2xl-lh:     26px;
+
+    --text-label-xl-size:    18px;
+    --text-label-xl-lh:      22px;
+
+    /* label-md and label-sm unchanged */
+  }
+}
+
+/* ----------------------------------------------------------
+   BASE LAYER — global resets scoped to the token system
+   ---------------------------------------------------------- */
+
+@layer base {
+  html {
+    background-color: var(--surface-base);
+    color: var(--text-primary);
+    font-family: var(--font-family-body);
+    font-size: 16px; /* base: tokens.json Primitives.fontSize.base */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}

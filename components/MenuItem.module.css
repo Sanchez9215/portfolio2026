@@ -1,0 +1,105 @@
+/* ============================================================
+   MenuItem — overlay navigation link
+   Built from Figma node 218:247 (Claude-Code file).
+   All values resolve through CSS custom properties → tokens.json.
+   ============================================================ */
+
+/* a.menu-item — root link frame */
+.menu-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  width: 100%;
+  text-decoration: none;
+  color: var(--nav-menu-item-text);
+  border-bottom: var(--border-card) var(--border-style-default) var(--nav-menu-item-border);
+  border-radius: var(--radius-default);
+  padding: var(--spacing-3xl) 0;
+  transition: border-color 0.3s ease;
+}
+
+.menu-item:hover {
+  border-bottom-color: var(--nav-menu-item-border-hover);
+}
+
+/* div.fill — animated bg, sits below the frame, slides up on hover */
+.fill {
+  position: absolute;
+  inset: 0;
+  background-color: var(--nav-menu-item-bg-hover);
+  transform: translateY(100%);
+  transition: transform 0.3s ease;
+  z-index: 0;
+}
+
+.menu-item:hover .fill {
+  transform: translateY(0);
+}
+
+/* div.content — flex row, left-padded, gap between label + icon */
+.content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding-left: var(--spacing-3xl);
+}
+
+/* label — Clash Display semibold, uppercase, label-2xl scale */
+.label {
+  font-family: var(--font-family-display);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--text-label-2xl-size);
+  line-height: var(--text-label-2xl-lh);
+  letter-spacing: var(--text-label-2xl-ls);
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--nav-menu-item-text);
+}
+
+/* icon — 64×64 container, hidden by default */
+.icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--icon-2xl);
+  height: var(--icon-2xl);
+  padding: var(--spacing-sm);
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  color: var(--nav-menu-item-text);
+}
+
+.menu-item:hover .icon {
+  opacity: 1;
+}
+
+/* goArrow — fills the icon container */
+.go-arrow {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* ============================================================
+   Mobile overrides (393 px)
+   label-2xl: 40px desktop → 24px mobile
+   ============================================================ */
+@media (max-width: 393px) {
+  .menu-item {
+    padding: var(--spacing-md) 0;
+  }
+
+  .content {
+    padding-left: var(--spacing-xl);
+  }
+
+  .label {
+    font-size: var(--text-label-2xl-size);   /* resolves to 24px via globals.css mobile override */
+    line-height: var(--text-label-2xl-lh);
+  }
+}
