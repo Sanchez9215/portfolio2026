@@ -94,9 +94,9 @@ Mapped references. These are what components use — never raw primitives.
 | --action-primary-text           | grey/1100      |
 | --action-primary-text-hover     | yellow/default |
 | --action-secondary-bg           | grey/1100      |
-| --action-secondary-bg-hover     | grey/1100      |
+| --action-secondary-bg-hover     | grey/50        |
 | --action-secondary-border       | grey/1100      |
-| --action-secondary-border-hover | yellow/default |
+| --action-secondary-border-hover | grey/1100      |
 | --action-secondary-text         | grey/50        |
 | --action-secondary-text-hover   | grey/1100      |
 
@@ -255,3 +255,24 @@ Mapped references. These are what components use — never raw primitives.
 | -------------------- | ------ | ---------------- |
 | --breakpoint-mobile  | 393px  | Mobile viewport  |
 | --breakpoint-desktop | 1440px | Desktop viewport |
+
+---
+
+## Border Radius
+
+### Primitives
+
+| Name        | Value  |
+| ----------- | ------ |
+| radius-none | 0      |
+| radius-md   | 16px   |
+| radius-lg   | 48px   |
+| radius-full | 9999px |
+
+### Semantic Tokens
+
+| Token            | References  | Use Case                                 |
+| ---------------- | ----------- | ---------------------------------------- |
+| --radius-lg      | radius-lg   | Case study cards, large surfaces         |
+| --radius-default | radius-md   | Standard buttons, inputs, small elements |
+| --radius-pill    | radius-full | Pill buttons                             |
