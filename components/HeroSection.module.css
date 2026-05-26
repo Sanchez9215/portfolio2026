@@ -1,0 +1,260 @@
+/* ============================================================
+   HeroSection — home page hero
+   Figma node 281:123 (Claude-Code file)
+
+   Layout:
+     section.hero (flex-col, items-center)
+       div.heroTopContent (flex-row, z-2)
+         h1.headline   ← "Specializing in [Data-rich] Environments."
+         div.imgContainer (flex-1) ← hero image placeholder
+       div.heroBottomContent (blue card, flex-row, space-between, z-1)
+         div.buttonGroup ← primary + secondary buttons
+         p.heroSubline   ← "Driving High-Stakes Decisions."
+
+   Tokens: text.*, surface.*, color.*, spacing.*, radius.*
+   ============================================================ */
+
+/* ── section.hero ─────────────────────────────────────────── */
+
+.hero {
+  background-color: var(--surface-base);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  isolation: isolate;
+  overflow-x: clip;
+
+  /* Figma section top padding (spacing-3xl = 64px) */
+  padding-top: var(--spacing-3xl);
+  padding-left: var(--spacing-xl);
+  padding-right: var(--spacing-xl);
+}
+
+/* ── div.heroTopContent ───────────────────────────────────── */
+
+.heroTopContent {
+  display: flex;
+  align-items: flex-start;
+  width: 100%;
+  position: relative;
+  z-index: 2;
+}
+
+/* ── h1.headline ──────────────────────────────────────────── */
+
+.headline {
+  font-family: var(--font-family-display);
+  font-weight: var(--font-weight-bold);
+  font-size: var(--text-display-2xl-size);
+  line-height: var(--text-display-2xl-lh);
+  letter-spacing: var(--text-display-2xl-ls);
+  text-transform: uppercase;
+  color: var(--text-display);
+  flex: 1 1 0;
+  min-width: 0;
+  /* Aligns headline left edge with the button group inside heroBottomContent */
+  padding-left: var(--spacing-xl);
+}
+
+/* Each headline line is a fixed block — forces 3-line layout at every breakpoint */
+.headlineLine {
+  display: block;
+}
+
+/* "Data-rich" accent word */
+.headlineAccent {
+  color: var(--color-blue-500);
+}
+
+/* ── div.imgContainer ─────────────────────────────────────── */
+
+.imgContainer {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 329px;
+  padding: var(--spacing-xl);
+  position: relative;
+}
+
+/* ── div.heroBottomContent ────────────────────────────────── */
+
+/*
+ * Asymmetric border-radius from Figma:
+ *   top-left: radius-lg (48px)  top-right: 0 (sharp)
+ *   bottom-right: radius-lg (48px)  bottom-left: radius-lg (48px)
+ * CSS shorthand order: tl tr br bl
+ */
+.heroBottomContent {
+  background-color: var(--color-blue-500);
+  border-radius: var(--radius-lg) 0 var(--radius-lg) var(--radius-lg);
+  padding: var(--spacing-xl);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  width: 100%;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+}
+
+/* ── div.buttonGroup ──────────────────────────────────────── */
+
+.buttonGroup {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  flex-shrink: 0;
+}
+
+/* ── p.heroSubline ────────────────────────────────────────── */
+
+.heroSubline {
+  font-family: var(--font-family-display);
+  font-weight: var(--font-weight-bold);
+  font-size: var(--text-display-2xl-size);
+  line-height: var(--text-display-2xl-lh);
+  letter-spacing: var(--text-display-2xl-ls);
+  text-transform: uppercase;
+  color: var(--text-dark-display);
+  text-align: right;
+}
+
+/* Each subline line is a fixed block — mirrors the headline 3-line approach */
+.sublineLine {
+  display: block;
+}
+
+/* "High-Stakes" accent — --text-display (grey-500) at all breakpoints */
+.sublineHighlight {
+  color: var(--text-display);
+}
+
+/* ============================================================
+   Stacked layout (≤ 1128 px)
+   Two-column at 72px type doesn't balance below this width —
+   headline stacks above image instead.
+   ============================================================ */
+
+@media (max-width: 1128px) {
+  /* Reduce horizontal padding from spacing-xl (32px) to spacing-md (16px) */
+  .hero {
+    padding-left: var(--spacing-md);
+    padding-right: var(--spacing-md);
+  }
+
+  /* Stack headline above image canvas instead of side-by-side */
+  .heroTopContent {
+    flex-direction: column;
+    gap: var(--spacing-lg);
+  }
+
+  /* Step headline down from display-2xl (72px) to display-xl (64px) */
+  .headline {
+    font-size: var(--text-display-xl-size);
+    line-height: var(--text-display-xl-lh);
+    letter-spacing: var(--text-display-xl-ls);
+  }
+
+  /* Full-width canvas area; fixed height so BounceCanvas height:100% resolves */
+  .imgContainer {
+    flex: none;
+    width: 100%;
+    height: 232px;
+  }
+
+  /* Stack buttons above subline; right-align both; symmetric radius-md (32px) */
+  .heroBottomContent {
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: flex-start;
+    gap: var(--spacing-lg);
+    border-radius: var(--radius-md);
+  }
+
+  /* Stretch button group to full card width */
+  .buttonGroup {
+    width: 100%;
+  }
+
+  /* Each Button child takes equal share of the full width */
+  .buttonGroup > * {
+    flex: 1 0 0;
+  }
+
+  /* Step subline down from display-2xl (72px) to display-xl (64px) */
+  .heroSubline {
+    font-size: var(--text-display-xl-size);
+    line-height: var(--text-display-xl-lh);
+    letter-spacing: var(--text-display-xl-ls);
+  }
+}
+
+/* ============================================================
+   Mid-size layout (≤ 640 px)
+   "ENVIRONMENTS." at display-xl (64px) overflows its single-
+   column container around this width — step down to display-xl-sm
+   (52px). Both headline and subline step together.
+   Fine-tune this breakpoint after visual inspection.
+   ============================================================ */
+
+@media (max-width: 640px) {
+  .headline {
+    font-size:      var(--text-display-xl-sm-size);
+    line-height:    var(--text-display-xl-sm-lh);
+    letter-spacing: var(--text-display-xl-sm-ls);
+  }
+
+  .heroSubline {
+    font-size:      var(--text-display-xl-sm-size);
+    line-height:    var(--text-display-xl-sm-lh);
+    letter-spacing: var(--text-display-xl-sm-ls);
+  }
+}
+
+/* ============================================================
+   Mobile overrides (393 px)
+   ============================================================ */
+
+@media (max-width: 393px) {
+  /* Defensive: tablet already sets column; kept for resilience */
+  .heroTopContent {
+    flex-direction: column;
+  }
+
+  /* Override tablet's display-xl back to display-2xl;
+     globals.css mobile block resolves --text-display-2xl-size to 40px / 44px.
+     padding-left steps down from spacing-xl to spacing-md to stay aligned
+     with heroBottomContent's reduced mobile padding. */
+  .headline {
+    font-size: var(--text-display-2xl-size);
+    line-height: var(--text-display-2xl-lh);
+    letter-spacing: var(--text-display-2xl-ls);
+    padding-left: var(--spacing-md);
+  }
+
+  /* Full-width canvas with tighter padding */
+  .imgContainer {
+    width: 100%;
+    padding: var(--spacing-md);
+  }
+
+  /* Asymmetric radius: sharp top-right, --radius-md (32px) on tl / br / bl —
+     mirrors the desktop asymmetric pattern at a smaller radius.
+     Asymmetric padding: pt=md(16px), px=md(16px), pb=lg(24px).
+     gap: --spacing-lg corrects the previous wrong --spacing-xl override. */
+  .heroBottomContent {
+    padding: var(--spacing-md) var(--spacing-md) var(--spacing-lg);
+    gap: var(--spacing-lg);
+    border-radius: var(--radius-md) 0 var(--radius-md) var(--radius-md);
+  }
+
+  /* Override tablet's display-xl back to display-2xl (40px / 44px at mobile).
+     Right-aligned to match card's items-end — consistent across all breakpoints. */
+  .heroSubline {
+    font-size: var(--text-display-2xl-size);
+    line-height: var(--text-display-2xl-lh);
+    letter-spacing: var(--text-display-2xl-ls);
+    text-align: right;
+  }
+}

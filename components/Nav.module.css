@@ -1,0 +1,167 @@
+/* ============================================================
+   Nav — sticky overlay navigation
+   Figma node 274:75 (Claude-Code file).
+
+   Layout:
+     nav (fixed, full-width, overflow-hidden)
+       div.header  (brand left, NavButton right — always visible)
+       div.menu-list (flex:1 card, clips to 0 when collapsed)
+         menuItemWrapper × 4 (each holds one MenuItem)
+
+   Height is managed entirely by GSAP:
+     Collapsed → header-only height (captured on mount)
+     Expanded  → 100dvh
+   ============================================================ */
+
+/* ── nav root ─────────────────────────────────────────────── */
+
+.nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: var(--z-nav);
+  background-color: var(--nav-bg);
+  overflow: hidden;
+
+  /* Flex column: header shrinks to content, menu-list fills remainder */
+  display: flex;
+  flex-direction: column;
+
+  /* nav outer padding: py=spacing-xl (32px), px=spacing-nav-padding (16px) */
+  padding: var(--spacing-xl) var(--spacing-nav-padding);
+
+  /* Spacing between header and menu-list card */
+  gap: var(--spacing-xl);
+
+  /* Collapsed height — GSAP reads this via offsetHeight on mount and animates from it */
+  height: 128px;
+}
+
+/* ── div.nav-header ───────────────────────────────────────── */
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  /* Additional horizontal padding inside the nav content area */
+  padding: 0 var(--spacing-xl);
+  flex-shrink: 0;
+  width: 100%;
+}
+
+/* ── div.brand ────────────────────────────────────────────── */
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+/* icon wrapper (logo mark) */
+.logoWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.logoIcon {
+  display: block;
+  width: var(--icon-2xl);   /* 64px */
+  height: var(--icon-2xl);
+}
+
+/* div.designerDetails */
+.designerDetails {
+  display: flex;
+  flex-direction: column;
+  /* Both lines are uppercase (Figma: uppercase on container) */
+  text-transform: uppercase;
+}
+
+/* "Edgar Sanchez" — label-md: Clash Display semibold, uppercase */
+/* Color: --text-primary (grey-50) — decision 1A */
+.designerName {
+  font-family:    var(--font-family-display);
+  font-weight:    var(--font-weight-semibold);
+  font-size:      var(--text-label-md-size);
+  line-height:    var(--text-label-md-lh);
+  letter-spacing: var(--text-label-md-ls);
+  color:          var(--text-primary);
+  white-space:    nowrap;
+}
+
+/* "Product Designer" — body-lg: Cabinet Grotesk regular, uppercase */
+/* Color: --nav-link-text (grey-600) — decision 2A */
+.designerTitle {
+  font-family:    var(--font-family-body);
+  font-weight:    var(--font-weight-regular);
+  font-size:      var(--text-body-lg-size);
+  line-height:    var(--text-body-lg-lh);
+  letter-spacing: var(--text-body-lg-ls);
+  color:          var(--nav-link-text);
+  white-space:    nowrap;
+}
+
+/* ── div.menu-list ────────────────────────────────────────── */
+
+/*
+ * Flex-1 means: fills all remaining nav height once nav expands to 100dvh.
+ * When nav is at collapsed height, remaining space = 0 → menu-list = 0 height.
+ *
+ * clip-path hides content during collapsed state and animates on open.
+ * 48px = --radius-lg (var(--border-radius-lg)); hardcoded here to match
+ * the element's border-radius so clip edges stay rounded during animation.
+ */
+.menuList {
+  flex: 1;
+  min-height: 0; /* allows flex item to shrink below its content size */
+
+  background-color: var(--surface-card);
+  border: var(--border-card) var(--border-style-default) var(--surface-card-border);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-xl);
+
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  /* Initial state: fully clipped from bottom — animated by GSAP on open */
+  clip-path: inset(0 0 100% 0 round 48px); /* 48px = --radius-lg */
+}
+
+/* ── menuItemWrapper ──────────────────────────────────────── */
+
+/*
+ * Wraps each MenuItem. Starts at opacity-0 so GSAP can animate it in
+ * during the entrance sequence (border appears first, then label slides up).
+ */
+.menuItemWrapper {
+  opacity: 0;
+}
+
+/* ============================================================
+   Mobile overrides (393 px)
+   ============================================================ */
+
+@media (max-width: 393px) {
+  .header {
+    padding: 0 var(--spacing-md);
+  }
+
+  .logoIcon {
+    width: var(--icon-lg);   /* 32px on mobile */
+    height: var(--icon-lg);
+  }
+
+  .designerName {
+    font-size:   var(--text-label-sm-size);
+    line-height: var(--text-label-sm-lh);
+  }
+
+  .designerTitle {
+    font-size:   var(--text-body-sm-size);
+    line-height: var(--text-body-sm-lh);
+  }
+}

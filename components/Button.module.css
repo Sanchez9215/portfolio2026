@@ -1,0 +1,112 @@
+/* ============================================================
+   Button — global button component
+   Four variants: primary, secondary, outline, ghost
+   Figma node 284:230 (Claude-Code file)
+
+   Layout:
+     button / a.btn
+       span.label  ← typography
+
+   Variants:
+     primary  — yellow bg, yellow border, dark text → inverts on hover
+     secondary — dark bg, dark border, white text → white bg on hover
+     outline  — dark bg, yellow border, yellow text → yellow bg on hover
+     ghost    — no bg/border, grey text → yellow text on hover
+
+   Tokens: action.* (design-system/tokens.json)
+   ============================================================ */
+
+/* ── Base — layout, shared across all variants ────────────── */
+
+.btn {
+  display:         inline-flex;
+  align-items:     center;
+  justify-content: center;
+  /* Transparent border placeholder keeps layout stable (no shift on variant swap) */
+  border:          var(--border-button) solid transparent;
+  border-radius:   var(--radius-default);
+  /* lg (default) — --spacing-md (16px) top/bottom · --spacing-xl (32px) left/right */
+  padding:         var(--spacing-md) var(--spacing-xl);
+  background:      transparent;
+  cursor:          pointer;
+  text-decoration: none;
+  transition:
+    background-color 200ms ease,
+    color            200ms ease,
+    border-color     200ms ease;
+}
+
+/* ── Size modifier ────────────────────────────────────────── */
+
+/* md — --spacing-sm (8px) top/bottom · --spacing-lg (24px) left/right */
+/* Overrides the lg default above; used in Nav only for now.  */
+.md {
+  padding: var(--spacing-sm) var(--spacing-lg);
+}
+
+/* ── Label ────────────────────────────────────────────────── */
+
+/* label-xl: Clash Display semibold, uppercase (Figma: typography/label-xl) */
+.label {
+  font-family:    var(--font-family-display);
+  font-weight:    var(--font-weight-semibold);
+  font-size:      var(--text-label-xl-size);
+  line-height:    var(--text-label-xl-lh);
+  letter-spacing: var(--text-label-xl-ls);
+  text-transform: uppercase;
+  white-space:    nowrap;
+}
+
+/* ── Primary ──────────────────────────────────────────────── */
+
+.primary {
+  background-color: var(--action-primary-bg);
+  border-color:     var(--action-primary-border);
+  color:            var(--action-primary-text);
+}
+
+.primary:hover {
+  background-color: var(--action-primary-bg-hover);
+  border-color:     var(--action-primary-border-hover);
+  color:            var(--action-primary-text-hover);
+}
+
+/* ── Secondary ────────────────────────────────────────────── */
+
+.secondary {
+  background-color: var(--action-secondary-bg);
+  border-color:     var(--action-secondary-border);
+  color:            var(--action-secondary-text);
+}
+
+.secondary:hover {
+  background-color: var(--action-secondary-bg-hover);
+  border-color:     var(--action-secondary-border-hover);
+  color:            var(--action-secondary-text-hover);
+}
+
+/* ── Outline ──────────────────────────────────────────────── */
+
+.outline {
+  background-color: var(--action-outline-bg);
+  border-color:     var(--action-outline-border);
+  color:            var(--action-outline-text);
+}
+
+.outline:hover {
+  background-color: var(--action-outline-bg-hover);
+  border-color:     var(--action-outline-border-hover);
+  color:            var(--action-outline-text-hover);
+}
+
+/* ── Ghost ────────────────────────────────────────────────── */
+
+.ghost {
+  background-color: transparent;
+  border-color:     transparent;
+  color:            var(--action-ghost-text);
+}
+
+.ghost:hover {
+  color: var(--action-ghost-text-hover);
+}

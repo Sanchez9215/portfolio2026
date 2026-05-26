@@ -146,7 +146,8 @@
 
   --border-radius-none: 0;
   --border-radius-md:   16px;
-  --border-radius-lg:   48px;
+  --border-radius-lg:   32px;
+  --border-radius-xl:   48px;
   --border-radius-full: 9999px;
 
   /* ----------------------------------------------------------
@@ -183,9 +184,6 @@
 
   --nav-bg:                     var(--color-grey-1000);
   --nav-link-text:              var(--color-grey-600);
-  --nav-button-bg:              var(--color-grey-1100);
-  --nav-button-border:          var(--color-yellow-500);
-  --nav-button-text:            var(--color-yellow-500);
   --nav-menu-item-text:         var(--color-grey-50);
   --nav-menu-item-border:       var(--color-grey-900);
   --nav-menu-item-border-hover: var(--color-blue-500);
@@ -209,13 +207,25 @@
   --action-secondary-text:           var(--color-grey-50);
   --action-secondary-text-hover:     var(--color-grey-1100);
 
+  --action-outline-bg:               var(--color-grey-1100);
+  --action-outline-bg-hover:         var(--color-yellow-500);
+  --action-outline-border:           var(--color-yellow-500);
+  --action-outline-border-hover:     var(--color-yellow-500);
+  --action-outline-text:             var(--color-yellow-500);
+  --action-outline-text-hover:       var(--color-grey-1100);
+
+  --action-ghost-text:               var(--color-grey-600);
+  --action-ghost-text-hover:         var(--color-yellow-500);
+
   /* ----------------------------------------------------------
      SEMANTIC — Text
      ---------------------------------------------------------- */
 
-  --text-primary:   var(--color-grey-50);
-  --text-secondary: var(--color-grey-600);
-  --text-accent:    var(--color-blue-500);
+  --text-primary:      var(--color-grey-50);
+  --text-secondary:    var(--color-grey-600);
+  --text-accent:       var(--color-blue-500);
+  --text-display:      var(--color-grey-500);
+  --text-dark-display: var(--color-grey-1100);
 
   /* ----------------------------------------------------------
      SEMANTIC — Border
@@ -231,7 +241,8 @@
      ---------------------------------------------------------- */
 
   --radius-default: var(--border-radius-md);
-  --radius-lg:      var(--border-radius-lg);
+  --radius-md:      var(--border-radius-lg);
+  --radius-lg:      var(--border-radius-xl);
   --radius-pill:    var(--border-radius-full);
 
   /* ----------------------------------------------------------
@@ -259,6 +270,20 @@
   --breakpoint-desktop: 1440px;
 
   /* ----------------------------------------------------------
+     SEMANTIC — Motion
+     Source: design-system/tokens.json → Semantic.motion
+     Tweak animation feel here without touching component code.
+     ---------------------------------------------------------- */
+
+  --motion-duration-nav-expand:  700ms;
+  --motion-duration-nav-overlay: 500ms;
+  --motion-duration-nav-items:   500ms;
+  --motion-delay-nav-items:      250ms;
+  --motion-stagger-nav-items:    50ms;
+  --motion-easing-nav-expand:    cubic-bezier(0.4, 0, 0.2, 1);
+  --motion-easing-nav-items:     cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* ----------------------------------------------------------
      TYPOGRAPHY SCALE — Desktop (default)
      Responsive/Desktop token set
      ---------------------------------------------------------- */
@@ -277,6 +302,11 @@
   --text-display-lg-size:     48px;
   --text-display-lg-lh:       53px;
   --text-display-lg-ls:       -0.02em;
+
+  /* display-xl-sm — 52px mid step between display-xl (64px) and display-lg (48px) */
+  --text-display-xl-sm-size:  52px;
+  --text-display-xl-sm-lh:    57px;
+  --text-display-xl-sm-ls:    -0.02em;
 
   /* heading-xl */
   --text-heading-xl-size:     32px;
@@ -352,8 +382,11 @@
     --text-display-xl-size:  32px;
     --text-display-xl-lh:    35px;
 
-    --text-display-lg-size:  28px;
-    --text-display-lg-lh:    31px;
+    --text-display-lg-size:     28px;
+    --text-display-lg-lh:       31px;
+
+    --text-display-xl-sm-size:  26px;
+    --text-display-xl-sm-lh:    29px;
 
     --text-heading-xl-size:  20px;
     --text-heading-xl-lh:    25px;
@@ -394,5 +427,9 @@
     font-size: 16px; /* base: tokens.json Primitives.fontSize.base */
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    /* Prevent horizontal scroll at any viewport width.
+       clip (not hidden) avoids creating a scroll container,
+       which keeps position:fixed elements (Nav) unaffected. */
+    overflow-x: clip;
   }
 }

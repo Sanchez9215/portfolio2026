@@ -1,0 +1,54 @@
+<svg width="240" height="225" viewBox="0 0 240 225" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M33 102L102 33" stroke="#FBFCFF" stroke-dasharray="6 6"/>
+<rect x="105" y="105" width="30" height="30" fill="#FFD53C"/>
+<rect x="125" y="112.5" width="5" height="5" fill="black"/>
+<rect x="130" y="120.5" width="2.5" height="5" fill="black"/>
+<rect x="125" y="125.5" width="5" height="2.5" fill="black"/>
+<rect x="120" y="125.5" width="5" height="2.5" fill="black"/>
+<rect x="115" y="125.5" width="5" height="2.5" fill="black"/>
+<rect x="110" y="125.5" width="5" height="2.5" fill="black"/>
+<rect x="107.5" y="120.5" width="2.5" height="5" fill="black"/>
+<rect x="110" y="112.5" width="5" height="5" fill="black"/>
+<rect x="105" y="195" width="30" height="30" fill="#FFD53C"/>
+<rect x="125" y="202.5" width="5" height="5" fill="black"/>
+<rect x="130" y="210.5" width="2.5" height="5" fill="black"/>
+<rect x="125" y="215.5" width="5" height="2.5" fill="black"/>
+<rect x="120" y="215.5" width="5" height="2.5" fill="black"/>
+<rect x="115" y="215.5" width="5" height="2.5" fill="black"/>
+<rect x="110" y="215.5" width="5" height="2.5" fill="black"/>
+<rect x="107.5" y="210.5" width="2.5" height="5" fill="black"/>
+<rect x="110" y="202.5" width="5" height="5" fill="black"/>
+<rect x="210" y="105" width="30" height="30" fill="#FFD53C"/>
+<rect x="230" y="112.5" width="5" height="5" fill="black"/>
+<rect x="235" y="120.5" width="2.5" height="5" fill="black"/>
+<rect x="230" y="125.5" width="5" height="2.5" fill="black"/>
+<rect x="225" y="125.5" width="5" height="2.5" fill="black"/>
+<rect x="220" y="125.5" width="5" height="2.5" fill="black"/>
+<rect x="215" y="125.5" width="5" height="2.5" fill="black"/>
+<rect x="212.5" y="120.5" width="2.5" height="5" fill="black"/>
+<rect x="215" y="112.5" width="5" height="5" fill="black"/>
+<rect y="105" width="30" height="30" fill="#FFD53C"/>
+<rect x="20" y="112.5" width="5" height="5" fill="black"/>
+<rect x="25" y="120.5" width="2.5" height="5" fill="black"/>
+<rect x="20" y="125.5" width="5" height="2.5" fill="black"/>
+<rect x="15" y="125.5" width="5" height="2.5" fill="black"/>
+<rect x="10" y="125.5" width="5" height="2.5" fill="black"/>
+<rect x="5" y="125.5" width="5" height="2.5" fill="black"/>
+<rect x="2.5" y="120.5" width="2.5" height="5" fill="black"/>
+<rect x="5" y="112.5" width="5" height="5" fill="black"/>
+<rect x="105" width="30" height="30" fill="#FFD53C"/>
+<rect x="125" y="7.5" width="5" height="5" fill="black"/>
+<rect x="130" y="15.5" width="2.5" height="5" fill="black"/>
+<rect x="125" y="20.5" width="5" height="2.5" fill="black"/>
+<rect x="120" y="20.5" width="5" height="2.5" fill="black"/>
+<rect x="115" y="20.5" width="5" height="2.5" fill="black"/>
+<rect x="110" y="20.5" width="5" height="2.5" fill="black"/>
+<rect x="107.5" y="15.5" width="2.5" height="5" fill="black"/>
+<rect x="110" y="7.5" width="5" height="5" fill="black"/>
+<path d="M138 33L207 102M120 36V99" stroke="#FBFCFF" stroke-dasharray="6 6"/>
+<path d="M120 141V189" stroke="#FBFCFF" stroke-dasharray="6 6"/>
+<path d="M141 120H207" stroke="#FBFCFF" stroke-dasharray="6 6"/>
+<path d="M36 120H102" stroke="#FBFCFF" stroke-dasharray="6 6"/>
+<path d="M33 138L102 192" stroke="#FBFCFF" stroke-dasharray="6 6"/>
+<path d="M207 138L138 192" stroke="#FBFCFF" stroke-dasharray="6 6"/>
+</svg>
