@@ -1,0 +1,40 @@
+<svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M60 10V60" stroke="#FFD53C" stroke-dasharray="3 3"/>
+<path d="M60 60V110" stroke="#FFD53C" stroke-dasharray="3 3"/>
+<path d="M60 60H110" stroke="#FFD53C" stroke-dasharray="3 3"/>
+<path d="M10 60H60" stroke="#FFD53C" stroke-dasharray="3 3"/>
+<path d="M60 10L10 60" stroke="#FFD53C" stroke-dasharray="3 3"/>
+<path d="M60 110L10 60" stroke="#FFD53C" stroke-dasharray="3 3"/>
+<path d="M110 60L60 10" stroke="#FFD53C" stroke-dasharray="3 3"/>
+<path d="M110 60L60 110" stroke="#FFD53C" stroke-dasharray="3 3"/>
+<path d="M50 0H70V20H50V0Z" fill="#FFD53C"/>
+<path d="M53 14H67V15.5H53V14Z" fill="black"/>
+<path d="M63.5 5H67V8.5H63.5V5Z" fill="black"/>
+<path d="M53 5H56.5V8.5H53V5Z" fill="black"/>
+<path d="M51.5 10.5H53V14H51.5V10.5Z" fill="black"/>
+<path d="M67 10.5H68.5V14H67V10.5Z" fill="black"/>
+<path d="M50 50H70V70H50V50Z" fill="#FFD53C"/>
+<path d="M53 64H67V65.5H53V64Z" fill="black"/>
+<path d="M63.5 55H67V58.5H63.5V55Z" fill="black"/>
+<path d="M53 55H56.5V58.5H53V55Z" fill="black"/>
+<path d="M51.5 60.5H53V64H51.5V60.5Z" fill="black"/>
+<path d="M67 60.5H68.5V64H67V60.5Z" fill="black"/>
+<path d="M50 100H70V120H50V100Z" fill="#FFD53C"/>
+<path d="M53 114H67V115.5H53V114Z" fill="black"/>
+<path d="M63.5 105H67V108.5H63.5V105Z" fill="black"/>
+<path d="M53 105H56.5V108.5H53V105Z" fill="black"/>
+<path d="M51.5 110.5H53V114H51.5V110.5Z" fill="black"/>
+<path d="M67 110.5H68.5V114H67V110.5Z" fill="black"/>
+<path d="M0 50H20V70H0V50Z" fill="#FFD53C"/>
+<path d="M3 64H17V65.5H3V64Z" fill="black"/>
+<path d="M13.5 55H17V58.5H13.5V55Z" fill="black"/>
+<path d="M3 55H6.5V58.5H3V55Z" fill="black"/>
+<path d="M1.5 60.5H3V64H1.5V60.5Z" fill="black"/>
+<path d="M17 60.5H18.5V64H17V60.5Z" fill="black"/>
+<path d="M100 50H120V70H100V50Z" fill="#FFD53C"/>
+<path d="M103 64H117V65.5H103V64Z" fill="black"/>
+<path d="M113.5 55H117V58.5H113.5V55Z" fill="black"/>
+<path d="M103 55H106.5V58.5H103V55Z" fill="black"/>
+<path d="M101.5 60.5H103V64H101.5V60.5Z" fill="black"/>
+<path d="M117 60.5H118.5V64H117V60.5Z" fill="black"/>
+</svg>

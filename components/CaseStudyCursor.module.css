@@ -1,0 +1,48 @@
+/* ============================================================
+   CaseStudyCursor — custom cursor pill for case study card hover
+   Tokens: action.primary.*, radius.pill, spacing.xl, icon.lg
+   ============================================================ */
+
+.cursor {
+  /* Fixed to viewport; follows mouse via inline left/top */
+  position:       fixed;
+  pointer-events: none;
+  z-index:        9999;
+
+  /* Offset so the pointer tip sits at the top-left of the pill */
+  transform: translate(12px, -50%);
+
+  /* Pill layout */
+  display:     inline-flex;
+  align-items: center;
+  gap:         0;
+
+  /* Padding: left = lg button horizontal pad, right = 20px, vertical = 0 */
+  padding: 0 20px 0 var(--spacing-xl);
+
+  background-color: var(--color-blue-500);
+  border:           var(--border-button) solid var(--color-blue-500);
+  border-radius:    var(--radius-pill);
+  color:            var(--text-primary);
+}
+
+/* ── Label ───────────────────────────────────────────────── */
+
+.label {
+  font-family:    var(--font-family-display);
+  font-weight:    var(--font-weight-semibold);
+  font-size:      var(--text-label-xl-size);
+  line-height:    var(--text-label-xl-lh);
+  letter-spacing: var(--text-label-xl-ls);
+  text-transform: uppercase;
+  white-space:    nowrap;
+}
+
+/* ── Icon ────────────────────────────────────────────────── */
+
+.icon {
+  width:       var(--icon-lg);
+  height:      var(--icon-lg);
+  flex-shrink: 0;
+  display:     block;
+}
