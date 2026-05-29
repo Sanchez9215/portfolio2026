@@ -5,7 +5,9 @@
    Layout:
      section.hero (flex-col, items-center)
        div.heroTopContent (flex-row, z-2)
-         h1.headline   ← "Specializing in [Data-rich] Environments."
+         div.headlineContainer (flex-col, gap-md) ← NEW wrapper
+           div.role        ← star · PRODUCT DESIGNER · star
+           h1.headline     ← "Specializing in [Data-rich] Environments."
          div.imgContainer (flex-1) ← hero image placeholder
        div.heroBottomContent (blue card, flex-row, space-between, z-1)
          div.buttonGroup ← primary + secondary buttons
@@ -25,8 +27,8 @@
   isolation: isolate;
   overflow-x: clip;
 
-  /* Figma section top padding (spacing-3xl = 64px) */
-  padding-top: var(--spacing-3xl);
+  /* Fill viewport below nav — 128px matches main's paddingTop in page.tsx */
+  height: calc(100dvh - 128px);
   padding-left: var(--spacing-xl);
   padding-right: var(--spacing-xl);
 }
@@ -35,10 +37,71 @@
 
 .heroTopContent {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   width: 100%;
   position: relative;
   z-index: 2;
+  flex: 0 0 auto;
+  height: 50%;
+  min-height: 0;
+}
+
+/* ── div.headlineContainer ────────────────────────────────── */
+/*
+ * Wraps the role row and the headline.
+ * Inherits the flex sizing + padding previously on h1.headline.
+ */
+
+.headlineContainer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md); /* 16px between role row and headline */
+  flex: 1 1 0;
+  min-width: 0;
+  padding: var(--spacing-xl);
+}
+
+/* ── div.role ─────────────────────────────────────────────── */
+
+.role {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--spacing-sm); /* 8px between stars and text */
+}
+
+/* ── img.roleStar ─────────────────────────────────────────── */
+
+.roleStar {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  /*
+   * No CSS transform here — GSAP owns all transforms on this element.
+   * Mixing a CSS-class transform with a GSAP inline transform causes the
+   * browser to apply both, corrupting the matrix and breaking x-offset.
+   */
+}
+
+/* ── span.roleText ────────────────────────────────────────── */
+
+.roleText {
+  /*
+   * display-sm — Clash Display, 16px (390px) → 20px (1920px).
+   * Tight display leading (1.10×) and -0.02em tracking match the display scale.
+   */
+  font-family: var(--font-family-display);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--text-display-md-size);
+  line-height: var(--text-display-md-lh);
+  letter-spacing: var(--text-display-md-ls);
+  text-transform: uppercase;
+  /* Fallback color for no-JS / pre-hydration. GSAP overrides with yellow then
+     transitions to the display color once the animation is complete. */
+  color: var(--text-display);
+  /* Initial clip state — GSAP animates inset(0 100% 0 0) → inset(0 0% 0 0) */
+  clip-path: inset(0 100% 0 0);
+  white-space: nowrap;
 }
 
 /* ── h1.headline ──────────────────────────────────────────── */
@@ -46,20 +109,35 @@
 .headline {
   font-family: var(--font-family-display);
   font-weight: var(--font-weight-bold);
-  font-size: var(--text-display-2xl-size);
-  line-height: var(--text-display-2xl-lh);
+  /*
+   * Fluid: 88px @ 1920px → 64px floor @ 768px, locked at 64px until 640px stack.
+   * Formula: clamp(min, 2.0833vw + 48px, max)
+   * At 1920px: 2.0833 × 19.2 + 48 = 88px  ✓
+   * At  768px: 2.0833 ×  7.68 + 48 = 64px  ✓ (hits floor)
+   */
+  font-size: clamp(64px, calc(2.0833vw + 48px), 88px);
+  line-height: 1.1;
   letter-spacing: var(--text-display-2xl-ls);
   text-transform: uppercase;
   color: var(--text-display);
-  flex: 1 1 0;
-  min-width: 0;
-  /* Aligns headline left edge with the button group inside heroBottomContent */
-  padding-left: var(--spacing-xl);
+  /*
+   * flex / min-width / padding moved up to .headlineContainer —
+   * h1 now fills the column naturally.
+   */
 }
 
 /* Each headline line is a fixed block — forces 3-line layout at every breakpoint */
 .headlineLine {
   display: block;
+}
+
+/*
+ * Middle line ("in Data-rich") never wraps — prevents a 4th line from forming.
+ * white-space: nowrap is safe above 640px; below that the column is full-width
+ * and the text fits comfortably at the 64px clamp floor.
+ */
+.headlineLine:nth-child(2) {
+  white-space: nowrap;
 }
 
 /* "Data-rich" accent word */
@@ -72,9 +150,24 @@
 .imgContainer {
   flex: 1 1 0;
   min-width: 0;
-  height: 329px;
-  padding: var(--spacing-xl);
+  height: 100%;
   position: relative;
+}
+
+/* ── div.heroBottomWrapper ────────────────────────────────── */
+
+/*
+ * GSAP animation target — no background, no padding, no border-radius.
+ * Pure height container. overflow:hidden ensures height:0 (set by GSAP on
+ * mount) fully hides everything inside including the blue card's padding.
+ */
+.heroBottomWrapper {
+  flex: 0 0 auto;
+  height: 50%;
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+  z-index: 1;
 }
 
 /* ── div.heroBottomContent ────────────────────────────────── */
@@ -93,9 +186,7 @@
   align-items: flex-start;
   justify-content: space-between;
   width: 100%;
-  flex-shrink: 0;
-  position: relative;
-  z-index: 1;
+  height: 100%;
 }
 
 /* ── div.buttonGroup ──────────────────────────────────────── */
@@ -112,8 +203,9 @@
 .heroSubline {
   font-family: var(--font-family-display);
   font-weight: var(--font-weight-bold);
-  font-size: var(--text-display-2xl-size);
-  line-height: var(--text-display-2xl-lh);
+  /* Same fluid clamp as .headline — the two are visually paired */
+  font-size: clamp(64px, calc(2.0833vw + 48px), 88px);
+  line-height: 1.1;
   letter-spacing: var(--text-display-2xl-ls);
   text-transform: uppercase;
   color: var(--text-dark-display);
@@ -125,45 +217,58 @@
   display: block;
 }
 
+/*
+ * Middle line ("High-Stakes") never wraps — keeps subline at exactly 3 lines.
+ */
+.sublineLine:nth-child(2) {
+  white-space: nowrap;
+}
+
 /* "High-Stakes" accent — --text-display (grey-500) at all breakpoints */
 .sublineHighlight {
   color: var(--text-display);
 }
 
 /* ============================================================
-   Stacked layout (≤ 1128 px)
-   Two-column at 72px type doesn't balance below this width —
-   headline stacks above image instead.
+   60/40 layout (≤ 1024 px)
+   As the viewport narrows from wide desktop, headline gets more
+   room for the large display type. 3:2 ratio = 60% / 40%.
    ============================================================ */
 
-@media (max-width: 1128px) {
+@media (max-width: 1024px) {
+  .headlineContainer {
+    flex: 3 1 0;
+  }
+
+  .imgContainer {
+    flex: 2 1 0;
+  }
+}
+
+/* ============================================================
+   67/33 layout (≤ 768 px) — still side-by-side
+   headlineContainer shrinks to 67% so the headline retains space.
+   heroBottomContent stacks here.
+   heroTopContent does NOT stack until 640px.
+   ============================================================ */
+
+@media (max-width: 768px) {
   /* Reduce horizontal padding from spacing-xl (32px) to spacing-md (16px) */
   .hero {
     padding-left: var(--spacing-md);
     padding-right: var(--spacing-md);
   }
 
-  /* Stack headline above image canvas instead of side-by-side */
-  .heroTopContent {
-    flex-direction: column;
-    gap: var(--spacing-lg);
+  /* headlineContainer → 67%, imgContainer → 33%  (2:1 ratio) */
+  .headlineContainer {
+    flex: 2 1 0;
   }
 
-  /* Step headline down from display-2xl (72px) to display-xl (64px) */
-  .headline {
-    font-size: var(--text-display-xl-size);
-    line-height: var(--text-display-xl-lh);
-    letter-spacing: var(--text-display-xl-ls);
-  }
-
-  /* Full-width canvas area; fixed height so BounceCanvas height:100% resolves */
   .imgContainer {
-    flex: none;
-    width: 100%;
-    height: 232px;
+    flex: 1 1 0;
   }
 
-  /* Stack buttons above subline; right-align both; symmetric radius-md (32px) */
+  /* heroBottomContent: stack buttons above subline; symmetric radius-md */
   .heroBottomContent {
     flex-direction: column;
     align-items: flex-end;
@@ -181,34 +286,27 @@
   .buttonGroup > * {
     flex: 1 0 0;
   }
-
-  /* Step subline down from display-2xl (72px) to display-xl (64px) */
-  .heroSubline {
-    font-size: var(--text-display-xl-size);
-    line-height: var(--text-display-xl-lh);
-    letter-spacing: var(--text-display-xl-ls);
-  }
 }
 
 /* ============================================================
-   Mid-size layout (≤ 640 px)
-   "ENVIRONMENTS." at display-xl (64px) overflows its single-
-   column container around this width — step down to display-xl-sm
-   (52px). Both headline and subline step together.
-   Fine-tune this breakpoint after visual inspection.
+   Stacked layout (≤ 640 px)
+   heroTopContent switches to column — imgContainer becomes
+   full-width above the headline. Font stays at the 64px clamp
+   floor from here until the 393px mobile override takes over.
    ============================================================ */
 
 @media (max-width: 640px) {
-  .headline {
-    font-size:      var(--text-display-xl-sm-size);
-    line-height:    var(--text-display-xl-sm-lh);
-    letter-spacing: var(--text-display-xl-sm-ls);
+  /* Stack headline container above image canvas */
+  .heroTopContent {
+    flex-direction: column;
+    gap: var(--spacing-lg);
   }
 
-  .heroSubline {
-    font-size:      var(--text-display-xl-sm-size);
-    line-height:    var(--text-display-xl-sm-lh);
-    letter-spacing: var(--text-display-xl-sm-ls);
+  /* Full-width canvas; fixed height so BounceCanvas height:100% resolves */
+  .imgContainer {
+    flex: none;
+    width: 100%;
+    height: 232px;
   }
 }
 
@@ -217,20 +315,29 @@
    ============================================================ */
 
 @media (max-width: 393px) {
-  /* Defensive: tablet already sets column; kept for resilience */
+  /* Defensive: stacked already starts at 640px; kept for resilience */
   .heroTopContent {
     flex-direction: column;
   }
 
-  /* Override tablet's display-xl back to display-2xl;
-     globals.css mobile block resolves --text-display-2xl-size to 40px / 44px.
-     padding-left steps down from spacing-xl to spacing-md to stay aligned
-     with heroBottomContent's reduced mobile padding. */
+  /*
+   * Step padding-left down from spacing-xl (32px) to spacing-md (16px)
+   * so the headline aligns with heroBottomContent's reduced mobile padding.
+   * (Previously on .headline; moved to .headlineContainer so the role row
+   * shares the same left edge.)
+   */
+  .headlineContainer {
+    padding-left: var(--spacing-md);
+  }
+
+  /*
+   * Override the hero clamp back to the display-2xl token — resolves to ~40px
+   * at 393px viewport. line-height token also restored so they track together.
+   */
   .headline {
     font-size: var(--text-display-2xl-size);
     line-height: var(--text-display-2xl-lh);
     letter-spacing: var(--text-display-2xl-ls);
-    padding-left: var(--spacing-md);
   }
 
   /* Full-width canvas with tighter padding */
@@ -241,16 +348,14 @@
 
   /* Asymmetric radius: sharp top-right, --radius-md (32px) on tl / br / bl —
      mirrors the desktop asymmetric pattern at a smaller radius.
-     Asymmetric padding: pt=md(16px), px=md(16px), pb=lg(24px).
-     gap: --spacing-lg corrects the previous wrong --spacing-xl override. */
+     Asymmetric padding: pt=md(16px), px=md(16px), pb=lg(24px). */
   .heroBottomContent {
     padding: var(--spacing-md) var(--spacing-md) var(--spacing-lg);
     gap: var(--spacing-lg);
     border-radius: var(--radius-md) 0 var(--radius-md) var(--radius-md);
   }
 
-  /* Override tablet's display-xl back to display-2xl (40px / 44px at mobile).
-     Right-aligned to match card's items-end — consistent across all breakpoints. */
+  /* Override clamp back to token — mirrors headline, right-aligned */
   .heroSubline {
     font-size: var(--text-display-2xl-size);
     line-height: var(--text-display-2xl-lh);

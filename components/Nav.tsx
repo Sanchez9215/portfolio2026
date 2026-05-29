@@ -69,14 +69,18 @@ export default function Nav() {
 
     // Lock nav to its natural (header-only) height as an explicit px value
     // so GSAP can interpolate from it.
+    // Natural height = top-pad + header + bottom-pad (no gap, wrapper at 0).
     collapsedHeight.current = navRef.current.offsetHeight
     gsap.set(navRef.current, { height: collapsedHeight.current })
 
-    // Prepare each item's label span: opacity-0 + y-offset ready for entrance.
+    // Ensure wrapper starts with no margin (defensive — CSS sets height:0,
+    // but GSAP needs marginTop at 0 for accurate close resets).
+    gsap.set(menuListRef.current, { marginTop: 0 })
+
+    // Prep each wrapper's label span: opacity-0 + y-offset ready for entrance.
     // The wrapper divs are already at opacity-0 via CSS (.menuItemWrapper).
     itemRefs.current.forEach(item => {
       if (!item) return
-      // spans[0] = label, spans[1] = icon (SVG has no <span> elements)
       const labelSpan = item.querySelectorAll('span')[0]
       if (labelSpan) gsap.set(labelSpan, { opacity: 0, y: 8 })
     })
@@ -96,6 +100,12 @@ export default function Nav() {
     // Easing: power2.inOut ≈ cubic-bezier(0.4, 0, 0.2, 1)
     const ease = 'power2.inOut'
 
+    // Gap between nav header and menu card — matches --spacing-md (16px).
+    // Set instantly (not animated) the moment the card starts revealing.
+    const gap = parseFloat(
+      getComputedStyle(document.documentElement).getPropertyValue('--spacing-md')
+    )
+
     const tl = gsap.timeline()
     tlRef.current = tl
 
@@ -106,24 +116,23 @@ export default function Nav() {
       ease,
     })
 
-    // Step 2 — Menu-list card reveals top-to-bottom via clip-path
-    // 48px = --radius-lg = var(--border-radius-lg); hardcoded here for GSAP string
-    .to(menuListRef.current, {
-      clipPath: 'inset(0 0 0% 0 round 48px)',
+    // Gap pops in instantly at the start of Step 2 — no animation, just appears.
+    tl.set(menuListRef.current, { marginTop: gap })
+
+    // Step 2 — Wrapper grows downward from height: 0 → auto, revealing the card
+    tl.to(menuListRef.current, {
+      height: 'auto',
       duration: durOverlay,
       ease,
     })
 
-    // Step 3 — Each MenuItem staggers in: border first, then label
+    // Step 3 — Each MenuItem staggers in: border first, then label slides up
     itemRefs.current.forEach((item, i) => {
       if (!item) return
-
-      // first span inside the wrapper = label (not icon)
       const labelSpan = item.querySelectorAll('span')[0] as HTMLElement | undefined
-      // Absolute position in the timeline (after expand + overlay + delay)
       const t = durExpand + durOverlay + delayItems + i * stagger
 
-      // Border appears: wrapper goes opacity 0 → 1 (label is still opacity-0)
+      // Border appears: wrapper opacity 0 → 1
       tl.to(item, { opacity: 1, duration: 0.12, ease: 'none' }, t)
 
       // Label fades up 50ms after border
@@ -141,17 +150,17 @@ export default function Nav() {
   const handleClose = () => {
     tlRef.current?.kill()
 
+    // Revert button to Menu/outline immediately — don't wait for animation to finish
+    setIsOpen(false)
+
     gsap.to(navRef.current, {
       height: collapsedHeight.current,
       duration: readMs('--motion-duration-nav-expand'),
       ease: 'power2.inOut',
       onComplete: () => {
-        setIsOpen(false)
-        // Reset menu-list clip-path and item states for next open
+        // Reset wrapper states for next open — height and gap margin both to 0
         if (menuListRef.current) {
-          gsap.set(menuListRef.current, {
-            clipPath: 'inset(0 0 100% 0 round 48px)',
-          })
+          gsap.set(menuListRef.current, { height: 0, marginTop: 0 })
         }
         itemRefs.current.forEach(item => {
           if (!item) return
@@ -169,7 +178,7 @@ export default function Nav() {
   return (
     <nav
       ref={navRef}
-      className={styles.nav}
+      className={[styles.nav, isOpen ? styles.open : ''].filter(Boolean).join(' ')}
       aria-label="Main navigation"
     >
       {/* ── Header (always visible) ─────────────────────────── */}
@@ -178,19 +187,28 @@ export default function Nav() {
         {/* div.brand — logo + name + title */}
         <div className={styles.brand}>
           <span className={styles.logoWrapper} aria-hidden="true">
-            {/* Logo mark — public/icons/icon.svg (added by user) */}
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/icons/icon.svg"
-              alt=""
+            <svg
+              width="64"
+              height="64"
+              viewBox="0 0 64 64"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
               className={styles.logoIcon}
-            />
+            >
+              <path d="M8 8H56V56H8V8Z" fill="currentColor"/>
+              <path d="M39.9992 20H47.9992V28H39.9992V20Z" fill="#0B0B0D"/>
+              <path d="M48.0008 32.8016H52.0008V40.8016H48.0008V32.8016Z" fill="#0B0B0D"/>
+              <path d="M39.9992 40.7984H47.9992V44.7984H39.9992V40.7984Z" fill="#0B0B0D"/>
+              <path d="M32 40.7984H40V44.7984H32V40.7984Z" fill="#0B0B0D"/>
+              <path d="M24.0008 40.7984H32.0008V44.7984H24.0008V40.7984Z" fill="#0B0B0D"/>
+              <path d="M15.9992 40.7984H23.9992V44.7984H15.9992V40.7984Z" fill="#0B0B0D"/>
+              <path d="M12.0008 32.8016H16.0008V40.8016H12.0008V32.8016Z" fill="#0B0B0D"/>
+              <path d="M15.9992 20H23.9992V28H15.9992V20Z" fill="#0B0B0D"/>
+            </svg>
           </span>
           <div className={styles.designerDetails}>
-            {/* --text-primary (grey-50) — decision 1A */}
-            <p className={styles.designerName}>Edgar Sanchez</p>
-            {/* --nav-link-text (grey-600) — decision 2A */}
-            <p className={styles.designerTitle}>Product Designer</p>
+            <p className={styles.designerName}>Edgar</p>
+            <p className={styles.designerTitle}>Sanchez</p>
           </div>
         </div>
 
@@ -206,25 +224,35 @@ export default function Nav() {
       </div>
 
       {/* ── Menu list (hidden when closed) ──────────────────── */}
+      {/*
+        Outer wrapper: GSAP animation target. height 0→auto on open,
+        marginTop snaps to --spacing-md at the start of the reveal.
+        overflow:hidden fully clips the inner card at height:0.
+      */}
       <div
         ref={menuListRef}
-        id="nav-menu"
-        className={styles.menuList}
-        aria-hidden={!isOpen}
+        className={styles.menuListWrapper}
       >
-        {NAV_LINKS.map((link, i) => (
-          <div
-            key={link.href}
-            ref={el => { itemRefs.current[i] = el }}
-            className={styles.menuItemWrapper}
-          >
-            {/*
-              MenuItem uses <a href>. For proper Next.js client-side routing,
-              MenuItem could be updated to use <Link> — deferred to a future pass.
-            */}
-            <MenuItem href={link.href} label={link.label} />
-          </div>
-        ))}
+        {/* Inner card: styled surface — no height animation here */}
+        <div
+          id="nav-menu"
+          className={styles.menuList}
+          aria-hidden={!isOpen}
+        >
+          {NAV_LINKS.map((link, i) => (
+            <div
+              key={link.href}
+              ref={el => { itemRefs.current[i] = el }}
+              className={styles.menuItemWrapper}
+            >
+              {/*
+                MenuItem uses <a href>. For proper Next.js client-side routing,
+                MenuItem could be updated to use <Link> — deferred to a future pass.
+              */}
+              <MenuItem href={link.href} label={link.label} />
+            </div>
+          ))}
+        </div>
       </div>
     </nav>
   )

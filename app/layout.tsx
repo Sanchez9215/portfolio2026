@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "../styles/globals.css";
+import CaseStudyCursor from "@/components/CaseStudyCursor";
 
 export const metadata: Metadata = {
   title: "Edgar Sanchez — Product Designer",
@@ -22,6 +23,7 @@ export default function RootLayout({
       */}
       <body className="font-body bg-surface-base text-primary antialiased">
         {children}
+        <CaseStudyCursor />
       </body>
     </html>
   );

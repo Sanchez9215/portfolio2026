@@ -63,6 +63,15 @@
   font-display: swap;
 }
 
+/* Upheaval TT */
+@font-face {
+  font-family: 'Upheaval';
+  src: url('/fonts/upheaval/upheavtt.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* ============================================================
    DESIGN TOKENS — Source: design-system/tokens.json
    All values expressed as CSS custom properties.
@@ -119,8 +128,9 @@
      PRIMITIVES — Typography
      ---------------------------------------------------------- */
 
-  --font-family-display: 'Clash Display', system-ui, sans-serif;
-  --font-family-body:    'Cabinet Grotesk', system-ui, sans-serif;
+  --font-family-display:  'Clash Display', system-ui, sans-serif;
+  --font-family-body:     'Cabinet Grotesk', system-ui, sans-serif;
+  --font-family-upheaval: 'Upheaval', system-ui, sans-serif;
 
   --font-weight-regular:  400;
   --font-weight-semibold: 600;
@@ -221,11 +231,12 @@
      SEMANTIC — Text
      ---------------------------------------------------------- */
 
-  --text-primary:      var(--color-grey-50);
-  --text-secondary:    var(--color-grey-600);
-  --text-accent:       var(--color-blue-500);
-  --text-display:      var(--color-grey-500);
-  --text-dark-display: var(--color-grey-1100);
+  --text-primary:            var(--color-grey-50);
+  --text-secondary:          var(--color-grey-600);
+  --text-accent:             var(--color-blue-500);
+  --text-display:            var(--color-grey-500);
+  --text-dark-display:       var(--color-grey-1100);
+  --text-case-study-hover:   var(--color-yellow-500);
 
   /* ----------------------------------------------------------
      SEMANTIC — Border
@@ -284,136 +295,104 @@
   --motion-easing-nav-items:     cubic-bezier(0.4, 0, 0.2, 1);
 
   /* ----------------------------------------------------------
-     TYPOGRAPHY SCALE — Desktop (default)
-     Responsive/Desktop token set
+     TYPOGRAPHY SCALE — Fluid
+     Viewport range: 390px (min) → 1920px (max)
+     Formula per token: clamp(min, intercept + slope·vw, max)
+       slope  = (max − min) / (1920 − 390) × 100
+       intercept = min − slope/100 × 390
+     Line-heights clamp in parallel with the same min/max anchors
+     so proportions hold at every viewport width.
+     Body and static label tokens are unchanged (no clamp).
      ---------------------------------------------------------- */
 
-  /* display-2xl */
-  --text-display-2xl-size:    72px;
-  --text-display-2xl-lh:      79px;
+  /* display-2xl  390→1920: 40→90px  /  lh 44→99px */
+  --text-display-2xl-size:    clamp(40px, 27.25px + 3.27vw, 90px);
+  --text-display-2xl-lh:      clamp(44px, 29.98px + 3.59vw, 99px);
   --text-display-2xl-ls:      -0.02em;
 
-  /* display-xl */
-  --text-display-xl-size:     64px;
-  --text-display-xl-lh:       70px;
+  /* display-xl   390→1920: 32→64px  /  lh 35→70px */
+  --text-display-xl-size:     clamp(32px, 23.84px + 2.09vw, 64px);
+  --text-display-xl-lh:       clamp(35px, 26.08px + 2.29vw, 70px);
   --text-display-xl-ls:       -0.02em;
 
-  /* display-lg */
-  --text-display-lg-size:     48px;
-  --text-display-lg-lh:       53px;
+  /* display-lg   390→1920: 28→48px  /  lh 31→53px */
+  --text-display-lg-size:     clamp(28px, 22.90px + 1.31vw, 48px);
+  --text-display-lg-lh:       clamp(31px, 25.39px + 1.44vw, 53px);
   --text-display-lg-ls:       -0.02em;
 
-  /* display-xl-sm — 52px mid step between display-xl (64px) and display-lg (48px) */
-  --text-display-xl-sm-size:  52px;
-  --text-display-xl-sm-lh:    57px;
+  /* display-md   390→1920: 18→24px  /  lh 20→26px */
+  --text-display-md-size:     clamp(18px, 16.47px + 0.39vw, 24px);
+  --text-display-md-lh:       clamp(20px, 18.47px + 0.39vw, 26px);
+  --text-display-md-ls:       -0.02em;
+
+  /* display-sm   390→1920: 16→20px  /  lh 18→22px */
+  --text-display-sm-size:     clamp(16px, 14.98px + 0.26vw, 20px);
+  --text-display-sm-lh:       clamp(18px, 16.98px + 0.26vw, 22px);
+  --text-display-sm-ls:       -0.02em;
+
+  /* display-xl-sm  390→1920: 26→52px  /  lh 29→57px */
+  --text-display-xl-sm-size:  clamp(26px, 19.37px + 1.70vw, 52px);
+  --text-display-xl-sm-lh:    clamp(29px, 21.86px + 1.83vw, 57px);
   --text-display-xl-sm-ls:    -0.02em;
 
-  /* heading-xl */
-  --text-heading-xl-size:     32px;
-  --text-heading-xl-lh:       40px;
+  /* heading-xl   390→1920: 20→32px  /  lh 25→40px */
+  --text-heading-xl-size:     clamp(20px, 16.94px + 0.78vw, 32px);
+  --text-heading-xl-lh:       clamp(25px, 21.18px + 0.98vw, 40px);
   --text-heading-xl-ls:       -0.01em;
 
-  /* heading-lg */
-  --text-heading-lg-size:     24px;
-  --text-heading-lg-lh:       30px;
+  /* heading-lg   390→1920: 18→24px  /  lh 22→30px */
+  --text-heading-lg-size:     clamp(18px, 16.47px + 0.39vw, 24px);
+  --text-heading-lg-lh:       clamp(22px, 19.96px + 0.52vw, 30px);
   --text-heading-lg-ls:       -0.01em;
 
-  /* heading-md */
-  --text-heading-md-size:     18px;
-  --text-heading-md-lh:       22px;
+  /* heading-md   390→1920: 16→18px  /  lh 20→22px */
+  --text-heading-md-size:     clamp(16px, 15.49px + 0.13vw, 18px);
+  --text-heading-md-lh:       clamp(20px, 19.49px + 0.13vw, 22px);
   --text-heading-md-ls:       -0.01em;
 
-  /* heading-sm */
-  --text-heading-sm-size:     16px;
-  --text-heading-sm-lh:       20px;
+  /* heading-sm   390→1920: 14→16px  /  lh 17→20px */
+  --text-heading-sm-size:     clamp(14px, 13.49px + 0.13vw, 16px);
+  --text-heading-sm-lh:       clamp(17px, 16.24px + 0.20vw, 20px);
   --text-heading-sm-ls:       -0.01em;
 
-  /* heading-xs */
-  --text-heading-xs-size:     14px;
-  --text-heading-xs-lh:       17px;
+  /* heading-xs   390→1920: 12→14px  /  lh 15→17px */
+  --text-heading-xs-size:     clamp(12px, 11.49px + 0.13vw, 14px);
+  --text-heading-xs-lh:       clamp(15px, 14.49px + 0.13vw, 17px);
   --text-heading-xs-ls:       -0.01em;
 
-  /* body-lg */
+  /* body — static, no clamp */
   --text-body-lg-size:        16px;
   --text-body-lg-lh:          24px;
   --text-body-lg-ls:          0;
 
-  /* body-md */
   --text-body-md-size:        14px;
   --text-body-md-lh:          21px;
   --text-body-md-ls:          0;
 
-  /* body-sm */
   --text-body-sm-size:        12px;
   --text-body-sm-lh:          18px;
   --text-body-sm-ls:          0;
 
-  /* label-2xl */
-  --text-label-2xl-size:      40px;
-  --text-label-2xl-lh:        44px;
+  /* label-2xl   390→1920: 24→40px  /  lh 26→44px */
+  --text-label-2xl-size:      clamp(24px, 19.92px + 1.05vw, 40px);
+  --text-label-2xl-lh:        clamp(26px, 21.41px + 1.18vw, 44px);
   --text-label-2xl-ls:        0;
 
-  /* label-xl */
-  --text-label-xl-size:       24px;
-  --text-label-xl-lh:         30px;
+  /* label-xl    390→1920: 18→24px  /  lh 22→30px */
+  --text-label-xl-size:       clamp(18px, 16.47px + 0.39vw, 24px);
+  --text-label-xl-lh:         clamp(22px, 19.96px + 0.52vw, 30px);
   --text-label-xl-ls:         0;
 
-  /* label-md */
+  /* label-md / label-sm — static, no clamp */
   --text-label-md-size:       16px;
   --text-label-md-lh:         24px;
   --text-label-md-ls:         0;
 
-  /* label-sm */
   --text-label-sm-size:       14px;
   --text-label-sm-lh:         21px;
   --text-label-sm-ls:         0;
 }
 
-/* ----------------------------------------------------------
-   TYPOGRAPHY SCALE — Mobile overrides
-   Responsive/Mobile token set (max-width: 393px)
-   ---------------------------------------------------------- */
-
-@media (max-width: 393px) {
-  :root {
-    --text-display-2xl-size: 40px;
-    --text-display-2xl-lh:   44px;
-
-    --text-display-xl-size:  32px;
-    --text-display-xl-lh:    35px;
-
-    --text-display-lg-size:     28px;
-    --text-display-lg-lh:       31px;
-
-    --text-display-xl-sm-size:  26px;
-    --text-display-xl-sm-lh:    29px;
-
-    --text-heading-xl-size:  20px;
-    --text-heading-xl-lh:    25px;
-
-    --text-heading-lg-size:  18px;
-    --text-heading-lg-lh:    22px;
-
-    --text-heading-md-size:  16px;
-    --text-heading-md-lh:    20px;
-
-    --text-heading-sm-size:  14px;
-    --text-heading-sm-lh:    17px;
-
-    --text-heading-xs-size:  12px;
-    --text-heading-xs-lh:    15px;
-
-    /* body sizes are unchanged between breakpoints */
-
-    --text-label-2xl-size:   24px;
-    --text-label-2xl-lh:     26px;
-
-    --text-label-xl-size:    18px;
-    --text-label-xl-lh:      22px;
-
-    /* label-md and label-sm unchanged */
-  }
-}
 
 /* ----------------------------------------------------------
    BASE LAYER — global resets scoped to the token system

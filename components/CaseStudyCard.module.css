@@ -28,51 +28,57 @@
 /* ── a.card ────────────────────────────────────────────────── */
 
 .card {
-  display:          flex;
-  flex-direction:   column;
+  display: flex;
+  flex-direction: column;
   /* 64px gap between cardHeader and cardContent — Figma desktop spec */
-  gap:              var(--spacing-3xl);
-  width:            100%;
+  gap: var(--spacing-xl);
+  width: 100%;
   background-color: var(--surface-card);
-  border:           var(--border-card) solid var(--surface-card-border);
-  border-radius:    var(--radius-lg);
-  overflow:         hidden;
-  text-decoration:  none;
-  cursor:           pointer;
-  transition:       border-color 200ms ease;
+  border: var(--border-card) solid var(--surface-card-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  text-decoration: none;
+  cursor: pointer;
+  transition: border-color 200ms ease;
 }
 
 .card:hover {
   border-color: var(--surface-card-border-hover);
+  cursor: none;
 }
 
 /* ── div.cardHeader ────────────────────────────────────────── */
 
 .cardHeader {
-  display:         flex;
-  align-items:     flex-start;
+  display: flex;
+  align-items: flex-start;
   justify-content: space-between;
-  width:           100%;
+  width: 100%;
 }
 
 /* ── div.titleWrapper ──────────────────────────────────────── */
 
 .titleWrapper {
-  flex:    1 1 0;
+  flex: 1 1 0;
   padding: var(--spacing-xl);
 }
 
 /* ── h2.title ──────────────────────────────────────────────── */
 
 .title {
-  font-family:    var(--font-family-display);
-  font-weight:    var(--font-weight-bold);
-  font-size:      var(--text-display-xl-size);
-  line-height:    var(--text-display-xl-lh);
+  font-family: var(--font-family-display);
+  font-weight: var(--font-weight-bold);
+  font-size: var(--text-display-xl-size);
+  line-height: var(--text-display-xl-lh);
   letter-spacing: var(--text-display-xl-ls);
   text-transform: uppercase;
-  color:          var(--text-display);
-  margin:         0;
+  color: var(--text-display);
+  margin: 0;
+  transition: color 200ms ease;
+}
+
+.card:hover .title {
+  color: var(--text-case-study-hover);
 }
 
 /* ── div.overview ──────────────────────────────────────────── */
@@ -81,33 +87,38 @@
    align-self: stretch ensures it fills the full cardHeader height
    even when the title is taller. */
 .overview {
-  display:        flex;
+  display: flex;
   flex-direction: column;
-  gap:            var(--spacing-md);
-  padding:        var(--spacing-xl);
-  width:          436px;
-  flex-shrink:    0;
-  align-self:     stretch;
+  gap: var(--spacing-md);
+  padding: var(--spacing-xl);
+  width: 436px;
+  flex-shrink: 0;
+  align-self: stretch;
+  background-color: var(--surface-card-border);
+  border-radius: 0 0 0 var(--radius-lg);
 }
 
 /* ── div.overviewContent ───────────────────────────────────── */
 
 .overviewContent {
-  display:        flex;
+  display: flex;
   flex-direction: column;
+  row-gap: var(--spacing-sm);
 }
 
 /* ── p.sectionLabel ────────────────────────────────────────── */
 
 /* Figma h7: Cabinet Grotesk bold 16px/20px uppercase — mapped to heading-sm */
 .sectionLabel {
-  font-family:    var(--font-family-body);
-  font-weight:    var(--font-weight-bold);
-  font-size:      var(--text-heading-sm-size);
-  line-height:    var(--text-heading-sm-lh);
+  font-family: var(--font-family-display);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--text-heading-sm-size);
+  line-height: var(--text-heading-sm-lh);
+  letter-spacing: var(--text-heading-sm-ls);
   text-transform: uppercase;
-  color:          var(--text-secondary);
-  margin:         0;
+  color: var(--text-primary);
+  margin: 0;
+  word-spacing: 20%;
 }
 
 /* ── p.description ─────────────────────────────────────────── */
@@ -115,45 +126,45 @@
 .description {
   font-family: var(--font-family-body);
   font-weight: var(--font-weight-regular);
-  font-size:   var(--text-body-lg-size);
+  font-size: var(--text-body-lg-size);
   line-height: var(--text-body-lg-lh);
-  color:       var(--text-secondary);
-  margin:      0;
+  color: var(--text-secondary);
+  margin: 0;
 }
 
 /* ── div.metaGroup ─────────────────────────────────────────── */
 
 .metaGroup {
   display: flex;
-  gap:     var(--spacing-md);
+  gap: var(--spacing-md);
 }
 
 /* ── div.metaItem ──────────────────────────────────────────── */
 
 /* Figma: first item pr-8, second item px-8. Implemented via adjacent sibling. */
 .metaItem {
-  display:        flex;
+  display: flex;
   flex-direction: column;
-  padding-right:  var(--spacing-sm);
+  padding-right: var(--spacing-sm);
 }
 
 .metaItem + .metaItem {
   padding-right: var(--spacing-sm);
-  padding-left:  var(--spacing-sm);
+  padding-left: var(--spacing-sm);
 }
 
 /* ── p.metaLabel ───────────────────────────────────────────── */
 
 /* Figma caption/h8: Cabinet Grotesk bold 12px uppercase */
 .metaLabel {
-  font-family:    var(--font-family-body);
-  font-weight:    var(--font-weight-bold);
-  font-size:      var(--text-body-sm-size);
-  line-height:    var(--text-body-sm-lh);
+  font-family: var(--font-family-body);
+  font-weight: var(--font-weight-bold);
+  font-size: var(--text-body-sm-size);
+  line-height: var(--text-body-sm-lh);
   text-transform: uppercase;
-  color:          var(--text-secondary);
-  white-space:    nowrap;
-  margin:         0;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  margin: 0;
 }
 
 /* ── p.metaValue ───────────────────────────────────────────── */
@@ -162,20 +173,20 @@
 .metaValue {
   font-family: var(--font-family-body);
   font-weight: var(--font-weight-regular);
-  font-size:   var(--text-body-sm-size);
+  font-size: var(--text-body-sm-size);
   line-height: var(--text-body-sm-lh);
-  color:       var(--text-secondary);
+  color: var(--text-secondary);
   white-space: nowrap;
-  margin:      0;
+  margin: 0;
 }
 
 /* ── div.cardContent ───────────────────────────────────────── */
 
 /* pl-32 from Figma. gap-64 between impactList and imgContainer. */
 .cardContent {
-  display:      flex;
-  align-items:  stretch;
-  gap:          var(--spacing-3xl);
+  display: flex;
+  align-items: stretch;
+  gap: var(--spacing-3xl);
   padding-left: var(--spacing-xl);
 }
 
@@ -183,37 +194,39 @@
 
 /* Fixed 432px wide column. overflow+radius clips any runaway content. */
 .impactList {
-  display:        flex;
+  display: flex;
   flex-direction: column;
-  gap:            var(--spacing-2xl);
-  padding:        var(--spacing-xl) var(--spacing-md);
-  width:          432px;
-  flex-shrink:    0;
-  list-style:     none;
-  margin:         0;
-  border-radius:  var(--radius-default);
-  overflow:       hidden;
+  gap: var(--spacing-2xl);
+  padding: var(--spacing-xl) var(--spacing-md);
+  width: 432px;
+  flex-shrink: 0;
+  list-style: none;
+  margin: 0;
+  border-radius: var(--radius-default);
+  overflow: hidden;
 }
 
 /* ── li.impactPoint ────────────────────────────────────────── */
 
 .impactPoint {
-  display:        flex;
+  display: flex;
   flex-direction: column;
-  gap:            var(--spacing-sm);
+  gap: var(--spacing-sm);
 }
 
 /* ── p.impactHeading ───────────────────────────────────────── */
 
 /* Figma h6 desktop: Cabinet Grotesk bold 18px uppercase white (#FFFFFF → --text-primary) */
 .impactHeading {
-  font-family:    var(--font-family-body);
-  font-weight:    var(--font-weight-bold);
-  font-size:      var(--text-heading-md-size);
-  line-height:    var(--text-heading-md-lh);
+  font-family: var(--font-family-display);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--text-heading-sm-size);
+  line-height: var(--text-heading-md-lh);
+  letter-spacing: var(--text-heading-sm-ls);
   text-transform: uppercase;
-  color:          var(--text-primary);
-  margin:         0;
+  color: var(--text-primary);
+  margin: 0;
+  word-spacing: 20%;
 }
 
 /* ── p.impactBody ──────────────────────────────────────────── */
@@ -222,10 +235,10 @@
 .impactBody {
   font-family: var(--font-family-body);
   font-weight: var(--font-weight-regular);
-  font-size:   var(--text-body-lg-size);
+  font-size: var(--text-body-lg-size);
   line-height: var(--text-body-lg-lh);
-  color:       var(--text-secondary);
-  margin:      0;
+  color: var(--text-secondary);
+  margin: 0;
 }
 
 /* ── div.imgContainer ──────────────────────────────────────── */
@@ -234,20 +247,20 @@
    border-radius: tl+br = --radius-lg (48px); tr+bl = 0 — Figma desktop spec.
    min-height prevents the container from collapsing when no image is present. */
 .imgContainer {
-  flex:             1 1 auto;
-  min-height:       320px;
+  flex: 1 1 auto;
+  min-height: 320px;
   background-color: var(--surface-base);
-  border-radius:    var(--radius-lg) 0 var(--radius-lg) 0;
-  overflow:         hidden;
-  position:         relative;
+  border-radius: var(--radius-lg) 0 var(--radius-lg) 0;
+  overflow: hidden;
+  position: relative;
 }
 
 /* ── img ───────────────────────────────────────────────────── */
 
 .img {
-  display:    block;
-  width:      100%;
-  height:     100%;
+  display: block;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
 }
 
@@ -258,7 +271,6 @@
    ============================================================ */
 
 @media (max-width: 768px) {
-
   /* Remove desktop gap; vertical spacing comes from section padding */
   .card {
     gap: 0;
@@ -271,50 +283,50 @@
 
   /* Title: full width; bottom padding steps down to spacing-md */
   .titleWrapper {
-    flex:    none;
-    width:   100%;
+    flex: none;
+    width: 100%;
     padding: var(--spacing-xl) var(--spacing-xl) var(--spacing-md);
   }
 
   /* Overview: full width; vertical padding steps down to spacing-md */
   .overview {
-    width:      100%;
+    width: 100%;
     align-self: auto;
-    padding:    var(--spacing-md) var(--spacing-xl);
+    padding: var(--spacing-md) var(--spacing-xl);
   }
 
   /* Content stacks; imgContainer will reorder to top */
   .cardContent {
     flex-direction: column;
-    align-items:    stretch;
-    padding-left:   0;
-    gap:            0;
+    align-items: stretch;
+    padding-left: 0;
+    gap: 0;
   }
 
   /* imgContainer: moves to top, full width, fixed 320px height — Figma mobile spec.
      tl+br radius steps down to --radius-md (32px). */
   .imgContainer {
-    order:         -1;
-    flex:          none;
-    width:         100%;
-    height:        320px;
-    min-height:    0;
+    order: -1;
+    flex: none;
+    width: 100%;
+    height: 320px;
+    min-height: 0;
     border-radius: var(--radius-md) 0 var(--radius-md) 0;
   }
 
   /* Impact list: full width, tighter gap, uniform padding */
   .impactList {
-    width:         100%;
-    flex-shrink:   1;
-    gap:           var(--spacing-xl);
-    padding:       var(--spacing-xl);
+    width: 100%;
+    flex-shrink: 1;
+    gap: var(--spacing-xl);
+    padding: var(--spacing-xl);
     border-radius: 0;
-    overflow:      visible;
+    overflow: visible;
   }
 
   /* Impact heading steps down to heading-sm at mobile */
   .impactHeading {
-    font-size:   var(--text-heading-sm-size);
+    font-size: var(--text-heading-sm-size);
     line-height: var(--text-heading-sm-lh);
   }
 }

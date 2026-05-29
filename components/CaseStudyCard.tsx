@@ -64,14 +64,21 @@ export default function CaseStudyCard({
   className = '',
 }: CaseStudyCardProps) {
   return (
-    <a href={href} className={[styles.card, className].filter(Boolean).join(' ')}>
+    <a href={href} className={[styles.card, className].filter(Boolean).join(' ')} data-case-study-card>
 
       {/* ── Card header: title + overview ─────────────────────── */}
       <div className={styles.cardHeader}>
 
-        {/* Case study title */}
+        {/* Case study title — split on \n to support intentional line breaks */}
         <div className={styles.titleWrapper}>
-          <h2 className={styles.title}>{title}</h2>
+          <h2 className={styles.title}>
+            {title.split('\n').map((line, i, arr) => (
+              <span key={i}>
+                {line}
+                {i < arr.length - 1 && <br />}
+              </span>
+            ))}
+          </h2>
         </div>
 
         {/* Overview: category label, description copy, metadata */}

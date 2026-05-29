@@ -9,12 +9,23 @@
   overflow:  hidden;
 }
 
+/* Pellet canvas — sits behind the SVG, never captures pointer events */
+.pelletCanvas {
+  position:       absolute;
+  top:            0;
+  left:           0;
+  width:          100%;
+  height:         100%;
+  pointer-events: none;
+  /* Stacks below .svg via DOM order — no z-index needed */
+}
+
 .svg {
-  position:        absolute;
-  top:             0;
-  left:            0;
-  cursor:          grab;
-  user-select:     none;
+  position:          absolute;
+  top:               0;
+  left:              0;
+  cursor:            grab;
+  user-select:       none;
   /* prevent default drag ghost */
   -webkit-user-drag: none;
 }

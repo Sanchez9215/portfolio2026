@@ -21,21 +21,37 @@
   left: 0;
   right: 0;
   z-index: var(--z-nav);
-  background-color: var(--nav-bg);
+  background-color: var(--surface-base);
   overflow: hidden;
 
-  /* Flex column: header shrinks to content, menu-list fills remainder */
+  /* Flex column: header shrinks to content */
   display: flex;
   flex-direction: column;
 
-  /* nav outer padding: py=spacing-xl (32px), px=spacing-nav-padding (16px) */
-  padding: var(--spacing-xl) var(--spacing-nav-padding);
+  /* nav outer padding: py=spacing-md (16px), px=spacing-nav-padding (16px) */
+  padding: var(--spacing-md) var(--spacing-nav-padding);
 
-  /* Spacing between header and menu-list card */
-  gap: var(--spacing-xl);
+  /*
+   * No gap here — gap between header and menu card is managed by GSAP as
+   * marginTop on .menuListWrapper. At 0 when collapsed, 16px (--spacing-md)
+   * the instant the card starts revealing on open. This keeps collapsed height
+   * flush to: top-pad + header + bottom-pad (no phantom gap space).
+   *
+   * Collapsed height — GSAP reads offsetHeight on mount and locks it as an
+   * explicit px value so it can interpolate during expand/collapse.
+   */
 
-  /* Collapsed height — GSAP reads this via offsetHeight on mount and animates from it */
-  height: 128px;
+  transition: background-color 200ms ease;
+}
+
+/* Hover only when collapsed */
+.nav:not(.open):hover {
+  background-color: var(--surface-card);
+}
+
+/* Expanded state — hold surface-card for the full overlay */
+.nav.open {
+  background-color: var(--surface-card);
 }
 
 /* ── div.nav-header ───────────────────────────────────────── */
@@ -55,7 +71,7 @@
 .brand {
   display: flex;
   align-items: center;
-  gap: var(--spacing-md);
+  gap: var(--spacing-sm);
 }
 
 /* icon wrapper (logo mark) */
@@ -68,67 +84,71 @@
 
 .logoIcon {
   display: block;
-  width: var(--icon-2xl);   /* 64px */
-  height: var(--icon-2xl);
+  width: var(--icon-xl); /* 48px */
+  height: var(--icon-xl);
+  color: var(--text-primary);
 }
 
 /* div.designerDetails */
 .designerDetails {
   display: flex;
   flex-direction: column;
-  /* Both lines are uppercase (Figma: uppercase on container) */
-  text-transform: uppercase;
 }
 
-/* "Edgar Sanchez" — label-md: Clash Display semibold, uppercase */
-/* Color: --text-primary (grey-50) — decision 1A */
+/* "Edgar" — Upheaval 24px/20px, uppercase, text-primary */
 .designerName {
-  font-family:    var(--font-family-display);
-  font-weight:    var(--font-weight-semibold);
-  font-size:      var(--text-label-md-size);
-  line-height:    var(--text-label-md-lh);
-  letter-spacing: var(--text-label-md-ls);
-  color:          var(--text-primary);
-  white-space:    nowrap;
+  font-family: var(--font-family-upheaval);
+  font-weight: 400;
+  font-size: 24px;
+  line-height: 20px;
+  text-transform: uppercase;
+  color: var(--text-primary);
+  white-space: nowrap;
 }
 
-/* "Product Designer" — body-lg: Cabinet Grotesk regular, uppercase */
-/* Color: --nav-link-text (grey-600) — decision 2A */
+/* "Sanchez" — Upheaval 24px/20px, uppercase, text-primary */
 .designerTitle {
-  font-family:    var(--font-family-body);
-  font-weight:    var(--font-weight-regular);
-  font-size:      var(--text-body-lg-size);
-  line-height:    var(--text-body-lg-lh);
-  letter-spacing: var(--text-body-lg-ls);
-  color:          var(--nav-link-text);
-  white-space:    nowrap;
+  font-family: var(--font-family-upheaval);
+  font-weight: 400;
+  font-size: 24px;
+  line-height: 20px;
+  text-transform: uppercase;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+/* ── div.menuListWrapper ──────────────────────────────────── */
+
+/*
+ * Pure height container — no background, no padding, no border-radius.
+ * overflow:hidden ensures height:0 fully clips the inner card (including
+ * its padding and border). GSAP animates this from 0 → auto on open and
+ * resets to 0 on close. margin-top is also GSAP-managed: 0 when collapsed,
+ * var(--spacing-md) set instantly at the moment Step 2 begins — so the gap
+ * appears without animating, flush with the card reveal.
+ */
+.menuListWrapper {
+  overflow: hidden;
+  height: 0; /* initial state — GSAP overrides during open/close */
 }
 
 /* ── div.menu-list ────────────────────────────────────────── */
 
 /*
- * Flex-1 means: fills all remaining nav height once nav expands to 100dvh.
- * When nav is at collapsed height, remaining space = 0 → menu-list = 0 height.
- *
- * clip-path hides content during collapsed state and animates on open.
- * 48px = --radius-lg (var(--border-radius-lg)); hardcoded here to match
- * the element's border-radius so clip edges stay rounded during animation.
+ * Styled card inside the wrapper. Height is fully determined by content —
+ * the wrapper handles the clip/reveal animation. No flex sizing needed
+ * since this element is no longer a direct child of the nav flex column.
  */
 .menuList {
-  flex: 1;
-  min-height: 0; /* allows flex item to shrink below its content size */
-
   background-color: var(--surface-card);
-  border: var(--border-card) var(--border-style-default) var(--surface-card-border);
+  border: var(--border-card) var(--border-style-default)
+    var(--surface-card-border);
   border-radius: var(--radius-lg);
   padding: var(--spacing-xl);
 
   display: flex;
   flex-direction: column;
   overflow: hidden;
-
-  /* Initial state: fully clipped from bottom — animated by GSAP on open */
-  clip-path: inset(0 0 100% 0 round 48px); /* 48px = --radius-lg */
 }
 
 /* ── menuItemWrapper ──────────────────────────────────────── */
@@ -145,23 +165,29 @@
    Mobile overrides (393 px)
    ============================================================ */
 
+@media (max-width: 600px) {
+  .designerDetails {
+    display: none;
+  }
+}
+
 @media (max-width: 393px) {
   .header {
     padding: 0 var(--spacing-md);
   }
 
   .logoIcon {
-    width: var(--icon-lg);   /* 32px on mobile */
+    width: var(--icon-lg); /* 32px on mobile */
     height: var(--icon-lg);
   }
 
   .designerName {
-    font-size:   var(--text-label-sm-size);
+    font-size: var(--text-label-sm-size);
     line-height: var(--text-label-sm-lh);
   }
 
   .designerTitle {
-    font-size:   var(--text-body-sm-size);
+    font-size: var(--text-body-sm-size);
     line-height: var(--text-body-sm-lh);
   }
 }
