@@ -154,6 +154,51 @@
   position: relative;
 }
 
+/* ── button.expandBtn ─────────────────────────────────────── */
+/*
+ * Expand / collapse toggle — absolute bottom-right of imgContainer.
+ * Sits at z-index 10 (above BounceCanvas internals but below the
+ * fixed canvas overlay at z-index 99 when expanded).
+ * Remains visible in both states since it is a child of imgContainer.
+ */
+
+.expandBtn {
+  position:        absolute;
+  bottom:          12px;
+  right:           12px;
+  z-index:         10;
+  width:           32px;
+  height:          32px;
+  display:         flex;
+  align-items:     center;
+  justify-content: center;
+
+  /* Glassmorphism pill — legible on both light and dark canvas backgrounds */
+  background:          rgba(11, 11, 13, 0.40); /* --color-grey-950 @40% */
+  border:              1px solid rgba(255, 255, 255, 0.12);
+  border-radius:       var(--radius-xs, 6px);
+  backdrop-filter:     blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+
+  color:   #ffffff;
+  cursor:  pointer;
+  padding: 0;
+
+  transition:
+    background     0.15s ease,
+    border-color   0.15s ease;
+}
+
+.expandBtn:hover {
+  background:    rgba(11, 11, 13, 0.65);
+  border-color:  rgba(255, 255, 255, 0.25);
+}
+
+.expandBtn:focus-visible {
+  outline:        2px solid var(--color-yellow-500);
+  outline-offset: 2px;
+}
+
 /* ── div.heroBottomWrapper ────────────────────────────────── */
 
 /*

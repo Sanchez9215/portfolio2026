@@ -78,7 +78,7 @@ portfolio/
 | Button | `components/Button.tsx` | 4 variants × 2 sizes |
 | Nav | `components/Nav.tsx` | GSAP open/close, imports Button + MenuItem |
 | HeroSection | `components/HeroSection.tsx` | GSAP entrance animation, imports Button + BounceCanvas |
-| BounceCanvas | `components/BounceCanvas.tsx` | GSAP Draggable, bouncing SVG toy |
+| BounceCanvas | `components/BounceCanvas.tsx` | GSAP Draggable + d3-force graph; nodes draggable |
 | CaseStudyCard | `components/CaseStudyCard.tsx` | Full-card `<a>`, desktop + mobile layout |
 
 ### Button — critical notes
@@ -96,63 +96,34 @@ portfolio/
 - Typography token decisions: `--text-primary` for impact headings, `--text-secondary` for all muted text
 - Ready to wire into the Work section — see props in `components/components.md`
 
-### BounceCanvas — graph system (PIVOTING TO d3-force)
+### BounceCanvas — d3-force graph (REWRITE COMPLETE on `feature/d3-force-graph`)
 
-**Decision made:** The current rules-based placement system in `BounceCanvas.tsx` cannot reliably prevent crossing lines, overlapping shapes, or lines passing through the SVG body. These are layout problems — best solved by a force-directed simulation, not placement rules. **Next session starts the d3-force rewrite on branch `feature/d3-force-graph`.**
+**Status:** Rewrite done, running, needs review/tuning.
 
----
+**Packages installed:** `d3-force` + `@types/d3-force` (both in package.json).
 
-**Current state of `master` (rules-based approach — preserved as fallback)**
+**Architecture — world-space simulation:**
+- Simulation runs in **world (canvas) coordinates**, NOT local SVG coords
+- **4 head nodes** (ids -1 to -4) have `fx/fy` updated every GSAP tick to `svgX + emitter.ox / svgY + emitter.oy` — so when the SVG bounces or is dragged, the springs pull the whole graph along with lag and snap
+- **`alphaTarget(0.05)`** set on first shape connect — sim never sleeps; always responds to head movement
+- **On drag start:** `alphaTarget(0.3)` (hot); **on drag end:** back to `0.05` (warm idle)
+- Rendering reads node positions directly as canvas coords — no `x +` offset needed
 
-All tuning constants live in the `CONNECTOR` block at the top of `BounceCanvas.tsx`. The system works but has unresolvable layout issues at scale.
+**Key config blocks:**
+- `CONNECTOR` — line style + topology rules (HEAD_BIAS, HEAD_MAX_CHILDREN, SHAPE_MAX_CHILDREN, CHAIN_MAX)
+- `SIM` — `linkDistance: 70`, `chargeStrength: -80`, `collideRadius: 22`, `alphaDecay: 0.02`, `alphaIdleTarget: 0.05`, `alphaDragTarget: 0.3`, `dragHitRadius: 20`
 
-- `AttachedShape` fields: `id`, `depth`, `lx/ly`, `rlx/rly`, `parentHeadIdx`, `parentShapeIds`
-- Draw order: connector lines (Pass 1, explicit edges only) → shape images (Pass 2)
-- Rules in `connectShape()`: directional gate on heads + child shapes, `HEAD_MAX_CHILDREN: 3`, `SHAPE_MAX_CHILDREN: 2`, `CHAIN_MAX: 3`, `HEAD_BIAS: 0.6`, sibling angular spread, ripple settle
+**Node drag:** `mousedown` on any shape node pins it (`fx/fy`), heats sim; `mouseup` releases and cools to idle target. Cursor shows `grab` / `grabbing`.
 
----
+**Topology rules preserved** (in `connectShape()`): directional gate, HEAD_BIAS, cap limits, depth tracking — same as before. d3-force handles placement only.
 
-**d3-force rewrite — what to build next session**
-
-**Branch:** `feature/d3-force-graph` (already created, checked out from master)
-
-**Install first:** `npm install d3-force` — only this package, not full d3
-
-**What stays (do not rewrite):**
-- GSAP bouncing SVG, Draggable, InertiaPlugin
-- Pellet firing system — passive bursts, active mouse-tracking, taper mode
-- Falling shape spawn logic and AABB collision detection
-- Custom SVG rendering — `object.svg` and `object2.svg` (not circles)
-- The topology rules: directional gate, head caps, chain max, shape children cap — these control *who connects to who*, d3-force only controls *where nodes end up*
-
-**What gets replaced:**
-- Manual snap position calculation (attachment angle + exclusion zone + elastic tween)
-- `lx/ly` + `rlx/rly` position storage on `AttachedShape`
-- The `ripple settle` GSAP tweens (d3-force continuous simulation replaces this)
-
-**How the hybrid works:**
-1. d3-force simulation runs in **local coordinates** (relative to SVG top-left). Nodes follow the SVG as it bounces — each draw frame, add SVG world position to all node positions when rendering.
-2. **4 head nodes are fixed** — use `fx/fy` (d3 fixed position) pinned to EMITTER offsets. They never move in the simulation.
-3. **Forces to configure:**
-   - `forceManyBody` — charge repulsion, nodes push apart (prevents overlaps)
-   - `forceLink` — edges pull connected nodes to a target distance (controls arm length)
-   - `forceCollide` — hard collision radius = half the largest shape diameter (no visual overlap)
-   - `forceCenter` (weak) — keeps graph from drifting; center = SVG local center (60, 60)
-   - Do NOT use `forceRadial` — it creates circular layouts, we want organic
-4. **On shape capture** (pellet hits falling shape): add new d3 node + link to simulation via `simulation.nodes([...])` and `forceLink.links([...])`, then call `simulation.alpha(0.3).restart()` — graph breathes open to accommodate the new node
-5. **Drawing each frame:** iterate `simulation.nodes()` for positions, draw lines then shapes on canvas
-
-**Visual requirements confirmed:**
-- Custom SVG shapes (object.svg, object2.svg) — not circles
-- All nodes connected to one of the 4 SVG heads — no floating disconnected groups
-- Organic overall shape — NOT a perfect circle (avoid forceRadial; topology drives shape)
-- No overlapping connections — forceCollide handles this
-- No lines crossing through SVG body — forceLink distance + charge keeps nodes outward
-
-**Key constraint:** The SVG bounces continuously. Fixed head nodes must update their `fx/fy` every tick to follow the SVG's current world position... actually NO — keep everything in local coords, only convert to world coords when drawing. Simulation is unaware of the SVG's world position.
+**What's next for BounceCanvas:**
+- [ ] Tune `SIM` constants if graph feels too loose/tight (linkDistance, chargeStrength)
+- [ ] Review visual feel — does graph follow SVG drag with satisfying rubber-band lag?
 
 ## What's Next
 
+- [ ] **BounceCanvas** — tune + review on `feature/d3-force-graph`
 - [ ] Build Work section in `app/page.tsx` with 4 `CaseStudyCard` instances
 - [ ] Wire up case study routes in `app/work/`
 - [ ] Design About and Resume pages

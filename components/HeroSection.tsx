@@ -17,9 +17,15 @@
  *
  * Image area:
  *   BounceCanvas — DVD-screensaver SVG toy (happyAgents.svg)
+ *
+ * Expand mode:
+ *   The expand button (bottom-right of BounceCanvas) slides headlineContainer
+ *   left and fades heroBottomWrapper out, then lifts imgContainer to
+ *   position:fixed and animates it to 100vw × 100vh (below the sticky nav).
+ *   Same button collapses everything back to the original layout.
  */
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import Button from "./Button";
 import BounceCanvas from "./BounceCanvas";
@@ -51,12 +57,6 @@ const resolveColor = (varName: string): string => {
 };
 
 /* ── Inline star SVG ─────────────────────────────────────── */
-/*
- * Rendered inline so CSS `color` (set by GSAP) propagates to
- * fill="currentColor" on both paths — enabling the yellow → display
- * color transition without needing filters or multiple SVG files.
- * opacity="0.4" on the circle keeps a subtle inner depth at any color.
- */
 
 interface StarProps {
   svgRef: React.Ref<SVGSVGElement>;
@@ -89,6 +89,98 @@ function Star({ svgRef, className }: StarProps) {
   );
 }
 
+/* ── Expand / Collapse icons ─────────────────────────────── */
+/*
+ * Two-corner arrow icons communicate expand ↔ collapse.
+ *
+ * ExpandIcon:  brackets at the TR and BL outer corners,
+ *              diagonals pointing from center → corner (outward).
+ * CollapseIcon: brackets with elbows at inner positions (~10,6 and 6,10),
+ *               diagonals pointing from corner → inner (inward).
+ */
+
+function ExpandIcon() {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill="none"
+      aria-hidden="true"
+    >
+      {/* Top-right: outer L-bracket, diagonal from inner to corner */}
+      <path
+        d="M10 2H14V6"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <line
+        x1="9" y1="7" x2="13.5" y2="2.5"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+      {/* Bottom-left: outer L-bracket, diagonal from inner to corner */}
+      <path
+        d="M6 14H2V10"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <line
+        x1="7" y1="9" x2="2.5" y2="13.5"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+function CollapseIcon() {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill="none"
+      aria-hidden="true"
+    >
+      {/* Top-right: inner L-bracket (elbow at ~10,6), diagonal from corner inward */}
+      <path
+        d="M10 2V6H14"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <line
+        x1="14" y1="2" x2="10" y2="6"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+      {/* Bottom-left: inner L-bracket (elbow at ~6,10), diagonal from corner inward */}
+      <path
+        d="M6 14V10H2"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <line
+        x1="2" y1="14" x2="6" y2="10"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
 /* ── Component ───────────────────────────────────────────── */
 
 export default function HeroSection() {
@@ -99,11 +191,88 @@ export default function HeroSection() {
   const roleTextRef  = useRef<HTMLSpanElement>(null);
 
   /* headline / subline refs */
-  const headlineRef    = useRef<HTMLHeadingElement>(null);
-  const sublineRef     = useRef<HTMLParagraphElement>(null);
-  const heroRef        = useRef<HTMLElement>(null);
-  const heroBottomRef  = useRef<HTMLDivElement>(null);
+  const headlineRef   = useRef<HTMLHeadingElement>(null);
+  const sublineRef    = useRef<HTMLParagraphElement>(null);
+  const heroRef       = useRef<HTMLElement>(null);
+  const heroBottomRef = useRef<HTMLDivElement>(null);
 
+  /* expand refs */
+  const headlineContainerRef = useRef<HTMLDivElement>(null);
+  const imgContainerRef      = useRef<HTMLDivElement>(null);
+  const expandedRef          = useRef(false);
+  const savedRectRef         = useRef<DOMRect | null>(null);
+
+  const [expanded, setExpanded] = useState(false);
+
+  /* ── Expand / Collapse handler ───────────────────────────── */
+  const handleExpand = () => {
+    const imgEl    = imgContainerRef.current;
+    const headEl   = headlineContainerRef.current;
+    const bottomEl = heroBottomRef.current;
+    if (!imgEl || !headEl || !bottomEl) return;
+
+    // Stop any in-progress tween on these targets before starting
+    gsap.killTweensOf([imgEl, headEl, bottomEl]);
+
+    if (!expandedRef.current) {
+      /* ── EXPAND ──────────────────────────────────────────── */
+
+      // Stage 1: snapshot imgContainer's natural viewport position
+      const rect = imgEl.getBoundingClientRect();
+      savedRectRef.current = rect;
+
+      // Stage 2: lift to fixed at the exact same position — zero visual jump
+      gsap.set(imgEl, {
+        position: "fixed",
+        top:      rect.top,
+        left:     rect.left,
+        width:    rect.width,
+        height:   rect.height,
+        zIndex:   99, // below nav (z-index: 100) per --z-nav token
+        margin:   0,
+      });
+
+      // Stage 3: animate everything out, then canvas to full viewport
+      gsap.timeline()
+        // headlineContainer exits left — clipped by hero's overflow-x: clip
+        .to(headEl,   { x: "-110%", opacity: 0, duration: 0.42, ease: "power2.inOut" }, 0)
+        // bottom blue card fades and drifts down
+        .to(bottomEl, { opacity: 0, y: 20, duration: 0.3, ease: "power2.in",
+                        onComplete: () => { bottomEl.style.pointerEvents = "none"; } }, 0)
+        // canvas expands to full viewport (slightly delayed for sequencing)
+        .to(imgEl,    { top: 0, left: 0, width: "100vw", height: "100vh",
+                        duration: 0.58, ease: "power2.inOut" }, 0.12);
+
+      expandedRef.current = true;
+      setExpanded(true);
+
+    } else {
+      /* ── COLLAPSE ────────────────────────────────────────── */
+
+      const rect = savedRectRef.current!;
+
+      gsap.timeline({
+        onComplete() {
+          // Snap imgContainer back into normal document flow
+          gsap.set(imgEl, { clearProps: "position,top,left,width,height,zIndex,margin" });
+        },
+      })
+        // Canvas shrinks back to its natural rect
+        .to(imgEl,    { top: rect.top, left: rect.left,
+                        width: rect.width, height: rect.height,
+                        duration: 0.52, ease: "power2.inOut" }, 0)
+        // headlineContainer slides back in from the left
+        .to(headEl,   { x: "0%", opacity: 1, duration: 0.42, ease: "power2.out" }, 0.2)
+        // bottom blue card fades back in
+        .to(bottomEl, { opacity: 1, y: 0, duration: 0.38, ease: "power2.out",
+                        onStart: () => { bottomEl.style.pointerEvents = ""; } }, 0.22);
+
+      expandedRef.current = false;
+      setExpanded(false);
+    }
+  };
+
+  /* ── Entrance animation ──────────────────────────────────── */
   useEffect(() => {
     const leftStarEl   = leftStarRef.current;
     const rightStarEl  = rightStarRef.current;
@@ -122,27 +291,23 @@ export default function HeroSection() {
     const leftRect  = leftStarEl.getBoundingClientRect();
     const rightRect = rightStarEl.getBoundingClientRect();
 
-    // Negative offset: how far left the right star must shift to overlap the left star.
     const xOffset = leftRect.left - rightRect.left;
 
-    // Rolling rotation — physically accurate arc-length formula.
     const sweepDistance = Math.abs(xOffset);
-    const starRadius    = (rightRect.width / 2) || 16; // 16 px fallback
+    const starRadius    = (rightRect.width / 2) || 16;
 
-    // Phase 1 ends at 180°. Snap the grand total to the next full 360° multiple
-    // so the right star always finishes upright.
     const phase1End      = 180;
     const rawTotal       = phase1End + (sweepDistance / (2 * Math.PI * starRadius)) * 360;
     const finalRotation  = Math.ceil(rawTotal / 360) * 360;
-    const phase2Rotation = finalRotation - phase1End; // relative increment for tl.to
+    const phase2Rotation = finalRotation - phase1End;
 
-    /* ── Resolve color tokens to concrete rgb() values ── */
+    /* ── Resolve color tokens ── */
     const yellowColor  = resolveColor("--color-yellow-500");
     const displayColor = resolveColor("--text-display");
 
     /* ── Timing tokens ── */
-    const dur   = readMs("--motion-duration-nav-items"); // 0.5 s
-    const delay = readMs("--motion-delay-nav-items");    // 0.25 s
+    const dur   = readMs("--motion-duration-nav-items");
+    const delay = readMs("--motion-delay-nav-items");
 
     /* ── Headline / subline lines ── */
     const headlineLines = Array.from(
@@ -155,11 +320,6 @@ export default function HeroSection() {
     /* ── Bottom content target height (50% of hero) ── */
     const targetHeight = heroEl.offsetHeight / 2;
 
-    /*
-     * gsap.context() scopes every tween created inside.
-     * ctx.revert() (cleanup) kills them and removes all inline styles —
-     * critical for React Strict Mode's mount → unmount → remount cycle.
-     */
     const ctx = gsap.context(() => {
 
       /* ── Initial states ── */
@@ -168,7 +328,6 @@ export default function HeroSection() {
         rotation: 0,
         color: yellowColor,
       });
-      // Right star starts at the left star's position (overlapping it)
       gsap.set(rightStarEl, { x: xOffset });
 
       gsap.set(roleTextEl, {
@@ -176,8 +335,8 @@ export default function HeroSection() {
         color: yellowColor,
       });
       gsap.set(headlineLines, { opacity: 0, y: 16 });
-      gsap.set(sublineLines, { opacity: 0, y: 16 });
-      gsap.set(heroBottomEl, { height: 0, overflow: "hidden" });
+      gsap.set(sublineLines,  { opacity: 0, y: 16 });
+      gsap.set(heroBottomEl,  { height: 0, overflow: "hidden" });
 
       /* ── Master timeline ── */
       const tl = gsap.timeline({ delay });
@@ -197,24 +356,24 @@ export default function HeroSection() {
           duration: 0.7,
           ease: "power2.inOut",
         },
-        "+=0.15", // slight pause after scale-in
+        "+=0.15",
       );
 
       // 2b — text clip travels in sync with the rolling star
       tl.to(
         roleTextEl,
         { clipPath: "inset(0 0% 0 0)", duration: 0.7, ease: "power2.inOut" },
-        "<", // same start as 2a
+        "<",
       );
 
-      // 3 — color transition: yellow-500 → text-display (starts immediately after reveal)
+      // 3 — color transition: yellow-500 → text-display
       tl.to(
         [leftStarEl, rightStarEl, roleTextEl],
         { color: displayColor, duration: 0.5, ease: "power2.inOut" },
         ">",
       );
 
-      // 4 — headline lines (slight gap after color settles)
+      // 4 — headline lines
       headlineLines.forEach((line, i) => {
         tl.to(
           line,
@@ -249,7 +408,7 @@ export default function HeroSection() {
       <div className={styles.heroTopContent}>
 
         {/* headlineContainer: role row above + h1 below */}
-        <div className={styles.headlineContainer}>
+        <div ref={headlineContainerRef} className={styles.headlineContainer}>
 
           {/* Role row — star · PRODUCT DESIGNER · star */}
           <div ref={roleRef} className={styles.role}>
@@ -271,12 +430,22 @@ export default function HeroSection() {
 
         </div>
 
-        <div className={styles.imgContainer}>
+        {/* imgContainer — BounceCanvas + expand button */}
+        <div ref={imgContainerRef} className={styles.imgContainer}>
           <BounceCanvas />
+          <button
+            className={styles.expandBtn}
+            onClick={handleExpand}
+            aria-label={expanded ? "Collapse canvas" : "Expand canvas"}
+            type="button"
+          >
+            {expanded ? <CollapseIcon /> : <ExpandIcon />}
+          </button>
         </div>
+
       </div>
 
-      {/* ── Bottom content: animation wrapper + blue card ────── */}
+      {/* ── Bottom content: animation wrapper + blue card ── */}
       <div ref={heroBottomRef} className={styles.heroBottomWrapper}>
         <div className={styles.heroBottomContent}>
           <div className={styles.buttonGroup}>
