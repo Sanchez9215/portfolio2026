@@ -19,12 +19,19 @@
 /* ── section.hero ─────────────────────────────────────────── */
 
 .hero {
-  background-color: var(--surface-base);
+  /*
+   * No background-color — html provides --surface-base (globals.css).
+   * No isolation:isolate — removing the stacking context lets individual
+   * children compete with BounceCanvas directly in the root stacking context:
+   *   heroTopContent  z-index:3  → above canvas (z-index:2)
+   *   heroBottomWrapper z-index:1 → below canvas — robot appears over blue card
+   * overflow-x:clip still clips outgoing chars at the hero's border box
+   * without needing position:relative on the section itself.
+   */
   display: flex;
   flex-direction: column;
   align-items: center;
   width: 100%;
-  isolation: isolate;
   overflow-x: clip;
 
   /* Fill viewport below nav — 128px matches main's paddingTop in page.tsx */
@@ -40,9 +47,8 @@
   align-items: center;
   width: 100%;
   position: relative;
-  z-index: 2;
-  flex: 0 0 auto;
-  height: 50%;
+  z-index: 3; /* above BounceCanvas (z-index:2) */
+  flex: 1 1 auto;
   min-height: 0;
 }
 
@@ -145,6 +151,16 @@
   color: var(--color-blue-500);
 }
 
+/*
+ * Per-character span — injected by the char-wrapping useEffect on mount.
+ * display:inline-block is required for GSAP rotation + translate transforms.
+ * white-space:pre preserves space characters that would otherwise collapse.
+ */
+.headlineChar {
+  display: inline-block;
+  white-space: pre;
+}
+
 /* ── div.imgContainer ─────────────────────────────────────── */
 
 .imgContainer {
@@ -208,7 +224,6 @@
  */
 .heroBottomWrapper {
   flex: 0 0 auto;
-  height: 50%;
   width: 100%;
   overflow: hidden;
   position: relative;
@@ -231,7 +246,6 @@
   align-items: flex-start;
   justify-content: space-between;
   width: 100%;
-  height: 100%;
 }
 
 /* ── div.buttonGroup ──────────────────────────────────────── */

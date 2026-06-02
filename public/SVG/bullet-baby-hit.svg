@@ -1,0 +1,33 @@
+<svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M8.5 11.5V16.5H20.5V11.5H70C96.7858 11.5 118.5 33.2142 118.5 60C118.5 69.782 115.605 78.8831 110.626 86.5H102.5V96C101.411 96.9833 100.278 97.9183 99.1035 98.8008C98.1581 99.5111 97.1856 100.188 96.1885 100.829C95.552 101.238 94.9054 101.633 94.249 102.013C92.6855 102.917 91.0667 103.736 89.3994 104.465C88.76 104.744 88.1134 105.01 87.46 105.263C85.882 105.872 84.264 106.401 82.6113 106.845C78.5917 107.924 74.3641 108.5 70 108.5H20.5V103.5H8.5V108.5H1.5V11.5H8.5Z" fill="#0B0B0D" stroke="#D6E5FE" stroke-width="3"/>
+<rect width="5" height="9" transform="translate(20 40)" fill="#D6E5FE"/>
+<rect width="5" height="9" transform="translate(27 50)" fill="#D6E5FE"/>
+<rect width="5" height="9" transform="translate(34 55)" fill="#D6E5FE"/>
+<rect width="5" height="9" transform="translate(41 60)" fill="#D6E5FE"/>
+<rect width="5" height="9" transform="translate(48 65)" fill="#D6E5FE"/>
+<rect width="5" height="9" transform="translate(55 70)" fill="#D6E5FE"/>
+<rect width="5" height="9" transform="translate(62 75)" fill="#D6E5FE"/>
+<rect width="5" height="9" transform="translate(69 80)" fill="#D6E5FE"/>
+<rect width="5" height="9" transform="translate(76 85)" fill="#D6E5FE"/>
+<rect width="5" height="9" transform="translate(83 88)" fill="#D6E5FE"/>
+<rect width="5" height="9" transform="translate(90 88)" fill="#D6E5FE"/>
+<rect width="4" height="9" transform="translate(97 88)" fill="#D6E5FE"/>
+<rect width="5" height="9" transform="translate(20 52)" fill="#D6E5FE"/>
+<rect width="5" height="9" transform="translate(27 62)" fill="#D6E5FE"/>
+<rect width="5" height="9" transform="translate(34 67)" fill="#D6E5FE"/>
+<rect width="5" height="9" transform="translate(41 72)" fill="#D6E5FE"/>
+<rect width="5" height="9" transform="translate(48 77)" fill="#D6E5FE"/>
+<rect width="5" height="9" transform="translate(55 82)" fill="#D6E5FE"/>
+<rect width="5" height="9" transform="translate(62 87)" fill="#D6E5FE"/>
+<rect width="5" height="9" transform="translate(69 92)" fill="#D6E5FE"/>
+<rect width="5" height="9" transform="translate(76 97)" fill="#D6E5FE"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M88 100H83V108.293C84.7043 107.836 86.3727 107.29 88 106.662V100Z" fill="#D6E5FE"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M95 100H90V105.84C91.7192 105.088 93.3881 104.243 95 103.311V100Z" fill="#D6E5FE"/>
+<path d="M58 25C58 25.9763 58 26.5237 58 27.5C58 28.8807 56.8807 30 55.5 30H53" stroke="#D6E5FE" stroke-linecap="square"/>
+<path d="M62 25V27.5C62 28.8807 63.1193 30 64.5 30H67" stroke="#D6E5FE" stroke-linecap="square"/>
+<path d="M62 38V35.5C62 34.1193 63.1193 33 64.5 33H67" stroke="#D6E5FE" stroke-linecap="square"/>
+<path d="M58 38V35.5C58 34.1193 56.8807 33 55.5 33H53" stroke="#D6E5FE" stroke-linecap="square"/>
+<path d="M99.1679 71.2481C99.8572 71.7076 100.789 71.5213 101.248 70.832C101.708 70.1428 101.521 69.2114 100.832 68.7519L100 70L99.1679 71.2481ZM70.8321 48.7519L69.584 47.9199L67.9199 50.416L69.1679 51.2481L70 50L70.8321 48.7519ZM100 70L100.832 68.7519L70.8321 48.7519L70 50L69.1679 51.2481L99.1679 71.2481L100 70Z" fill="#D6E5FE"/>
+<path d="M98.8044 70.9002C99.3015 71.5628 100.242 71.697 100.904 71.1999C101.567 70.7027 101.701 69.7625 101.204 69.0998L100.004 70L98.8044 70.9002ZM86.1999 49.0998L85.2997 47.9L82.9 49.7003L83.8001 50.9002L85 50L86.1999 49.0998ZM100.004 70L101.204 69.0998L86.1999 49.0998L85 50L83.8001 50.9002L98.8044 70.9002L100.004 70Z" fill="#D6E5FE"/>
+<path d="M99.6504 71.4587C100.456 71.6518 101.266 71.1552 101.459 70.3496C101.652 69.544 101.155 68.7344 100.35 68.5413L100 70L99.6504 71.4587ZM100 70L100.35 68.5413C94.9424 67.2453 87.4128 65.7398 81.2539 64.5613C78.1704 63.9713 75.4234 63.4619 73.4472 63.1C72.459 62.919 71.6634 62.7749 71.1146 62.676C70.8402 62.6265 70.6274 62.5884 70.4832 62.5626C70.4111 62.5497 70.3561 62.5398 70.319 62.5332C70.3005 62.5299 70.2865 62.5274 70.2771 62.5257C70.2724 62.5249 70.2688 62.5243 70.2664 62.5238C70.2652 62.5236 70.2643 62.5235 70.2637 62.5234C70.2633 62.5233 70.2631 62.5233 70.2629 62.5232C70.2628 62.5232 70.2627 62.5232 70 64C69.7373 65.4768 69.7374 65.4768 69.7375 65.4769C69.7376 65.4769 69.7378 65.4769 69.7381 65.477C69.7387 65.4771 69.7395 65.4772 69.7406 65.4774C69.7429 65.4778 69.7463 65.4784 69.7509 65.4792C69.7601 65.4809 69.7739 65.4833 69.7921 65.4866C69.8286 65.4931 69.8831 65.5028 69.9546 65.5156C70.0977 65.5412 70.3093 65.5792 70.5824 65.6284C71.1288 65.7269 71.9216 65.8705 72.9068 66.0509C74.8772 66.4118 77.6162 66.9196 80.69 67.5078C86.8457 68.6857 94.3162 70.1802 99.6504 71.4587L100 70Z" fill="#D6E5FE"/>
+</svg>

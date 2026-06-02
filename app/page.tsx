@@ -1,5 +1,5 @@
 import Nav from '@/components/Nav'
-import HeroSection from '@/components/HeroSection'
+import HeroWithCanvas from '@/components/HeroWithCanvas'
 import CaseStudyCard from '@/components/CaseStudyCard'
 
 export default function Home() {
@@ -7,7 +7,7 @@ export default function Home() {
     <>
       <Nav />
       <main className="min-h-screen" style={{ paddingTop: '128px' }}>
-        <HeroSection />
+        <HeroWithCanvas />
 
         {/* Work section — preview */}
         <section id="work" style={{ padding: '80px var(--spacing-md)', display: 'flex', flexDirection: 'column', gap: '24px' }}>

@@ -1,27 +1,23 @@
 "use client";
 
 /**
- * BounceCanvas — DVD-screensaver SVG toy with pellet firing system
+ * BounceCanvas — full-page fixed canvas layer
  *
- * Auto-movement: slow gentle bounce via GSAP ticker
- * Drag:          GSAP Draggable — grab / grabbing cursor
- * Throw:         GSAP InertiaPlugin — momentum on release
- * Bounce:        onThrowUpdate detects edge hits, reflects velocity
- * Resume:        onThrowComplete fallback
- * Nudge:         onClick → small random velocity kick
+ * Villains enter from a screen edge, travel straight across, disappear off far edge.
+ *   Rotation: left/right → 0° (default), top → 90° CW, bottom → 90° CCW
+ *   Hit robot → spawn AutonomousCluster (center shape + up to 5 branches,
+ *               full bounce physics, spring-force internal layout, yellow connector lines)
+ *   Hit cluster → scatter all nodes as free nodes
  *
- * Pellets (passive)  — all 4 heads fire outward in sync every 3 s
- * Pellets (active)   — all 4 heads stream toward mouse continuously
- * Pellets (taper)    — snappy wind-down burst when mouse leaves
+ * Falling shapes connect to robot network on direct contact with robot bounding box.
  *
- * Graph layout: d3-force simulation in local SVG coordinates.
- * Head nodes are fixed (fx/fy = emitter offsets). Shape nodes are free.
- * connectShape() decides WHO connects to WHO (topology rules).
- * d3-force decides WHERE nodes end up (physics).
- * Rendering adds SVG world position to all local node coords each frame.
+ * Exclusion zones:
+ *   textZones — robot overlaps `overlapPx` into the zone (behind text)
+ *   gapZones  — robot stays `gapPx` clear of the zone edge
  */
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import type React from "react";
 import gsap from "gsap";
 import { Draggable } from "gsap/Draggable";
 import { InertiaPlugin } from "gsap/InertiaPlugin";
@@ -35,6 +31,7 @@ import {
   type ForceLink,
 } from "d3-force";
 import styles from "./BounceCanvas.module.css";
+import BulletBaby, { type VillainHandle } from "./BulletBaby";
 
 gsap.registerPlugin(Draggable, InertiaPlugin);
 
@@ -43,133 +40,233 @@ const SVG_W = 120;
 const SVG_H = 120;
 
 /* ── bounce physics ───────────────────────────────────────────── */
-const AUTO_SPEED = 2.5; // px/frame at 60 fps
-const NUDGE_V = 1;      // px/frame added per nudge axis
+const AUTO_SPEED = 2.5;
+const NUDGE_V    = 1;
 
-/* ── pellet visual config ─────────────────────────────────────── */
-const PELLET = {
-  width: 8,
-  height: 4,
-  color: "#ffffff",
-  speed: 30,      // px per frame at 60 fps
-  maxBounces: 0,  // disappears on the (maxBounces+1)th wall crossing
+/* ── attached shape outline ───────────────────────────────────── */
+const SHAPE_OUTLINE = {
+  color: "#FFD53C",
+  width: 1,
 };
-
-/* ── emitter offsets — local SVG coordinates (120 × 120) ─────── */
-const EMITTERS = [
-  { ox: 60, oy: 10,  dx:  0, dy: -1 }, // top    — fires up
-  { ox: 60, oy: 110, dx:  0, dy:  1 }, // bottom — fires down
-  { ox: 10, oy: 60,  dx: -1, dy:  0 }, // left   — fires left
-  { ox: 110, oy: 60, dx:  1, dy:  0 }, // right  — fires right
-] as const;
 
 /* ── falling shape types ─────────────────────────────────────── */
 const FALLING_SHAPES = [
-  { src: "/SVG/object.svg",  w: 40, h: 40 },
-  { src: "/SVG/object2.svg", w: 20, h: 20 },
+  { src: "/SVG/object.svg",          w: 40, h: 40 },
+  { src: "/SVG/object2.svg",         w: 20, h: 20 },
+  { src: "/SVG/baby-star.svg",       w: 16, h: 16 },
+  { src: "/SVG/baby-diamond.svg",    w: 20, h: 20 },
+  { src: "/SVG/baby-clover.svg",     w: 24, h: 24 },
+  { src: "/SVG/baby-pieChart.svg",   w: 28, h: 28 },
+  { src: "/SVG/baby-pieChart-1.svg", w: 32, h: 32 },
+  { src: "/SVG/double-diamond.svg",  w: 44, h: 44 },
+  { src: "/SVG/beach-ball.svg",      w: 56, h: 56 },
 ];
 
 /* ── falling shape spawn config ──────────────────────────────── */
 const SPAWN = {
-  minInterval: 1500, // ms — shortest wait before next shape
-  maxInterval: 3500, // ms — longest wait before next shape
-  speed: 1.5,        // px/frame downward (scaled by dt)
-  maxActive: 4,      // cap on simultaneous falling shapes
+  minInterval: 1500,
+  maxInterval: 3500,
+  speed:       1.5,
+  maxActive:   4,
 };
 
 /* ── connector line style + topology rules ───────────────────── */
 const CONNECTOR = {
-  color: "#FFD53C",
-  width: 2,
-  dashLen: 6,  // px — dashed segment length
-  dashGap: 4,  // px — gap between dashes
-  // Topology rules control WHO connects to WHO.
-  // d3-force controls WHERE nodes end up.
-  HEAD_BIAS: 0.6,        // multiply head dist by this before closest-anchor race
-  HEAD_MAX_CHILDREN: 3,  // max direct children per head
-  SHAPE_MAX_CHILDREN: 2, // max direct children per non-head shape
-  CHAIN_MAX: 3,          // max chain depth from a head
+  color:              "#FFD53C",
+  width:              2,
+  dashLen:            6,
+  dashGap:            4,
+  HEAD_BIAS:          0.6,
+  HEAD_MAX_CHILDREN:  3,
+  SHAPE_MAX_CHILDREN: 2,
+  CHAIN_MAX:          3,
 };
 
 /* ── d3-force simulation config ──────────────────────────────── */
 const SIM = {
-  linkDistance: 70,   // target edge length in local SVG px
-  linkStrength: 0.8,  // spring stiffness (0–1)
-  chargeStrength: -80, // node repulsion — negative = push apart
-  collideRadius: 22,  // hard collision radius (≈ half of 40px shape)
-  alphaDecay: 0.02,       // cooling rate — lower = longer settle time
-  alphaOnAdd: 0.3,        // alpha kick when a new shape is connected
-  alphaIdleTarget: 0.05,  // persistent target — sim stays alive as SVG bounces
-  alphaDragTarget: 0.3,   // keeps sim hot while a node is held
-  dragHitRadius: 20,      // px — click detection radius around a node center
+  linkDistance:    120,
+  linkStrength:    0.8,
+  chargeStrength: -120,
+  collideRadius:   30,
+  alphaDecay:      0.02,
+  alphaOnAdd:      0.3,
+  alphaIdleTarget: 0.05,
+  alphaDragTarget: 0.3,
+  dragHitRadius:   20,
 };
 
-/* ── burst timing ─────────────────────────────────────────────── */
-const BURST_COUNT_MIN = 3;
-const BURST_COUNT_MAX = 5;
-const BURST_INTERVAL  = 320;  // ms between dashes within a burst
-const BURST_COOLDOWN  = 3000; // ms between bursts (passive)
-const ACTIVE_EVERY    = 6;    // frames between shots in active mode
-const TAPER_SHOTS     = 5;    // shots fired after mouse leaves
+/* ── head emitter offsets (local SVG coords) — for d3 head placement ── */
+const EMITTERS = [
+  { ox:  60, oy:  10, dx:  0, dy: -1 },
+  { ox:  60, oy: 110, dx:  0, dy:  1 },
+  { ox:  10, oy:  60, dx: -1, dy:  0 },
+  { ox: 110, oy:  60, dx:  1, dy:  0 },
+] as const;
+
+/* ── pellet visual config ─────────────────────────────────────── */
+const PELLET = {
+  width:      10,
+  height:      5,
+  color: "#ffffff",
+  speed:       8,
+  maxBounces:  0,
+};
+
+/* ── firing timing ────────────────────────────────────────────── */
+const ACTIVE_EVERY = 8;
+const TAPER_SHOTS  = 5;
+
+/* ── passive cadence ─────────────────────────────────────────── */
+const PASSIVE = {
+  shortDelay:    180,
+  rapidInterval: 300,
+  rapidCount:      2,
+  longCooldown:  2800,
+};
+
+/* ── villain config ───────────────────────────────────────────── */
+const VILLAIN = {
+  w:           120,
+  h:           120,
+  speed:       1.8,
+  maxCount:    2,
+  spawnDelay:  6000,
+  hitFlashDur: 10,
+  hitCooldown: 45,
+  burstSpeed:  3,
+};
+
+/* ── free node reconnect config ──────────────────────────────── */
+const RECONNECT = {
+  radius:    100,
+  lerpSpeed: 0.06,
+  snapDist:  24,
+};
+
+/* ── autonomous cluster config ────────────────────────────────── */
+const CLUSTER = {
+  speed:       AUTO_SPEED,
+  branchCount: 5,
+  springK:     0.04,   // stiffness pulling branch toward rest offset
+  damping:     0.88,   // branch velocity multiplier per frame
+};
 
 /* ── types ────────────────────────────────────────────────────── */
 interface Pellet {
   x: number; y: number; vx: number; vy: number;
-  angle: number;       // locked at birth — never recalculated
-  tx: number | null;   // convergence target (active mode); null = passive
-  ty: number | null;
+  angle: number;
   bounces: number;
   dead: boolean;
 }
 
 interface FallingShape {
   typeIdx: number;
-  x: number; y: number; vx: number; vy: number;
+  x: number; y: number;
+  vx: number; vy: number;
   dead: boolean;
 }
 
-/** Node in the d3-force simulation — positions are LOCAL to the SVG */
 interface SimNode extends SimulationNodeDatum {
-  id: number; // -(i+1) for head nodes (-1 to -4), 0+ for captured shapes
+  id: number;
 }
-
 type SimLink = SimulationLinkDatum<SimNode>;
 
 interface AttachedShape {
   id: number;
   typeIdx: number;
-  depth: number;          // hops from nearest head (0 = direct head child)
-  parentHeadIdx: number[];
+  depth: number;
+  parentHeadIdx:  number[];
   parentShapeIds: number[];
 }
 
-type Mode = "passive" | "active" | "tapering";
+interface Villain {
+  x: number; y: number;
+  vx: number; vy: number;
+  w: number; h: number;
+  rotation: number;
+  flipY: boolean;
+  flashFrames: number;
+  hitCooldown: number;
+  dead: boolean;
+  slotIdx: number;
+  isHit: boolean;
+}
+
+interface FreeNode {
+  typeIdx: number;
+  x: number; y: number;
+  vx: number; vy: number;
+  reconnecting: boolean;
+  dead: boolean;
+}
+
+interface ClusterNode {
+  typeIdx: number;
+  relX: number; relY: number;
+  relVX: number; relVY: number;
+  targetRelX: number; targetRelY: number;
+}
+
+interface AutonomousCluster {
+  cx: number; cy: number;
+  cvx: number; cvy: number;
+  nodes: ClusterNode[];
+  links: { a: number; b: number }[];
+  hitCooldown: number;
+  dead: boolean;
+}
+
+/* ── prop types ───────────────────────────────────────────────── */
+interface BounceCanvasProps {
+  textZones?:         React.RefObject<HTMLElement>[];
+  gapZones?:          React.RefObject<HTMLElement>[];
+  overlapPx?:         number;
+  gapPx?:             number;
+  activeZoneRef?:     React.RefObject<HTMLElement>;
+  spawnZoneRef?:      React.RefObject<HTMLElement>;
+  heroTopContentRef?: React.RefObject<HTMLDivElement>;
+}
 
 /* ══════════════════════════════════════════════════════════════ */
-export default function BounceCanvas() {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const canvasRef    = useRef<HTMLCanvasElement>(null);
-  const svgRef       = useRef<HTMLImageElement>(null);
+export default function BounceCanvas({
+  textZones,
+  gapZones,
+  overlapPx = 16,
+  gapPx     = 16,
+  activeZoneRef,
+  spawnZoneRef,
+  heroTopContentRef,
+}: BounceCanvasProps = {}) {
+  const canvasRef       = useRef<HTMLCanvasElement>(null);
+  const svgRef          = useRef<HTMLImageElement>(null);
+  const villainDomRefs  = useRef<(HTMLDivElement | null)[]>([null, null]);
+  const villainBabyRefs = useRef<(VillainHandle | null)[]>([null, null]);
+
+  const [slotSizes, setSlotSizes] = useState<[number, number]>([VILLAIN.w, VILLAIN.w]);
+
+  const zonesRef = useRef({ textZones, gapZones, overlapPx, gapPx, activeZoneRef, spawnZoneRef, heroTopContentRef });
+  zonesRef.current = { textZones, gapZones, overlapPx, gapPx, activeZoneRef, spawnZoneRef, heroTopContentRef };
 
   useEffect(() => {
-    const container = containerRef.current;
-    const canvas    = canvasRef.current;
-    const svg       = svgRef.current;
-    if (!container || !canvas || !svg) return;
+    const canvas = canvasRef.current;
+    const svg    = svgRef.current;
+    if (!canvas || !svg) return;
 
-    /* ── canvas sizing ──────────────────────────────────────────── */
+    /* ── canvas sizing ───────────────────────────────────────────── */
     const syncSize = () => {
-      canvas.width  = container.offsetWidth;
-      canvas.height = container.offsetHeight;
+      canvas.width  = window.innerWidth;
+      canvas.height = window.innerHeight;
     };
     syncSize();
-    const ro = new ResizeObserver(syncSize);
-    ro.observe(container);
+    window.addEventListener("resize", syncSize);
     const ctx = canvas.getContext("2d")!;
 
-    /* ── SVG bounce state ───────────────────────────────────────── */
-    let x  = Math.random() * Math.max(0, container.offsetWidth  - SVG_W);
-    let y  = Math.random() * Math.max(0, container.offsetHeight - SVG_H);
+    /* ── robot bounce state ──────────────────────────────────────── */
+    const spawnMinX = window.innerWidth  * 0.55;
+    const spawnMaxX = window.innerWidth  - SVG_W;
+    const spawnMaxY = window.innerHeight * 0.55 - SVG_H;
+    let x  = spawnMinX + Math.random() * Math.max(0, spawnMaxX - spawnMinX);
+    let y  = Math.random() * Math.max(0, spawnMaxY);
     let vx = AUTO_SPEED * (Math.random() > 0.5 ? 1 : -1);
     let vy = AUTO_SPEED * (Math.random() > 0.5 ? 1 : -1);
     let paused     = false;
@@ -177,53 +274,85 @@ export default function BounceCanvas() {
     let prevThrowY = y;
     gsap.set(svg, { x, y });
 
-    /* ── pellet state ───────────────────────────────────────────── */
-    const pellets: Pellet[] = [];
-    let mode: Mode = "passive";
-    let mouseX = 0, mouseY = 0;
+    /* ── exclusion-zone bound helper ─────────────────────────────── */
+    const getEffectiveBounds = (sx: number, sy: number, svy = 0) => {
+      const W = canvas.width;
+      const H = canvas.height;
+      let minX = 0, maxX = W - SVG_W, minY = 0, maxY = H - SVG_H;
+      const { textZones: tz, gapZones: gz, overlapPx: op, gapPx: gp } = zonesRef.current;
+      const look = 60;
 
-    // passive burst state
-    let nextBurstAt  = performance.now() + 600; // first burst after 0.6 s
-    let burstActive  = false;
-    let burstCount   = 0;
-    let burstMax     = 0;
-    let nextPelletAt = 0;
+      for (const ref of tz ?? []) {
+        const el = ref.current; if (!el) continue;
+        const r = el.getBoundingClientRect();
+        if (sy + SVG_H < r.top - op - (svy > 0 ? look : 0) || sy > r.bottom + op + (svy < 0 ? look : 0)) continue;
+        if (r.left + r.width / 2 < W / 2) minX = Math.max(minX, r.right - op);
+        else maxX = Math.min(maxX, r.left + op - SVG_W);
+      }
+      for (const ref of gz ?? []) {
+        const el = ref.current; if (!el) continue;
+        const r = el.getBoundingClientRect();
+        if (sy + SVG_H < r.top - gp - (svy > 0 ? look : 0) || sy > r.bottom + gp + (svy < 0 ? look : 0)) continue;
+        if (r.left + r.width / 2 < W / 2) minX = Math.max(minX, r.right + gp);
+        else maxX = Math.min(maxX, r.left - gp - SVG_W);
+      }
+      return { minX, maxX, minY, maxY };
+    };
 
-    // active
-    let activeFrame = 0;
-
-    // taper
-    let taperLeft  = 0;
-    let taperFrame = 0;
-
-    // node drag
-    let draggingNode: SimNode | null = null;
-
-    /* ── falling shapes state ──────────────────────────────────── */
+    /* ── shape image cache + silhouette outline cache ────────────── */
     const shapeImgs = new Map<number, HTMLImageElement>();
     FALLING_SHAPES.forEach((def, i) => {
-      const img = new Image();
-      img.src = def.src;
-      shapeImgs.set(i, img);
+      const img = new Image(); img.src = def.src; shapeImgs.set(i, img);
     });
 
+    const outlineCanvases = new Map<number, HTMLCanvasElement>();
+    const getOutlineCanvas = (typeIdx: number): HTMLCanvasElement | null => {
+      if (outlineCanvases.has(typeIdx)) return outlineCanvases.get(typeIdx)!;
+      const img = shapeImgs.get(typeIdx);
+      const def = FALLING_SHAPES[typeIdx];
+      if (!img || !img.complete) return null;
+      const pad = SHAPE_OUTLINE.width + 1;
+      const ow = def.w + pad * 2, oh = def.h + pad * 2;
+      const oc = document.createElement("canvas");
+      oc.width = ow; oc.height = oh;
+      const octx = oc.getContext("2d")!;
+      for (let dx = -SHAPE_OUTLINE.width; dx <= SHAPE_OUTLINE.width; dx++) {
+        for (let dy = -SHAPE_OUTLINE.width; dy <= SHAPE_OUTLINE.width; dy++) {
+          if (dx === 0 && dy === 0) continue;
+          octx.drawImage(img, pad + dx, pad + dy, def.w, def.h);
+        }
+      }
+      octx.globalCompositeOperation = "source-in";
+      octx.fillStyle = SHAPE_OUTLINE.color;
+      octx.fillRect(0, 0, ow, oh);
+      octx.globalCompositeOperation = "source-over";
+      octx.drawImage(img, pad, pad, def.w, def.h);
+      outlineCanvases.set(typeIdx, oc);
+      return oc;
+    };
+
+    /* ── falling shapes state ─────────────────────────────────────── */
     const fallingShapes: FallingShape[] = [];
     let nextSpawnAt = performance.now() + SPAWN.minInterval;
 
-    /* ── d3-force graph state ───────────────────────────────────── */
-    // 4 head nodes — pinned to SVG world position + emitter offset each tick
-    const headNodes: SimNode[] = EMITTERS.map((e, i) => ({
-      id: -(i + 1), // -1, -2, -3, -4
-      x:  x + e.ox, // world coords — updated every tick via fx/fy
-      y:  y + e.oy,
-      fx: x + e.ox,
-      fy: y + e.oy,
-    }));
+    /* ── villain state ────────────────────────────────────────────── */
+    const villainImg = new Image();
+    villainImg.src = "/SVG/bullet-baby.svg";
+    const villains:  Villain[]  = [];
+    const freeNodes: FreeNode[] = [];
+    let nextVillainSpawnAt = performance.now() + VILLAIN.spawnDelay;
 
+    /* ── autonomous cluster state ─────────────────────────────────── */
+    const autonomousClusters: AutonomousCluster[] = [];
+
+    /* ── d3-force graph state ─────────────────────────────────────── */
+    const headNodes: SimNode[] = EMITTERS.map((e, i) => ({
+      id: -(i + 1),
+      x: x + e.ox, y: y + e.oy,
+      fx: x + e.ox, fy: y + e.oy,
+    }));
     const shapeNodes: SimNode[] = [];
     const simLinks:   SimLink[] = [];
-
-    // id → SimNode lookup used in connectShape and drawing
     const nodeMap = new Map<number, SimNode>();
     headNodes.forEach((n) => nodeMap.set(n.id, n));
 
@@ -236,139 +365,62 @@ export default function BounceCanvas() {
       .force("charge",  forceManyBody<SimNode>().strength(SIM.chargeStrength))
       .force("collide", forceCollide<SimNode>(SIM.collideRadius))
       .alphaDecay(SIM.alphaDecay)
-      .stop(); // idle until first shape is connected
+      .stop();
 
     const attachedShapes: AttachedShape[] = [];
     const headChildCount  = [0, 0, 0, 0];
     const shapeChildCount = new Map<number, number>();
     let   nextShapeId     = 0;
 
-    /* ── helpers ────────────────────────────────────────────────── */
-    const spawn = (
-      wx: number, wy: number,
-      ndx: number, ndy: number,
-      tx: number | null = null,
-      ty: number | null = null,
-    ) => {
-      const len   = Math.hypot(ndx, ndy) || 1;
-      const angle = Math.atan2(ndy, ndx); // locked once at birth
-      pellets.push({
-        x: wx, y: wy,
-        vx: (ndx / len) * PELLET.speed,
-        vy: (ndy / len) * PELLET.speed,
-        angle, tx, ty, bounces: 0, dead: false,
-      });
-    };
-
-    // Passive: all heads fire outward along their face normal
-    const firePassive = () => {
-      for (const e of EMITTERS) spawn(x + e.ox, y + e.oy, e.dx, e.dy);
-    };
-
-    // Active: all heads aim at current mouse position
-    const fireMouse = () => {
-      const mx = mouseX, my = mouseY;
-      for (const e of EMITTERS) {
-        const wx = x + e.ox, wy = y + e.oy;
-        spawn(wx, wy, mx - wx, my - wy, mx, my);
-      }
-    };
-
-    /**
-     * connectShape — topology rules pick the parent; d3-force finds the position.
-     *
-     * Keeps:  directional gate, HEAD_BIAS, HEAD_MAX_CHILDREN,
-     *         SHAPE_MAX_CHILDREN, CHAIN_MAX, depth tracking.
-     * Removes: snap distance, exclusion zone, elastic tween, ripple settle —
-     *          d3-force handles all placement organically.
-     */
+    /* ── helpers ──────────────────────────────────────────────────── */
     const connectShape = (s: FallingShape) => {
       const svgCx = x + SVG_W / 2;
       const svgCy = y + SVG_H / 2;
-
-      /* ── Step 1: find closest eligible parent ──────────────────── */
       let bestDist     = Infinity;
       let parentHeadIdx:  number[] = [];
       let parentShapeIds: number[] = [];
       let parentNodeId: number | null = null;
 
-      // Check all 4 robot heads — directional gate + bias
       for (let i = 0; i < EMITTERS.length; i++) {
-        const e   = EMITTERS[i];
-        const hwx = x + e.ox;
-        const hwy = y + e.oy;
-        // Gate: shape must be on the outward side of this head
+        const e = EMITTERS[i];
+        const hwx = x + e.ox, hwy = y + e.oy;
         const dot = (s.x - svgCx) * e.dx + (s.y - svgCy) * e.dy;
         if (dot <= 0) continue;
-        // Cap: skip heads already at max direct children
         if (headChildCount[i] >= CONNECTOR.HEAD_MAX_CHILDREN) continue;
-        // Bias: heads appear closer than they are → win more aggressively
         const d = Math.hypot(s.x - hwx, s.y - hwy) * CONNECTOR.HEAD_BIAS;
         if (d < bestDist) {
-          bestDist       = d;
-          parentHeadIdx  = [i];
-          parentShapeIds = [];
-          parentNodeId   = -(i + 1);
+          bestDist = d; parentHeadIdx = [i]; parentShapeIds = []; parentNodeId = -(i + 1);
         }
       }
-
-      // Check already-attached shapes (live world positions from d3 simulation)
       for (const a of attachedShapes) {
         if (a.depth >= CONNECTOR.CHAIN_MAX) continue;
         if ((shapeChildCount.get(a.id) ?? 0) >= CONNECTOR.SHAPE_MAX_CHILDREN) continue;
-        const aNode = nodeMap.get(a.id);
-        if (!aNode) continue;
-        const awx = aNode.x ?? 0; // world coords — no offset needed
-        const awy = aNode.y ?? 0;
-        // Same-side gate: skip shapes on the opposite half of the SVG center
-        const sameSide =
-          (s.x - svgCx) * (awx - svgCx) + (s.y - svgCy) * (awy - svgCy);
+        const aNode = nodeMap.get(a.id); if (!aNode) continue;
+        const awx = aNode.x ?? 0, awy = aNode.y ?? 0;
+        const sameSide = (s.x - svgCx) * (awx - svgCx) + (s.y - svgCy) * (awy - svgCy);
         if (sameSide <= 0) continue;
         const d = Math.hypot(s.x - awx, s.y - awy);
         if (d < bestDist) {
-          bestDist       = d;
-          parentHeadIdx  = [];
-          parentShapeIds = [a.id];
-          parentNodeId   = a.id;
+          bestDist = d; parentHeadIdx = []; parentShapeIds = [a.id]; parentNodeId = a.id;
         }
       }
-
-      // No eligible parent found — shape vanishes without connecting
       if (parentNodeId === null) return;
-      const parentNode = nodeMap.get(parentNodeId);
-      if (!parentNode) return;
+      const parentNode = nodeMap.get(parentNodeId); if (!parentNode) return;
 
-      /* ── Step 2: create d3 node at world impact position ────── */
-      // Simulation is now world-space — no offset conversion needed.
-      const id      = nextShapeId++;
-      const newNode: SimNode = {
-        id,
-        x: s.x, // world coords directly
-        y: s.y,
-      };
+      const id = nextShapeId++;
+      const newNode: SimNode = { id, x: s.x, y: s.y };
       shapeNodes.push(newNode);
       nodeMap.set(id, newNode);
-
-      /* ── Step 3: create link parent → new shape ─────────────── */
       simLinks.push({ source: parentNode, target: newNode });
-
-      /* ── Step 4: update simulation — graph breathes open ─────── */
       simulation.nodes([...headNodes, ...shapeNodes]);
       (simulation.force("link") as ForceLink<SimNode, SimLink>).links(simLinks);
-      // alphaTarget keeps the sim alive indefinitely so it responds to
-      // head position changes as the SVG bounces around the canvas.
       simulation.alphaTarget(SIM.alphaIdleTarget).alpha(SIM.alphaOnAdd).restart();
 
-      /* ── Step 5: record topology ─────────────────────────────── */
       const parentDepth =
         parentShapeIds.length > 0
           ? (attachedShapes.find((a) => a.id === parentShapeIds[0])?.depth ?? 0)
           : -1;
-      attachedShapes.push({
-        id, typeIdx: s.typeIdx,
-        depth: parentDepth + 1,
-        parentHeadIdx, parentShapeIds,
-      });
+      attachedShapes.push({ id, typeIdx: s.typeIdx, depth: parentDepth + 1, parentHeadIdx, parentShapeIds });
 
       if (parentHeadIdx.length > 0)  headChildCount[parentHeadIdx[0]]++;
       if (parentShapeIds.length > 0) {
@@ -377,182 +429,510 @@ export default function BounceCanvas() {
       }
     };
 
-    /* ── main ticker ────────────────────────────────────────────── */
+    /** Detach a set of shape IDs from the main d3 network, updating all bookkeeping. */
+    const removeShapesFromNetwork = (ids: Set<number>) => {
+      for (const id of Array.from(ids)) {
+        const a = attachedShapes.find((as) => as.id === id); if (!a) continue;
+        for (const hIdx of a.parentHeadIdx)  headChildCount[hIdx] = Math.max(0, headChildCount[hIdx] - 1);
+        for (const pid  of a.parentShapeIds) shapeChildCount.set(pid, Math.max(0, (shapeChildCount.get(pid) ?? 0) - 1));
+        nodeMap.delete(id);
+      }
+      attachedShapes.splice(0, attachedShapes.length, ...attachedShapes.filter((a) => !ids.has(a.id)));
+      shapeNodes.splice(0, shapeNodes.length, ...shapeNodes.filter((n) => !ids.has(n.id)));
+      simLinks.splice(0, simLinks.length, ...simLinks.filter((l) => {
+        const sid = (typeof l.source === "object" ? (l.source as SimNode).id : Number(l.source));
+        const tid = (typeof l.target === "object" ? (l.target as SimNode).id : Number(l.target));
+        return !ids.has(sid) && !ids.has(tid);
+      }));
+      simulation.nodes([...headNodes, ...shapeNodes]);
+      (simulation.force("link") as ForceLink<SimNode, SimLink>).links(simLinks);
+      if (shapeNodes.length > 0) simulation.alpha(SIM.alphaOnAdd).restart();
+    };
+
+    const reattachFreeNode = (fn: FreeNode): boolean => {
+      let bestDist = Infinity;
+      let parentNodeId: number | null = null;
+      let parentHeadIdx:  number[] = [];
+      let parentShapeIds: number[] = [];
+
+      for (let i = 0; i < EMITTERS.length; i++) {
+        if (headChildCount[i] >= CONNECTOR.HEAD_MAX_CHILDREN) continue;
+        const hx = x + EMITTERS[i].ox, hy = y + EMITTERS[i].oy;
+        const d = Math.hypot(fn.x - hx, fn.y - hy);
+        if (d < bestDist) { bestDist = d; parentHeadIdx = [i]; parentShapeIds = []; parentNodeId = -(i + 1); }
+      }
+      for (const a of attachedShapes) {
+        if (a.depth >= CONNECTOR.CHAIN_MAX) continue;
+        if ((shapeChildCount.get(a.id) ?? 0) >= CONNECTOR.SHAPE_MAX_CHILDREN) continue;
+        const n = nodeMap.get(a.id); if (!n) continue;
+        const d = Math.hypot(fn.x - (n.x ?? 0), fn.y - (n.y ?? 0));
+        if (d < bestDist) { bestDist = d; parentHeadIdx = []; parentShapeIds = [a.id]; parentNodeId = a.id; }
+      }
+      if (parentNodeId === null) return false;
+      const parentNode = nodeMap.get(parentNodeId); if (!parentNode) return false;
+
+      const id = nextShapeId++;
+      const newNode: SimNode = { id, x: fn.x, y: fn.y };
+      shapeNodes.push(newNode);
+      nodeMap.set(id, newNode);
+      simLinks.push({ source: parentNode, target: newNode });
+      simulation.nodes([...headNodes, ...shapeNodes]);
+      (simulation.force("link") as ForceLink<SimNode, SimLink>).links(simLinks);
+      simulation.alphaTarget(SIM.alphaIdleTarget).alpha(SIM.alphaOnAdd).restart();
+
+      const parentDepth = parentShapeIds.length > 0
+        ? (attachedShapes.find((a) => a.id === parentShapeIds[0])?.depth ?? 0)
+        : -1;
+      attachedShapes.push({ id, typeIdx: fn.typeIdx, depth: parentDepth + 1, parentHeadIdx, parentShapeIds });
+
+      if (parentHeadIdx.length > 0)  headChildCount[parentHeadIdx[0]]++;
+      if (parentShapeIds.length > 0) {
+        const pid = parentShapeIds[0];
+        shapeChildCount.set(pid, (shapeChildCount.get(pid) ?? 0) + 1);
+      }
+      return true;
+    };
+
+    /**
+     * Spawn an AutonomousCluster from the shape closest to (hitX, hitY)
+     * plus up to CLUSTER.branchCount nearest neighbours.
+     */
+    const spawnCluster = (hitX: number, hitY: number) => {
+      if (attachedShapes.length === 0) return;
+
+      // Find center shape — closest network node to the impact point
+      let centerIdx = 0, bestDist = Infinity;
+      for (let i = 0; i < attachedShapes.length; i++) {
+        const n = nodeMap.get(attachedShapes[i].id); if (!n) continue;
+        const d = Math.hypot((n.x ?? 0) - hitX, (n.y ?? 0) - hitY);
+        if (d < bestDist) { bestDist = d; centerIdx = i; }
+      }
+
+      const centerShape = attachedShapes[centerIdx];
+      const centerNode  = nodeMap.get(centerShape.id); if (!centerNode) return;
+      const originX = centerNode.x ?? 0;
+      const originY = centerNode.y ?? 0;
+
+      // Gather up to branchCount nearest shapes (excluding center)
+      const branches = attachedShapes
+        .filter((a) => a.id !== centerShape.id)
+        .map((a) => {
+          const n = nodeMap.get(a.id);
+          return { shape: a, dist: n ? Math.hypot((n.x ?? 0) - originX, (n.y ?? 0) - originY) : Infinity };
+        })
+        .sort((a, b) => a.dist - b.dist)
+        .slice(0, CLUSTER.branchCount)
+        .map((e) => e.shape);
+
+      const allShapes = [centerShape, ...branches];
+      const detachIds = new Set(allShapes.map((a) => a.id));
+
+      // Build cluster nodes (relX/relY = offset from cluster origin)
+      const clusterNodes: ClusterNode[] = allShapes.map((a) => {
+        const n  = nodeMap.get(a.id);
+        const wx = n?.x ?? originX;
+        const wy = n?.y ?? originY;
+        const rx = wx - originX, ry = wy - originY;
+        return { typeIdx: a.typeIdx, relX: rx, relY: ry, relVX: 0, relVY: 0, targetRelX: rx, targetRelY: ry };
+      });
+
+      // Star topology: index 0 (center) connected to each branch
+      const links = branches.map((_, i) => ({ a: 0, b: i + 1 }));
+
+      // Random initial direction
+      const angle = Math.random() * Math.PI * 2;
+      autonomousClusters.push({
+        cx: originX, cy: originY,
+        cvx: Math.cos(angle) * CLUSTER.speed,
+        cvy: Math.sin(angle) * CLUSTER.speed,
+        nodes: clusterNodes,
+        links,
+        hitCooldown: 0,
+        dead: false,
+      });
+
+      removeShapesFromNetwork(detachIds);
+    };
+
+    /* ── villain helpers ──────────────────────────────────────────── */
+    const spawnVillain = () => {
+      const W   = canvas.width;
+      const H   = canvas.height;
+      const spd = VILLAIN.speed;
+
+      // 50/50 roll between small (120px) and big (40% of heroTopContent height)
+      const htcEl   = zonesRef.current.heroTopContentRef?.current;
+      const bigSize = htcEl ? Math.round(htcEl.getBoundingClientRect().height * 0.4) : VILLAIN.w;
+      const size    = Math.random() < 0.5 ? VILLAIN.w : bigSize;
+
+      const edge = Math.floor(Math.random() * 4); // 0=left 1=right 2=top 3=bottom
+      let sx = 0, sy = 0, svx = 0, svy = 0, rotation = 0;
+      switch (edge) {
+        case 0: sx = -size;                    sy = Math.random() * (H - size); svx =  spd; svy = 0; rotation =  0;             break;
+        case 1: sx = W;                        sy = Math.random() * (H - size); svx = -spd; svy = 0; rotation =  0;             break;
+        case 2: sx = Math.random() * (W - size); sy = -size;                   svx = 0; svy =  spd; rotation =  Math.PI / 2;  break;
+        case 3: sx = Math.random() * (W - size); sy = H;                       svx = 0; svy = -spd; rotation = -Math.PI / 2;  break;
+      }
+      const usedSlots = new Set(villains.map(v => v.slotIdx));
+      const slotIdx = ([0, 1] as const).find(i => !usedSlots.has(i)) ?? 0;
+      villains.push({ x: sx, y: sy, vx: svx, vy: svy, w: size, h: size, rotation, flipY: edge === 1, flashFrames: 0, hitCooldown: 0, dead: false, slotIdx, isHit: false });
+      setSlotSizes(prev => { const next = [prev[0], prev[1]] as [number, number]; next[slotIdx] = size; return next; });
+    };
+
+    /* ── pellet state ─────────────────────────────────────────────── */
+    const pellets: Pellet[] = [];
+    type Mode = "passive" | "active" | "tapering";
+    let mode: Mode = "passive";
+    type PassivePhase = "longCooldown" | "shortPause1" | "rapid" | "shortPause2";
+    let passivePhase:   PassivePhase = "longCooldown";
+    let nextPhaseAt     = performance.now() + 600;
+    let rapidShotsFired = 0;
+    let activeFrame     = 0;
+    let taperLeft       = 0;
+    let taperFrame      = 0;
+    let isInActiveZone  = false;
+
+    const firePellet = (wx: number, wy: number, ndx: number, ndy: number) => {
+      const len   = Math.hypot(ndx, ndy) || 1;
+      const angle = Math.atan2(ndy, ndx);
+      pellets.push({ x: wx, y: wy, vx: (ndx / len) * PELLET.speed, vy: (ndy / len) * PELLET.speed, angle, bounces: 0, dead: false });
+    };
+    const firePassive = () => { for (const e of EMITTERS) firePellet(x + e.ox, y + e.oy, e.dx, e.dy); };
+    const fireMouse   = (mx: number, my: number) => {
+      for (const e of EMITTERS) firePellet(x + e.ox, y + e.oy, mx - (x + e.ox), my - (y + e.oy));
+    };
+
+    /* ── shared mouse state ───────────────────────────────────────── */
+    let mouseX = 0, mouseY = 0;
+    let draggingNode: SimNode | null = null;
+
+    /* ── main ticker ──────────────────────────────────────────────── */
     const tick = () => {
       const now = performance.now();
       const W   = canvas.width;
       const H   = canvas.height;
       const dt  = gsap.ticker.deltaRatio(60);
 
-      /* — sync SVG world position during drag — */
+      /* — sync SVG world position during throw — */
       if (paused) {
         x = Number(gsap.getProperty(svg, "x"));
         y = Number(gsap.getProperty(svg, "y"));
       }
 
-      /* — drive head nodes to SVG world position every frame — */
+      /* — drive head nodes to robot world position every frame — */
       for (let i = 0; i < headNodes.length; i++) {
         headNodes[i].fx = x + EMITTERS[i].ox;
         headNodes[i].fy = y + EMITTERS[i].oy;
       }
-      // Keep sim alive when shapes are connected (SVG bounces continuously)
+
       if (attachedShapes.length > 0 && simulation.alpha() < SIM.alphaIdleTarget) {
         simulation.alpha(SIM.alphaIdleTarget).restart();
       }
+      if (draggingNode) { draggingNode.fx = mouseX; draggingNode.fy = mouseY; }
 
-      /* — keep dragged node pinned to cursor in world space — */
-      if (draggingNode) {
-        draggingNode.fx = mouseX; // already world coords
-        draggingNode.fy = mouseY;
-      }
-
-      /* — SVG bounce — */
+      /* — robot bounce — */
       if (!paused) {
-        const maxX = W - SVG_W;
-        const maxY = H - SVG_H;
-        const spd  = Math.hypot(vx, vy);
-
-        if (spd > AUTO_SPEED + 0.1) {
-          vx *= 0.97; vy *= 0.97;
-        } else if (spd < AUTO_SPEED * 0.9) {
-          const s = AUTO_SPEED / Math.max(spd, 0.01);
-          vx *= s; vy *= s;
-        }
-
+        const bounds = getEffectiveBounds(x, y, vy);
+        const spd = Math.hypot(vx, vy);
+        if (spd > AUTO_SPEED + 0.1)        { vx *= 0.97; vy *= 0.97; }
+        else if (spd < AUTO_SPEED * 0.9)   { const s = AUTO_SPEED / Math.max(spd, 0.01); vx *= s; vy *= s; }
         x += vx * dt; y += vy * dt;
-
-        if (x <= 0)    { x = 0;    vx =  Math.abs(vx); }
-        if (x >= maxX) { x = maxX; vx = -Math.abs(vx); }
-        if (y <= 0)    { y = 0;    vy =  Math.abs(vy); }
-        if (y >= maxY) { y = maxY; vy = -Math.abs(vy); }
-
+        if (y <= bounds.minY) { y = bounds.minY; vy =  Math.abs(vy); }
+        if (y >= bounds.maxY) { y = bounds.maxY; vy = -Math.abs(vy); }
+        if (x < bounds.minX)  { vx =  Math.abs(vx); x += (bounds.minX - x) * 0.18; }
+        if (x > bounds.maxX)  { vx = -Math.abs(vx); x += (bounds.maxX - x) * 0.18; }
         gsap.set(svg, { x, y });
       }
 
-      /* — firing logic — */
+      /* — passive / active / taper firing — */
       if (mode === "passive") {
-        if (!burstActive && now >= nextBurstAt) {
-          burstActive = true;
-          burstCount  = 0;
-          burstMax    = BURST_COUNT_MIN +
-            Math.floor(Math.random() * (BURST_COUNT_MAX - BURST_COUNT_MIN + 1));
-          nextPelletAt = now;
-        }
-        if (burstActive && now >= nextPelletAt) {
-          firePassive();
-          burstCount++;
-          nextPelletAt = now + BURST_INTERVAL;
-          if (burstCount >= burstMax) {
-            burstActive  = false;
-            nextBurstAt  = now + BURST_COOLDOWN;
+        if (now >= nextPhaseAt) {
+          switch (passivePhase) {
+            case "longCooldown": firePassive(); passivePhase = "shortPause1"; nextPhaseAt = now + PASSIVE.shortDelay; break;
+            case "shortPause1":  rapidShotsFired = 0; passivePhase = "rapid"; nextPhaseAt = now; break;
+            case "rapid":
+              firePassive(); rapidShotsFired++;
+              if (rapidShotsFired >= PASSIVE.rapidCount) { passivePhase = "shortPause2"; nextPhaseAt = now + PASSIVE.shortDelay; }
+              else nextPhaseAt = now + PASSIVE.rapidInterval;
+              break;
+            case "shortPause2": firePassive(); passivePhase = "longCooldown"; nextPhaseAt = now + PASSIVE.longCooldown; break;
           }
         }
       } else if (mode === "active") {
-        if (++activeFrame >= ACTIVE_EVERY) { activeFrame = 0; fireMouse(); }
-      } else /* tapering */ {
-        if (taperLeft > 0 && ++taperFrame >= ACTIVE_EVERY) {
-          taperFrame = 0; fireMouse(); taperLeft--;
-        }
-        if (taperLeft <= 0) {
-          mode        = "passive";
-          nextBurstAt = now + 800;
-          burstActive = false;
-        }
+        if (++activeFrame >= ACTIVE_EVERY) { activeFrame = 0; fireMouse(mouseX, mouseY); }
+      } else {
+        if (taperLeft > 0 && ++taperFrame >= ACTIVE_EVERY) { taperFrame = 0; fireMouse(mouseX, mouseY); taperLeft--; }
+        if (taperLeft <= 0) { mode = "passive"; passivePhase = "longCooldown"; nextPhaseAt = now + 800; }
       }
 
-      /* — update pellets — */
+      /* — pellets: move, shape-hit, wall-bounce — */
       for (const p of pellets) {
         if (p.dead) continue;
-
-        p.x += p.vx; // fixed step — no dt, no drift
-        p.y += p.vy;
-
-        // Convergence kill: die when the pellet passes its target
-        if (
-          p.tx !== null &&
-          (p.tx - p.x) * p.vx + (p.ty! - p.y) * p.vy < 0
-        ) {
-          p.dead = true; continue;
-        }
-
-        // Pellet × falling-shape AABB collision — passive AND active
+        p.x += p.vx; p.y += p.vy;
         for (const s of fallingShapes) {
           if (s.dead) continue;
           const def = FALLING_SHAPES[s.typeIdx];
-          const hw  = def.w / 2, hh = def.h / 2;
-          if (
-            p.x >= s.x - hw && p.x <= s.x + hw &&
-            p.y >= s.y - hh && p.y <= s.y + hh
-          ) {
-            p.dead = true; s.dead = true;
-            connectShape(s);
-            break;
+          const hw = def.w / 2, hh = def.h / 2;
+          if (p.x >= s.x - hw && p.x <= s.x + hw && p.y >= s.y - hh && p.y <= s.y + hh) {
+            p.dead = true; s.dead = true; connectShape(s); break;
+          }
+        }
+        // Pellet hits villain
+        if (!p.dead) {
+          for (const v of villains) {
+            if (v.dead || v.isHit) continue;
+            if (p.x >= v.x && p.x <= v.x + v.w && p.y >= v.y && p.y <= v.y + v.h) {
+              p.dead = true;
+              v.isHit = true;
+              villainBabyRefs.current[v.slotIdx]?.triggerHit();
+              setTimeout(() => { v.isHit = false; }, 650); // matches BulletBaby HIT_HOLD(500ms) + fade(150ms)
+              break;
+            }
           }
         }
         if (p.dead) continue;
-
-        // Wall bounce / die
         let hit = false;
-        if (p.x < 0)  { p.x = 0;  p.vx =  Math.abs(p.vx); hit = true; }
-        if (p.x > W)  { p.x = W;  p.vx = -Math.abs(p.vx); hit = true; }
-        if (p.y < 0)  { p.y = 0;  p.vy =  Math.abs(p.vy); hit = true; }
-        if (p.y > H)  { p.y = H;  p.vy = -Math.abs(p.vy); hit = true; }
-        if (hit) {
-          p.bounces++;
-          if (p.bounces > PELLET.maxBounces) p.dead = true;
-        }
+        if (p.x < 0) { p.x = 0; p.vx =  Math.abs(p.vx); hit = true; }
+        if (p.x > W) { p.x = W; p.vx = -Math.abs(p.vx); hit = true; }
+        if (p.y < 0) { p.y = 0; p.vy =  Math.abs(p.vy); hit = true; }
+        if (p.y > H) { p.y = H; p.vy = -Math.abs(p.vy); hit = true; }
+        if (hit) { p.bounces++; if (p.bounces > PELLET.maxBounces) p.dead = true; }
       }
+      if (pellets.length > 200) pellets.splice(0, pellets.length, ...pellets.filter((p) => !p.dead));
 
-      if (pellets.length > 200) {
-        pellets.splice(0, pellets.length, ...pellets.filter((p) => !p.dead));
-      }
-
-      /* — falling shapes: spawn, move, prune — */
+      /* — falling shapes: spawn, move, connect on robot contact, prune — */
       {
         const activeCount = fallingShapes.filter((s) => !s.dead).length;
         if (activeCount < SPAWN.maxActive && now >= nextSpawnAt) {
-          const typeIdx = Math.floor(Math.random() * FALLING_SHAPES.length);
-          const roll    = Math.random();
-          let sx: number, sy: number, svx: number, svy: number;
-          if (roll < 0.5) {
-            sx = Math.random() * W; sy = -50;     svx = 0;               svy =  SPAWN.speed;
-          } else if (roll < 0.7) {
-            sx = -50;               sy = Math.random() * H * 0.7; svx =  SPAWN.speed * 0.6; svy = SPAWN.speed * 0.8;
-          } else if (roll < 0.9) {
-            sx = W + 50;            sy = Math.random() * H * 0.7; svx = -SPAWN.speed * 0.6; svy = SPAWN.speed * 0.8;
-          } else {
-            sx = Math.random() * W; sy = H + 50;  svx = 0;               svy = -SPAWN.speed;
-          }
-          fallingShapes.push({ typeIdx, x: sx, y: sy, vx: svx, vy: svy, dead: false });
-          nextSpawnAt = now + SPAWN.minInterval +
-            Math.random() * (SPAWN.maxInterval - SPAWN.minInterval);
+          const typeIdx   = Math.floor(Math.random() * FALLING_SHAPES.length);
+          const spawnEl   = zonesRef.current.spawnZoneRef?.current;
+          const sr        = spawnEl ? spawnEl.getBoundingClientRect() : null;
+          const spawnLeft = sr ? sr.left  : 0;
+          const spawnRight= sr ? sr.right : W;
+          const spawnX    = spawnLeft + Math.random() * Math.max(0, spawnRight - spawnLeft);
+          fallingShapes.push({ typeIdx, x: spawnX, y: -50, vx: 0, vy: SPAWN.speed, dead: false });
+          nextSpawnAt = now + SPAWN.minInterval + Math.random() * (SPAWN.maxInterval - SPAWN.minInterval);
         }
-
         for (const s of fallingShapes) {
           if (s.dead) continue;
           s.x += s.vx * dt; s.y += s.vy * dt;
+          // Connect when the shape's bounding box overlaps the robot bounding box
+          const def = FALLING_SHAPES[s.typeIdx];
+          const robotHit =
+            s.x + def.w / 2 > x && s.x - def.w / 2 < x + SVG_W &&
+            s.y + def.h / 2 > y && s.y - def.h / 2 < y + SVG_H;
+          if (robotHit) { s.dead = true; connectShape(s); continue; }
           if (s.x < -100 || s.x > W + 100 || s.y < -100 || s.y > H + 100) s.dead = true;
         }
-        if (fallingShapes.length > 50) {
+        if (fallingShapes.length > 50)
           fallingShapes.splice(0, fallingShapes.length, ...fallingShapes.filter((s) => !s.dead));
+      }
+
+      /* — villains: spawn, move, off-screen death, robot contact, cluster contact — */
+      {
+        const activeVillains = villains.filter((v) => !v.dead).length;
+        if (now >= nextVillainSpawnAt && activeVillains < VILLAIN.maxCount) {
+          spawnVillain();
+          nextVillainSpawnAt = now + VILLAIN.spawnDelay;
         }
+
+        for (const v of villains) {
+          if (v.dead) continue;
+          v.x += v.vx * dt; v.y += v.vy * dt;
+          if (v.flashFrames > 0) v.flashFrames--;
+          if (v.hitCooldown > 0) v.hitCooldown--;
+
+          // Die when fully off-screen
+          if (v.x + v.w < -20 || v.x > W + 20 || v.y + v.h < -20 || v.y > H + 20) {
+            v.dead = true;
+            villainBabyRefs.current[v.slotIdx]?.reset();
+            continue;
+          }
+
+          // Contact with robot → spawn cluster
+          const overlapsRobot =
+            v.x < x + SVG_W && v.x + v.w > x &&
+            v.y < y + SVG_H && v.y + v.h > y;
+          if (overlapsRobot && v.hitCooldown === 0) {
+            spawnCluster(v.x + v.w / 2, v.y + v.h / 2);
+            v.flashFrames = VILLAIN.hitFlashDur;
+            v.hitCooldown = VILLAIN.hitCooldown;
+          }
+
+          // Contact with autonomous clusters → scatter
+          for (const cl of autonomousClusters) {
+            if (cl.dead || cl.hitCooldown > 0) continue;
+            // Check villain against each cluster node's bounding box
+            let clusterHit = false;
+            for (const cn of cl.nodes) {
+              const absX = cl.cx + cn.relX;
+              const absY = cl.cy + cn.relY;
+              const def  = FALLING_SHAPES[cn.typeIdx];
+              if (
+                v.x < absX + def.w / 2 + v.w / 2 &&
+                v.x + v.w > absX - def.w / 2 &&
+                v.y < absY + def.h / 2 + v.h / 2 &&
+                v.y + v.h > absY - def.h / 2
+              ) { clusterHit = true; break; }
+            }
+            if (!clusterHit) continue;
+            // Scatter cluster nodes as free nodes
+            for (const cn of cl.nodes) {
+              const absX = cl.cx + cn.relX;
+              const absY = cl.cy + cn.relY;
+              const dx = absX - cl.cx, dy = absY - cl.cy;
+              const dist = Math.hypot(dx, dy) || 1;
+              const spd  = VILLAIN.burstSpeed + Math.random() * 2;
+              freeNodes.push({ typeIdx: cn.typeIdx, x: absX, y: absY, vx: (dx / dist) * spd, vy: (dy / dist) * spd, reconnecting: false, dead: false });
+            }
+            cl.dead = true;
+            v.flashFrames = VILLAIN.hitFlashDur;
+          }
+        }
+
+        villains.splice(0, villains.length, ...villains.filter((v) => !v.dead));
+        autonomousClusters.splice(0, autonomousClusters.length, ...autonomousClusters.filter((cl) => !cl.dead));
+
+        // Sync villain DOM overlay positions
+        villainDomRefs.current.forEach((el, i) => {
+          if (!el) return;
+          const v = villains.find(v => v.slotIdx === i);
+          if (!v) { el.style.display = "none"; return; }
+          el.style.display = "block";
+          el.style.transform = `translate(${v.x}px, ${v.y}px) rotate(${v.rotation}rad)${v.flipY ? " scaleY(-1)" : ""}`;
+        });
+      }
+
+      /* — autonomous clusters: center bounce + spring branch nodes — */
+      for (const cl of autonomousClusters) {
+        if (cl.dead) continue;
+        if (cl.hitCooldown > 0) cl.hitCooldown--;
+
+        // Bounce cluster center like robot
+        const spd = Math.hypot(cl.cvx, cl.cvy);
+        if (spd > CLUSTER.speed + 0.1)       { cl.cvx *= 0.97; cl.cvy *= 0.97; }
+        else if (spd < CLUSTER.speed * 0.9)  { const s = CLUSTER.speed / Math.max(spd, 0.01); cl.cvx *= s; cl.cvy *= s; }
+        cl.cx += cl.cvx * dt; cl.cy += cl.cvy * dt;
+        if (cl.cx < 0) { cl.cx = 0; cl.cvx =  Math.abs(cl.cvx); }
+        if (cl.cx > W) { cl.cx = W; cl.cvx = -Math.abs(cl.cvx); }
+        if (cl.cy < 0) { cl.cy = 0; cl.cvy =  Math.abs(cl.cvy); }
+        if (cl.cy > H) { cl.cy = H; cl.cvy = -Math.abs(cl.cvy); }
+
+        // Spring: pull each branch node toward its target offset
+        for (const cn of cl.nodes) {
+          const ax = (cn.targetRelX - cn.relX) * CLUSTER.springK;
+          const ay = (cn.targetRelY - cn.relY) * CLUSTER.springK;
+          cn.relVX = (cn.relVX + ax) * CLUSTER.damping;
+          cn.relVY = (cn.relVY + ay) * CLUSTER.damping;
+          cn.relX += cn.relVX * dt;
+          cn.relY += cn.relVY * dt;
+        }
+      }
+
+      /* — free nodes: drift, bounce, reconnect to robot on proximity — */
+      {
+        const robotCx = x + SVG_W / 2, robotCy = y + SVG_H / 2;
+        let attracting = freeNodes.some((fn) => fn.reconnecting && !fn.dead);
+
+        for (const fn of freeNodes) {
+          if (fn.dead) continue;
+
+          if (fn.reconnecting) {
+            let nearX = x + EMITTERS[0].ox, nearY = y + EMITTERS[0].oy, nearDist = Infinity;
+            for (let i = 0; i < EMITTERS.length; i++) {
+              const hx = x + EMITTERS[i].ox, hy = y + EMITTERS[i].oy;
+              const d = Math.hypot(fn.x - hx, fn.y - hy);
+              if (d < nearDist) { nearDist = d; nearX = hx; nearY = hy; }
+            }
+            for (const n of shapeNodes) {
+              const d = Math.hypot(fn.x - (n.x ?? 0), fn.y - (n.y ?? 0));
+              if (d < nearDist) { nearDist = d; nearX = n.x ?? 0; nearY = n.y ?? 0; }
+            }
+            fn.x += (nearX - fn.x) * RECONNECT.lerpSpeed;
+            fn.y += (nearY - fn.y) * RECONNECT.lerpSpeed;
+            fn.vx = 0; fn.vy = 0;
+            if (nearDist < RECONNECT.snapDist) fn.dead = reattachFreeNode(fn);
+            continue;
+          }
+
+          fn.x += fn.vx * dt; fn.y += fn.vy * dt;
+          fn.vx *= 0.995; fn.vy *= 0.995;
+          const def = FALLING_SHAPES[fn.typeIdx];
+          if (fn.x < 0)         { fn.x = 0;         fn.vx =  Math.abs(fn.vx); }
+          if (fn.x > W - def.w) { fn.x = W - def.w; fn.vx = -Math.abs(fn.vx); }
+          if (fn.y < 0)         { fn.y = 0;          fn.vy =  Math.abs(fn.vy); }
+          if (fn.y > H - def.h) { fn.y = H - def.h; fn.vy = -Math.abs(fn.vy); }
+
+          if (!attracting) {
+            const fnCx = fn.x + def.w / 2, fnCy = fn.y + def.h / 2;
+            if (Math.hypot(fnCx - robotCx, fnCy - robotCy) < RECONNECT.radius) {
+              fn.reconnecting = true;
+              attracting = true;
+            }
+          }
+        }
+        if (freeNodes.length > 50)
+          freeNodes.splice(0, freeNodes.length, ...freeNodes.filter((fn) => !fn.dead));
       }
 
       /* ─────────────────────── DRAW ────────────────────────────── */
       ctx.clearRect(0, 0, W, H);
 
+      /* — main network: connector lines + attached shapes (drawn first = below everything) — */
+      if (attachedShapes.length > 0) {
+        ctx.strokeStyle = CONNECTOR.color;
+        ctx.lineWidth   = CONNECTOR.width;
+        ctx.lineCap     = "round";
+        ctx.setLineDash([CONNECTOR.dashLen, CONNECTOR.dashGap]);
+
+        for (const a of attachedShapes) {
+          const aNode = nodeMap.get(a.id); if (!aNode) continue;
+          const awx = aNode.x ?? 0, awy = aNode.y ?? 0;
+          for (const hIdx of a.parentHeadIdx) {
+            ctx.beginPath();
+            ctx.moveTo(x + EMITTERS[hIdx].ox, y + EMITTERS[hIdx].oy);
+            ctx.lineTo(awx, awy);
+            ctx.stroke();
+          }
+          for (const pid of a.parentShapeIds) {
+            const pNode = nodeMap.get(pid); if (!pNode) continue;
+            ctx.beginPath();
+            ctx.moveTo(pNode.x ?? 0, pNode.y ?? 0);
+            ctx.lineTo(awx, awy);
+            ctx.stroke();
+          }
+        }
+
+        ctx.setLineDash([]);
+        for (const a of attachedShapes) {
+          const aNode = nodeMap.get(a.id); if (!aNode) continue;
+          const awx = aNode.x ?? 0, awy = aNode.y ?? 0;
+          const def = FALLING_SHAPES[a.typeIdx];
+          const oc  = getOutlineCanvas(a.typeIdx);
+          if (oc) {
+            const pad = SHAPE_OUTLINE.width + 1;
+            ctx.drawImage(oc, awx - def.w / 2 - pad, awy - def.h / 2 - pad);
+          } else {
+            const img = shapeImgs.get(a.typeIdx);
+            if (img && img.complete) ctx.drawImage(img, awx - def.w / 2, awy - def.h / 2, def.w, def.h);
+          }
+        }
+      }
+
       /* — pellets — */
-      ctx.fillStyle = PELLET.color;
       for (const p of pellets) {
         if (p.dead) continue;
         ctx.save();
         ctx.translate(p.x, p.y);
-        ctx.rotate(p.angle); // angle locked at spawn
-        ctx.fillRect(-PELLET.width / 2, -PELLET.height / 2, PELLET.width, PELLET.height);
+        ctx.rotate(p.angle);
+        ctx.fillStyle = PELLET.color;
+        ctx.beginPath();
+        ctx.roundRect(-PELLET.width / 2, -PELLET.height / 2, PELLET.width, PELLET.height, PELLET.height / 2);
+        ctx.fill();
         ctx.restore();
       }
 
-      /* — falling shapes (above pellets) — */
+      /* — falling shapes — */
       for (const s of fallingShapes) {
         if (s.dead) continue;
         const def = FALLING_SHAPES[s.typeIdx];
@@ -561,48 +941,48 @@ export default function BounceCanvas() {
         ctx.drawImage(img, s.x - def.w / 2, s.y - def.h / 2, def.w, def.h);
       }
 
-      /* — attached shapes + connector lines — */
-      if (attachedShapes.length > 0) {
-        ctx.strokeStyle = CONNECTOR.color;
-        ctx.lineWidth   = CONNECTOR.width;
-        ctx.lineCap     = "round";
+      /* — free nodes — */
+      for (const fn of freeNodes) {
+        if (fn.dead) continue;
+        const def = FALLING_SHAPES[fn.typeIdx];
+        const img = shapeImgs.get(fn.typeIdx);
+        if (!img || !img.complete) continue;
+        ctx.globalAlpha = fn.reconnecting ? 1 : 0.65;
+        ctx.drawImage(img, fn.x, fn.y, def.w, def.h);
+        ctx.globalAlpha = 1;
+      }
+
+      /* — villains rendered as DOM overlays — */
+
+      /* — autonomous clusters — */
+      ctx.strokeStyle = CONNECTOR.color;
+      ctx.lineWidth   = CONNECTOR.width;
+      ctx.lineCap     = "round";
+      for (const cl of autonomousClusters) {
+        if (cl.dead) continue;
+
         ctx.setLineDash([CONNECTOR.dashLen, CONNECTOR.dashGap]);
-
-        // Pass 1 — connector lines: head→shape and shape→shape
-        // All node positions are now world coords — no SVG offset needed.
-        for (const a of attachedShapes) {
-          const aNode = nodeMap.get(a.id);
-          if (!aNode) continue;
-          const awx = aNode.x ?? 0; // world coords
-          const awy = aNode.y ?? 0;
-
-          for (const hIdx of a.parentHeadIdx) {
-            ctx.beginPath();
-            ctx.moveTo(x + EMITTERS[hIdx].ox, y + EMITTERS[hIdx].oy); // head stays exact
-            ctx.lineTo(awx, awy);
-            ctx.stroke();
-          }
-          for (const pid of a.parentShapeIds) {
-            const pNode = nodeMap.get(pid);
-            if (!pNode) continue;
-            ctx.beginPath();
-            ctx.moveTo(pNode.x ?? 0, pNode.y ?? 0); // world coords
-            ctx.lineTo(awx, awy);
-            ctx.stroke();
-          }
+        ctx.beginPath();
+        for (const link of cl.links) {
+          const na = cl.nodes[link.a], nb = cl.nodes[link.b];
+          if (!na || !nb) continue;
+          ctx.moveTo(cl.cx + na.relX, cl.cy + na.relY);
+          ctx.lineTo(cl.cx + nb.relX, cl.cy + nb.relY);
         }
-
-        // Pass 2 — shape images on top of all connector lines
+        ctx.stroke();
         ctx.setLineDash([]);
-        for (const a of attachedShapes) {
-          const aNode = nodeMap.get(a.id);
-          if (!aNode) continue;
-          const awx = aNode.x ?? 0; // world coords
-          const awy = aNode.y ?? 0;
-          const def = FALLING_SHAPES[a.typeIdx];
-          const img = shapeImgs.get(a.typeIdx);
-          if (img && img.complete) {
-            ctx.drawImage(img, awx - def.w / 2, awy - def.h / 2, def.w, def.h);
+
+        for (const cn of cl.nodes) {
+          const absX = cl.cx + cn.relX;
+          const absY = cl.cy + cn.relY;
+          const def  = FALLING_SHAPES[cn.typeIdx];
+          const oc   = getOutlineCanvas(cn.typeIdx);
+          if (oc) {
+            const pad = SHAPE_OUTLINE.width + 1;
+            ctx.drawImage(oc, absX - def.w / 2 - pad, absY - def.h / 2 - pad);
+          } else {
+            const img = shapeImgs.get(cn.typeIdx);
+            if (img && img.complete) ctx.drawImage(img, absX - def.w / 2, absY - def.h / 2, def.w, def.h);
           }
         }
       }
@@ -610,80 +990,59 @@ export default function BounceCanvas() {
 
     gsap.ticker.add(tick);
 
-    /* ── mouse event handlers ───────────────────────────────────── */
+    /* ── mouse event handlers ─────────────────────────────────────── */
     const onMove = (e: MouseEvent) => {
-      const r = container.getBoundingClientRect();
-      mouseX = e.clientX - r.left;
-      mouseY = e.clientY - r.top;
-      // Show grab cursor when hovering a graph node
+      mouseX = e.clientX;
+      mouseY = e.clientY;
       if (!draggingNode) {
-        const over = shapeNodes.some((n) => {
-          const wx = n.x ?? 0; // world coords
-          const wy = n.y ?? 0;
-          return Math.hypot(mouseX - wx, mouseY - wy) < SIM.dragHitRadius;
-        });
-        canvas.style.cursor = over ? "grab" : "";
+        const over = shapeNodes.some((n) => Math.hypot(mouseX - (n.x ?? 0), mouseY - (n.y ?? 0)) < SIM.dragHitRadius);
+        document.body.style.cursor = over ? "grab" : "";
+      }
+      const az = zonesRef.current.activeZoneRef?.current;
+      if (az) {
+        const r   = az.getBoundingClientRect();
+        const nowIn = e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
+        if (nowIn && !isInActiveZone) {
+          isInActiveZone = true; fireMouse(e.clientX, e.clientY); mode = "active"; activeFrame = 0;
+        } else if (!nowIn && isInActiveZone) {
+          isInActiveZone = false;
+          if (mode === "active" || mode === "tapering") { mode = "tapering"; taperLeft = TAPER_SHOTS; taperFrame = ACTIVE_EVERY; }
+        }
       }
     };
 
-    const onEnter = (e: MouseEvent) => {
-      const r = container.getBoundingClientRect();
-      mouseX = e.clientX - r.left;
-      mouseY = e.clientY - r.top;
-      fireMouse();
-      mode        = "active";
-      activeFrame = 0;
-    };
-
-    const onLeave = () => {
-      if (mode === "active" || mode === "tapering") {
-        mode       = "tapering";
-        taperLeft  = TAPER_SHOTS;
-        taperFrame = ACTIVE_EVERY; // fire the first taper shot on the very next tick
-      }
-    };
-
-    /** Pin a graph node under the cursor and heat the simulation. */
     const onNodeDown = (e: MouseEvent) => {
-      if (e.target === svg) return; // let GSAP Draggable handle the robot
-      const r  = container.getBoundingClientRect();
-      const mx = e.clientX - r.left;
-      const my = e.clientY - r.top;
+      if (e.target === svg) return;
+      const mx = e.clientX, my = e.clientY;
       for (const node of shapeNodes) {
-        const wx = node.x ?? 0; // world coords
-        const wy = node.y ?? 0;
+        const wx = node.x ?? 0, wy = node.y ?? 0;
         if (Math.hypot(mx - wx, my - wy) < SIM.dragHitRadius) {
           draggingNode = node;
-          node.fx = node.x ?? 0;
-          node.fy = node.y ?? 0;
+          node.fx = wx; node.fy = wy;
           simulation.alphaTarget(SIM.alphaDragTarget).restart();
-          canvas.style.cursor = "grabbing";
+          document.body.style.cursor = "grabbing";
           break;
         }
       }
     };
 
-    /** Release the pinned node — drop back to idle target, not zero. */
     const onNodeUp = () => {
       if (draggingNode) {
-        simulation.alphaTarget(SIM.alphaIdleTarget); // keep sim alive for bouncing
-        draggingNode.fx = null;
-        draggingNode.fy = null;
-        draggingNode    = null;
-        canvas.style.cursor = "";
+        simulation.alphaTarget(SIM.alphaIdleTarget);
+        draggingNode.fx = null; draggingNode.fy = null;
+        draggingNode = null;
+        document.body.style.cursor = "";
       }
     };
 
-    container.addEventListener("mousemove",  onMove);
-    container.addEventListener("mouseenter", onEnter);
-    container.addEventListener("mouseleave", onLeave);
-    container.addEventListener("mousedown",  onNodeDown);
-    container.addEventListener("mouseup",    onNodeUp);
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mousedown", onNodeDown);
+    window.addEventListener("mouseup",   onNodeUp);
 
-    /* ── Draggable + InertiaPlugin ──────────────────────────────── */
+    /* ── Draggable + InertiaPlugin ────────────────────────────────── */
     Draggable.create(svg, {
       type: "x,y",
-      bounds: container,
+      bounds: { minX: 0, minY: 0, maxX: window.innerWidth - SVG_W, maxY: window.innerHeight - SVG_H },
       inertia: true,
       cursor: "grab",
       activeCursor: "grabbing",
@@ -697,27 +1056,19 @@ export default function BounceCanvas() {
       onThrowUpdate() {
         const cx   = Number(gsap.getProperty(svg, "x"));
         const cy   = Number(gsap.getProperty(svg, "y"));
-        const maxX = container.offsetWidth  - SVG_W;
-        const maxY = container.offsetHeight - SVG_H;
+        const maxX = window.innerWidth  - SVG_W;
+        const maxY = window.innerHeight - SVG_H;
         const dvx  = cx - prevThrowX;
         const dvy  = cy - prevThrowY;
-        prevThrowX = cx;
-        prevThrowY = cy;
-
+        prevThrowX = cx; prevThrowY = cy;
         const hitX = cx <= 1 || cx >= maxX - 1;
         const hitY = cy <= 1 || cy >= maxY - 1;
-
         if (hitX || hitY) {
-          vx = hitX ? -dvx : dvx;
-          vy = hitY ? -dvy : dvy;
-          x  = Math.max(0, Math.min(maxX, cx));
-          y  = Math.max(0, Math.min(maxY, cy));
-          gsap.set(svg, { x, y });
-          gsap.killTweensOf(svg);
+          vx = hitX ? -dvx : dvx; vy = hitY ? -dvy : dvy;
+          x = Math.max(0, Math.min(maxX, cx)); y = Math.max(0, Math.min(maxY, cy));
+          gsap.set(svg, { x, y }); gsap.killTweensOf(svg);
           paused = false;
-        } else {
-          x = cx; y = cy;
-        }
+        } else { x = cx; y = cy; }
       },
 
       onThrowComplete() {
@@ -740,34 +1091,47 @@ export default function BounceCanvas() {
       gsap.ticker.remove(tick);
       simulation.stop();
       Draggable.get(svg)?.kill();
-      container.removeEventListener("mousemove",  onMove);
-      container.removeEventListener("mouseenter", onEnter);
-      container.removeEventListener("mouseleave", onLeave);
-      container.removeEventListener("mousedown",  onNodeDown);
-      container.removeEventListener("mouseup",    onNodeUp);
-      ro.disconnect();
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mousedown", onNodeDown);
+      window.removeEventListener("mouseup",   onNodeUp);
+      window.removeEventListener("resize",    syncSize);
+      document.body.style.cursor = "";
     };
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <div ref={containerRef} className={styles.container}>
-      {/* Pellet canvas — behind SVG, pointer-events off */}
-      <canvas
-        ref={canvasRef}
-        className={styles.pelletCanvas}
-        aria-hidden="true"
-      />
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        ref={svgRef}
-        src="/SVG/the-connecter.svg"
-        alt=""
-        aria-hidden="true"
-        draggable={false}
-        width={SVG_W}
-        height={SVG_H}
-        className={styles.svg}
-      />
-    </div>
+    <>
+      <div className={styles.container}>
+        {/* Effect canvas — behind SVG, never captures pointer events */}
+        <canvas ref={canvasRef} className={styles.pelletCanvas} aria-hidden="true" />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          ref={svgRef}
+          src="/SVG/the-connecter.svg"
+          alt=""
+          aria-hidden="true"
+          draggable={false}
+          width={SVG_W}
+          height={SVG_H}
+          className={styles.svg}
+        />
+      </div>
+      {/* Villain DOM overlays — positioned each frame via direct style update */}
+      {([0, 1] as const).map(i => (
+        <div
+          key={i}
+          ref={el => { villainDomRefs.current[i] = el; }}
+          style={{
+            position: "fixed", top: 0, left: 0,
+            pointerEvents: "none", display: "none",
+          }}
+        >
+          <BulletBaby
+            ref={el => { villainBabyRefs.current[i] = el; }}
+            size={slotSizes[i]}
+          />
+        </div>
+      ))}
+    </>
   );
 }
