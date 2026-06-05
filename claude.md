@@ -3,6 +3,7 @@
 ## Agent Behaviour
 
 - **Do not auto-invoke skills** unless the user explicitly asks for one by name (e.g. `/run`, `/component-builder`). Execute tasks directly with available tools.
+- **Never build or make code changes until explicitly asked to.** Always ask clarifying questions first to verify alignment on intent and expected outcome before writing any code.
 
 ## Project Overview
 
@@ -23,7 +24,7 @@ Portfolio website for Edgar Sanchez — senior product designer, 5 years B2B/Ent
 portfolio/
 ├── .claude/skills/component-builder/SKILL.md
 ├── app/
-│   ├── page.tsx          # Home — Nav + HeroSection wired; Work section TODO
+│   ├── page.tsx          # Home — Nav + HeroSection wired; Work section 1/4 cards done
 │   ├── layout.tsx        # Root layout
 │   └── work/             # Case study routes (empty)
 ├── components/
@@ -46,7 +47,7 @@ portfolio/
 ### Home (/)
 1. Nav — sticky overlay, built ✓
 2. HeroSection — desktop + tablet (768px) + mobile (393px), built ✓
-3. Work Section — 4 CaseStudyCards, **TODO**
+3. Work Section — 4 CaseStudyCards, 1/4 wired, **3 remaining**
 
 ### About (/about) — not yet designed
 ### Resume (/resume) — not yet designed
@@ -77,8 +78,10 @@ portfolio/
 | MenuItem | `components/MenuItem.tsx` | Nav overlay link, label-2xl, GSAP hover fill |
 | Button | `components/Button.tsx` | 4 variants × 2 sizes |
 | Nav | `components/Nav.tsx` | GSAP open/close, imports Button + MenuItem |
-| HeroSection | `components/HeroSection.tsx` | GSAP entrance animation, imports Button + BounceCanvas |
-| BounceCanvas | `components/BounceCanvas.tsx` | GSAP Draggable, bouncing SVG toy |
+| HeroSection | `components/HeroSection.tsx` | GSAP entrance + expand animations, zone refs as props |
+| HeroWithCanvas | `components/HeroWithCanvas.tsx` | Client boundary — owns all zone refs, renders BounceCanvas + HeroSection |
+| BounceCanvas | `components/BounceCanvas.tsx` | Two-canvas fixed layer; GSAP Draggable + d3-force graph; exclusion zones; passive + hover firing; villain + AutonomousCluster + FreeNode systems |
+| BulletBaby | `components/BulletBaby.tsx` | Inline SVG villain renderer; GSAP hit animation (squish + shake + pink flash); exposes `VillainHandle` via `forwardRef` |
 | CaseStudyCard | `components/CaseStudyCard.tsx` | Full-card `<a>`, desktop + mobile layout |
 
 ### Button — critical notes
@@ -96,64 +99,200 @@ portfolio/
 - Typography token decisions: `--text-primary` for impact headings, `--text-secondary` for all muted text
 - Ready to wire into the Work section — see props in `components/components.md`
 
-### BounceCanvas — graph system (PIVOTING TO d3-force)
+### BulletBaby — villain hit animation component
 
-**Decision made:** The current rules-based placement system in `BounceCanvas.tsx` cannot reliably prevent crossing lines, overlapping shapes, or lines passing through the SVG body. These are layout problems — best solved by a force-directed simulation, not placement rules. **Next session starts the d3-force rewrite on branch `feature/d3-force-graph`.**
+- **File:** `components/BulletBaby.tsx`
+- Inline SVG component — both normal and hit state elements live in the DOM simultaneously
+- Exposes `VillainHandle` via `forwardRef`: `{ triggerHit: () => void; reset: () => void }`
+- Used exclusively by BounceCanvas villain overlay system — not a standalone UI component
 
----
+**State model:**
+- `isHit: boolean` (React state) — controls permanent visual switch: body color, wing, eye, brackets
+- `isFiringRef` (ref) — debounce guard, prevents re-triggering mid-animation
+- Hit state is **temporary** — `recover()` fires after 0.5s hold, restoring all elements to normal
 
-**Current state of `master` (rules-based approach — preserved as fallback)**
+**Animation sequence on `triggerHit()`:**
+1. t=0: Shake SVG (±4px, 5 cycles, 0.2s total)
+2. t=0: Eye rect squishes (`scaleY → 0`, `opacity → 0`, 0.08s) + wing fades out
+3. t=0.08: `setIsHit(true)` → body turns `#FF7878`, brackets appear, eye removed from DOM
+4. t=0.08: Impact lines flash in → fade out over 0.18s
+5. t=0.08+0.5s: `recover()` → body back to `#0B0B0D`, eye re-opens, wing returns, brackets hide
 
-All tuning constants live in the `CONNECTOR` block at the top of `BounceCanvas.tsx`. The system works but has unresolvable layout issues at scale.
+**SVG assets:**
+- Normal state: `public/SVG/bullet-baby.svg` (dark body, light blue accents, wing highlight, dark eye rect at 80,41)
+- Hit state elements baked into component: `#FF7878` body, bracket squint paths at (53–67, 25–38)
+- `bullet-baby-hit.svg` in `public/SVG/` — reference design only, not loaded at runtime
 
-- `AttachedShape` fields: `id`, `depth`, `lx/ly`, `rlx/rly`, `parentHeadIdx`, `parentShapeIds`
-- Draw order: connector lines (Pass 1, explicit edges only) → shape images (Pass 2)
-- Rules in `connectShape()`: directional gate on heads + child shapes, `HEAD_MAX_CHILDREN: 3`, `SHAPE_MAX_CHILDREN: 2`, `CHAIN_MAX: 3`, `HEAD_BIAS: 0.6`, sibling angular spread, ripple settle
+**`VillainHandle` API:**
+- `triggerHit()` — starts animation; no-op if already firing or in hit state
+- `reset()` — kills timeline, sets `isHit → false`, clears GSAP transforms; called by BounceCanvas when villain dies off-screen
 
----
+### BounceCanvas — full-page fixed layer ✅ ALL STAGES COMPLETE
 
-**d3-force rewrite — what to build next session**
+**Packages installed:** `d3-force` + `@types/d3-force` (both in package.json).
 
-**Branch:** `feature/d3-force-graph` (already created, checked out from master)
+**Architecture — two-canvas fixed layer:**
+- **`networkCanvas`** (`styles.networkCanvas`) — `position: fixed; inset: 0; z-index: 1` — draws d3 network (connector lines + attached shapes). Sits behind `heroBottomWrapper` (z-index 1, later in DOM) so the subline text wins.
+- **`.container`** — `position: fixed; inset: 0; z-index: 2` — holds the pellet canvas + robot img. Floats above the blue card and subline.
+- `pointer-events: none` on both canvases and container; `pointer-events: auto` on robot `<img>` only.
+- All mouse events at `window` level — canvas coords = viewport coords, no offset needed.
 
-**Install first:** `npm install d3-force` — only this package, not full d3
+**Page stacking context (critical — do not change without understanding this):**
+- `html` — `background: var(--surface-base)` — root layer
+- `BounceCanvas networkCanvas` — `z-index: 1`, rendered **before** heroBottomWrapper in DOM → d3 network goes **behind** subline
+- `.heroBottomWrapper` — `z-index: 1`, later in DOM → blue card + subline paint **above** network
+- `BounceCanvas .container` — `z-index: 2` — robot + pellets + falling shapes above blue card
+- `.heroTopContent` — `z-index: 3` — headline/role text above everything
+- `.hero` — **no** `isolation: isolate`, **no** explicit `z-index` — children compete in root context
+- Nav — `z-index: ~100` — always on top
 
-**What stays (do not rewrite):**
-- GSAP bouncing SVG, Draggable, InertiaPlugin
-- Pellet firing system — passive bursts, active mouse-tracking, taper mode
-- Falling shape spawn logic and AABB collision detection
-- Custom SVG rendering — `object.svg` and `object2.svg` (not circles)
-- The topology rules: directional gate, head caps, chain max, shape children cap — these control *who connects to who*, d3-force only controls *where nodes end up*
+**Exclusion zone system (dynamic DOM-measured bounds):**
+- `textZones` — robot overlaps `overlapPx` (default 16px) into the zone edge (behind text)
+- `gapZones` — robot stays `gapPx` (default 16px) clear of zone edge
+- `activeZoneRef` — mouse entering triggers active firing mode
+- `spawnZoneRef` — falling shapes spawn from top edge within this element's X bounds
+- Bounds computed each frame via `getBoundingClientRect()` — fully responsive
 
-**What gets replaced:**
-- Manual snap position calculation (attachment angle + exclusion zone + elastic tween)
-- `lx/ly` + `rlx/rly` position storage on `AttachedShape`
-- The `ripple settle` GSAP tweens (d3-force continuous simulation replaces this)
+**L-shape logic in `getEffectiveBounds(sx, sy)`:**
+- For each zone ref, checks if robot's Y overlaps with zone's Y range
+- Determines side (left/right) from zone center X vs canvas midpoint
+- Left zone → constrains `minX`; right zone → constrains `maxX`
+- Text zones use `r.right - overlapPx` / `r.left + overlapPx`; gap zones use `r.right + gapPx` / `r.left - gapPx`
 
-**How the hybrid works:**
-1. d3-force simulation runs in **local coordinates** (relative to SVG top-left). Nodes follow the SVG as it bounces — each draw frame, add SVG world position to all node positions when rendering.
-2. **4 head nodes are fixed** — use `fx/fy` (d3 fixed position) pinned to EMITTER offsets. They never move in the simulation.
-3. **Forces to configure:**
-   - `forceManyBody` — charge repulsion, nodes push apart (prevents overlaps)
-   - `forceLink` — edges pull connected nodes to a target distance (controls arm length)
-   - `forceCollide` — hard collision radius = half the largest shape diameter (no visual overlap)
-   - `forceCenter` (weak) — keeps graph from drifting; center = SVG local center (60, 60)
-   - Do NOT use `forceRadial` — it creates circular layouts, we want organic
-4. **On shape capture** (pellet hits falling shape): add new d3 node + link to simulation via `simulation.nodes([...])` and `forceLink.links([...])`, then call `simulation.alpha(0.3).restart()` — graph breathes open to accommodate the new node
-5. **Drawing each frame:** iterate `simulation.nodes()` for positions, draw lines then shapes on canvas
+**Active firing (window-level mousemove):**
+- Tracks `isInActiveZone` by checking mouse coords vs `activeZoneRef.getBoundingClientRect()`
+- Enter zone → `mode = "active"`; leave zone → `mode = "tapering"`
 
-**Visual requirements confirmed:**
-- Custom SVG shapes (object.svg, object2.svg) — not circles
-- All nodes connected to one of the 4 SVG heads — no floating disconnected groups
-- Organic overall shape — NOT a perfect circle (avoid forceRadial; topology drives shape)
-- No overlapping connections — forceCollide handles this
-- No lines crossing through SVG body — forceLink distance + charge keeps nodes outward
+**`getEffectiveBounds(sx, sy, svy)` — Y lookahead:**
+- Passes current `vy` as `svy` so the X constraint pre-activates 60px before zone entry
+- Prevents jolts when zone boundary suddenly shifts and robot is already past the new X limit
+- X violations resolve via lerp (`x += (target - x) * 0.18`) rather than hard-snap
 
-**Key constraint:** The SVG bounces continuously. Fixed head nodes must update their `fx/fy` every tick to follow the SVG's current world position... actually NO — keep everything in local coords, only convert to world coords when drawing. Simulation is unaware of the SVG's world position.
+**Current wiring (`HeroWithCanvas.tsx`):**
+```
+textZones   → [headlineZoneRef, sublineZoneRef]   // overlap 16px
+gapZones    → [buttonGroupZoneRef]                 // 16px clearance
+activeZone  → heroZoneRef (full hero section)      // entire hero triggers active firing
+spawnZone   → heroZoneRef (full hero section)      // shapes fall within hero X bounds
+```
+
+**Pellet config (Cuphead-inspired):**
+- `PELLET.speed: 8` px/frame
+- `PASSIVE.rapidInterval: 300ms`, `rapidCount: 2`
+- `ACTIVE_EVERY: 8` frames (~133ms)
+- White capsule — no custom pellet props
+
+**d3-force simulation constants (`SIM` block at top of BounceCanvas.tsx):**
+- `linkDistance: 120` — spread out for full-viewport canvas
+- `chargeStrength: -120` — strong repulsion keeps graph from clustering
+- `collideRadius: 30` — wide personal space between nodes
+- `alphaDecay: 0.02`, `alphaIdleTarget: 0.05` — keeps graph gently ticking
+
+**Falling shapes — manual pool, 10 entries:**
+- Add to `FALLING_SHAPES` array at top of file with `{ src, w, h }` — no code changes needed elsewhere
+- Spawn top-edge only, X constrained to `spawnZoneRef` bounds (hero section)
+- Falls back to full viewport width if `spawnZoneRef` not provided
+- `SPAWN.maxActive: 4`, speed: 1.5 px/frame
+- Current pool (8→56px range):
+  ```
+  object.svg (40×40), object2.svg (20×20),
+  bullet-baby.svg (8×8), baby-star.svg (16×16), baby-diamond.svg (20×20),
+  baby-clover.svg (24×24), baby-pieChart.svg (28×28), baby-pieChart-1.svg (32×32),
+  double-diamond.svg (44×44), beach-ball.svg (56×56)
+  ```
+
+**Villain system (`VILLAIN` + `CLUSTER` config blocks):**
+
+*Villain rendering — DOM overlay (not canvas):*
+- Villains are rendered as `BulletBaby` React components in fixed-position `<div>` overlays
+- BounceCanvas renders `VILLAIN.maxCount` (2) overlay slots in its JSX, each initially `display: none`
+- Each frame, the animation loop updates `el.style.transform` and `el.style.display` directly (no React re-render)
+- Villains are assigned a `slotIdx` (0 or 1) on spawn; slots are freed when villain dies off-screen
+- Canvas no longer draws villains — only tracks position/velocity/state
+
+*Villain movement:*
+- Size: 120×120px
+- Enters from a random screen edge, travels straight across on one axis, dies when fully off-screen
+- Rotation by entry edge: left/right → 0°, top → +90° (CW), bottom → −90° (CCW)
+- No bouncing — strictly cross-screen travel
+- Up to `maxCount: 2` active, one spawns every `spawnDelay: 6000ms`
+
+*Pellet → villain hit animation:*
+- Pellet AABB collision detected in the pellet loop (after shape-hit check)
+- On hit: pellet dies, `v.isHit = true` (prevents re-triggering), `villainBabyRefs.current[v.slotIdx]?.triggerHit()` called
+- **Hit animation sequence (BulletBaby):**
+  1. Shake (whole SVG, ±4px, 5 cycles)
+  2. Eye rect squishes (`scaleY → 0`, fades out) + wing highlight fades simultaneously
+  3. Body fill → `#FF7878` (pink), bracket squint eyes appear — all via React state (`isHit`)
+  4. Impact lines flash in then out
+  5. **Recovers after 0.5s** — body returns to `#0B0B0D`, eye opens, wing returns, brackets hide
+- Hit state is **temporary** — villain returns to original SVG after recovery
+- When villain dies off-screen: `villainBabyRefs.current[v.slotIdx]?.reset()` resets the slot for reuse
+
+*Robot contact → AutonomousCluster:*
+- Villain overlaps robot → `spawnCluster(hitX, hitY)` called
+- Picks the d3 node closest to the impact point as center, plus up to `CLUSTER.branchCount: 5` nearest neighbours
+- All selected nodes detached from the main d3 network via `removeShapesFromNetwork()`
+- Cluster gets random initial direction at `CLUSTER.speed`, bounces off all 4 viewport edges
+- Internal layout: spring-force — each branch node pulled toward its `targetRelX/Y` offset from cluster center (`springK: 0.04`, `damping: 0.88`)
+- Drawn with dashed yellow connector lines (star topology: center → each branch) + shape images with outline
+
+*Villain contact with cluster → scatter:*
+- Villain overlaps any cluster node → all cluster nodes ejected as `FreeNode[]`
+- Each free node gets burst velocity outward from cluster center (`burstSpeed: 3` px/frame) + random variance
+- Cluster marked dead, villain flashes
+
+*Free nodes:*
+- Drift with `vx *= 0.995` friction per frame, bounce off viewport edges
+- Drawn at 65% opacity — permanently on screen (no re-attach)
+
+*`hitCooldown: 45` frames* — prevents same villain from triggering again immediately
+
+**Key config blocks (all at top of BounceCanvas.tsx):**
+- `PELLET` — pellet size, speed, color
+- `PASSIVE` — passive firing cadence timings
+- `ACTIVE_EVERY` / `TAPER_SHOTS` — hover firing frame constants
+- `CONNECTOR` — line style + topology rules
+- `SIM` — force simulation constants
+- `SHAPE_OUTLINE` — attached shape border color + width
+- `SPAWN` — shape spawn timing + cap
+- `VILLAIN` — villain size, speed, entry, flash/cooldown durations, burst speed
+- `CLUSTER` — autonomous cluster speed, branch count, spring stiffness, damping
+
+### HeroSection — expand / collapse animation ✅ COMPLETE
+
+**Char wrapping (runs before entrance animation on mount):**
+- `headlineCharsByLineRef` — `HTMLSpanElement[][]`, index 0/1/2 = line 1/2/3
+- Each `headlineLine` split into per-char `span.headlineChar` (`display: inline-block; white-space: pre`)
+- Line 2 (`in Data-rich`): plain text chars + `headlineAccent` wrapper preserved with its chars split inside
+- Char wrapping `useEffect` declared before entrance animation effect → fires first
+
+**Expand animation (button in imgContainer bottom-right):**
+All three run in one GSAP timeline from `t=0`:
+1. Role row — `opacity → 0`, `y → -16px`, `duration: 0.4s`, `ease: power2.in`
+2. heroBottomWrapper — height snapshotted via `getBoundingClientRect()` into `bottomHeightRef`, locked with `gsap.set`, tweened to `0`, `duration: 0.55s`
+3. Headline chars — CCW wheel-roll off left edge, line by line with `EXPAND_ANIM.lineDelay` stagger
+   - Per-char: `x = -(rect.left + rect.width + 20)`, `rotation = -(exitDist / (height/2)) × (180/π)`
+   - `charDuration: 0.6s`, `charStagger: 0.04s`, `ease: power2.in`
+   - GSAP function-based values evaluated at tween init — natural positions guaranteed
+
+**Collapse (reverse):**
+1. heroBottomWrapper rises — `height: 0 → bottomHeightRef.current`, `clearProps:"height"` on complete
+2. Chars roll CW back in — `x → 0`, `rotation → 0`, stagger `from: "start"` (left-to-right cascade)
+3. Role row fades back in at `t=0.3` — `opacity → 1`, `y → 0`
+
+**`EXPAND_ANIM` constants** (top of HeroSection.tsx):
+```ts
+charDuration: 0.6   // s — each char's roll
+charStagger:  0.04  // s — between chars in a line
+lineDelay:    0.18  // s — before each successive line starts
+```
+
+**`expandedRef`** — `useRef<boolean>` guards against double-clicks mid-animation. State `expanded` only flips in `onComplete`.
 
 ## What's Next
 
-- [ ] Build Work section in `app/page.tsx` with 4 `CaseStudyCard` instances
+- [ ] Complete Work section — 3 more `CaseStudyCard` instances in `app/page.tsx` (1/4 wired)
 - [ ] Wire up case study routes in `app/work/`
 - [ ] Design About and Resume pages
 - [ ] **Fluid typography** — replace all static `font-size` token values in `globals.css` with `clamp()` expressions and remove the `@media (max-width: 393px)` font-size overrides
