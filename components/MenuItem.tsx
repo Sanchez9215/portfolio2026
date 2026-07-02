@@ -8,11 +8,11 @@
  *   a.menu-item
  *   ├── div.fill        — animated blue bg, slides up on hover
  *   └── div.content     — flex row, left-padded
- *       ├── label       — uppercase Clash Display semibold, label-2xl
+ *       ├── label       — uppercase Clash Display semibold, display-sm
  *       └── icon        — 48×48 container, opacity 0 → 1 on hover
  *           └── goArrow — northeast arrow SVG (inlined for currentColor)
  *
- * Tokens: nav.menu-item-* + typography.label-2xl (design-system/tokens.json)
+ * Tokens: nav.menu-item-* + typography.display-sm (design-system/tokens.json)
  * Spec:   components/components.md → menu-item
  */
 
@@ -35,7 +35,7 @@ export default function MenuItem({ href, label }: MenuItemProps) {
       {/* div.content — layout row, left pad */}
       <div className={styles.content}>
 
-        {/* label — uppercase, Clash Display semibold, label-2xl */}
+        {/* label — uppercase, Clash Display semibold, display-sm */}
         <span className={styles.label}>{label}</span>
 
         {/* icon — goArrow, hidden until hover */}

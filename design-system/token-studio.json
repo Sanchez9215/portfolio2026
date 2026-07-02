@@ -1,0 +1,424 @@
+{
+  "color": {
+    "surface": {
+      "base":              { "value": "#0B0B0D", "type": "color" },
+      "card":              { "value": "#151719", "type": "color" },
+      "card-border":       { "value": "#2B2E33", "type": "color" },
+      "card-border-hover": { "value": "#FFD53C", "type": "color" }
+    },
+    "nav": {
+      "bg":                    { "value": "#151719", "type": "color" },
+      "link-text":             { "value": "#ABB7CB", "type": "color" },
+      "menu-item-text":        { "value": "#FBFCFF", "type": "color" },
+      "menu-item-border":      { "value": "#2B2E33", "type": "color" },
+      "menu-item-border-hover":{ "value": "#0F8FFF", "type": "color" },
+      "menu-item-bg-hover":    { "value": "#0F8FFF", "type": "color" }
+    },
+    "action": {
+      "primary-bg":            { "value": "#FFD53C", "type": "color" },
+      "primary-bg-hover":      { "value": "#0B0B0D", "type": "color" },
+      "primary-border":        { "value": "#FFD53C", "type": "color" },
+      "primary-border-hover":  { "value": "#FFD53C", "type": "color" },
+      "primary-text":          { "value": "#0B0B0D", "type": "color" },
+      "primary-text-hover":    { "value": "#FFD53C", "type": "color" },
+      "secondary-bg":          { "value": "#0B0B0D", "type": "color" },
+      "secondary-bg-hover":    { "value": "#FBFCFF", "type": "color" },
+      "secondary-border":      { "value": "#0B0B0D", "type": "color" },
+      "secondary-border-hover":{ "value": "#0B0B0D", "type": "color" },
+      "secondary-text":        { "value": "#FBFCFF", "type": "color" },
+      "secondary-text-hover":  { "value": "#0B0B0D", "type": "color" },
+      "outline-bg":            { "value": "#0B0B0D", "type": "color" },
+      "outline-bg-hover":      { "value": "#FFD53C", "type": "color" },
+      "outline-border":        { "value": "#FFD53C", "type": "color" },
+      "outline-border-hover":  { "value": "#FFD53C", "type": "color" },
+      "outline-text":          { "value": "#FFD53C", "type": "color" },
+      "outline-text-hover":    { "value": "#0B0B0D", "type": "color" },
+      "ghost-text":            { "value": "#ABB7CB", "type": "color" },
+      "ghost-text-hover":      { "value": "#FFD53C", "type": "color" }
+    },
+    "text": {
+      "primary":          { "value": "#FBFCFF", "type": "color" },
+      "secondary":        { "value": "#ABB7CB", "type": "color" },
+      "accent":           { "value": "#0F8FFF", "type": "color" },
+      "case-study-hover": { "value": "#FFD53C", "type": "color" },
+      "display":          { "value": "#D6E5FE", "type": "color" },
+      "dark-display":     { "value": "#0B0B0D", "type": "color" }
+    }
+  },
+
+  "typography": {
+    "desktop": {
+      "display-2xl": {
+        "value": {
+          "fontFamily": "Clash Display",
+          "fontWeight": "700",
+          "fontSize": "72",
+          "lineHeight": "79",
+          "letterSpacing": "-0.02em"
+        },
+        "type": "typography"
+      },
+      "display-xl": {
+        "value": {
+          "fontFamily": "Clash Display",
+          "fontWeight": "700",
+          "fontSize": "64",
+          "lineHeight": "70",
+          "letterSpacing": "-0.02em"
+        },
+        "type": "typography"
+      },
+      "display-xl-sm": {
+        "value": {
+          "fontFamily": "Clash Display",
+          "fontWeight": "700",
+          "fontSize": "52",
+          "lineHeight": "57",
+          "letterSpacing": "-0.02em"
+        },
+        "type": "typography"
+      },
+      "display-lg": {
+        "value": {
+          "fontFamily": "Clash Display",
+          "fontWeight": "700",
+          "fontSize": "48",
+          "lineHeight": "53",
+          "letterSpacing": "-0.02em"
+        },
+        "type": "typography"
+      },
+      "display-md": {
+        "value": {
+          "fontFamily": "Clash Display",
+          "fontWeight": "700",
+          "fontSize": "24",
+          "lineHeight": "26",
+          "letterSpacing": "-0.02em"
+        },
+        "type": "typography"
+      },
+      "display-sm": {
+        "value": {
+          "fontFamily": "Clash Display",
+          "fontWeight": "700",
+          "fontSize": "20",
+          "lineHeight": "22",
+          "letterSpacing": "-0.02em"
+        },
+        "type": "typography"
+      },
+      "heading-xl": {
+        "value": {
+          "fontFamily": "Cabinet Grotesk",
+          "fontWeight": "700",
+          "fontSize": "32",
+          "lineHeight": "40",
+          "letterSpacing": "-0.01em"
+        },
+        "type": "typography"
+      },
+      "heading-lg": {
+        "value": {
+          "fontFamily": "Cabinet Grotesk",
+          "fontWeight": "700",
+          "fontSize": "24",
+          "lineHeight": "30",
+          "letterSpacing": "-0.01em"
+        },
+        "type": "typography"
+      },
+      "heading-md": {
+        "value": {
+          "fontFamily": "Cabinet Grotesk",
+          "fontWeight": "700",
+          "fontSize": "18",
+          "lineHeight": "22",
+          "letterSpacing": "-0.01em"
+        },
+        "type": "typography"
+      },
+      "heading-sm": {
+        "value": {
+          "fontFamily": "Cabinet Grotesk",
+          "fontWeight": "700",
+          "fontSize": "16",
+          "lineHeight": "20",
+          "letterSpacing": "-0.01em"
+        },
+        "type": "typography"
+      },
+      "heading-xs": {
+        "value": {
+          "fontFamily": "Cabinet Grotesk",
+          "fontWeight": "700",
+          "fontSize": "14",
+          "lineHeight": "17",
+          "letterSpacing": "-0.01em"
+        },
+        "type": "typography"
+      },
+      "body-lg": {
+        "value": {
+          "fontFamily": "Cabinet Grotesk",
+          "fontWeight": "400",
+          "fontSize": "16",
+          "lineHeight": "24",
+          "letterSpacing": "0"
+        },
+        "type": "typography"
+      },
+      "body-md": {
+        "value": {
+          "fontFamily": "Cabinet Grotesk",
+          "fontWeight": "400",
+          "fontSize": "14",
+          "lineHeight": "21",
+          "letterSpacing": "0"
+        },
+        "type": "typography"
+      },
+      "body-sm": {
+        "value": {
+          "fontFamily": "Cabinet Grotesk",
+          "fontWeight": "400",
+          "fontSize": "12",
+          "lineHeight": "18",
+          "letterSpacing": "0"
+        },
+        "type": "typography"
+      },
+      "label-2xl": {
+        "value": {
+          "fontFamily": "Clash Display",
+          "fontWeight": "600",
+          "fontSize": "40",
+          "lineHeight": "44",
+          "letterSpacing": "0",
+          "textCase": "uppercase"
+        },
+        "type": "typography"
+      },
+      "label-xl": {
+        "value": {
+          "fontFamily": "Clash Display",
+          "fontWeight": "600",
+          "fontSize": "24",
+          "lineHeight": "30",
+          "letterSpacing": "0",
+          "textCase": "uppercase"
+        },
+        "type": "typography"
+      },
+      "label-md": {
+        "value": {
+          "fontFamily": "Clash Display",
+          "fontWeight": "600",
+          "fontSize": "16",
+          "lineHeight": "24",
+          "letterSpacing": "0",
+          "textCase": "uppercase"
+        },
+        "type": "typography"
+      },
+      "label-sm": {
+        "value": {
+          "fontFamily": "Clash Display",
+          "fontWeight": "600",
+          "fontSize": "14",
+          "lineHeight": "21",
+          "letterSpacing": "0",
+          "textCase": "uppercase"
+        },
+        "type": "typography"
+      }
+    },
+
+    "mobile": {
+      "display-2xl": {
+        "value": {
+          "fontFamily": "Clash Display",
+          "fontWeight": "700",
+          "fontSize": "40",
+          "lineHeight": "44",
+          "letterSpacing": "-0.02em"
+        },
+        "type": "typography"
+      },
+      "display-xl": {
+        "value": {
+          "fontFamily": "Clash Display",
+          "fontWeight": "700",
+          "fontSize": "32",
+          "lineHeight": "35",
+          "letterSpacing": "-0.02em"
+        },
+        "type": "typography"
+      },
+      "display-xl-sm": {
+        "value": {
+          "fontFamily": "Clash Display",
+          "fontWeight": "700",
+          "fontSize": "26",
+          "lineHeight": "29",
+          "letterSpacing": "-0.02em"
+        },
+        "type": "typography"
+      },
+      "display-lg": {
+        "value": {
+          "fontFamily": "Clash Display",
+          "fontWeight": "700",
+          "fontSize": "28",
+          "lineHeight": "31",
+          "letterSpacing": "-0.02em"
+        },
+        "type": "typography"
+      },
+      "display-md": {
+        "value": {
+          "fontFamily": "Clash Display",
+          "fontWeight": "700",
+          "fontSize": "18",
+          "lineHeight": "20",
+          "letterSpacing": "-0.02em"
+        },
+        "type": "typography"
+      },
+      "display-sm": {
+        "value": {
+          "fontFamily": "Clash Display",
+          "fontWeight": "700",
+          "fontSize": "16",
+          "lineHeight": "18",
+          "letterSpacing": "-0.02em"
+        },
+        "type": "typography"
+      },
+      "heading-xl": {
+        "value": {
+          "fontFamily": "Cabinet Grotesk",
+          "fontWeight": "700",
+          "fontSize": "20",
+          "lineHeight": "25",
+          "letterSpacing": "-0.01em"
+        },
+        "type": "typography"
+      },
+      "heading-lg": {
+        "value": {
+          "fontFamily": "Cabinet Grotesk",
+          "fontWeight": "700",
+          "fontSize": "18",
+          "lineHeight": "22",
+          "letterSpacing": "-0.01em"
+        },
+        "type": "typography"
+      },
+      "heading-md": {
+        "value": {
+          "fontFamily": "Cabinet Grotesk",
+          "fontWeight": "700",
+          "fontSize": "16",
+          "lineHeight": "20",
+          "letterSpacing": "-0.01em"
+        },
+        "type": "typography"
+      },
+      "heading-sm": {
+        "value": {
+          "fontFamily": "Cabinet Grotesk",
+          "fontWeight": "700",
+          "fontSize": "14",
+          "lineHeight": "17",
+          "letterSpacing": "-0.01em"
+        },
+        "type": "typography"
+      },
+      "heading-xs": {
+        "value": {
+          "fontFamily": "Cabinet Grotesk",
+          "fontWeight": "700",
+          "fontSize": "12",
+          "lineHeight": "15",
+          "letterSpacing": "-0.01em"
+        },
+        "type": "typography"
+      },
+      "body-lg": {
+        "value": {
+          "fontFamily": "Cabinet Grotesk",
+          "fontWeight": "400",
+          "fontSize": "16",
+          "lineHeight": "24",
+          "letterSpacing": "0"
+        },
+        "type": "typography"
+      },
+      "body-md": {
+        "value": {
+          "fontFamily": "Cabinet Grotesk",
+          "fontWeight": "400",
+          "fontSize": "14",
+          "lineHeight": "21",
+          "letterSpacing": "0"
+        },
+        "type": "typography"
+      },
+      "body-sm": {
+        "value": {
+          "fontFamily": "Cabinet Grotesk",
+          "fontWeight": "400",
+          "fontSize": "12",
+          "lineHeight": "18",
+          "letterSpacing": "0"
+        },
+        "type": "typography"
+      },
+      "label-2xl": {
+        "value": {
+          "fontFamily": "Clash Display",
+          "fontWeight": "600",
+          "fontSize": "24",
+          "lineHeight": "26",
+          "letterSpacing": "0",
+          "textCase": "uppercase"
+        },
+        "type": "typography"
+      },
+      "label-xl": {
+        "value": {
+          "fontFamily": "Clash Display",
+          "fontWeight": "600",
+          "fontSize": "18",
+          "lineHeight": "22",
+          "letterSpacing": "0",
+          "textCase": "uppercase"
+        },
+        "type": "typography"
+      },
+      "label-md": {
+        "value": {
+          "fontFamily": "Clash Display",
+          "fontWeight": "600",
+          "fontSize": "16",
+          "lineHeight": "24",
+          "letterSpacing": "0",
+          "textCase": "uppercase"
+        },
+        "type": "typography"
+      },
+      "label-sm": {
+        "value": {
+          "fontFamily": "Clash Display",
+          "fontWeight": "600",
+          "fontSize": "14",
+          "lineHeight": "21",
+          "letterSpacing": "0",
+          "textCase": "uppercase"
+        },
+        "type": "typography"
+      }
+    }
+  }
+}

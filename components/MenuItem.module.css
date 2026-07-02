@@ -48,13 +48,14 @@
   padding-left: var(--spacing-3xl);
 }
 
-/* label — Clash Display semibold, uppercase, label-2xl scale */
+/* label — Clash Display semibold, uppercase, display-sm scale */
 .label {
   font-family: var(--font-family-display);
   font-weight: var(--font-weight-semibold);
-  font-size: var(--text-label-2xl-size);
-  line-height: var(--text-label-2xl-lh);
-  letter-spacing: var(--text-label-2xl-ls);
+  font-size: var(--text-display-sm-size);
+  line-height: var(--text-display-sm-lh);
+  letter-spacing: var(--text-display-sm-ls);
+  word-spacing: var(--word-spacing-display);
   text-transform: uppercase;
   white-space: nowrap;
   color: var(--nav-menu-item-text);
@@ -87,7 +88,7 @@
 
 /* ============================================================
    Mobile overrides (393 px)
-   label-2xl: 40px desktop → 24px mobile
+   display-sm font-size/lh handled by clamp — no label override needed
    ============================================================ */
 @media (max-width: 393px) {
   .menu-item {
@@ -96,10 +97,5 @@
 
   .content {
     padding-left: var(--spacing-xl);
-  }
-
-  .label {
-    font-size: var(--text-label-2xl-size);   /* resolves to 24px via globals.css mobile override */
-    line-height: var(--text-label-2xl-lh);
   }
 }

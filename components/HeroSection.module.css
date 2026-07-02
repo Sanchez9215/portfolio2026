@@ -50,6 +50,7 @@
   z-index: 3; /* above BounceCanvas (z-index:2) */
   flex: 1 1 auto;
   min-height: 0;
+  pointer-events: none; /* transparent to mouse — lets robot be grabbed beneath */
 }
 
 /* ── div.headlineContainer ────────────────────────────────── */
@@ -65,6 +66,7 @@
   flex: 1 1 0;
   min-width: 0;
   padding: var(--spacing-xl);
+  pointer-events: none; /* pass through — no interactive elements here */
 }
 
 /* ── div.role ─────────────────────────────────────────────── */
@@ -168,6 +170,7 @@
   min-width: 0;
   height: 100%;
   position: relative;
+  pointer-events: none; /* pass through — expandBtn restores auto below */
 }
 
 /* ── button.expandBtn ─────────────────────────────────────── */
@@ -188,6 +191,7 @@
   display:         flex;
   align-items:     center;
   justify-content: center;
+  pointer-events:  auto; /* restore — parent imgContainer is pointer-events:none */
 
   /* Glassmorphism pill — legible on both light and dark canvas backgrounds */
   background:          rgba(11, 11, 13, 0.40); /* --color-grey-950 @40% */
@@ -239,7 +243,7 @@
  * CSS shorthand order: tl tr br bl
  */
 .heroBottomContent {
-  background-color: var(--color-blue-500);
+  background-color: transparent;
   border-radius: var(--radius-lg) 0 var(--radius-lg) var(--radius-lg);
   padding: var(--spacing-xl);
   display: flex;
@@ -267,7 +271,7 @@
   line-height: 1.1;
   letter-spacing: var(--text-display-2xl-ls);
   text-transform: uppercase;
-  color: var(--text-dark-display);
+  color: var(--text-display);
   text-align: right;
 }
 

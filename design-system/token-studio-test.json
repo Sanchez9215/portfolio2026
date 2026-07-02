@@ -1,0 +1,45 @@
+{
+  "surface": {
+    "base": { "value": "#0B0B0D", "type": "color" },
+    "card": { "value": "#151719", "type": "color" }
+  },
+  "text": {
+    "primary": { "value": "#FBFCFF", "type": "color" },
+    "secondary": { "value": "#ABB7CB", "type": "color" },
+    "accent": { "value": "#0F8FFF", "type": "color" }
+  },
+  "typography": {
+    "desktop": {
+      "display-2xl": {
+        "value": {
+          "fontFamily": "Clash Display",
+          "fontWeight": "700",
+          "fontSize": "72",
+          "lineHeight": "79",
+          "letterSpacing": "-0.02em"
+        },
+        "type": "typography"
+      },
+      "body-md": {
+        "value": {
+          "fontFamily": "Cabinet Grotesk",
+          "fontWeight": "400",
+          "fontSize": "14",
+          "lineHeight": "21",
+          "letterSpacing": "0"
+        },
+        "type": "typography"
+      },
+      "label-md": {
+        "value": {
+          "fontFamily": "Clash Display",
+          "fontWeight": "600",
+          "fontSize": "16",
+          "lineHeight": "24",
+          "letterSpacing": "0"
+        },
+        "type": "typography"
+      }
+    }
+  }
+}

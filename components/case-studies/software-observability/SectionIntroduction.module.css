@@ -1,0 +1,74 @@
+/* ============================================================
+   SectionIntroduction — case study intro section
+   Grid: cs-grid (12-col, column-gap --spacing-xl, padding-inline --spacing-xl)
+   All values resolve through CSS custom properties → tokens.json.
+   ============================================================ */
+
+/* section.introduction — grid container */
+.introduction {
+  padding-block: var(--spacing-3xl) var(--spacing-5xl);
+  row-gap:       var(--spacing-3xl);
+}
+
+/* full-width ImgCard wrapper */
+.heroImage {
+  grid-column: 1 / -1;
+}
+
+/* placeholder until real image is supplied */
+.imagePlaceholder {
+  width:      100%;
+  height:     100%;
+  background: var(--surface-card);
+}
+
+/* div.project-overview — cols 1–6 */
+.projectOverview {
+  grid-column:    1 / 7;
+  display:        flex;
+  flex-direction: column;
+  gap:            var(--spacing-2xl);
+}
+
+/* div.intro — title + subtitle stack */
+.intro {
+  display:        flex;
+  flex-direction: column;
+  gap:            var(--spacing-md);
+}
+
+/* h1 — display-lg, Clash Display semibold, uppercase */
+.title {
+  font-family:    var(--font-family-display);
+  font-weight:    var(--font-weight-semibold);
+  font-size:      var(--text-display-lg-size);
+  line-height:    var(--text-display-lg-lh);
+  letter-spacing: var(--text-display-lg-ls);
+  word-spacing:   var(--word-spacing-display);
+  text-transform: uppercase;
+  color:          var(--text-display);
+}
+
+/* p — body-lg, Cabinet Grotesk regular */
+.subtitle {
+  font-family:    var(--font-family-body);
+  font-weight:    var(--font-weight-regular);
+  font-size:      var(--text-body-lg-size);
+  line-height:    var(--text-body-lg-lh);
+  letter-spacing: var(--text-body-lg-ls);
+  color:          var(--text-body-highlight);
+}
+
+/* div.project-meta — 3 TextBlock xs side by side */
+.projectMeta {
+  display: flex;
+  gap:     var(--spacing-xl);
+}
+
+/* div.project-impact — cols 8–12 */
+.projectImpact {
+  grid-column:    8 / 13;
+  display:        flex;
+  flex-direction: column;
+  gap:            var(--spacing-xl);
+}

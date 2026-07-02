@@ -10,9 +10,9 @@ export default function Home() {
         <HeroWithCanvas />
 
         {/* Work section — preview */}
-        <section id="work" style={{ padding: '80px var(--spacing-md)', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+        <section id="work" style={{ padding: '80px var(--spacing-md)', display: 'flex', flexDirection: 'column', gap: '24px', position: 'relative', zIndex: 1 }}>
           <CaseStudyCard
-            href="/work/softwareobservability"
+            href="/work/software-observability"
             title={"Software\nObservability"}
             category="Overview"
             description="XOPS' Software Observability module gives enterprises real-time visibility into license ownership, spend, and utilization to identify waste and drive reclamation and cost optimization."

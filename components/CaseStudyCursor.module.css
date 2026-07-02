@@ -34,6 +34,7 @@
   font-size:      var(--text-label-xl-size);
   line-height:    var(--text-label-xl-lh);
   letter-spacing: var(--text-label-xl-ls);
+  word-spacing:   var(--word-spacing-display);
   text-transform: uppercase;
   white-space:    nowrap;
 }

@@ -93,6 +93,7 @@
   --color-grey-400:  #DEEAFE;
   --color-grey-500:  #D6E5FE;
   --color-grey-600:  #ABB7CB;
+  --color-grey-650:  #96A0B2;
   --color-grey-700:  #808998;
   --color-grey-800:  #555C66;
   --color-grey-900:  #2B2E33;
@@ -194,7 +195,7 @@
 
   --nav-bg:                     var(--color-grey-1000);
   --nav-link-text:              var(--color-grey-600);
-  --nav-menu-item-text:         var(--color-grey-50);
+  --nav-menu-item-text:         var(--color-grey-300);
   --nav-menu-item-border:       var(--color-grey-900);
   --nav-menu-item-border-hover: var(--color-blue-500);
   --nav-menu-item-bg-hover:     var(--color-blue-500);
@@ -214,7 +215,7 @@
   --action-secondary-bg-hover:       var(--color-grey-50);
   --action-secondary-border:         var(--color-grey-1100);
   --action-secondary-border-hover:   var(--color-grey-1100);
-  --action-secondary-text:           var(--color-grey-50);
+  --action-secondary-text:           var(--color-grey-300);
   --action-secondary-text-hover:     var(--color-grey-1100);
 
   --action-outline-bg:               var(--color-grey-1100);
@@ -231,12 +232,13 @@
      SEMANTIC — Text
      ---------------------------------------------------------- */
 
-  --text-primary:            var(--color-grey-50);
+  --text-primary:            var(--color-grey-650);
   --text-secondary:          var(--color-grey-600);
   --text-accent:             var(--color-blue-500);
-  --text-display:            var(--color-grey-500);
+  --text-display:            var(--color-grey-300);
   --text-dark-display:       var(--color-grey-1100);
   --text-case-study-hover:   var(--color-yellow-500);
+  --text-body-highlight:     var(--color-grey-500);
 
   /* ----------------------------------------------------------
      SEMANTIC — Border
@@ -261,9 +263,6 @@
      ---------------------------------------------------------- */
 
   --spacing-nav-padding:         var(--spacing-md);
-  --spacing-section-padding-x:   var(--spacing-xl);
-  --spacing-section-padding-top: var(--spacing-3xl);
-  --spacing-card-padding:        var(--spacing-xl);
 
   /* ----------------------------------------------------------
      SEMANTIC — Z-index
@@ -295,6 +294,12 @@
   --motion-easing-nav-items:     cubic-bezier(0.4, 0, 0.2, 1);
 
   /* ----------------------------------------------------------
+     SEMANTIC — Word spacing
+     ---------------------------------------------------------- */
+
+  --word-spacing-display: 0.2em;
+
+  /* ----------------------------------------------------------
      TYPOGRAPHY SCALE — Fluid
      Viewport range: 390px (min) → 1920px (max)
      Formula per token: clamp(min, intercept + slope·vw, max)
@@ -305,35 +310,20 @@
      Body and static label tokens are unchanged (no clamp).
      ---------------------------------------------------------- */
 
-  /* display-2xl  390→1920: 40→90px  /  lh 44→99px */
-  --text-display-2xl-size:    clamp(40px, 27.25px + 3.27vw, 90px);
-  --text-display-2xl-lh:      clamp(44px, 29.98px + 3.59vw, 99px);
-  --text-display-2xl-ls:      -0.02em;
-
-  /* display-xl   390→1920: 32→64px  /  lh 35→70px */
-  --text-display-xl-size:     clamp(32px, 23.84px + 2.09vw, 64px);
-  --text-display-xl-lh:       clamp(35px, 26.08px + 2.29vw, 70px);
-  --text-display-xl-ls:       -0.02em;
-
-  /* display-lg   390→1920: 28→48px  /  lh 31→53px */
-  --text-display-lg-size:     clamp(28px, 22.90px + 1.31vw, 48px);
-  --text-display-lg-lh:       clamp(31px, 25.39px + 1.44vw, 53px);
+  /* display-lg  390→1920: 40→72px  /  lh 44→79px */
+  --text-display-lg-size:     clamp(40px, 31.84px + 2.09vw, 72px);
+  --text-display-lg-lh:       clamp(44px, 35.08px + 2.29vw, 79px);
   --text-display-lg-ls:       -0.02em;
 
-  /* display-md   390→1920: 18→24px  /  lh 20→26px */
-  --text-display-md-size:     clamp(18px, 16.47px + 0.39vw, 24px);
-  --text-display-md-lh:       clamp(20px, 18.47px + 0.39vw, 26px);
+  /* display-md  390→1920: 32→64px  /  lh 35→70px */
+  --text-display-md-size:     clamp(32px, 23.85px + 2.09vw, 64px);
+  --text-display-md-lh:       clamp(35px, 26.08px + 2.29vw, 70px);
   --text-display-md-ls:       -0.02em;
 
-  /* display-sm   390→1920: 16→20px  /  lh 18→22px */
-  --text-display-sm-size:     clamp(16px, 14.98px + 0.26vw, 20px);
-  --text-display-sm-lh:       clamp(18px, 16.98px + 0.26vw, 22px);
+  /* display-sm  390→1920: 28→48px  /  lh 31→53px */
+  --text-display-sm-size:     clamp(28px, 22.90px + 1.31vw, 48px);
+  --text-display-sm-lh:       clamp(31px, 25.39px + 1.44vw, 53px);
   --text-display-sm-ls:       -0.02em;
-
-  /* display-xl-sm  390→1920: 26→52px  /  lh 29→57px */
-  --text-display-xl-sm-size:  clamp(26px, 19.37px + 1.70vw, 52px);
-  --text-display-xl-sm-lh:    clamp(29px, 21.86px + 1.83vw, 57px);
-  --text-display-xl-sm-ls:    -0.02em;
 
   /* heading-xl   390→1920: 20→32px  /  lh 25→40px */
   --text-heading-xl-size:     clamp(20px, 16.94px + 0.78vw, 32px);
@@ -361,36 +351,42 @@
   --text-heading-xs-ls:       -0.01em;
 
   /* body — static, no clamp */
-  --text-body-lg-size:        16px;
+  --text-body-lg-size:        18px;
   --text-body-lg-lh:          24px;
   --text-body-lg-ls:          0;
 
-  --text-body-md-size:        14px;
-  --text-body-md-lh:          21px;
+  --text-body-md-size:        16px;
+  --text-body-md-lh:          22px;
   --text-body-md-ls:          0;
 
-  --text-body-sm-size:        12px;
-  --text-body-sm-lh:          18px;
+  --text-body-sm-size:        14px;
+  --text-body-sm-lh:          20px;
   --text-body-sm-ls:          0;
 
-  /* label-2xl   390→1920: 24→40px  /  lh 26→44px */
-  --text-label-2xl-size:      clamp(24px, 19.92px + 1.05vw, 40px);
-  --text-label-2xl-lh:        clamp(26px, 21.41px + 1.18vw, 44px);
-  --text-label-2xl-ls:        0;
+  --text-body-xs-size:        12px;
+  --text-body-xs-lh:          16px;
+  --text-body-xs-ls:          0;
 
-  /* label-xl    390→1920: 18→24px  /  lh 22→30px */
-  --text-label-xl-size:       clamp(18px, 16.47px + 0.39vw, 24px);
-  --text-label-xl-lh:         clamp(22px, 19.96px + 0.52vw, 30px);
-  --text-label-xl-ls:         0;
+  /* label — static, no clamp */
+  --text-label-xl-size:       24px;
+  --text-label-xl-lh:         30px;
+  --text-label-xl-ls:         -0.02em;
 
-  /* label-md / label-sm — static, no clamp */
+  --text-label-lg-size:       18px;
+  --text-label-lg-lh:         24px;
+  --text-label-lg-ls:         -0.02em;
+
   --text-label-md-size:       16px;
-  --text-label-md-lh:         24px;
-  --text-label-md-ls:         0;
+  --text-label-md-lh:         22px;
+  --text-label-md-ls:         -0.02em;
 
   --text-label-sm-size:       14px;
-  --text-label-sm-lh:         21px;
-  --text-label-sm-ls:         0;
+  --text-label-sm-lh:         20px;
+  --text-label-sm-ls:         -0.02em;
+
+  --text-label-xs-size:       12px;
+  --text-label-xs-lh:         16px;
+  --text-label-xs-ls:         -0.02em;
 }
 
 
@@ -411,4 +407,15 @@
        which keeps position:fixed elements (Nav) unaffected. */
     overflow-x: clip;
   }
+}
+
+/* ----------------------------------------------------------
+   LAYOUT UTILITIES
+   ---------------------------------------------------------- */
+
+.cs-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  column-gap: var(--spacing-xl);
+  padding-inline: var(--spacing-xl);
 }

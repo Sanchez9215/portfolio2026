@@ -45,21 +45,21 @@ const NUDGE_V = 1;
 
 /* ── attached shape outline ───────────────────────────────────── */
 const SHAPE_OUTLINE = {
-  color: "#FFD53C",
-  width: 4,
+  color: "#0F8EFE",
+  width: 0,
 };
 
 /* ── falling shape types ─────────────────────────────────────── */
 const FALLING_SHAPES = [
-  { src: "/SVG/object.svg", w: 40, h: 40 },
+  { src: "/SVG/object.svg", w: 20, h: 20 },
   { src: "/SVG/object2.svg", w: 20, h: 20 },
   { src: "/SVG/baby-star.svg", w: 16, h: 16 },
   { src: "/SVG/baby-diamond.svg", w: 20, h: 20 },
-  { src: "/SVG/baby-clover.svg", w: 24, h: 24 },
-  { src: "/SVG/baby-pieChart.svg", w: 28, h: 28 },
-  { src: "/SVG/baby-pieChart-1.svg", w: 32, h: 32 },
-  { src: "/SVG/double-diamond.svg", w: 44, h: 44 },
-  { src: "/SVG/beach-ball.svg", w: 56, h: 56 },
+  { src: "/SVG/baby-clover.svg", w: 20, h: 20 },
+  { src: "/SVG/baby-pieChart.svg", w: 20, h: 20 },
+  { src: "/SVG/baby-pieChart-1.svg", w: 20, h: 20 },
+  { src: "/SVG/double-diamond.svg", w: 20, h: 20 },
+  { src: "/SVG/beach-ball.svg", w: 20, h: 20 },
 ];
 
 /* ── falling shape spawn config ──────────────────────────────── */
@@ -72,14 +72,18 @@ const SPAWN = {
 
 /* ── connector line style + topology rules ───────────────────── */
 const CONNECTOR = {
-  color: "#FFD53C",
-  width: 2,
-  dashLen: 6,
+  color: "#ffffff",
+  width: 0.5,
+  dashLen: 4,
   dashGap: 4,
   HEAD_BIAS: 0.6,
   HEAD_MAX_CHILDREN: 3,
   SHAPE_MAX_CHILDREN: 2,
-  CHAIN_MAX: 3,
+  CHAIN_MAX: 2,
+  // Cross-link config — proximity links between adjacent outer branches
+  CROSS_LINK_DIST: 250,       // max px between two nodes to allow a cross-link
+  CROSS_LINK_MAX_PER_NODE: 1, // max cross-links a single node can have
+  CROSS_LINK_SCAN_INTERVAL: 90, // frames between periodic all-pairs scans
 };
 
 /* ── d3-force simulation config ──────────────────────────────── */
@@ -115,6 +119,7 @@ const PELLET = {
 /* ── firing timing ────────────────────────────────────────────── */
 const ACTIVE_EVERY = 8;
 const TAPER_SHOTS = 5;
+const MOUSE_FIRING_ENABLED = false;
 
 /* ── passive cadence ─────────────────────────────────────────── */
 const PASSIVE = {
@@ -182,6 +187,8 @@ interface AttachedShape {
   depth: number;
   parentHeadIdx: number[];
   parentShapeIds: number[];
+  /** Which root emitter (0–3) this node traces back to. Used for cross-link branch checks. */
+  branchIdx: number;
 }
 
 interface Villain {
@@ -240,6 +247,8 @@ interface BounceCanvasProps {
   activeZoneRef?: React.RefObject<HTMLElement>;
   spawnZoneRef?: React.RefObject<HTMLElement>;
   heroTopContentRef?: React.RefObject<HTMLDivElement>;
+  /** Goal 2 — zone the robot migrates toward as the web grows. Wire to imgZoneRef. */
+  attractZoneRef?: React.RefObject<HTMLElement>;
 }
 
 /* ══════════════════════════════════════════════════════════════ */
@@ -253,6 +262,7 @@ export default function BounceCanvas({
   heroTopContentRef,
 }: BounceCanvasProps = {}) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const bgCanvasRef = useRef<HTMLCanvasElement>(null);
   const svgRef = useRef<HTMLImageElement>(null);
   const villainDomRefs = useRef<(HTMLDivElement | null)[]>([null, null]);
   const villainBabyRefs = useRef<(VillainHandle | null)[]>([null, null]);
@@ -283,24 +293,32 @@ export default function BounceCanvas({
 
   useEffect(() => {
     const canvas = canvasRef.current;
+    const bgCanvas = bgCanvasRef.current;
     const svg = svgRef.current;
-    if (!canvas || !svg) return;
+    if (!canvas || !bgCanvas || !svg) return;
 
     /* ── canvas sizing ───────────────────────────────────────────── */
     const syncSize = () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
+      bgCanvas.width = window.innerWidth;
+      bgCanvas.height = window.innerHeight;
     };
     syncSize();
     window.addEventListener("resize", syncSize);
     const ctx = canvas.getContext("2d")!;
+    const bgCtx = bgCanvas.getContext("2d")!;
 
     /* ── robot bounce state ──────────────────────────────────────── */
+    const heroEl0 = zonesRef.current.activeZoneRef?.current;
+    const hr0 = heroEl0 ? heroEl0.getBoundingClientRect() : null;
+    const heroMinY0 = hr0 ? hr0.top : 0;
+    const heroMaxY0 = hr0 ? hr0.bottom - SVG_H : window.innerHeight - SVG_H;
     const spawnMinX = window.innerWidth * 0.55;
     const spawnMaxX = window.innerWidth - SVG_W;
-    const spawnMaxY = window.innerHeight * 0.55 - SVG_H;
     let x = spawnMinX + Math.random() * Math.max(0, spawnMaxX - spawnMinX);
-    let y = Math.random() * Math.max(0, spawnMaxY);
+    let y =
+      heroMinY0 + Math.random() * Math.max(0, (heroMaxY0 - heroMinY0) * 0.55);
     let vx = AUTO_SPEED * (Math.random() > 0.5 ? 1 : -1);
     let vy = AUTO_SPEED * (Math.random() > 0.5 ? 1 : -1);
     let paused = false;
@@ -316,6 +334,12 @@ export default function BounceCanvas({
         maxX = W - SVG_W,
         minY = 0,
         maxY = H - SVG_H;
+      const heroEl = zonesRef.current.activeZoneRef?.current;
+      if (heroEl) {
+        const hr = heroEl.getBoundingClientRect();
+        minY = Math.max(0, hr.top);
+        maxY = Math.min(H - SVG_H, hr.bottom - SVG_H);
+      }
       const {
         textZones: tz,
         gapZones: gz,
@@ -430,6 +454,100 @@ export default function BounceCanvas({
     const shapeChildCount = new Map<number, number>();
     let nextShapeId = 0;
 
+    /* ── cross-link bookkeeping ───────────────────────────────────── */
+    // crossLinkSet  — "minId-maxId" strings for pairs already cross-linked
+    // crossLinkCount — how many cross-links each node currently has
+    const crossLinkSet = new Set<string>();
+    const crossLinkCount = new Map<number, number>();
+
+    /**
+     * Returns true if emitter indices a and b are adjacent (share a corner
+     * of the robot) rather than directly opposite through the centre.
+     * EMITTERS: 0=top, 1=bottom, 2=left, 3=right
+     * Opposite pairs: (0,1) and (2,3) — a cross-link between these would
+     * always pass through the robot body.
+     */
+    const areBranchesAdjacent = (a: number, b: number): boolean => {
+      if (a === b) return false;
+      if ((a === 0 && b === 1) || (a === 1 && b === 0)) return false;
+      if ((a === 2 && b === 3) || (a === 3 && b === 2)) return false;
+      return true;
+    };
+
+    /**
+     * All-pairs cross-link scan. Checks every pair of attached shape nodes
+     * and adds a cross-link where both nodes are on adjacent (non-opposite)
+     * branches and within CROSS_LINK_DIST of each other.
+     *
+     * Called immediately after each node attachment AND periodically from
+     * the tick loop so pairs that drift into range post-settlement are caught.
+     */
+    const scanCrossLinks = () => {
+      if (attachedShapes.length < 2) return;
+      let simDirty = false;
+
+      for (let i = 0; i < attachedShapes.length; i++) {
+        const shapeA = attachedShapes[i];
+        if (
+          (crossLinkCount.get(shapeA.id) ?? 0) >=
+          CONNECTOR.CROSS_LINK_MAX_PER_NODE
+        )
+          continue;
+        const nodeA = nodeMap.get(shapeA.id);
+        if (!nodeA) continue;
+        const ax = nodeA.x ?? 0,
+          ay = nodeA.y ?? 0;
+
+        for (let j = i + 1; j < attachedShapes.length; j++) {
+          const shapeB = attachedShapes[j];
+          if (!areBranchesAdjacent(shapeA.branchIdx, shapeB.branchIdx))
+            continue;
+          if (
+            (crossLinkCount.get(shapeB.id) ?? 0) >=
+            CONNECTOR.CROSS_LINK_MAX_PER_NODE
+          )
+            continue;
+
+          // Deduplication key — smaller id always first
+          const key =
+            Math.min(shapeA.id, shapeB.id) +
+            "-" +
+            Math.max(shapeA.id, shapeB.id);
+          if (crossLinkSet.has(key)) continue;
+
+          const nodeB = nodeMap.get(shapeB.id);
+          if (!nodeB) continue;
+          const bx = nodeB.x ?? 0,
+            by = nodeB.y ?? 0;
+
+          if (Math.hypot(bx - ax, by - ay) > CONNECTOR.CROSS_LINK_DIST)
+            continue;
+
+          // Commit cross-link
+          simLinks.push({ source: nodeA, target: nodeB });
+          crossLinkSet.add(key);
+          crossLinkCount.set(shapeA.id, (crossLinkCount.get(shapeA.id) ?? 0) + 1);
+          crossLinkCount.set(shapeB.id, (crossLinkCount.get(shapeB.id) ?? 0) + 1);
+          simDirty = true;
+
+          if (
+            (crossLinkCount.get(shapeA.id) ?? 0) >=
+            CONNECTOR.CROSS_LINK_MAX_PER_NODE
+          )
+            break; // shapeA is saturated, move on
+        }
+      }
+
+      if (simDirty) {
+        simulation.nodes([...headNodes, ...shapeNodes]);
+        (simulation.force("link") as ForceLink<SimNode, SimLink>).links(simLinks);
+        simulation
+          .alphaTarget(SIM.alphaIdleTarget)
+          .alpha(SIM.alphaOnAdd)
+          .restart();
+      }
+    };
+
     /* ── helpers ──────────────────────────────────────────────────── */
     const connectShape = (s: FallingShape) => {
       const svgCx = x + SVG_W / 2;
@@ -493,12 +611,17 @@ export default function BounceCanvas({
         parentShapeIds.length > 0
           ? (attachedShapes.find((a) => a.id === parentShapeIds[0])?.depth ?? 0)
           : -1;
+      const branchIdx =
+        parentHeadIdx.length > 0
+          ? parentHeadIdx[0]
+          : (attachedShapes.find((a) => a.id === parentShapeIds[0])?.branchIdx ?? 0);
       attachedShapes.push({
         id,
         typeIdx: s.typeIdx,
         depth: parentDepth + 1,
         parentHeadIdx,
         parentShapeIds,
+        branchIdx,
       });
 
       if (parentHeadIdx.length > 0) headChildCount[parentHeadIdx[0]]++;
@@ -506,6 +629,7 @@ export default function BounceCanvas({
         const pid = parentShapeIds[0];
         shapeChildCount.set(pid, (shapeChildCount.get(pid) ?? 0) + 1);
       }
+      scanCrossLinks();
     };
 
     /** Detach a set of shape IDs from the main d3 network, updating all bookkeeping. */
@@ -521,6 +645,18 @@ export default function BounceCanvas({
             Math.max(0, (shapeChildCount.get(pid) ?? 0) - 1),
           );
         nodeMap.delete(id);
+        // Clean up cross-link bookkeeping for this node
+        crossLinkCount.delete(id);
+        for (const key of Array.from(crossLinkSet)) {
+          const [a, b] = key.split("-").map(Number);
+          if (a === id || b === id) {
+            crossLinkSet.delete(key);
+            const otherId = a === id ? b : a;
+            const c = crossLinkCount.get(otherId);
+            if (c !== undefined)
+              crossLinkCount.set(otherId, Math.max(0, c - 1));
+          }
+        }
       }
       attachedShapes.splice(
         0,
@@ -604,12 +740,17 @@ export default function BounceCanvas({
         parentShapeIds.length > 0
           ? (attachedShapes.find((a) => a.id === parentShapeIds[0])?.depth ?? 0)
           : -1;
+      const branchIdx =
+        parentHeadIdx.length > 0
+          ? parentHeadIdx[0]
+          : (attachedShapes.find((a) => a.id === parentShapeIds[0])?.branchIdx ?? 0);
       attachedShapes.push({
         id,
         typeIdx: fn.typeIdx,
         depth: parentDepth + 1,
         parentHeadIdx,
         parentShapeIds,
+        branchIdx,
       });
 
       if (parentHeadIdx.length > 0) headChildCount[parentHeadIdx[0]]++;
@@ -617,6 +758,7 @@ export default function BounceCanvas({
         const pid = parentShapeIds[0];
         shapeChildCount.set(pid, (shapeChildCount.get(pid) ?? 0) + 1);
       }
+      scanCrossLinks();
       return true;
     };
 
@@ -814,11 +956,16 @@ export default function BounceCanvas({
     let draggingNode: SimNode | null = null;
 
     /* ── main ticker ──────────────────────────────────────────────── */
+    let tickFrame = 0;
     const tick = () => {
       const now = performance.now();
       const W = canvas.width;
       const H = canvas.height;
       const dt = gsap.ticker.deltaRatio(60);
+
+      /* — periodic cross-link scan — catches pairs that drift into range — */
+      tickFrame++;
+      if (tickFrame % CONNECTOR.CROSS_LINK_SCAN_INTERVAL === 0) scanCrossLinks();
 
       /* — sync SVG world position during throw — */
       if (paused) {
@@ -906,17 +1053,27 @@ export default function BounceCanvas({
           }
         }
       } else if (mode === "active") {
-        if (++activeFrame >= ACTIVE_EVERY) {
-          activeFrame = 0;
-          fireMouse(mouseX, mouseY);
+        if (MOUSE_FIRING_ENABLED) {
+          if (++activeFrame >= ACTIVE_EVERY) {
+            activeFrame = 0;
+            fireMouse(mouseX, mouseY);
+          }
+        } else {
+          mode = "passive";
+          passivePhase = "longCooldown";
+          nextPhaseAt = now + 800;
         }
       } else {
-        if (taperLeft > 0 && ++taperFrame >= ACTIVE_EVERY) {
+        if (
+          MOUSE_FIRING_ENABLED &&
+          taperLeft > 0 &&
+          ++taperFrame >= ACTIVE_EVERY
+        ) {
           taperFrame = 0;
           fireMouse(mouseX, mouseY);
           taperLeft--;
         }
-        if (taperLeft <= 0) {
+        if (taperLeft <= 0 || !MOUSE_FIRING_ENABLED) {
           mode = "passive";
           passivePhase = "longCooldown";
           nextPhaseAt = now + 800;
@@ -1006,10 +1163,11 @@ export default function BounceCanvas({
           const spawnRight = sr ? sr.right : W;
           const spawnX =
             spawnLeft + Math.random() * Math.max(0, spawnRight - spawnLeft);
+          const spawnDef = FALLING_SHAPES[typeIdx];
           fallingShapes.push({
             typeIdx,
             x: spawnX,
-            y: -50,
+            y: sr ? sr.top - spawnDef.h : -50,
             vx: 0,
             vy: SPAWN.speed,
             dead: false,
@@ -1277,6 +1435,7 @@ export default function BounceCanvas({
 
       /* ─────────────────────── DRAW ────────────────────────────── */
       ctx.clearRect(0, 0, W, H);
+      bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
 
       /* — main network: connector lines + attached shapes (drawn first = below everything) — */
       if (attachedShapes.length > 0) {
@@ -1350,13 +1509,13 @@ export default function BounceCanvas({
         ctx.restore();
       }
 
-      /* — falling shapes — */
+      /* — falling shapes — background canvas — */
       for (const s of fallingShapes) {
         if (s.dead) continue;
         const def = FALLING_SHAPES[s.typeIdx];
         const img = shapeImgs.get(s.typeIdx);
         if (!img || !img.complete) continue;
-        ctx.drawImage(img, s.x - def.w / 2, s.y - def.h / 2, def.w, def.h);
+        bgCtx.drawImage(img, s.x - def.w / 2, s.y - def.h / 2, def.w, def.h);
       }
 
       /* — free nodes — */
@@ -1428,25 +1587,27 @@ export default function BounceCanvas({
         );
         document.body.style.cursor = over ? "grab" : "";
       }
-      const az = zonesRef.current.activeZoneRef?.current;
-      if (az) {
-        const r = az.getBoundingClientRect();
-        const nowIn =
-          e.clientX >= r.left &&
-          e.clientX <= r.right &&
-          e.clientY >= r.top &&
-          e.clientY <= r.bottom;
-        if (nowIn && !isInActiveZone) {
-          isInActiveZone = true;
-          fireMouse(e.clientX, e.clientY);
-          mode = "active";
-          activeFrame = 0;
-        } else if (!nowIn && isInActiveZone) {
-          isInActiveZone = false;
-          if (mode === "active" || mode === "tapering") {
-            mode = "tapering";
-            taperLeft = TAPER_SHOTS;
-            taperFrame = ACTIVE_EVERY;
+      if (MOUSE_FIRING_ENABLED) {
+        const az = zonesRef.current.activeZoneRef?.current;
+        if (az) {
+          const r = az.getBoundingClientRect();
+          const nowIn =
+            e.clientX >= r.left &&
+            e.clientX <= r.right &&
+            e.clientY >= r.top &&
+            e.clientY <= r.bottom;
+          if (nowIn && !isInActiveZone) {
+            isInActiveZone = true;
+            fireMouse(e.clientX, e.clientY);
+            mode = "active";
+            activeFrame = 0;
+          } else if (!nowIn && isInActiveZone) {
+            isInActiveZone = false;
+            if (mode === "active" || mode === "tapering") {
+              mode = "tapering";
+              taperLeft = TAPER_SHOTS;
+              taperFrame = ACTIVE_EVERY;
+            }
           }
         }
       }
@@ -1558,6 +1719,11 @@ export default function BounceCanvas({
 
   return (
     <>
+      <canvas
+        ref={bgCanvasRef}
+        className={styles.bgCanvas}
+        aria-hidden="true"
+      />
       <div className={styles.container}>
         {/* Effect canvas — behind SVG, never captures pointer events */}
         <canvas

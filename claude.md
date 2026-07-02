@@ -17,6 +17,8 @@ Portfolio website for Edgar Sanchez — senior product designer, 5 years B2B/Ent
 - MDX — structured case studies with live components
 - Vercel — deployment
 - Fonts — Clash Display (display/labels, self-hosted `/public/fonts/clash-display`), Cabinet Grotesk (body/headings, self-hosted `/public/fonts/cabinet-grotesk`), weights: 400/600/700
+- Storybook 8 (`@storybook/react-vite`) — design system stories; `npm run storybook` → `localhost:6006`
+- Chromatic — visual regression (`npx chromatic --project-token=chpt_cc21e0fc930e5d6`); requires `npm run build-storybook` first
 
 ## Project Structure
 
@@ -24,7 +26,7 @@ Portfolio website for Edgar Sanchez — senior product designer, 5 years B2B/Ent
 portfolio/
 ├── .claude/skills/component-builder/SKILL.md
 ├── app/
-│   ├── page.tsx          # Home — Nav + HeroSection wired; Work section 1/4 cards done
+│   ├── page.tsx          # Home — Nav + HeroWithCanvas + all 4 CaseStudyCards wired
 │   ├── layout.tsx        # Root layout
 │   └── work/             # Case study routes (empty)
 ├── components/
@@ -39,7 +41,12 @@ portfolio/
 │   ├── icons/            # icon.svg (logo mark), go-arrow.svg
 │   └── SVG/happyAgents.svg
 ├── styles/globals.css    # All CSS custom properties (primitives + semantic + typography)
-└── tailwind.config.ts    # Token-driven config
+├── tailwind.config.ts    # Token-driven config
+├── .storybook/
+│   ├── main.ts           # @storybook/react-vite framework; staticDirs → public/ (fonts)
+│   └── preview.ts        # imports globals.css; dark background default
+└── stories/
+    └── Typography.stories.tsx  # Two stories: Specimen (full type scale) + Proposed Changes (Step 1 colors before/after, Step 2 new tokens)
 ```
 
 ## Pages
@@ -47,7 +54,7 @@ portfolio/
 ### Home (/)
 1. Nav — sticky overlay, built ✓
 2. HeroSection — desktop + tablet (768px) + mobile (393px), built ✓
-3. Work Section — 4 CaseStudyCards, 1/4 wired, **3 remaining**
+3. Work Section — all 4 CaseStudyCards wired ✓
 
 ### About (/about) — not yet designed
 ### Resume (/resume) — not yet designed
@@ -80,7 +87,7 @@ portfolio/
 | Nav | `components/Nav.tsx` | GSAP open/close, imports Button + MenuItem |
 | HeroSection | `components/HeroSection.tsx` | GSAP entrance + expand animations, zone refs as props |
 | HeroWithCanvas | `components/HeroWithCanvas.tsx` | Client boundary — owns all zone refs, renders BounceCanvas + HeroSection |
-| BounceCanvas | `components/BounceCanvas.tsx` | Two-canvas fixed layer; GSAP Draggable + d3-force graph; exclusion zones; passive + hover firing; villain + AutonomousCluster + FreeNode systems |
+| BounceCanvas | `components/BounceCanvas.tsx` | Two-canvas layer; robot roams full viewport freely; passive firing only; falling shapes on background canvas; d3-force graph; villain + AutonomousCluster + FreeNode systems |
 | BulletBaby | `components/BulletBaby.tsx` | Inline SVG villain renderer; GSAP hit animation (squish + shake + pink flash); exposes `VillainHandle` via `forwardRef` |
 | CaseStudyCard | `components/CaseStudyCard.tsx` | Full-card `<a>`, desktop + mobile layout |
 
@@ -97,7 +104,6 @@ portfolio/
 - Desktop (>768px): two-column — title/overview left, impactList + imgContainer right
 - Stacked (≤768px): single column — imgContainer moves to top via `order: -1`
 - Typography token decisions: `--text-primary` for impact headings, `--text-secondary` for all muted text
-- Ready to wire into the Work section — see props in `components/components.md`
 
 ### BulletBaby — villain hit animation component
 
@@ -127,60 +133,57 @@ portfolio/
 - `triggerHit()` — starts animation; no-op if already firing or in hit state
 - `reset()` — kills timeline, sets `isHit → false`, clears GSAP transforms; called by BounceCanvas when villain dies off-screen
 
-### BounceCanvas — full-page fixed layer ✅ ALL STAGES COMPLETE
+### BounceCanvas — hero-confined animation layer ✅
 
 **Packages installed:** `d3-force` + `@types/d3-force` (both in package.json).
 
-**Architecture — two-canvas fixed layer:**
-- **`networkCanvas`** (`styles.networkCanvas`) — `position: fixed; inset: 0; z-index: 1` — draws d3 network (connector lines + attached shapes). Sits behind `heroBottomWrapper` (z-index 1, later in DOM) so the subline text wins.
-- **`.container`** — `position: fixed; inset: 0; z-index: 2` — holds the pellet canvas + robot img. Floats above the blue card and subline.
+**Architecture — two-canvas system:**
+- **`bgCanvas`** (`styles.bgCanvas`) — `position: fixed; inset: 0; z-index: 0` — draws falling shapes only. Sits behind all page content.
+- **`.container`** — `position: fixed; inset: 0; z-index: 2` — holds the main canvas (robot, pellets, d3 network, clusters, free nodes) + robot `<img>`.
 - `pointer-events: none` on both canvases and container; `pointer-events: auto` on robot `<img>` only.
 - All mouse events at `window` level — canvas coords = viewport coords, no offset needed.
 
 **Page stacking context (critical — do not change without understanding this):**
 - `html` — `background: var(--surface-base)` — root layer
-- `BounceCanvas networkCanvas` — `z-index: 1`, rendered **before** heroBottomWrapper in DOM → d3 network goes **behind** subline
-- `.heroBottomWrapper` — `z-index: 1`, later in DOM → blue card + subline paint **above** network
-- `BounceCanvas .container` — `z-index: 2` — robot + pellets + falling shapes above blue card
+- `BounceCanvas bgCanvas` — `z-index: 0` — falling shapes, behind all page content
+- `.heroBottomWrapper` — `z-index: 1` — subline + buttons paint above bgCanvas (heroBottomContent background is currently `transparent` — no blue card)
+- Work `<section>` — `position: relative; z-index: 1` — paints above bgCanvas, case study cards never obscured by falling shapes
+- `BounceCanvas .container` — `z-index: 2` — robot + pellets + d3 network above hero content
 - `.heroTopContent` — `z-index: 3` — headline/role text above everything
 - `.hero` — **no** `isolation: isolate`, **no** explicit `z-index` — children compete in root context
 - Nav — `z-index: ~100` — always on top
 
-**Exclusion zone system (dynamic DOM-measured bounds):**
+**Robot — unconfined (as of this session):**
+- Robot bounces freely within the full viewport using only the hard viewport walls (top, bottom, left, right)
+- No `activeZoneRef` wired — `getEffectiveBounds` falls back to `minY=0, maxY=H-SVG_H`
+- No `textZones` or `gapZones` wired — robot ignores all UI elements
+- Boundary design is intentionally deferred; zone infrastructure in BounceCanvas is intact and ready to re-wire
+
+**Exclusion zone system (infrastructure exists, nothing currently wired):**
 - `textZones` — robot overlaps `overlapPx` (default 16px) into the zone edge (behind text)
 - `gapZones` — robot stays `gapPx` (default 16px) clear of zone edge
-- `activeZoneRef` — mouse entering triggers active firing mode
-- `spawnZoneRef` — falling shapes spawn from top edge within this element's X bounds
+- `activeZoneRef` — defines hero Y bounds for robot confinement; not currently wired
+- `spawnZoneRef` — falling shapes spawn from this element's top edge within its X bounds; still wired to `heroZoneRef`
 - Bounds computed each frame via `getBoundingClientRect()` — fully responsive
-
-**L-shape logic in `getEffectiveBounds(sx, sy)`:**
-- For each zone ref, checks if robot's Y overlaps with zone's Y range
-- Determines side (left/right) from zone center X vs canvas midpoint
-- Left zone → constrains `minX`; right zone → constrains `maxX`
-- Text zones use `r.right - overlapPx` / `r.left + overlapPx`; gap zones use `r.right + gapPx` / `r.left - gapPx`
-
-**Active firing (window-level mousemove):**
-- Tracks `isInActiveZone` by checking mouse coords vs `activeZoneRef.getBoundingClientRect()`
-- Enter zone → `mode = "active"`; leave zone → `mode = "tapering"`
-
-**`getEffectiveBounds(sx, sy, svy)` — Y lookahead:**
-- Passes current `vy` as `svy` so the X constraint pre-activates 60px before zone entry
-- Prevents jolts when zone boundary suddenly shifts and robot is already past the new X limit
-- X violations resolve via lerp (`x += (target - x) * 0.18`) rather than hard-snap
 
 **Current wiring (`HeroWithCanvas.tsx`):**
 ```
-textZones   → [headlineZoneRef, sublineZoneRef]   // overlap 16px
-gapZones    → [buttonGroupZoneRef]                 // 16px clearance
-activeZone  → heroZoneRef (full hero section)      // entire hero triggers active firing
-spawnZone   → heroZoneRef (full hero section)      // shapes fall within hero X bounds
+textZones   → (none)
+gapZones    → (none)
+activeZone  → (none) — robot uses full viewport height
+spawnZone   → heroZoneRef (full hero section) — shapes spawn from hero top edge, fall full page
 ```
 
-**Pellet config (Cuphead-inspired):**
-- `PELLET.speed: 8` px/frame
-- `PASSIVE.rapidInterval: 300ms`, `rapidCount: 2`
-- `ACTIVE_EVERY: 8` frames (~133ms)
-- White capsule — no custom pellet props
+**Firing status:**
+- `MOUSE_FIRING_ENABLED = false` (const at top of file) — mouse/active/taper firing paused
+- Passive firing active: `PASSIVE.rapidInterval: 300ms`, `rapidCount: 2`, `longCooldown: 2800ms`
+- To re-enable mouse firing: set `MOUSE_FIRING_ENABLED = true`
+
+**`getEffectiveBounds(sx, sy, svy)` — zone bounds helper:**
+- When `activeZoneRef` is wired: `minY = max(0, heroEl.top)`, `maxY = min(H - SVG_H, heroEl.bottom - SVG_H)`
+- When not wired (current state): falls back to full viewport `minY=0, maxY=H-SVG_H`
+- Y lookahead: passes current `vy` as `svy` so X zone constraints pre-activate 60px before zone entry
+- X violations resolve via lerp (`x += (target - x) * 0.18`) rather than hard-snap
 
 **d3-force simulation constants (`SIM` block at top of BounceCanvas.tsx):**
 - `linkDistance: 120` — spread out for full-viewport canvas
@@ -190,8 +193,9 @@ spawnZone   → heroZoneRef (full hero section)      // shapes fall within hero 
 
 **Falling shapes — manual pool, 10 entries:**
 - Add to `FALLING_SHAPES` array at top of file with `{ src, w, h }` — no code changes needed elsewhere
-- Spawn top-edge only, X constrained to `spawnZoneRef` bounds (hero section)
-- Falls back to full viewport width if `spawnZoneRef` not provided
+- Spawn from hero section top edge, X constrained to `spawnZoneRef` bounds
+- Rendered on `bgCanvas` (z-index: 0) — behind all page content including case study cards
+- Falls to viewport bottom then dies; connects to robot network on contact (transitions to main canvas)
 - `SPAWN.maxActive: 4`, speed: 1.5 px/frame
 - Current pool (8→56px range):
   ```
@@ -208,55 +212,31 @@ spawnZone   → heroZoneRef (full hero section)      // shapes fall within hero 
 - BounceCanvas renders `VILLAIN.maxCount` (2) overlay slots in its JSX, each initially `display: none`
 - Each frame, the animation loop updates `el.style.transform` and `el.style.display` directly (no React re-render)
 - Villains are assigned a `slotIdx` (0 or 1) on spawn; slots are freed when villain dies off-screen
-- Canvas no longer draws villains — only tracks position/velocity/state
 
 *Villain movement:*
-- Size: 120×120px
+- Size: 120×120px; `maxCount: 0` (disabled — set to enable)
 - Enters from a random screen edge, travels straight across on one axis, dies when fully off-screen
 - Rotation by entry edge: left/right → 0°, top → +90° (CW), bottom → −90° (CCW)
-- No bouncing — strictly cross-screen travel
-- Up to `maxCount: 2` active, one spawns every `spawnDelay: 6000ms`
-
-*Pellet → villain hit animation:*
-- Pellet AABB collision detected in the pellet loop (after shape-hit check)
-- On hit: pellet dies, `v.isHit = true` (prevents re-triggering), `villainBabyRefs.current[v.slotIdx]?.triggerHit()` called
-- **Hit animation sequence (BulletBaby):**
-  1. Shake (whole SVG, ±4px, 5 cycles)
-  2. Eye rect squishes (`scaleY → 0`, fades out) + wing highlight fades simultaneously
-  3. Body fill → `#FF7878` (pink), bracket squint eyes appear — all via React state (`isHit`)
-  4. Impact lines flash in then out
-  5. **Recovers after 0.5s** — body returns to `#0B0B0D`, eye opens, wing returns, brackets hide
-- Hit state is **temporary** — villain returns to original SVG after recovery
-- When villain dies off-screen: `villainBabyRefs.current[v.slotIdx]?.reset()` resets the slot for reuse
 
 *Robot contact → AutonomousCluster:*
 - Villain overlaps robot → `spawnCluster(hitX, hitY)` called
 - Picks the d3 node closest to the impact point as center, plus up to `CLUSTER.branchCount: 5` nearest neighbours
-- All selected nodes detached from the main d3 network via `removeShapesFromNetwork()`
 - Cluster gets random initial direction at `CLUSTER.speed`, bounces off all 4 viewport edges
-- Internal layout: spring-force — each branch node pulled toward its `targetRelX/Y` offset from cluster center (`springK: 0.04`, `damping: 0.88`)
-- Drawn with dashed yellow connector lines (star topology: center → each branch) + shape images with outline
+- Internal layout: spring-force (`springK: 0.04`, `damping: 0.88`)
 
-*Villain contact with cluster → scatter:*
-- Villain overlaps any cluster node → all cluster nodes ejected as `FreeNode[]`
-- Each free node gets burst velocity outward from cluster center (`burstSpeed: 3` px/frame) + random variance
-- Cluster marked dead, villain flashes
-
-*Free nodes:*
-- Drift with `vx *= 0.995` friction per frame, bounce off viewport edges
-- Drawn at 65% opacity — permanently on screen (no re-attach)
-
-*`hitCooldown: 45` frames* — prevents same villain from triggering again immediately
+*Villain contact with cluster → scatter → FreeNodes:*
+- Each free node gets burst velocity outward from cluster center (`burstSpeed: 3` px/frame)
+- Free nodes drift with friction, bounce off viewport edges, drawn at 65% opacity
 
 **Key config blocks (all at top of BounceCanvas.tsx):**
 - `PELLET` — pellet size, speed, color
 - `PASSIVE` — passive firing cadence timings
-- `ACTIVE_EVERY` / `TAPER_SHOTS` — hover firing frame constants
+- `MOUSE_FIRING_ENABLED` — set to `true` to re-enable mouse/active/taper firing
 - `CONNECTOR` — line style + topology rules
 - `SIM` — force simulation constants
 - `SHAPE_OUTLINE` — attached shape border color + width
 - `SPAWN` — shape spawn timing + cap
-- `VILLAIN` — villain size, speed, entry, flash/cooldown durations, burst speed
+- `VILLAIN` — villain size, speed, entry, flash/cooldown durations, burst speed (`maxCount: 0` = disabled)
 - `CLUSTER` — autonomous cluster speed, branch count, spring stiffness, damping
 
 ### HeroSection — expand / collapse animation ✅ COMPLETE
@@ -274,28 +254,22 @@ All three run in one GSAP timeline from `t=0`:
 3. Headline chars — CCW wheel-roll off left edge, line by line with `EXPAND_ANIM.lineDelay` stagger
    - Per-char: `x = -(rect.left + rect.width + 20)`, `rotation = -(exitDist / (height/2)) × (180/π)`
    - `charDuration: 0.6s`, `charStagger: 0.04s`, `ease: power2.in`
-   - GSAP function-based values evaluated at tween init — natural positions guaranteed
 
 **Collapse (reverse):**
 1. heroBottomWrapper rises — `height: 0 → bottomHeightRef.current`, `clearProps:"height"` on complete
 2. Chars roll CW back in — `x → 0`, `rotation → 0`, stagger `from: "start"` (left-to-right cascade)
 3. Role row fades back in at `t=0.3` — `opacity → 1`, `y → 0`
 
-**`EXPAND_ANIM` constants** (top of HeroSection.tsx):
-```ts
-charDuration: 0.6   // s — each char's roll
-charStagger:  0.04  // s — between chars in a line
-lineDelay:    0.18  // s — before each successive line starts
-```
-
 **`expandedRef`** — `useRef<boolean>` guards against double-clicks mid-animation. State `expanded` only flips in `onComplete`.
 
 ## What's Next
 
-- [ ] Complete Work section — 3 more `CaseStudyCard` instances in `app/page.tsx` (1/4 wired)
+- [ ] **Robot boundary design** — decide what areas (if any) to confine the robot to and how; zone infrastructure in BounceCanvas is ready. Key open questions: wire `activeZoneRef` to confine to hero? Add `textZones` back for headline only? Decide before adding more canvas interactions.
+- [ ] **heroBottomContent visual** — currently `background-color: transparent`; subline text uses `--text-display` (#D6E5FE) so it's readable on the dark surface. Decide if transparent stays or a new treatment is designed.
 - [ ] Wire up case study routes in `app/work/`
 - [ ] Design About and Resume pages
 - [ ] **Fluid typography** — replace all static `font-size` token values in `globals.css` with `clamp()` expressions and remove the `@media (max-width: 393px)` font-size overrides
+- [ ] Re-evaluate BounceCanvas mouse interactions (re-enable `MOUSE_FIRING_ENABLED`, mouse tracking) once scroll behaviour is validated
 
 ### Fluid typography — ready to implement
 
@@ -314,6 +288,108 @@ lineDelay:    0.18  // s — before each successive line starts
 - Formula per token: `clamp(minPx, intercept + slope*vw, maxPx)` — slope and intercept derived from the two anchor sizes
 - The `@media (max-width: 393px)` font-size block gets deleted once clamp is in place
 
+## Design System Update — In Progress
+
+All decisions confirmed. Do not re-litigate. Execute in this exact order.
+
+**Status:**
+- [ ] Step 1 — Token changes — **not yet applied. Requires explicit go-ahead before touching any code file.**
+- [ ] Step 2 — New typography tokens — **not yet applied. Requires explicit go-ahead. Blocked on `caption-label`/`caption-body` sizes from Edgar.**
+- [x] Step 3 — Figma layer renames — **DONE** (39 sections + 9 layer-level fixes applied to original `4:3936`)
+- [x] Step 4 — `case-study.v2` duplicate — **DONE** (node `17:518`, positioned x=1540 y=0, 1440×50955px, 43 sections verified)
+
+---
+
+### Step 1 — Token changes (tokens.json + globals.css)
+
+**New primitive — add to `Primitives.color.grey` in tokens.json:**
+```json
+"650": { "value": "#96A0B2", "type": "color" }
+```
+
+**Semantic text token changes:**
+
+| Token | Change | New value |
+|---|---|---|
+| `--text-primary` | update | grey-650 `#96A0B2` — body copy default, global `html` color |
+| `--text-display` | update value | grey-300 `#E6EFFE` — headings, titles, display text |
+| `--text-secondary` | no change | grey-600 |
+| `--text-body-highlight` | **new** | grey-500 `#D6E5FE` |
+| `--text-editorial-primary` | **new** | grey-500 `#D6E5FE` |
+| `--text-editorial-detail` | **new** | grey-700 `#808998` |
+| `--nav-menu-item-text` | update | grey-300 `#E6EFFE` (was grey-50) |
+| `--action-secondary-text` | update | grey-300 `#E6EFFE` (was grey-50) |
+| `--action-primary-text` | no change | grey-1100 — dark on yellow |
+| `--action-outline-text` | no change | yellow-500 |
+| `--action-ghost-text` | no change | grey-600 |
+
+Also update `--color-grey-650: #96A0B2` in the primitives block of globals.css.
+
+---
+
+### Step 2 — New typography tokens
+
+**`body-xl`** — Cabinet Grotesk, regular (400), static
+- Desktop + Mobile: 18px / lh 27px / ls 0
+- Add to `Responsive/Desktop` and `Responsive/Mobile` in tokens.json
+- Add to globals.css: `--text-body-xl-size: 18px`, `--text-body-xl-lh: 27px`, `--text-body-xl-ls: 0`
+
+**`editorial-lg`** — new category, Cabinet Grotesk, bold (700)
+- Desktop: 52px / lh 57px / ls -0.02em
+- Mobile: 26px / lh 29px
+- Fluid clamp: `clamp(26px, 19.37px + 1.70vw, 52px)` / lh `clamp(29px, 21.86px + 1.83vw, 57px)`
+- Add to tokens.json as its own category (alongside Display, Heading, Body, Label)
+- CSS vars: `--text-editorial-lg-size`, `--text-editorial-lg-lh`, `--text-editorial-lg-ls`
+- Color tokens already covered by `--text-editorial-primary` and `--text-editorial-detail` above
+
+**`caption-label` / `caption-body`** — new small text concept for project metadata (role, timeline, team)
+- Sizes not yet confirmed — **ask Edgar before implementing**
+
+---
+
+### Step 3 — Figma layer renames ✅ DONE
+
+**File:** `https://www.figma.com/design/FinQu7hxM5evUqMKBxLqGD/Software-Observability`
+**Root node:** `4:3936` — `case-study`, 1440 × 50955px
+
+All 39 sections renamed to `section.*` convention. Layer-level fixes applied: typos (`div. messaage-*`), trailing spaces, `InsightS & Goals` → `heading-lg`, `text-primary` frame → `div.body-text`, `impactPoint` → `li.impact-point`.
+
+---
+
+### Step 4 — `case-study.v2` duplicate ✅ DONE
+
+**Node:** `17:518` — `case-study.v2`, x=1540 y=0, 1440×50955px (Page 1)
+
+43 sections verified. Direct children of all `section.*` frames renamed (`Frame XXXXXXX` → `div.wrapper`, `Container` → `div.container`). Content-as-name text nodes fixed (`heading-lg`, `p`). Generic `List` frame → `ul`.
+
+**Naming conventions reference:**
+```
+section.name               ← top-level page section
+div.container              ← max-width content wrapper
+div.wrapper                ← generic layout wrapper
+div.label-container        ← section label + heading area
+div.img-container          ← image/prototype placeholder
+figure.annotated           ← image + leader line annotations
+div.annotation-group       ← group of annotations on one image
+div.annotation             ← single annotation (line + label)
+line.leader                ← connecting leader line
+div.annotation-label       ← text block at end of leader
+p.annotation-text          ← annotation text
+h1 h2 h3                  ← headings by hierarchy
+p                          ← standard body (grey-650)
+p.highlight                ← highlighted body (grey-500)
+p.secondary                ← muted text (grey-600)
+p.detail                   ← detail text (grey-700)
+p.editorial-primary        ← lead-in main message (grey-500)
+p.editorial-detail         ← lead-in detail (grey-700)
+label                      ← uppercase label
+caption-label              ← small metadata label (new — size TBD)
+caption-body               ← small metadata body (new — size TBD)
+display-2xl                ← text layer using display-2xl token
+heading-lg heading-md      ← text layers using heading tokens
+body-xl                    ← text layer using body-xl token (18px)
+```
+
 ## Deferred (Post-Launch)
 
 - [ ] Push action.outline/ghost tokens + updated radius scale to Figma via Token Studio
@@ -321,4 +397,4 @@ lineDelay:    0.18  // s — before each successive line starts
 - [ ] Write components.md entries for HeroSection and BounceCanvas
 - [ ] MDX case study content
 - [ ] Add opacity tokens
-- [ ] Storybook
+- [x] Storybook — set up with `@storybook/react-vite` (Vite, not webpack — avoids Next.js webpack conflict on Node 25); Typography story covers full specimen + proposed DS changes

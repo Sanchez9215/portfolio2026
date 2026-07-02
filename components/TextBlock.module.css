@@ -1,0 +1,78 @@
+/* ============================================================
+   TextBlock — label + body text pair
+   Props: size ('xs' | 'sm' | 'md' | 'lg')
+   All values resolve through CSS custom properties → tokens.json.
+   ============================================================ */
+
+.textBlock {
+  display:        flex;
+  flex-direction: column;
+  gap:            var(--spacing-sm);
+}
+
+/* ── Label — Clash Display semibold, uppercase ───────────── */
+
+.label {
+  font-family:    var(--font-family-display);
+  font-weight:    var(--font-weight-semibold);
+  word-spacing:   var(--word-spacing-display);
+  text-transform: uppercase;
+  color:          var(--text-display);
+}
+
+.xs .label {
+  font-size:      var(--text-label-xs-size);
+  line-height:    var(--text-label-xs-lh);
+  letter-spacing: var(--text-label-xs-ls);
+}
+
+.sm .label {
+  font-size:      var(--text-label-sm-size);
+  line-height:    var(--text-label-sm-lh);
+  letter-spacing: var(--text-label-sm-ls);
+}
+
+.md .label {
+  font-size:      var(--text-label-md-size);
+  line-height:    var(--text-label-md-lh);
+  letter-spacing: var(--text-label-md-ls);
+}
+
+.lg .label {
+  font-size:      var(--text-label-lg-size);
+  line-height:    var(--text-label-lg-lh);
+  letter-spacing: var(--text-label-lg-ls);
+}
+
+/* ── Body — Cabinet Grotesk regular ─────────────────────── */
+
+.body {
+  font-family: var(--font-family-body);
+  font-weight: var(--font-weight-regular);
+  color:       var(--text-primary);
+  margin:      0;
+}
+
+.xs .body {
+  font-size:      var(--text-body-xs-size);
+  line-height:    var(--text-body-xs-lh);
+  letter-spacing: var(--text-body-xs-ls);
+}
+
+.sm .body {
+  font-size:      var(--text-body-sm-size);
+  line-height:    var(--text-body-sm-lh);
+  letter-spacing: var(--text-body-sm-ls);
+}
+
+.md .body {
+  font-size:      var(--text-body-md-size);
+  line-height:    var(--text-body-md-lh);
+  letter-spacing: var(--text-body-md-ls);
+}
+
+.lg .body {
+  font-size:      var(--text-body-lg-size);
+  line-height:    var(--text-body-lg-lh);
+  letter-spacing: var(--text-body-lg-ls);
+}

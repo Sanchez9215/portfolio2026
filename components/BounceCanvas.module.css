@@ -34,3 +34,11 @@
   /* Override container's pointer-events: none — Draggable needs this */
   pointer-events:    auto;
 }
+
+/* Falling shapes background — sits behind all page content */
+.bgCanvas {
+  position:       fixed;
+  inset:          0;
+  pointer-events: none;
+  z-index:        0;
+}
