@@ -1,0 +1,522 @@
+/* ============================================================
+   Software Observability — case study layout
+   Grid: cs-grid (12-col, column-gap --spacing-xl, padding-inline --spacing-xl)
+   Naming: {sectionName}{ComponentType}{n}
+   All values resolve through CSS custom properties → tokens.json.
+   ============================================================ */
+
+
+/* ── section.brief ──────────────────────────────────────────── */
+
+.briefTextBlock {
+  grid-column: 1 / -1;
+}
+
+
+/* ── section.the-problem ────────────────────────────────────── */
+
+.theProblem {
+  row-gap: var(--spacing-3xl);
+}
+
+.theProblemDetailBlock {
+  grid-column: 1 / 4;
+  color:       var(--text-primary);
+}
+
+.theProblemMessageThread {
+  grid-column: 1 / 5;
+}
+
+.theProblemTextBlock {
+  grid-column: 5 / -1;
+}
+
+
+/* ── section.support-metrics ────────────────────────────────── */
+
+.supportMetricsCards {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: var(--spacing-xl);
+}
+
+
+/* ── section.user-quote ─────────────────────────────────────── */
+
+.userQuoteBlock {
+  grid-column: 1 / -1;
+}
+
+
+/* ── section.research ───────────────────────────────────── */
+
+.researchContextBlock {
+  grid-column: 1 / 4;
+}
+
+.researchContextStat {
+  font-family:    var(--font-family-display);
+  font-weight:    var(--font-weight-semibold);
+  font-size:      var(--text-display-metric-size);
+  line-height:    var(--text-display-metric-lh);
+  letter-spacing: var(--text-display-metric-ls);
+  color:          var(--text-tertiary);
+  text-transform: uppercase;
+  margin:         0;
+}
+
+.researchContent {
+  grid-column:    4 / -1;
+  display:        flex;
+  flex-direction: column;
+  gap:            var(--spacing-xl);
+}
+
+.researchTextBlockMds {
+  display: flex;
+  gap:     var(--spacing-xl);
+}
+
+.researchTextBlockMd {
+  flex:      1 0 0;
+  min-width: 0;
+}
+
+
+/* ── section.insights-and-goals ─────────────────────────────── */
+
+.insightsGoals {
+  display:     flex !important;
+  align-items: flex-start;
+  gap:         var(--spacing-xl);
+}
+
+.insightsGoalsLeft {
+  display:        flex;
+  flex-direction: column;
+  gap:            var(--spacing-3xl);
+  flex:           0 0 1024px;
+}
+
+.insightsGoalsRows {
+  display:        flex;
+  flex-direction: column;
+  gap:            var(--spacing-xl);
+}
+
+.insightsGoalsContext {
+  flex:      1 0 0;
+  min-width: 0;
+}
+
+.insightsGoalsContextTitle {
+  font-family:    var(--font-family-display);
+  font-weight:    var(--font-weight-semibold);
+  font-size:      var(--text-label-xl-size);
+  line-height:    var(--text-label-xl-lh);
+  letter-spacing: var(--text-label-xl-ls);
+  text-transform: uppercase;
+  word-spacing:   var(--word-spacing-display);
+  color:          var(--text-primary);
+}
+
+.insightsGoalsDescriptions {
+  display:        flex;
+  flex-direction: column;
+  gap:            var(--spacing-xl);
+}
+
+
+/* ── section.observability-first ───────────────────────────── */
+
+.observabilityFirst {
+  display:        flex !important;
+  flex-direction: column;
+  gap:            var(--spacing-3xl);
+}
+
+.observabilityFirstTop {
+  display: flex;
+  gap:     var(--spacing-xl);
+}
+
+.observabilityFirstContext {
+  flex: 0 0 437px;
+  gap:  var(--spacing-xl);
+}
+
+.observabilityFirstHeading {
+  font-family:    var(--font-family-body);
+  font-weight:    var(--font-weight-bold);
+  font-size:      var(--text-body-display-size);
+  line-height:    var(--text-body-display-lh);
+  letter-spacing: var(--text-body-display-ls);
+  color:          var(--text-secondary);
+  margin:         0;
+}
+
+.observabilityFirstFramework {
+  display:        flex;
+  flex-direction: column;
+  flex:           1 0 0;
+}
+
+.observabilityFirstFilledRow,
+.observabilityFirstOutlineRow {
+  display:     flex;
+  gap:         var(--spacing-xl);
+  align-items: stretch;
+}
+
+.observabilityFirstFilledRow > *,
+.observabilityFirstOutlineRow > * {
+  flex: 1 0 0;
+}
+
+.observabilityFirstConnectorRow {
+  display: flex;
+  gap:     var(--spacing-xl);
+  height:  128px;
+}
+
+.observabilityFirstConnector {
+  flex:            1 0 0;
+  display:         flex;
+  justify-content: center;
+}
+
+.observabilityFirstConnector::after {
+  content:     '';
+  display:     block;
+  width:       0;
+  height:      100%;
+  border-left: 0.5px dashed var(--text-primary);
+}
+
+.observabilityFirstBottom {
+  display:        flex;
+  flex-direction: column;
+  gap:            var(--spacing-xl);
+  padding-left:   calc(437px + var(--spacing-xl));
+}
+
+.observabilityFirstSupport {
+  font-family:    var(--font-family-body);
+  font-weight:    var(--font-weight-bold);
+  font-size:      var(--text-body-display-size);
+  line-height:    var(--text-body-display-lh);
+  letter-spacing: var(--text-body-display-ls);
+  color:          var(--text-body-display-support);
+  margin:         0;
+}
+
+
+/* ── section.data ────────────────────────────────────────── */
+
+.data {
+  display:     flex !important;
+  align-items: flex-start;
+  gap:         var(--spacing-xl);
+}
+
+.dataContext {
+  flex: 0 0 437px;
+  gap:  var(--spacing-xl);
+}
+
+.dataHeading {
+  font-family:    var(--font-family-body);
+  font-weight:    var(--font-weight-bold);
+  font-size:      var(--text-body-display-size);
+  line-height:    var(--text-body-display-lh);
+  letter-spacing: var(--text-body-display-ls);
+  color:          var(--text-secondary);
+  margin:         0;
+}
+
+.dataTrackedPeriod {
+  letter-spacing: 3.2px;
+}
+
+.dataContainer {
+  flex:                  1 0 0;
+  min-width:             0;
+  display:               grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap:                   32px;
+}
+
+.dataType {
+  min-height: 300px;
+}
+
+
+/* ── section.framework-adaptation ──────────────────────────── */
+
+.frameworkAdaptation {
+  row-gap: var(--spacing-xl);
+}
+
+.frameworkAdaptationTextBlock {
+  grid-column: 5 / -1;
+}
+
+.frameworkAdaptationDetailBlock {
+  grid-column: 5 / 8;
+}
+
+
+/* ── section.data-ops ───────────────────────────────────────── */
+
+.dataOpsEditorialContent {
+  grid-column:    1 / -1;
+  display:        flex;
+  flex-direction: column;
+  gap:            var(--spacing-xl);
+}
+
+.dataOpsHeading {
+  font-family:    var(--font-family-body);
+  font-weight:    var(--font-weight-bold);
+  font-size:      var(--text-body-display-size);
+  line-height:    var(--text-body-display-lh);
+  letter-spacing: var(--text-body-display-ls);
+  color:          var(--text-secondary);
+  margin:         0;
+  max-width:      906px;
+}
+
+.dataOpsHeadingMuted {
+  color: var(--text-body-display-support);
+}
+
+.dataOpsDetailBlock {
+  width: 320px;
+}
+
+
+/* ── section.modular-design-approach ────────────────────────── */
+
+.modularDesignApproach {
+  grid-column: 1 / -1;
+  max-width:   907px;
+}
+
+
+/* ── section.prototype-validation ──────────────────────────── */
+
+.prototypeValidation {
+  display:        flex !important;
+  flex-direction: column;
+  gap:            var(--spacing-5xl);
+}
+
+.prototypeValidationTopRow {
+  display:     flex;
+  align-items: flex-start;
+  width:       100%;
+}
+
+.prototypeValidationTopLeft {
+  flex:           1 0 0;
+  min-width:      0;
+  display:        flex;
+  flex-direction: column;
+  gap:            var(--spacing-xl);
+  align-items:    flex-start;
+}
+
+.prototypeValidationTextBlock {
+  max-width: 789px;
+}
+
+.prototypeValidationTopLeftBody {
+  width: 320px;
+}
+
+.prototypeValidationTopRight {
+  flex:        0 0 437px;
+  padding-top: 62px;
+}
+
+.prototypeValidationContainer {
+  grid-column: 1 / -1;
+  display:     flex;
+  gap:         var(--spacing-xl);
+  align-items: center;
+  width:       100%;
+}
+
+.prototypeValidationColumn {
+  display:        flex;
+  flex-direction: column;
+  gap:            var(--spacing-xl);
+  flex:           0 0 203px;
+  align-self:     stretch;
+  list-style:     none;
+  margin:         0;
+  padding:        0;
+}
+
+.prototypeValidationImgCard {
+  flex:      1 0 0;
+  min-width: 0;
+}
+
+
+/* ── section.all-software-view ──────────────────────────────── */
+
+.allSoftwareView {
+  row-gap: var(--spacing-xl);
+}
+
+.allSoftwareViewTextBlock {
+  grid-column: 1 / 9;
+}
+
+.allSoftwareViewDetailBlock {
+  grid-column: 1 / 4;
+}
+
+
+/* ── section.gaps-identified ────────────────────────────────── */
+
+.gapsIdentifiedWrapper {
+  grid-column:    1 / -1;
+  justify-self:   center;
+  display:        flex;
+  flex-direction: column;
+  align-items:    flex-start;
+  gap:            var(--spacing-xl);
+}
+
+.gapsIdentifiedTextBlock {
+  width: 789px;
+}
+
+.gapsIdentifiedDetailBlock {
+  width: 320px;
+}
+
+
+/* ── section.parallel-prototyping ───────────────────────────── */
+
+.parallelPrototyping {
+  display:        flex !important;
+  flex-direction: column;
+  gap:            var(--spacing-xl);
+}
+
+.parallelPrototypingRow {
+  display: flex;
+  gap:     var(--spacing-xl);
+}
+
+.parallelPrototypingImgCard {
+  flex: 0 0 437px;
+}
+
+.parallelPrototypingTextBlock {
+  flex:      1 0 0;
+  min-width: 0;
+}
+
+.parallelPrototypingDetailBlock {
+  flex:  0 0 437px;
+  color: var(--text-primary);
+}
+
+.parallelPrototypingMultiCard {
+  flex:      1 0 0;
+  min-width: 0;
+}
+
+
+/* ── section.software-profile-quote ────────────────────────── */
+
+.softwareProfileQuoteWrapper {
+  grid-column:    4 / 12;
+  display:        flex;
+  flex-direction: column;
+  gap:            var(--spacing-xl);
+}
+
+.softwareProfileQuoteDetailBlock {
+  width: 320px;
+}
+
+
+/* ── section.core-attribute-intent ─────────────────────────── */
+
+.coreAttributeIntent {
+  row-gap: var(--spacing-5xl);
+}
+
+.coreAttributeIntentTextBlock {
+  grid-column: 1 / -1;
+  max-width:   907px;
+}
+
+.coreAttributeIntentWrapper {
+  grid-column:           1 / -1;
+  display:               grid;
+  grid-template-columns: subgrid;
+  row-gap:               var(--spacing-xl);
+}
+
+.coreAttributeIntentAnnotationGroupTop {
+  display: contents;
+}
+
+.coreAttributeIntentAnnotationCard {
+  grid-column: span 2;
+  display:     flex;
+}
+
+.coreAttributeIntentRow {
+  grid-column:           1 / -1;
+  display:               grid;
+  grid-template-columns: subgrid;
+}
+
+.coreAttributeIntentImgCard {
+  grid-column: 1 / 11;
+}
+
+.coreAttributeIntentAnnotationGroupRight {
+  grid-column:    11 / -1;
+  display:        flex;
+  flex-direction: column;
+  gap:            var(--spacing-xl);
+}
+
+
+/* ── section.software-profile ───────────────────────────────── */
+
+.softwareProfile {
+  row-gap: var(--spacing-xl);
+}
+
+.softwareProfileTextBlock {
+  grid-column: 1 / -1;
+}
+
+.softwareProfileDetailBlock {
+  grid-column: 1 / 4;
+}
+
+
+/* ── section.utilization-and-cost ───────────────────────────── */
+
+.utilizationAndCost {
+  row-gap: var(--spacing-xl);
+}
+
+.utilizationAndCostTextBlock {
+  grid-column: 1 / 8;
+}
+
+.utilizationAndCostDetailBlock {
+  grid-column: 1 / 4;
+}

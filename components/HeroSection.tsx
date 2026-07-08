@@ -486,7 +486,7 @@ export default function HeroSection({
 
     /* ── Resolve color tokens ── */
     const yellowColor = resolveColor("--color-yellow-500");
-    const displayColor = resolveColor("--text-display");
+    const displayColor = resolveColor("--text-primary");
 
     /* ── Timing tokens ── */
     const dur = readMs("--motion-duration-nav-items");

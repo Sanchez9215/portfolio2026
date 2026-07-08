@@ -4,19 +4,12 @@
    All values resolve through CSS custom properties → tokens.json.
    ============================================================ */
 
-/* div.imgCard — outer card shell */
-.imgCard {
-  border:        var(--border-card) var(--border-style-default) var(--surface-card-border);
-  border-radius: var(--radius-md);
-  width:         100%;
-}
-
-/* div.inner — padding + flex column layout */
+/* div.inner — flex column layout; padding provided by Card shell */
 .inner {
-  padding:        var(--spacing-md);
   display:        flex;
   flex-direction: column;
   gap:            var(--spacing-md);
+  width:          100%;
 }
 
 /* div.imgWrapper — clips image to rounded corners */
@@ -24,6 +17,27 @@
   border-radius: var(--radius-default);
   overflow:      hidden;
   width:         100%;
+}
+
+/* div.inner — multi-image variant: row layout */
+.innerMulti {
+  flex-direction: row;
+}
+
+/* div.imgColumn — one column per image in multi-image variant */
+.imgColumn {
+  display:        flex;
+  flex-direction: column;
+  flex:           1 0 0;
+  min-width:      0;
+  gap:            var(--spacing-md);
+}
+
+/* img inside multi-image variant */
+.imgFill {
+  width:   100%;
+  height:  auto;
+  display: block;
 }
 
 /* div.labelWrapper — only rendered when caption is provided */
@@ -40,5 +54,5 @@
   letter-spacing: var(--text-label-xs-ls);
   word-spacing:   var(--word-spacing-display);
   text-transform: uppercase;
-  color:          var(--text-display);
+  color:          var(--text-primary);
 }

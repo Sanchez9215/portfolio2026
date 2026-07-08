@@ -1,0 +1,29 @@
+.metricCard {
+  flex: 1 0 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-3xl);
+}
+
+.value {
+  font-family: var(--font-family-display);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--text-display-metric-size);
+  line-height: var(--text-display-metric-lh);
+  letter-spacing: var(--text-display-metric-ls);
+  color: var(--text-primary);
+  text-transform: uppercase;
+}
+
+.label {
+  font-family: var(--font-family-body);
+  font-weight: var(--font-weight-regular);
+  font-size: var(--text-body-md-size);
+  line-height: var(--text-body-md-lh);
+  letter-spacing: var(--text-body-md-ls);
+  color: var(--text-tertiary);
+  text-align: center;
+}

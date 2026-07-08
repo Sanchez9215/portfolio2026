@@ -23,7 +23,7 @@
   background-color: var(--color-blue-500);
   border:           var(--border-button) solid var(--color-blue-500);
   border-radius:    var(--radius-pill);
-  color:            var(--text-primary);
+  color:            var(--text-tertiary);
 }
 
 /* ── Label ───────────────────────────────────────────────── */

@@ -21,7 +21,7 @@ export default function RootLayout({
         Individual components opt-in to font-display (Clash Display)
         via the font-display Tailwind utility.
       */}
-      <body className="font-body bg-surface-base text-primary antialiased">
+      <body className="font-body bg-surface-base antialiased">
         {children}
         <CaseStudyCursor />
       </body>

@@ -106,7 +106,7 @@
   text-transform: uppercase;
   /* Fallback color for no-JS / pre-hydration. GSAP overrides with yellow then
      transitions to the display color once the animation is complete. */
-  color: var(--text-display);
+  color: var(--text-primary);
   /* Initial clip state — GSAP animates inset(0 100% 0 0) → inset(0 0% 0 0) */
   clip-path: inset(0 100% 0 0);
   white-space: nowrap;
@@ -127,7 +127,7 @@
   line-height: 1.1;
   letter-spacing: var(--text-display-2xl-ls);
   text-transform: uppercase;
-  color: var(--text-display);
+  color: var(--text-primary);
   /*
    * flex / min-width / padding moved up to .headlineContainer —
    * h1 now fills the column naturally.
@@ -271,7 +271,7 @@
   line-height: 1.1;
   letter-spacing: var(--text-display-2xl-ls);
   text-transform: uppercase;
-  color: var(--text-display);
+  color: var(--text-primary);
   text-align: right;
 }
 
@@ -289,7 +289,7 @@
 
 /* "High-Stakes" accent — --text-display (grey-500) at all breakpoints */
 .sublineHighlight {
-  color: var(--text-display);
+  color: var(--text-primary);
 }
 
 /* ============================================================

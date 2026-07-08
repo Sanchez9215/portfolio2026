@@ -1,0 +1,48 @@
+.card {
+  border-radius: var(--radius-md);
+}
+
+.filled {
+  padding:    var(--spacing-md);
+  background: var(--surface-card);
+  border:     var(--border-card) solid var(--surface-card-border);
+}
+
+.outline {
+  padding: var(--spacing-md);
+  border:  var(--border-card) solid var(--surface-card-border);
+}
+
+.ghost {
+  /* no visual treatment — structural only */
+}
+
+/* ── header ───────────────────────────────────────────────── */
+
+.header {
+  display:        flex;
+  flex-direction: column;
+  gap:            var(--spacing-sm);
+}
+
+.separator {
+  padding-bottom: var(--spacing-sm);
+  border-bottom:  var(--border-card) solid var(--surface-card-border);
+}
+
+/* ── content ──────────────────────────────────────────────── */
+
+.content {
+  display:        flex;
+  flex-direction: column;
+}
+
+.hasHeader {
+  margin-top: var(--spacing-sm);
+}
+
+.gap-xs { gap: var(--spacing-xs); }
+.gap-sm { gap: var(--spacing-sm); }
+.gap-md { gap: var(--spacing-md); }
+.gap-lg { gap: var(--spacing-lg); }
+.gap-xl { gap: var(--spacing-xl); }

@@ -184,8 +184,8 @@ export default function Nav() {
       {/* ── Header (always visible) ─────────────────────────── */}
       <div className={styles.header}>
 
-        {/* div.brand — logo + name + title */}
-        <div className={styles.brand}>
+        {/* a.brand — logo + name + title; links home from any page */}
+        <a href="/" className={styles.brand}>
           <span className={styles.logoWrapper} aria-hidden="true">
             <svg
               width="64"
@@ -210,7 +210,7 @@ export default function Nav() {
             <p className={styles.designerName}>Edgar</p>
             <p className={styles.designerTitle}>Sanchez</p>
           </div>
-        </div>
+        </a>
 
         {/* Button — outline (menu) ↔ ghost (close), toggled by nav state */}
         <Button

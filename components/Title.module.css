@@ -1,0 +1,11 @@
+.title {
+  font-family:  var(--font-family-body);
+  font-weight:  var(--font-weight-bold);
+  color:        var(--text-secondary);
+  margin:       0;
+}
+
+.xs { font-size: var(--text-title-xs-size); line-height: var(--text-title-xs-lh); letter-spacing: var(--text-title-xs-ls); }
+.sm { font-size: var(--text-title-sm-size); line-height: var(--text-title-sm-lh); letter-spacing: var(--text-title-sm-ls); }
+.md { font-size: var(--text-title-md-size); line-height: var(--text-title-md-lh); letter-spacing: var(--text-title-md-ls); }
+.lg { font-size: var(--text-title-lg-size); line-height: var(--text-title-lg-lh); letter-spacing: var(--text-title-lg-ls); }

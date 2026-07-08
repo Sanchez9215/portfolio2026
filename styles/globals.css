@@ -194,7 +194,7 @@
      ---------------------------------------------------------- */
 
   --nav-bg:                     var(--color-grey-1000);
-  --nav-link-text:              var(--color-grey-600);
+  --nav-link-text:              var(--text-tertiary);
   --nav-menu-item-text:         var(--color-grey-300);
   --nav-menu-item-border:       var(--color-grey-900);
   --nav-menu-item-border-hover: var(--color-blue-500);
@@ -225,20 +225,28 @@
   --action-outline-text:             var(--color-yellow-500);
   --action-outline-text-hover:       var(--color-grey-1100);
 
-  --action-ghost-text:               var(--color-grey-600);
+  --action-ghost-text:               var(--text-tertiary);
   --action-ghost-text-hover:         var(--color-yellow-500);
 
   /* ----------------------------------------------------------
      SEMANTIC — Text
      ---------------------------------------------------------- */
 
-  --text-primary:            var(--color-grey-650);
-  --text-secondary:          var(--color-grey-600);
-  --text-accent:             var(--color-blue-500);
-  --text-display:            var(--color-grey-300);
-  --text-dark-display:       var(--color-grey-1100);
-  --text-case-study-hover:   var(--color-yellow-500);
-  --text-body-highlight:     var(--color-grey-500);
+  --text-primary:                var(--color-grey-300);
+  --text-secondary:              var(--color-grey-500);
+  --text-tertiary:               var(--color-grey-650);
+  --text-subtle:                 var(--color-grey-700);
+  --text-body-display-statement: var(--color-grey-500);
+  --text-body-display-support:   var(--color-grey-700);
+  --text-accent:                 var(--color-blue-500);
+  --text-dark-display:           var(--color-grey-1100);
+  --text-case-study-hover:       var(--color-yellow-500);
+
+  /* ----------------------------------------------------------
+     SEMANTIC — Accent
+     ---------------------------------------------------------- */
+
+  --accent-primary: var(--color-blue-500);
 
   /* ----------------------------------------------------------
      SEMANTIC — Border
@@ -263,6 +271,7 @@
      ---------------------------------------------------------- */
 
   --spacing-nav-padding:         var(--spacing-md);
+  --nav-height:                  80px;
 
   /* ----------------------------------------------------------
      SEMANTIC — Z-index
@@ -310,6 +319,11 @@
      Body and static label tokens are unchanged (no clamp).
      ---------------------------------------------------------- */
 
+  /* display-metric  390→1920: 40→72px  /  lh 44→79px — semantic alias for numeric metric values */
+  --text-display-metric-size: clamp(40px, 31.84px + 2.09vw, 72px);
+  --text-display-metric-lh:   clamp(44px, 35.08px + 2.29vw, 79px);
+  --text-display-metric-ls:   -0.02em;
+
   /* display-lg  390→1920: 40→72px  /  lh 44→79px */
   --text-display-lg-size:     clamp(40px, 31.84px + 2.09vw, 72px);
   --text-display-lg-lh:       clamp(44px, 35.08px + 2.29vw, 79px);
@@ -350,6 +364,11 @@
   --text-heading-xs-lh:       clamp(15px, 14.49px + 0.13vw, 17px);
   --text-heading-xs-ls:       -0.01em;
 
+  /* body-display  390→1920: 26→52px  /  lh 31→62px */
+  --text-body-display-size: clamp(26px, 19.37px + 1.70vw, 52px);
+  --text-body-display-lh:   clamp(31px, 23.08px + 2.03vw, 62px);
+  --text-body-display-ls:   0;
+
   /* body — static, no clamp */
   --text-body-lg-size:        18px;
   --text-body-lg-lh:          24px;
@@ -387,6 +406,23 @@
   --text-label-xs-size:       12px;
   --text-label-xs-lh:         16px;
   --text-label-xs-ls:         -0.02em;
+
+  /* title — Cabinet Grotesk Bold, static, no clamp */
+  --text-title-lg-size: 18px;
+  --text-title-lg-lh:   var(--text-body-lg-lh);
+  --text-title-lg-ls:   -0.01em;
+
+  --text-title-md-size: 16px;
+  --text-title-md-lh:   var(--text-body-md-lh);
+  --text-title-md-ls:   -0.01em;
+
+  --text-title-sm-size: 14px;
+  --text-title-sm-lh:   var(--text-body-sm-lh);
+  --text-title-sm-ls:   -0.01em;
+
+  --text-title-xs-size: 12px;
+  --text-title-xs-lh:   var(--text-body-xs-lh);
+  --text-title-xs-ls:   -0.01em;
 }
 
 
@@ -397,7 +433,7 @@
 @layer base {
   html {
     background-color: var(--surface-base);
-    color: var(--text-primary);
+    color: var(--text-tertiary);
     font-family: var(--font-family-body);
     font-size: 16px; /* base: tokens.json Primitives.fontSize.base */
     -webkit-font-smoothing: antialiased;

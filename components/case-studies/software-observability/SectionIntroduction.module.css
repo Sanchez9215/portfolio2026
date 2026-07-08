@@ -22,16 +22,17 @@
   background: var(--surface-card);
 }
 
-/* div.project-overview — cols 1–6 */
+/* div.project-overview — cols 1–6, subgrid inherits 6 tracks from section */
 .projectOverview {
-  grid-column:    1 / 7;
-  display:        flex;
-  flex-direction: column;
-  gap:            var(--spacing-2xl);
+  grid-column:           1 / 7;
+  display:               grid;
+  grid-template-columns: subgrid;
+  row-gap:               var(--spacing-2xl);
 }
 
-/* div.intro — title + subtitle stack */
+/* div.intro — spans all 6 inherited tracks */
 .intro {
+  grid-column:    1 / -1;
   display:        flex;
   flex-direction: column;
   gap:            var(--spacing-md);
@@ -46,23 +47,20 @@
   letter-spacing: var(--text-display-lg-ls);
   word-spacing:   var(--word-spacing-display);
   text-transform: uppercase;
-  color:          var(--text-display);
+  color:          var(--text-primary);
 }
 
-/* p — body-lg, Cabinet Grotesk regular */
-.subtitle {
-  font-family:    var(--font-family-body);
-  font-weight:    var(--font-weight-regular);
-  font-size:      var(--text-body-lg-size);
-  line-height:    var(--text-body-lg-lh);
-  letter-spacing: var(--text-body-lg-ls);
-  color:          var(--text-body-highlight);
-}
-
-/* div.project-meta — 3 TextBlock xs side by side */
+/* div.project-meta — subgrid across all 6 inherited tracks */
 .projectMeta {
-  display: flex;
-  gap:     var(--spacing-xl);
+  grid-column:           1 / -1;
+  display:               grid;
+  grid-template-columns: subgrid;
+  text-align:            left;
+}
+
+/* each TextBlock spans 2 of the 6 section columns */
+.projectMeta > * {
+  grid-column: span 2;
 }
 
 /* div.project-impact — cols 8–12 */
