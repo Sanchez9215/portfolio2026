@@ -37,9 +37,11 @@
   flex-direction: column;
 }
 
-.hasHeader {
-  margin-top: var(--spacing-sm);
-}
+.header-gap-xs { margin-top: var(--spacing-xs); }
+.header-gap-sm { margin-top: var(--spacing-sm); }
+.header-gap-md { margin-top: var(--spacing-md); }
+.header-gap-lg { margin-top: var(--spacing-lg); }
+.header-gap-xl { margin-top: var(--spacing-xl); }
 
 .gap-xs { gap: var(--spacing-xs); }
 .gap-sm { gap: var(--spacing-sm); }

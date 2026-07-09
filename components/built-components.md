@@ -11,10 +11,9 @@
 | block                   | components/Block.tsx — Cabinet Grotesk regular; sizes: xs\|sm\|md\|lg; color: primary\|secondary(default)\|tertiary |
 | label-block             | components/LabelBlock.tsx — Label + optional Block(tertiary); sizes: xs\|sm\|md\|lg\|display; display adds body(statement) + support slots (both Cabinet bold) |
 | title-block             | components/TitleBlock.tsx — Title + optional Block(tertiary); sizes: xs\|sm\|md\|lg |
-| card                    | components/Card.tsx — variant: filled\|outline\|ghost; optional label+labelSize, title+titleSize, separator, gap(xs\|sm\|md\|lg\|xl, default md); exposes data-tb-heading on header |
+| card                    | components/Card.tsx — variant: filled\|outline\|ghost; size(xs\|sm\|md\|lg) sets default labelSize+titleSize; labelSize+titleSize as explicit overrides; separator; gap(xs\|sm\|md\|lg\|xl, default md); headerGap(xs\|sm\|md\|lg\|xl, default sm); exposes data-tb-heading on header |
 | img-card                | components/ImgCard.tsx — Card(outline) + image + caption; single or multi-image |
 | section                 | components/Section.tsx                                                        |
-| annotation-card         | components/AnnotationCard.tsx — Card(filled, label-sm) + TitleBlock(sm) children |
 | section-introduction    | components/case-studies/software-observability/SectionIntroduction.tsx        |
 | message-thread          | components/case-studies/software-observability/MessageThread.tsx              |
 | quote-block             | components/QuoteBlock.tsx                                                     |

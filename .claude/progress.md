@@ -22,6 +22,8 @@
 | 4 | Applied an abbreviated form of a name instead of following the established naming convention | User correction | Never shorten names. Use the full form as specified by the convention, derived directly from the source (e.g. Figma layer name) |
 | 5 | Widened the scope of analysis beyond what the task required — audited unrelated parts of the codebase when the task was purely additive | Introduced confusion; required user redirection | If the task is additive, touch only what is needed. Do not audit unrelated internals |
 | 6 | Proposed a value for a shared property that deviated from the established convention without a documented reason | User correction | Always default to the convention already in use for a shared property. Only deviate when the design explicitly documents a reason |
+| 7 | Used a wrapper div + CSS class solely to apply a grid column span to a child component | Extra DOM node, unmaintainable class name | Use a parent child selector (`> *`) when all siblings share the same span; use `className` on the component only for unique per-instance overrides |
+| 8 | Proposed new CSS rules for a layout already covered by existing classes — did not grep the stylesheet or cross-reference the existing section pattern before planning | User had to redirect; extra unnecessary work | Before proposing any new CSS rule, search the stylesheet for the structural pattern first. If an existing class covers the layout, reuse it. |
 
 ## Component System — Standardized Primitives (completed this session)
 
@@ -34,14 +36,14 @@
 | `Block` | Cabinet Grotesk regular. Sizes: xs\|sm\|md\|lg. Color: primary\|secondary(default)\|tertiary |
 | `LabelBlock` | Label + optional Block(tertiary). Sizes: xs–lg. At `display`: Label(xl) + bold statement + bold support (separate color tokens) |
 | `TitleBlock` | Title + optional Block(tertiary). Sizes: xs\|sm\|md\|lg |
-| `Card` | variant: filled\|outline\|ghost. Optional label+labelSize, title+titleSize in header. Optional separator (border-bottom). gap prop (default md). Exposes `data-tb-heading` on header for SVG connector targeting |
+| `Card` | variant: filled\|outline\|ghost. `size` (xs\|sm\|md\|lg) sets default labelSize+titleSize for header. `labelSize`/`titleSize` as explicit overrides. `headerGap` (xs\|sm\|md\|lg\|xl, default sm) controls header→content spacing independently from `gap` (children spacing, default md). Exposes `data-tb-heading` on header. |
 
 **Gap rules:**
 - Within a block (label/title → body): `--spacing-sm` (8px)
-- Between Card header and content: `--spacing-sm` via `margin-top`
-- Between Card children: one step up from child size (sm children → md gap)
+- Between Card header and content: `headerGap` prop (default sm = 8px)
+- Between Card children: `gap` prop (default md)
 
-`AnnotationCard` — rebuilt as thin wrapper: Card(filled, label-sm) + TitleBlock(sm) children. No own CSS.
+`AnnotationCard` — **deleted**. Was a redundant wrapper; replaced everywhere with `Card + TitleBlock` children directly.
 
 `InsightGoalRow` — rebuilt using Card(ghost, separator). API changed from `insight`/`goal` named props to `items: [Item, Item]`. SVG connector still targets `[data-tb-heading]` on Card headers.
 
@@ -68,6 +70,12 @@ All usages in `page.tsx` and `SectionIntroduction.tsx` updated to new primitives
 17. `section.core-attribute-intent`
 18. `section.software-profile`
 19. `section.software-profile-quote`
+20. `section.utilization-and-cost`
+21. `section.software-profile-prototype-1`
+22. `section.lifecycle-timeline`
+23. `section.generating-events`
+24. `section.event-iterations`
+25. `section.unifying-systems` — LabelBlock(display) + Block(lg) + ImgCard(single: Claude Profile Prototype) top row; ImgCard(3-image: Employee/Financial/Devices tab prototypes) bottom row. **Note:** User specified this comes after `section.final-lifecycle-timeline`, which has not yet been built. Appended to end for now; reorder when that section is added.
 
 ## New tokens
 
@@ -91,6 +99,33 @@ New typography tokens pending sizes from Edgar: `body-xl`, `caption-label`, `cap
 
 - **`section.insights-and-goals` scroll parallax** — insight column shifts `translateX(-8px)`, goal column shifts `translateX(+8px)`, driven by ScrollTrigger. Connector recalculates from base positions ± offset. Desktop only via `gsap.matchMedia`.
 
-## Next
+## Next — `section.final-lifecycle-timeline`
 
-- Share a Figma node to continue building sections
+Slots between `section.event-iterations` (#24) and `section.unifying-systems` (#25 → becomes #26).
+
+**Figma:** node `2-47797`, file `C3PsgZV3jZMHgm4bFZJOVP`
+
+**Layout:** `Label(xl)` stacked above a 3-column row: left `ol.decisions` | center `ImgCard(flex-1)` | right `ol.decisions`.
+
+**No new CSS needed for the 3-column layout** — reuse existing classes:
+- `styles.prototypeValidationContainer` → outer row wrapper (`div.wrapper`)
+- `styles.prototypeValidationColumn` → both `ol` columns (203px, flex-col, gap-xl, no list-style)
+- `styles.prototypeValidationImgCard` → center ImgCard (flex-1)
+
+**Open question:** Does the Section need a new class for the flex-column stack (Label above row)? `styles.prototypeValidation` would work structurally but uses `--spacing-5xl` (128px); Figma gap is 64px (`--spacing-3xl`). Confirm before writing.
+
+**Image:** `/images/software-observability/timeline-prototype-2.jpg` — caption "Profile Prototype 02"
+
+**Cards — both columns use `title` prop (Cabinet Grotesk Bold), not `label` (Clash Display):**
+
+Left `ol`:
+1. `Card(filled, sm)` `title="Event Search"` + `Block(sm, tertiary)` — "Enables users to instantly locate specific lifecycle events without manually scrolling through long timelines."
+2. `Card(filled, sm)` `title="Event Filtering by Type"` + `Block(sm, tertiary)` — "Reduces noise by allowing teams to focus only on events relevant to their role or task."
+
+Right `ol`:
+1. `Card(filled, sm)` `title="Timeline Navigation"` + `Block(sm, tertiary)` — "Built for enterprise customers managing multi-year subscription histories, enabling effortless navigation across extensive event timelines."
+2. `Card(filled, sm)` `title="Milestone Based Events"` + `Block(sm, tertiary)` — "Milestone events reduce noise and surface lifecycle moments that provide operational insights. I proposed introducing custom configuration in a future iteration so enterprises could define milestone triggers that reflect their unique workflows and performance measures."
+
+**Import needed:** Add `Label` to page.tsx imports.
+
+**Mistake pattern #8 to add:** Proposed new CSS rules for a layout already covered by existing classes; did not cross-reference the stylesheet before planning. Fix: grep for structural patterns before proposing any new rule.

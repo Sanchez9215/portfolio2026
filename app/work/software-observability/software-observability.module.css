@@ -469,9 +469,8 @@
   display: contents;
 }
 
-.coreAttributeIntentAnnotationCard {
+.coreAttributeIntentAnnotationGroupTop > * {
   grid-column: span 2;
-  display:     flex;
 }
 
 .coreAttributeIntentRow {
@@ -507,6 +506,83 @@
 }
 
 
+/* ── section.lifecycle-timeline ─────────────────────────────── */
+
+.lifecycleTimeline {
+  row-gap: var(--spacing-xl);
+}
+
+.lifecycleTimelineTextBlock {
+  grid-column: 1 / -1;
+  max-width:   907px;
+}
+
+.lifecycleTimelineWrapper {
+  grid-column: 1 / -1;
+  display:     flex;
+  gap:         var(--spacing-xl);
+}
+
+.lifecycleTimelineItem {
+  flex:           1 0 0;
+  min-width:      0;
+  display:        flex;
+  flex-direction: column;
+  gap:            var(--spacing-xl);
+}
+
+.lifecycleTimelineWord {
+  font-family:    var(--font-family-display);
+  font-weight:    var(--font-weight-semibold);
+  font-size:      var(--text-display-metric-size);
+  line-height:    var(--text-display-metric-lh);
+  letter-spacing: var(--text-display-metric-ls);
+  text-transform: uppercase;
+  color:          var(--text-tertiary);
+  margin:         0;
+}
+
+
+/* ── section.generating-events ──────────────────────────────── */
+
+.generatingEvents {
+  row-gap: var(--spacing-xl);
+}
+
+.generatingEventsTextBlock {
+  grid-column: 1 / 7;
+}
+
+.generatingEventsDetailBlock {
+  grid-column: 1 / 4;
+}
+
+
+/* ── section.event-iterations ───────────────────────────────── */
+
+.eventIterations {
+  display:     flex !important;
+  align-items: flex-start;
+  gap:         var(--spacing-xl);
+}
+
+.eventIterationsImgCard {
+  flex:      1 0 0;
+  min-width: 0;
+}
+
+.eventIterationsContext {
+  flex:      1 0 0;
+  min-width: 0;
+}
+
+.eventIterationsItems {
+  display:        flex;
+  flex-direction: column;
+  gap:            var(--spacing-xl);
+}
+
+
 /* ── section.utilization-and-cost ───────────────────────────── */
 
 .utilizationAndCost {
@@ -519,4 +595,31 @@
 
 .utilizationAndCostDetailBlock {
   grid-column: 1 / 4;
+}
+
+
+/* ── section.unifying-systems ───────────────────────────────── */
+
+.unifyingSystems {
+  display:        flex !important;
+  flex-direction: column;
+  gap:            var(--spacing-xl);
+}
+
+.unifyingSystemsTopRow {
+  display:     flex;
+  gap:         var(--spacing-xl);
+  align-items: flex-start;
+}
+
+.unifyingSystemsEditorialContent {
+  flex:           1 0 0;
+  min-width:      0;
+  display:        flex;
+  flex-direction: column;
+  gap:            var(--spacing-xl);
+}
+
+.unifyingSystemsProfileCard {
+  flex: 0 0 437px;
 }
