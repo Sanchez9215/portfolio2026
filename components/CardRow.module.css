@@ -1,0 +1,28 @@
+/* ============================================================
+   CardRow — horizontal row of Cards
+   size="fill"  → flex row, cards stretch to divide available width
+   size="span2" → cards fixed to grid-column: span 2 (count-independent
+                  width); requires a subgrid ancestor (e.g. SectionImg)
+   ============================================================ */
+
+.cardRow {
+  align-items: start;
+}
+
+.fill {
+  display: flex;
+  gap:     var(--spacing-xl);
+}
+
+.fill > * {
+  flex: 1 0 0;
+  min-width: 0;
+}
+
+.span2 {
+  display: contents;
+}
+
+.span2 > * {
+  grid-column: span 2;
+}

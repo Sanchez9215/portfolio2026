@@ -12,6 +12,9 @@ import MetricCard from "@/components/MetricCard";
 import InsightGoalRow from "@/components/InsightGoalRow";
 import ContentHub from "@/components/ContentHub";
 import ImgCard from "@/components/ImgCard";
+import CardRow from "@/components/CardRow";
+import CardColumn from "@/components/CardColumn";
+import SectionImg from "@/components/SectionImg";
 import styles from "./software-observability.module.css";
 
 export default function SoftwareObservabilityPage() {
@@ -215,61 +218,61 @@ export default function SoftwareObservabilityPage() {
               </Block>
             </ContextBlock>
             <div className={styles.observabilityFirstFramework}>
-              <div className={styles.observabilityFirstFilledRow}>
-                <Card variant="filled" label="Overview" labelSize="md">
-                  <Block size="md" color="tertiary">
+              <CardRow>
+                <Card variant="filled" label="Overview" labelSize="sm">
+                  <Block size="sm" color="tertiary">
                     Real-time distribution view of assets across lifecycle
                     stages, filterable from a single worksite to global
                     operations.
                   </Block>
                 </Card>
-                <Card variant="filled" label="All Assets" labelSize="md">
-                  <Block size="md" color="tertiary">
+                <Card variant="filled" label="All Assets" labelSize="sm">
+                  <Block size="sm" color="tertiary">
                     A complete, filterable view of every managed asset owned,
                     letting users segment by region, entity relationship,
                     financial allocation, or operational status.
                   </Block>
                 </Card>
-                <Card variant="filled" label="Assets Profile" labelSize="md">
-                  <Block size="md" color="tertiary">
+                <Card variant="filled" label="Assets Profile" labelSize="sm">
+                  <Block size="sm" color="tertiary">
                     Combines core attributes, entity relationships and an
                     end-to-end lifecycle timeline in a single unified record.
                   </Block>
                 </Card>
-                <Card variant="filled" label="Insights" labelSize="md">
-                  <Block size="md" color="tertiary">
+                <Card variant="filled" label="Insights" labelSize="sm">
+                  <Block size="sm" color="tertiary">
                     Translates lifecycle data into clear trends and signals to
                     identify cost reduction opportunities and validate
                     autonomous execution.
                   </Block>
                 </Card>
-              </div>
+              </CardRow>
               <div className={styles.observabilityFirstConnectorRow}>
                 {[0, 1, 2, 3].map((i) => (
                   <div key={i} className={styles.observabilityFirstConnector} />
                 ))}
               </div>
-              <div className={styles.observabilityFirstOutlineRow}>
+              <CardRow>
                 <Card
                   variant="outline"
                   label="Software Overview"
-                  labelSize="md"
+                  labelSize="sm"
                 >
-                  <Block size="md" color="tertiary">
+                  <Block size="sm" color="tertiary">
                     A complete portfolio view of every title across lifecycle
                     stages, surfacing spend, compliance risk, and renewal
                     exposure at a glance.
                   </Block>
                 </Card>
-                <Card variant="outline" label="All Software" labelSize="md">
-                  <Block size="md" color="tertiary">
+                <Card variant="outline" label="All Software" labelSize="sm">
+                  <Block size="sm" color="tertiary">
                     A complete, filterable catalog of every title in the
                     organization, letting teams isolate exactly what they need
                     to act on.
                   </Block>
                 </Card>
-                <Card variant="outline" label="Software Profile" labelSize="md">
-                  <Block size="md" color="tertiary">
+                <Card variant="outline" label="Software Profile" labelSize="sm">
+                  <Block size="sm" color="tertiary">
                     A software title record that surfaces licensing posture,
                     utilization health, spend, and compliance standing.
                   </Block>
@@ -277,15 +280,15 @@ export default function SoftwareObservabilityPage() {
                 <Card
                   variant="outline"
                   label="Software Insights"
-                  labelSize="md"
+                  labelSize="sm"
                 >
-                  <Block size="md" color="tertiary">
+                  <Block size="sm" color="tertiary">
                     Surfaces portfolio trends to identify optimization
                     opportunities, forecast renewals, and validate license
                     reclamations.
                   </Block>
                 </Card>
-              </div>
+              </CardRow>
             </div>
           </div>
           <div className={styles.observabilityFirstBottom}>
@@ -493,8 +496,13 @@ export default function SoftwareObservabilityPage() {
               </Block>
             </div>
           </div>
-          <div className={styles.prototypeValidationContainer}>
-            <ol className={styles.prototypeValidationColumn}>
+        </Section>
+
+        {/* ── section.overview-prototype-1 ── */}
+        <SectionImg
+          layout="row"
+          before={
+            <CardColumn>
               <Card variant="filled" size="sm" label="Geographic Filtering">
                 <TitleBlock
                   size="sm"
@@ -547,17 +555,18 @@ export default function SoftwareObservabilityPage() {
                   body="The conditions that create compliance exposure were more specific than the status groupings communicated."
                 />
               </Card>
-            </ol>
-            <ImgCard
-              className={styles.prototypeValidationImgCard}
-              caption="Overview Prototype 01"
-            >
+            </CardColumn>
+          }
+          image={
+            <ImgCard caption="Overview Prototype 01">
               <img
                 src="/images/software-observability/img.prototype-1.jpg"
                 alt="Prototype 01 — Software Overview"
               />
             </ImgCard>
-            <ol className={styles.prototypeValidationColumn}>
+          }
+          after={
+            <CardColumn>
               <Card variant="filled" size="sm" label="Inactivity Threshold">
                 <TitleBlock
                   size="sm"
@@ -606,10 +615,15 @@ export default function SoftwareObservabilityPage() {
                   body="No single industry standard exists. Stage sets varied widely across tools and organizations."
                 />
               </Card>
-            </ol>
-          </div>
-          <div className={styles.prototypeValidationContainer}>
-            <ol className={styles.prototypeValidationColumn}>
+            </CardColumn>
+          }
+        />
+
+        {/* ── section.overview-prototype-2 ── */}
+        <SectionImg
+          layout="row"
+          before={
+            <CardColumn>
               <Card variant="filled" size="sm" label="Geographic Filtering">
                 <TitleBlock
                   size="sm"
@@ -642,17 +656,18 @@ export default function SoftwareObservabilityPage() {
                   body="Replaced status-based groupings with non-compliance type, surfacing shadow IT, version and edition mismatch, and duplicate assignments as the primary signals."
                 />
               </Card>
-            </ol>
-            <ImgCard
-              className={styles.prototypeValidationImgCard}
-              caption="Overview Prototype 02"
-            >
+            </CardColumn>
+          }
+          image={
+            <ImgCard caption="Overview Prototype 02">
               <img
                 src="/images/software-observability/overview-prototype-2.jpg"
                 alt="Prototype 02 — Software Overview"
               />
             </ImgCard>
-            <ol className={styles.prototypeValidationColumn}>
+          }
+          after={
+            <CardColumn>
               <Card variant="filled" size="sm" label="Inactivity Threshold">
                 <TitleBlock
                   size="sm"
@@ -681,9 +696,9 @@ export default function SoftwareObservabilityPage() {
                   body="Refined the stage set in close collaboration with our CPO to accurately reflect the operational language and pain points of enterprise IT organizations."
                 />
               </Card>
-            </ol>
-          </div>
-        </Section>
+            </CardColumn>
+          }
+        />
 
         <Section>
           <div className={styles.gapsIdentifiedWrapper}>
@@ -722,8 +737,13 @@ export default function SoftwareObservabilityPage() {
             body="The challenge was defining the right row-level attributes and data points,"
             support="so teams could find what they needed fast without friction."
           />
-          <div className={styles.coreAttributeIntentWrapper}>
-            <div className={styles.coreAttributeIntentAnnotationGroupTop}>
+        </Section>
+
+        {/* ── section.all-software-prototype-1 ── */}
+        <SectionImg
+          layout="corner"
+          before={
+            <CardRow size="span2">
               <Card
                 variant="filled"
                 size="sm"
@@ -735,86 +755,69 @@ export default function SoftwareObservabilityPage() {
                   potential is greatest.
                 </Block>
               </Card>
-              <Card
-                variant="filled"
-                size="sm"
-                label="Identification Columns"
-              >
+              <Card variant="filled" size="sm" label="Identification Columns">
                 <Block size="sm" color="tertiary">
                   Software name, Publisher and Vendor provide essential context
                   for identifying what the product is, who created it, and who
                   it was purchased through.
                 </Block>
               </Card>
-              <Card
-                variant="filled"
-                size="sm"
-                label="Category"
-              >
+              <Card variant="filled" size="sm" label="Category">
                 <Block size="sm" color="tertiary">
                   Groups software by function, letting teams compare spend and
                   utilization across similar tools and identify redundant tools
                   for consolidation opportunities.
                 </Block>
               </Card>
-              <Card
-                variant="filled"
-                size="sm"
-                label="Total Spend"
-              >
+              <Card variant="filled" size="sm" label="Total Spend">
                 <Block size="sm" color="tertiary">
                   Quantifies what the organization is paying for each title,
                   establishing the financial baseline every other signal gets
                   measured against.
                 </Block>
               </Card>
-              <Card
-                variant="filled"
-                size="sm"
-                label="Licenses Purchased"
-              >
+              <Card variant="filled" size="sm" label="Licenses Purchased">
                 <Block size="sm" color="tertiary">
                   Establishes the baseline for total licenses owned to support
                   allocation decisions, onboarding planning, and renewal
                   negotiations.
                 </Block>
               </Card>
-            </div>
-            <div className={styles.coreAttributeIntentRow}>
-              <ImgCard
-                className={styles.coreAttributeIntentImgCard}
-                caption="All Software Prototype 01"
-              >
-                <img
-                  src="/images/software-observability/all-software-prototype-1.jpg"
-                  alt="All Software Prototype 01"
-                />
-              </ImgCard>
-              <div className={styles.coreAttributeIntentAnnotationGroupRight}>
-                <Card variant="filled" label="Utilization Rate" size="sm">
-                  <Block size="sm" color="tertiary">
-                    Represents the percentage of licenses actively being used,
-                    allowing teams to identify reclamation opportunities, inform
-                    renewal decisions and negotiation strategy.
-                  </Block>
-                </Card>
-                <Card variant="filled" label="Inactive" size="sm">
-                  <Block size="sm" color="tertiary">
-                    Quantifies the number of assigned licenses not being
-                    actively used (no activity in last 90 days), identifying
-                    reclamation opportunities and wasted spend.
-                  </Block>
-                </Card>
-                <Card variant="filled" label="Renewal" size="sm">
-                  <Block size="sm" color="tertiary">
-                    Provides urgency context for renewal decisions before a
-                    contract renews.
-                  </Block>
-                </Card>
-              </div>
-            </div>
-          </div>
-        </Section>
+            </CardRow>
+          }
+          image={
+            <ImgCard caption="All Software Prototype 01">
+              <img
+                src="/images/software-observability/all-software-prototype-1.jpg"
+                alt="All Software Prototype 01"
+              />
+            </ImgCard>
+          }
+          after={
+            <CardColumn>
+              <Card variant="filled" label="Utilization Rate" size="sm">
+                <Block size="sm" color="tertiary">
+                  Represents the percentage of licenses actively being used,
+                  allowing teams to identify reclamation opportunities, inform
+                  renewal decisions and negotiation strategy.
+                </Block>
+              </Card>
+              <Card variant="filled" label="Inactive" size="sm">
+                <Block size="sm" color="tertiary">
+                  Quantifies the number of assigned licenses not being actively
+                  used (no activity in last 90 days), identifying reclamation
+                  opportunities and wasted spend.
+                </Block>
+              </Card>
+              <Card variant="filled" label="Renewal" size="sm">
+                <Block size="sm" color="tertiary">
+                  Provides urgency context for renewal decisions before a
+                  contract renews.
+                </Block>
+              </Card>
+            </CardColumn>
+          }
+        />
 
         <Section className={styles.softwareProfile}>
           <LabelBlock
@@ -857,12 +860,11 @@ export default function SoftwareObservabilityPage() {
           </Block>
         </Section>
 
-        <Section>
-          <div
-            className="col-span-full grid items-start"
-            style={{ gridTemplateColumns: '2fr 8fr 2fr', gap: 'var(--spacing-3xl)' }}
-          >
-            <div className="flex flex-col" style={{ gap: 'var(--spacing-xl)' }}>
+        {/* ── section.profile-prototype-1 ── */}
+        <SectionImg
+          layout="row"
+          before={
+            <CardColumn>
               <Card variant="filled" size="sm" label="Product Identity">
                 <Block size="sm" color="tertiary">
                   Aside from providing product identification at a glance,
@@ -884,17 +886,18 @@ export default function SoftwareObservabilityPage() {
                   size before reviewing usage performance.
                 </Block>
               </Card>
-            </div>
+            </CardColumn>
+          }
+          image={
             <ImgCard caption="Profile Prototype 01">
               <img
                 src="/images/software-observability/profile-prototype-1.jpg"
                 alt="Profile Prototype 01"
               />
             </ImgCard>
-            <ol
-              className="flex flex-col"
-              style={{ listStyle: 'none', margin: 0, padding: 0, gap: 'var(--spacing-xl)' }}
-            >
+          }
+          after={
+            <CardColumn>
               <Card variant="filled" size="sm" label="Utilization Summary">
                 <Block size="sm" color="tertiary">
                   Prioritized as the first actionable data type as it
@@ -908,9 +911,9 @@ export default function SoftwareObservabilityPage() {
                   fast, data-backed renewal and optimization decisions.
                 </Block>
               </Card>
-            </ol>
-          </div>
-        </Section>
+            </CardColumn>
+          }
+        />
 
         <Section className={styles.lifecycleTimeline}>
           <LabelBlock
@@ -953,42 +956,105 @@ export default function SoftwareObservabilityPage() {
           </Block>
         </Section>
 
-        <Section className={styles.eventIterations}>
-          <ImgCard className={styles.eventIterationsImgCard} caption="Claude Output">
-            <img
-              src="/images/software-observability/claude-timeline-output.jpg"
-              alt="Claude Output — lifecycle events"
-            />
-          </ImgCard>
-          <ImgCard className={styles.eventIterationsImgCard} caption="Timeline Prototype">
-            <img
-              src="/images/software-observability/timeline-prototype-1.jpg"
-              alt="Timeline Prototype"
-            />
-          </ImgCard>
-          <ContextBlock side="none" className={styles.eventIterationsContext}>
-            <Block size="md" color="secondary">
-              Reaching a realistic, scalable set of timeline events took some iterations.
-            </Block>
-            <div className={styles.eventIterationsItems}>
-              <TitleBlock
-                size="md"
-                title="Initial Generation"
-                body="Using the latest software lifecycle stages developed with our CPO, I leveraged Claude to generate a set of key events spanning a software title's life."
+        {/* ── section.event-iterations ── */}
+        <SectionImg
+          layout="row"
+          image={[
+            <ImgCard caption="Claude Output">
+              <img
+                src="/images/software-observability/claude-timeline-output.jpg"
+                alt="Claude Output — lifecycle events"
               />
-              <TitleBlock
-                size="md"
-                title="The Problem"
-                body="The output was events that were too granular for enterprise scale and too specific to generalize across other software titles."
+            </ImgCard>,
+            <ImgCard caption="Timeline Prototype">
+              <img
+                src="/images/software-observability/timeline-prototype-1.jpg"
+                alt="Timeline Prototype"
               />
-              <TitleBlock
-                size="md"
-                title="Refining for Scale"
-                body="I worked with Claude to refine the events into reusable aggregate milestones, structured to lead with a quantitative data point where applicable, for easy digestion and scale comprehension."
+            </ImgCard>,
+          ]}
+          after={
+            <div className={styles.eventIterationsAfter}>
+              <LabelBlock
+                size="display"
+                body="Reaching a realistic, scalable set of timeline events took some iterations."
               />
+              <CardColumn>
+                <Card variant="filled" size="sm" label="Initial Generation">
+                  <Block size="sm" color="tertiary">
+                    Using the latest software lifecycle stages developed with
+                    our CPO, I leveraged Claude to generate a set of key events
+                    spanning a software title's life.
+                  </Block>
+                </Card>
+                <Card variant="filled" size="sm" label="The Problem">
+                  <Block size="sm" color="tertiary">
+                    The output was events that were too granular for enterprise
+                    scale and too specific to generalize across other software
+                    titles.
+                  </Block>
+                </Card>
+                <Card variant="filled" size="sm" label="Refining for Scale">
+                  <Block size="sm" color="tertiary">
+                    I worked with Claude to refine the events into reusable
+                    aggregate milestones, structured to lead with a quantitative
+                    data point where applicable, for easy digestion and scale
+                    comprehension.
+                  </Block>
+                </Card>
+              </CardColumn>
             </div>
-          </ContextBlock>
-        </Section>
+          }
+        />
+
+        {/* ── section.final-lifecycle-timeline ── */}
+        <SectionImg
+          layout="row"
+          before={
+            <CardColumn>
+              <Card variant="filled" size="sm" label="Event Search">
+                <Block size="sm" color="tertiary">
+                  Enables users to instantly locate specific lifecycle events
+                  without manually scrolling through long timelines.
+                </Block>
+              </Card>
+              <Card variant="filled" size="sm" label="Event Filtering by Type">
+                <Block size="sm" color="tertiary">
+                  Reduces noise by allowing teams to focus only on events
+                  relevant to their role or task.
+                </Block>
+              </Card>
+            </CardColumn>
+          }
+          image={
+            <ImgCard caption="Profile Prototype 02">
+              <img
+                src="/images/software-observability/timeline-prototype-2.jpg"
+                alt="Profile Prototype 02 — Final Lifecycle Timeline"
+              />
+            </ImgCard>
+          }
+          after={
+            <CardColumn>
+              <Card variant="filled" size="sm" label="Timeline Navigation">
+                <Block size="sm" color="tertiary">
+                  Built for enterprise customers managing multi-year
+                  subscription histories, enabling effortless navigation across
+                  extensive event timelines.
+                </Block>
+              </Card>
+              <Card variant="filled" size="sm" label="Milestone Based Events">
+                <Block size="sm" color="tertiary">
+                  Milestone events reduce noise and surface lifecycle moments
+                  that provide operational insights. I proposed introducing
+                  custom configuration in a future iteration so enterprises
+                  could define milestone triggers that reflect their unique
+                  workflows and performance measures.
+                </Block>
+              </Card>
+            </CardColumn>
+          }
+        />
 
         <Section className={styles.unifyingSystems}>
           <div className={styles.unifyingSystemsTopRow}>
@@ -1034,6 +1100,1045 @@ export default function SoftwareObservabilityPage() {
                 caption: "Figma Devices Tab Prototype",
               },
             ]}
+          />
+        </Section>
+
+        <Section className={styles.unifyingSystemsPrototype}>
+          <LabelBlock
+            size="display"
+            label="Setting a Blueprint"
+            body="I synthesized my findings "
+            support="into a prototype that covered the data relationships."
+          />
+          <Block size="lg">
+            The intent wasn&apos;t to present a solution, but to walk into
+            stakeholder and leadership chats with a starting point to align on
+            what mattered, challenge what didn&apos;t, and define direction
+            collectively.
+          </Block>
+          <ImgCard
+            images={[
+              {
+                src: "/images/software-observability/employee-tab.jpg",
+                alt: "Employee Tab Prototype",
+                caption: "Employee Tab Prototype",
+              },
+              {
+                src: "/images/software-observability/financial-tab.jpg",
+                alt: "Financial Tab Prototype",
+                caption: "Financial Tab Prototype",
+              },
+              {
+                src: "/images/software-observability/device-tab.jpg",
+                alt: "Figma Devices Tab Prototype",
+                caption: "Figma Devices Tab Prototype",
+              },
+            ]}
+          />
+        </Section>
+
+        <Section className={styles.testingTheExperience}>
+          <div className={styles.testingTheExperienceWrapper}>
+            <LabelBlock
+              size="display"
+              label="Testing The Experience"
+              body="With the Overview finalized, I connected the All Software and Profile views into a"
+              support="single navigable prototype to test them as one experience."
+            />
+            <Block size="lg" className={styles.testingTheExperienceDetailBlock}>
+              Rather than validating each view in isolation, I wanted feedback
+              to reflect how teams would actually move through the system, from
+              portfolio to catalog to individual record, so that gaps in
+              continuity, logic, and data consistency would surface naturally.
+            </Block>
+          </div>
+          <ImgCard
+            className={styles.testingTheExperienceImgCard}
+            caption="Full Prototype"
+          />
+        </Section>
+
+        <Section className={styles.twoTrackValidation}>
+          <LabelBlock
+            size="display"
+            label="Two Track Validation"
+            body="Ongoing working sessions with our Director of Product "
+            support="kept design decisions aligned with our business strategy and buyer expectations."
+          />
+          <Block size="lg" className={styles.twoTrackValidationDetailBlock}>
+            Deeply involved in sales while leading engineering and integration
+            efforts, they had a precise understanding of what enterprise teams
+            needed and the technical depth to understand how to get there.
+          </Block>
+        </Section>
+
+        <Section>
+          <div className={styles.crossFunctionalSessionsWrapper}>
+            <LabelBlock
+              size="display"
+              body="In parallel, I facilitated cross-functional sessions "
+              support="with customer success, PMs, engineers, and strategic advisors"
+            />
+            <Block
+              size="lg"
+              className={styles.crossFunctionalSessionsDetailBlock}
+            >
+              Bringing multiple perspectives at once is a strategy I rely on
+              throughout my process. Each function experiences design through a
+              different mental model, surfacing issues that are easy to miss the
+              longer one stares at the same problem.
+            </Block>
+          </div>
+        </Section>
+
+        <Section>
+          <LabelBlock
+            className={styles.phaseOneClarityTextBlock}
+            size="display"
+            body="Together these sessions gave me clarity"
+            support="to finalize designs for Phase 1 Software Observability."
+          />
+        </Section>
+
+        <Section className={styles.allSoftwareDirectionIssues}>
+          <LabelBlock
+            size="display"
+            label="All Software: Issues Identified"
+            body="Early designs surfaced the right data"
+            support="but failed to make it actionable at a glance."
+          />
+        </Section>
+
+        {/* ── section.direction-issue-annotations ── */}
+        <SectionImg
+          layout="row"
+          before={
+            <CardColumn>
+              <Card variant="filled" size="sm" label="Product Identification">
+                <Block size="sm" color="tertiary">
+                  Without strong visual cues or clear identifiers, users had to
+                  pause and interpret instead of immediately recognizing the
+                  product they were reviewing.
+                </Block>
+              </Card>
+              <Card variant="filled" size="sm" label="System Wide Scaling">
+                <Block size="sm" color="tertiary">
+                  As software data evolved to support additional personas,
+                  tables would eventually overflow pushing key information into
+                  horizontal scroll. This was already visible in other lifecycle
+                  views and needed a scalable fix.
+                </Block>
+              </Card>
+            </CardColumn>
+          }
+          image={
+            <ImgCard caption="All Software Prototype">
+              <img
+                src="/images/software-observability/all-software-prototype-1.jpg"
+                alt="All Software Prototype — Issues Identified"
+              />
+            </ImgCard>
+          }
+          after={
+            <CardColumn>
+              <Card variant="filled" size="sm" label="Renewal">
+                <Block size="sm" color="tertiary">
+                  A date alone doesn't reveal whether something is approaching,
+                  at risk, or past due, forcing users to interpret urgency
+                  mentally.
+                </Block>
+              </Card>
+              <Card variant="filled" size="sm" label="Disconnected Metrics">
+                <Block size="sm" color="tertiary">
+                  Too many numbers, not enough meaning. Metrics shown without
+                  relationship context failed to guide decisions or communicate
+                  value.
+                </Block>
+              </Card>
+            </CardColumn>
+          }
+        />
+
+        <Section className={styles.allSoftwareExperienceIssues}>
+          <LabelBlock
+            size="display"
+            body="While solving for All Software, I captured issues with our current table experience"
+            support="that would compound as we introduced more lifecycle data to the platform."
+          />
+        </Section>
+
+        {/* ── section.experience-issue-annotations ── */}
+        <SectionImg
+          layout="row"
+          before={
+            <CardColumn>
+              <Card variant="filled" size="sm" label="Asset Count Badge">
+                <Block size="sm" color="tertiary">
+                  The count badge was heavy visually, pulling focus away from
+                  primary content and adding weight to already dense views.
+                </Block>
+              </Card>
+              <Card variant="filled" size="sm" label="Region Filters">
+                <Block size="sm" color="tertiary">
+                  Region filters shared the same styling as primary and
+                  secondary buttons despite serving a different role.
+                </Block>
+              </Card>
+            </CardColumn>
+          }
+          image={
+            <ImgCard caption="All Software Prototype">
+              <img
+                src="/images/software-observability/all-software-prototype-1.jpg"
+                alt="All Software Prototype — Experience Issues"
+              />
+            </ImgCard>
+          }
+          after={
+            <CardColumn>
+              <Card variant="filled" size="sm" label="Table Headers">
+                <Block size="sm" color="tertiary">
+                  Table headers used a filled style that added unnecessary
+                  density and signaled a legacy pattern.
+                </Block>
+              </Card>
+              <Card variant="filled" size="sm" label="Row Heights">
+                <Block size="sm" color="tertiary">
+                  Tight rows cause entries and columns to blend together,
+                  forcing users to work harder to scan and interpret large
+                  volumes of data.
+                </Block>
+              </Card>
+              <Card variant="filled" size="sm" label="Data Overload">
+                <Block size="sm" color="tertiary">
+                  As more data was introduced, tables would become increasingly
+                  dense, pushing critical data behind horizontal scroll and
+                  making it harder for teams to find what they needed to act on.
+                </Block>
+              </Card>
+            </CardColumn>
+          }
+        />
+
+        {/* ── section.all-software-final ── */}
+        <Section className={styles.allSoftwareFinal}>
+          <LabelBlock
+            size="display"
+            label="All Software: Final Design"
+            body="The final design shifted the table from being a data display to a decision making surface."
+          />
+        </Section>
+
+        {/* ── section.all-software-final-design ── */}
+        <Section className={styles.allSoftwareFinalDesign}>
+          <ImgCard caption="AI Prototype 02">
+            <img
+              src="/images/software-observability/all-software-final.jpg"
+              alt="All Software Final Design"
+            />
+          </ImgCard>
+        </Section>
+
+        {/* ── section.table-anatomy ── */}
+        <Section className={styles.tableAnatomy}>
+          <LabelBlock
+            size="display"
+            label="Table Anatomy"
+            body="All elements were redesigned to communicate status and urgency at a glance."
+          />
+        </Section>
+
+        {/* ── section.row-anatomy ── */}
+        <SectionImg
+          layout="column"
+          before={
+            <CardRow>
+              <Card variant="filled" size="sm" label="Publisher Logo">
+                <Block size="sm" color="tertiary">
+                  Publisher logos created an immediate visual anchor, helping
+                  users recognize the product instantly without needing to read
+                  the full text.
+                </Block>
+              </Card>
+              <Card variant="filled" size="sm" label="Utilization Tag">
+                <Block size="sm" color="tertiary">
+                  Color-coded tags made usage status instantly scannable,
+                  without requiring interpretation of raw numbers.
+                </Block>
+              </Card>
+              <Card
+                variant="filled"
+                size="sm"
+                label="Supporting Baseline Metrics"
+              >
+                <Block size="sm" color="tertiary">
+                  Displaying ownership and spend at the end of the row anchors
+                  the evaluation, giving teams an immediate sense of usage,
+                  waste, and opportunity scale.
+                </Block>
+              </Card>
+            </CardRow>
+          }
+          image={
+            <ImgCard caption="AI Prototype 02">
+              <img
+                src="/images/software-observability/row-anatomy.jpg"
+                alt="Table Row Anatomy"
+              />
+            </ImgCard>
+          }
+          after={
+            <CardRow>
+              <Card variant="filled" size="sm" label="Vendor">
+                <Block size="sm" color="tertiary">
+                  Vendor provides instant procurement context, helping teams
+                  link spend, renewals, and contracts without digging through
+                  external systems.
+                </Block>
+              </Card>
+              <Card variant="filled" size="sm" label="Category">
+                <Block size="sm" color="tertiary">
+                  Category gives clarity as to what the tool does, reducing
+                  interpretation effort and helping identify redundant software.
+                </Block>
+              </Card>
+              <Card variant="filled" size="sm" label="Opportunity">
+                <Block size="sm" color="tertiary">
+                  Introducing a monetary "opportunity" value turned low usage
+                  into clear business impact, helping teams quickly understand
+                  where savings exist.
+                </Block>
+              </Card>
+              <Card variant="filled" size="sm" label="Renewal Date + Countdown">
+                <Block size="sm" color="tertiary">
+                  Pairing renewal dates with a countdown provided urgency at a
+                  glance, reducing the cognitive load of mentally calculating
+                  proximity.
+                </Block>
+              </Card>
+            </CardRow>
+          }
+        />
+
+        {/* ── section.tool-tips ── */}
+        <Section className={styles.toolTips}>
+          <LabelBlock
+            size="display"
+            label="Tooltips"
+            body="Tooltips appear when hovering over information icons, providing"
+            support="metric definitions and calculation transparency, so users can interpret data with confidence."
+          />
+        </Section>
+
+        {/* ── section.tool-tips-final-design ── */}
+        <Section className={styles.toolTipsFinalDesign}>
+          <ImgCard
+            images={[
+              {
+                src: "/images/software-observability/utilization-tooltip.jpg",
+                caption: "Utilization Tool Tip",
+              },
+              {
+                src: "/images/software-observability/opportunity-tooltip.jpg",
+                caption: "Opportunity Tool Tip",
+              },
+              {
+                src: "/images/software-observability/renewal-tooltip.jpg",
+                caption: "Renewal Tool Tip",
+              },
+            ]}
+          />
+        </Section>
+
+        {/* ── section.design-system-refinements ── */}
+        <Section className={styles.designSystemRefinements}>
+          <LabelBlock
+            className={styles.designSystemRefinementsTextBlock}
+            size="display"
+            label="Design System Refinements"
+            body="More data meant increasingly cluttered views. This led me to propose system-wide refinements"
+            support="that kept views clear, modern, and easy to navigate."
+          />
+          <Block
+            className={styles.designSystemRefinementsDetailBlock}
+            size="md"
+          >
+            These updates reduced visual weight, improved scannability, and
+            ensured users could quickly focus on what mattered.
+          </Block>
+        </Section>
+
+        {/* ── section.refinement-annotations ── */}
+        <SectionImg
+          layout="corner"
+          before={
+            <CardRow size="span2">
+              <Card variant="filled" size="sm" label="Asset Count Badge">
+                <Block size="sm" color="tertiary">
+                  Lightening the style keeps the count visible without
+                  overpowering the hierarchy.
+                </Block>
+              </Card>
+              <Card variant="filled" size="sm" label="Region Filters">
+                <Block size="sm" color="tertiary">
+                  Region filters previously used primary/secondary button
+                  styling, updating their treatment aligned them with tab
+                  behavior, reinforcing consistent UI patterns.
+                </Block>
+              </Card>
+              <Card variant="filled" size="sm" label="New Filter Treatment">
+                <Block size="sm" color="tertiary">
+                  Switching to a clear "Add Filter" button improves recognition
+                  and reduces cognitive friction when users want to refine the
+                  data set.
+                </Block>
+              </Card>
+            </CardRow>
+          }
+          image={
+            <ImgCard caption="AI Prototype 02">
+              <img
+                src="/images/software-observability/system-refinements.jpg"
+                alt="System Refinements"
+              />
+            </ImgCard>
+          }
+          after={
+            <CardColumn>
+              <Card variant="filled" size="sm" label="Table Headers">
+                <Block size="sm" color="tertiary">
+                  Removing the header fill lightened the view and introduced
+                  more whitespace, creating a cleaner, more modern table that is
+                  easier to scan and avoids the dense, legacy feel.
+                </Block>
+              </Card>
+              <Card variant="filled" size="sm" label="Side Scroll">
+                <Block size="sm" color="tertiary">
+                  Adding a subtle drop shadow communicates overflow without
+                  visual distraction, helping users understand where additional
+                  content exists.
+                </Block>
+              </Card>
+              <Card variant="filled" size="sm" label="Row Heights">
+                <Block size="sm" color="tertiary">
+                  More generous row spacing reduces crowding and increases
+                  visual rhythm, allowing users to process information with less
+                  cognitive strain.
+                </Block>
+              </Card>
+            </CardColumn>
+          }
+        />
+
+        {/* ── section.custimizable-columns ── */}
+        <Section className={styles.custimizableColumns}>
+          <LabelBlock
+            size="display"
+            label="Customizable Columns"
+            body="Column controls let users tailor their view so they only see the information that matters to them."
+          />
+        </Section>
+
+        {/* ── section.custimizable-columns-final ── */}
+        <Section className={styles.custimizableColumnsFinal}>
+          <ImgCard caption="AI Prototype 02">
+            <img
+              src="/images/software-observability/custom-columns-final.jpg"
+              alt="Customizable Columns Final Design"
+            />
+          </ImgCard>
+        </Section>
+
+        {/* ── section.Drag-and-Drop-Reordering ── */}
+        <Section className={styles.dragAndDropReordering}>
+          <LabelBlock
+            size="display"
+            label="Drag-and-Drop Reordering"
+            body="Users can arrange information in the order that best fits their workflow,"
+            support="giving them faster access to the attributes they rely on most."
+          />
+        </Section>
+
+        {/* ── section.Drag-and-Drop-final ── */}
+        <Section className={styles.dragAndDropFinal}>
+          <ImgCard
+            layout="column"
+            images={[
+              {
+                src: "/images/software-observability/grab-column.jpg",
+                caption: "Grab Column",
+              },
+              {
+                src: "/images/software-observability/drop-column.jpg",
+                caption: "Drop Column",
+              },
+            ]}
+          />
+        </Section>
+
+        {/* ── section.software-profile-issues ── */}
+        <Section className={styles.softwareProfileIssues}>
+          <LabelBlock
+            size="display"
+            label="Software Profiles: Issues Identified"
+            body="Profile designs suffered from similar patterns, key data presented in a way that was difficult to act on. Utilization, spend, and waste data felt scattered, forcing users to piece together insights that should have been immediate."
+          />
+        </Section>
+
+        {/* ── section.profile-issue-annotations ── */}
+        <SectionImg
+          layout="row"
+          before={
+            <CardColumn>
+              <Card variant="filled" size="sm" label="Mixed Metrics">
+                <Block size="sm" color="tertiary">
+                  Mixing cost, volume, and utilization metrics in the same block
+                  disrupts the flow of information, forcing users to piece
+                  together related data on their own.
+                </Block>
+              </Card>
+              <Card
+                variant="filled"
+                size="sm"
+                label="Primary & Secondary Owner"
+              >
+                <Block size="sm" color="tertiary">
+                  The header gives prominent space to show operational contacts
+                  whose roles rarely influence strategic renewal or licensing
+                  decisions.
+                </Block>
+              </Card>
+              <Card
+                variant="filled"
+                size="sm"
+                label="Low Visibility of Underutilized Cost"
+              >
+                <Block size="sm" color="tertiary">
+                  Educational tooltips help clarify status definitions and
+                  calculation logic in context, improving transparency and
+                  decision speed by reducing ambiguity.
+                </Block>
+              </Card>
+            </CardColumn>
+          }
+          image={
+            <ImgCard caption="Profile Prototype 01">
+              <img
+                src="/images/software-observability/profile-prototype-1.jpg"
+                alt="Profile Prototype 01 — Software Profile Issues"
+              />
+            </ImgCard>
+          }
+          after={
+            <CardColumn>
+              <Card variant="filled" size="sm" label="No Renewal Context">
+                <Block size="sm" color="tertiary">
+                  No renewal date or renewal urgency indicator, leaving teams
+                  without essential context for timing reclamation efforts or
+                  planning negotiations.
+                </Block>
+              </Card>
+              <Card variant="filled" size="sm" label="Purchased Licenses">
+                <Block size="sm" color="tertiary">
+                  Presented in isolation, leaving users to mentally link it to
+                  the Assigned, Active, Inactive, and Unassigned figures beneath
+                  it.
+                </Block>
+              </Card>
+            </CardColumn>
+          }
+        />
+
+        {/* ── section.software-profile-final ── */}
+        <Section className={styles.softwareProfileFinal}>
+          <LabelBlock
+            size="display"
+            label="Software Profiles: Final Design"
+            body="The final design led with financial opportunity, guiding users through license ownership and utilization. Clear hierarchy and data grouping reduced cognitive load, for faster, more confident decision-making."
+          />
+        </Section>
+
+        {/* ── section.profile-final-design ── */}
+        <SectionImg
+          layout="row"
+          before={
+            <CardColumn>
+              <Card
+                variant="filled"
+                size="sm"
+                label="Opportunity-First Framing"
+              >
+                <Block size="sm" color="tertiary">
+                  Leading with the opportunity banner allows teams to
+                  immediately understand savings potential before analyzing
+                  usage details.
+                </Block>
+              </Card>
+              <Card variant="filled" size="sm" label="Opportunity Breakdown">
+                <Block size="sm" color="tertiary">
+                  Splits opportunity into inactive and unassigned licenses,
+                  clarifying which savings come from reclamation and which point
+                  to over-purchasing or operational inefficiencies.
+                </Block>
+              </Card>
+              <Card variant="filled" size="sm" label="Licenses Purchased">
+                <Block size="sm" color="tertiary">
+                  Creates a single ownership snapshot. Grouping assigned,
+                  unassigned, and utilization, enables faster understanding of
+                  license distribution.
+                </Block>
+              </Card>
+              <Card
+                variant="filled"
+                size="sm"
+                label="Improving Time-to-Insight"
+              >
+                <Block size="sm" color="tertiary">
+                  Color-coded status tags convert raw metrics into instant
+                  visual signals, helping teams quickly identify underuse,
+                  over-assignment, and risk without manual interpretation.
+                </Block>
+              </Card>
+            </CardColumn>
+          }
+          image={
+            <ImgCard caption="Final Software Profile Design">
+              <img
+                src="/images/software-observability/software-profile-final.jpg"
+                alt="Final Software Profile Design"
+              />
+            </ImgCard>
+          }
+          after={
+            <CardColumn>
+              <Card
+                variant="filled"
+                size="sm"
+                label="Decision-Ready Renewal Context"
+              >
+                <Block size="sm" color="tertiary">
+                  Surfaces renewal timing at the top to establish urgency and
+                  frame optimization decisions within a clear contractual
+                  timeline.
+                </Block>
+              </Card>
+              <Card variant="filled" size="sm" label="Vendor & Account Contact">
+                <Block size="sm" color="tertiary">
+                  Replaces ambiguous internal ownership with vendor and account
+                  contact, aligning the profile with how enterprise licensing
+                  decisions are actually made.
+                </Block>
+              </Card>
+              <Card variant="filled" size="sm" label="Utilization Status">
+                <Block size="sm" color="tertiary">
+                  Simplified labels and drill-downs let teams quickly access the
+                  users holding licenses in each state, supporting faster review
+                  and targeted reclamation.
+                </Block>
+              </Card>
+              <Card
+                variant="filled"
+                size="sm"
+                label="Explicit Reclaimable Total"
+              >
+                <Block size="sm" color="tertiary">
+                  Explicitly labeling unused licenses (inactive + unassigned)
+                  removes mental math and gives teams a clear, defensible target
+                  for reclamation or contract renegotiation.
+                </Block>
+              </Card>
+            </CardColumn>
+          }
+        />
+
+        {/* ── section.scope-tradeoffs ── */}
+        <Section>
+          <LabelBlock
+            className={styles.scopeTradeoffsTextBlock}
+            size="display"
+            label="Scope and Trade-Offs"
+            body="Three features descoped from Phase 1 to keep the experience"
+            support="focused on delivering immediate and trustworthy value."
+          />
+        </Section>
+
+        {/* ── section.descoped-views ── */}
+        <SectionImg
+          layout="row"
+          before={
+            <CardColumn>
+              <Card variant="filled" size="sm" label="Lifecycle Timeline">
+                <Block size="sm" color="tertiary">
+                  Delivering it accurately required a data collection strategy
+                  and event definitions that depended on integration output that
+                  wasn&apos;t ready at this phase.
+                </Block>
+              </Card>
+              <Card variant="filled" size="sm" label="Device Tab">
+                <Block size="sm" color="tertiary">
+                  Deprioritized in favor of keeping Phase 1 focused on the
+                  highest impact reclamation signals. Device-level data would
+                  add depth in a future phase but wasn&apos;t necessary to
+                  deliver on the core promise.
+                </Block>
+              </Card>
+              <Card variant="filled" size="sm" label="Financial Tab">
+                <Block size="sm" color="tertiary">
+                  Contract terms, support costs, and historic spend are often
+                  scattered across emails, invoices, spreadsheets, and legal
+                  documents with no reliable integration path. Shipping with
+                  incomplete records would have cost XOPS customer trust during
+                  a critical evaluation period. Phase 2 required a data
+                  collection strategy before the tab could deliver on its
+                  promise.
+                </Block>
+              </Card>
+            </CardColumn>
+          }
+          image={
+            <ImgCard
+              images={[
+                {
+                  src: "/images/software-observability/timeline-prototype-2.jpg",
+                  alt: "Lifecycle Timeline — descoped view",
+                  caption: "Timeline",
+                },
+                {
+                  src: "/images/software-observability/img.device-tab.jpg",
+                  alt: "Devices Tab — descoped view",
+                  caption: "Devices Tab",
+                },
+                {
+                  src: "/images/software-observability/financial-tab.jpg",
+                  alt: "Financial Tab — descoped view",
+                  caption: "Financial Tab",
+                },
+              ]}
+            />
+          }
+        />
+
+        {/* ── section.inactive-license-distribution ── */}
+        <Section className={styles.inactiveLicenseDistribution}>
+          <LabelBlock
+            size="display"
+            label="Inactive License Distribution"
+            body="Phase 1's focus was lowering spend through confident license reclamation. To achieve this,"
+            support="the employee tab evolved into an organizational breakdown of inactivity, showing where waste was concentrated and who to target first."
+          />
+        </Section>
+
+        {/* ── section.distribution-overview ── */}
+        <SectionImg
+          layout="row"
+          before={
+            <CardColumn>
+              <Card
+                variant="filled"
+                size="sm"
+                label="Operational vs Budget Ownership"
+              >
+                <Block size="sm" color="tertiary">
+                  Compare department and cost center perspectives to understand
+                  where inactivity occurs and who controls the spend.
+                </Block>
+              </Card>
+              <Card variant="filled" size="sm" label="Top Contributors Focus">
+                <Block size="sm" color="tertiary">
+                  Surfaces the departments or cost centers responsible for the
+                  largest share of inactivity, prioritizing action where it
+                  delivers the highest return.
+                </Block>
+              </Card>
+              <Card variant="filled" size="sm" label="Metric Selection">
+                <Block size="sm" color="tertiary">
+                  Lets teams move instantly from scope to impact, switching
+                  between volume and dollars without changing context or losing
+                  focus.
+                </Block>
+              </Card>
+              <Card variant="filled" size="sm" label="Employee Drill-Down">
+                <Block size="sm" color="tertiary">
+                  Transforms aggregated insight into action by exposing the
+                  exact users behind inactive licenses, enabling targeted
+                  reclamation and clean handoffs.
+                </Block>
+              </Card>
+            </CardColumn>
+          }
+          image={
+            <ImgCard
+              images={[
+                {
+                  src: "/images/software-observability/charts.jpg",
+                  alt: "Charts — Inactive License Distribution",
+                  caption: "Charts",
+                },
+                {
+                  src: "/images/software-observability/analysis.jpg",
+                  alt: "Analysis — Inactive License Distribution",
+                  caption: "Analysis",
+                },
+                {
+                  src: "/images/software-observability/drill-down.jpg",
+                  alt: "Drill-Down — Inactive License Distribution",
+                  caption: "Drill-Down",
+                },
+              ]}
+            />
+          }
+        />
+
+        {/* ── section.inactive-by-departments ── */}
+        <SectionImg
+          layout="row"
+          before={
+            <CardColumn>
+              <Card
+                variant="filled"
+                size="sm"
+                label="Licenses Assigned to Former Employees"
+              >
+                <Block size="sm" color="tertiary">
+                  Licenses assigned to former employees surface the most
+                  immediate, low-risk reclamation opportunities and expose gaps
+                  between HR, IT, and Finance offboarding workflows.
+                </Block>
+              </Card>
+            </CardColumn>
+          }
+          image={
+            <ImgCard
+              images={[
+                {
+                  src: "/images/software-observability/department-count.jpg",
+                  alt: "Department by Count",
+                  caption: "Department by Count",
+                },
+                {
+                  src: "/images/software-observability/department-cost.jpg",
+                  alt: "Department by Cost",
+                  caption: "Department by Cost",
+                },
+              ]}
+            />
+          }
+          after={
+            <CardColumn>
+              <Card variant="filled" size="sm" label="Cost Breakdown">
+                <Block size="sm" color="tertiary">
+                  Converts inactive license volume into annualized dollar impact
+                  using unit pricing, helping leaders prioritize action based on
+                  financial exposure and budget ownership rather than raw
+                  counts.
+                </Block>
+              </Card>
+            </CardColumn>
+          }
+        />
+
+        {/* ── section.inactive-by-costCenter ── */}
+        <SectionImg
+          layout="row"
+          before={
+            <CardColumn>
+              <Card variant="filled" size="sm" label="Count Breakdown">
+                <Block size="sm" color="tertiary">
+                  Surfaces where inactive licenses concentrate by budget owner,
+                  revealing which cost centers are driving the largest volume of
+                  unused access.
+                </Block>
+              </Card>
+              <Card variant="filled" size="sm" label="Cost Breakdown">
+                <Block size="sm" color="tertiary">
+                  Converts inactive license volume into annualized dollar
+                  impact, allowing teams to prioritize reclamation by financial
+                  exposure rather than raw count.
+                </Block>
+              </Card>
+              <Card variant="filled" size="sm" label="Employee Drilldown">
+                <Block size="sm" color="tertiary">
+                  Turns cost center insights into action by exposing the exact
+                  employees holding inactive licenses, enabling fast reclamation
+                  and clean operational follow-through.
+                </Block>
+              </Card>
+            </CardColumn>
+          }
+          image={
+            <ImgCard
+              images={[
+                {
+                  src: "/images/software-observability/costCenter-count.jpg",
+                  alt: "Cost Center by Count",
+                  caption: "Cost Center by Count",
+                },
+                {
+                  src: "/images/software-observability/costCenter-cost.jpg",
+                  alt: "Cost Center by Cost",
+                  caption: "Cost Center by Cost",
+                },
+                {
+                  src: "/images/software-observability/costCenter-drillDown.jpg",
+                  alt: "Employees by Cost Center",
+                  caption: "Employees by Cost Center",
+                },
+              ]}
+            />
+          }
+        />
+
+        {/* ── section.overview-revisit ── */}
+        <Section className={styles.overviewRevisit}>
+          <LabelBlock
+            className={styles.overviewRevisitTextBlock}
+            size="display"
+            label="Software Overview Revisit"
+            body="Early Software Insights discussions revealed utilization and compliance would have dedicated dashboards, making them redundant in the Overview page."
+          />
+          <Block size="lg" className={styles.overviewRevisitDetailBlock}>
+            I removed them, refocusing the page on annual spend, licensing
+            models, and lifecycle stage distribution.
+          </Block>
+        </Section>
+
+        {/* ── section.overview-final ── */}
+        <Section className={styles.overviewFinal}>
+          <ImgCard caption="Final Overview Page">
+            <img
+              src="/images/software-observability/overview-final.jpg"
+              alt="Final Overview Page"
+            />
+          </ImgCard>
+        </Section>
+
+        {/* ── section.completion ── */}
+        <Section className={styles.completion}>
+          <QuoteBlock quote="With the overview refined, the software observability foundation for Phase 1 was complete." />
+        </Section>
+
+        {/* ── section.final-design ── */}
+        <Section className={styles.finalAllSoftwareDesign}>
+          <ImgCard caption="Final All Software View">
+            <img
+              src="/images/software-observability/final-design.jpg"
+              alt="Final All Software View"
+            />
+          </ImgCard>
+        </Section>
+
+        {/* ── section.impact ── */}
+        <Section className={styles.impact}>
+          <LabelBlock
+            className={styles.impactTextBlock}
+            size="display"
+            label="Product & Business Impact"
+            body="By successfully integrating software data, XOPS evolved its system of intelligence beyond device and employee lifecycle management,"
+            support="unlocking a new revenue stream and a new dimension of value for our customers."
+          />
+          <Block size="lg" className={styles.impactDetailBlock}>
+            Enterprise customers received their first actionable view of software waste, laying the foundation for autonomous license optimization.
+          </Block>
+        </Section>
+
+        {/* ── section.goal-connections ── */}
+        <Section className={styles.goalConnections}>
+          <CardRow>
+            <Card
+              variant="filled"
+              separator
+              labelSize="xs"
+              label="Platform Expansion"
+              title="Established Software Observability (0 → 1)"
+            >
+              <Block size="md" color="tertiary">
+                Established XOPS&apos;s first end-to-end software experience, evolving the platform beyond device and employee lifecycles into software observability and license intelligence.
+              </Block>
+            </Card>
+            <Card
+              variant="filled"
+              separator
+              labelSize="xs"
+              label="Revenue & Sales Enablement"
+              title="Unlocked a Sales-Critical Capability"
+            >
+              <Block size="md" color="tertiary">
+                In production, the software overview, portfolio, and profile views became core artifacts in enterprise sales conversations, giving sales teams a live demonstration of the exact capabilities Fortune 500 prospects said they were missing and positioning XOPS as a differentiated enterprise solution.
+              </Block>
+            </Card>
+            <Card
+              variant="filled"
+              separator
+              labelSize="xs"
+              label="Customer Financial Impact"
+              title="Foundation for Large-Scale License Optimization"
+            >
+              <Block size="md" color="tertiary">
+                This foundational work later powered advanced software optimization capabilities, contributing to millions in unused license savings for enterprise customers like{" "}
+                <a href="https://www.xops.io/case-study/broadcom" target="_blank" rel="noopener noreferrer">
+                  Broadcom.
+                </a>
+              </Block>
+            </Card>
+          </CardRow>
+          <div className={styles.goalConnectionsConnectorRow}>
+            {[0, 1, 2].map((i) => (
+              <div key={i} className={styles.goalConnectionsConnector} />
+            ))}
+          </div>
+          <CardRow>
+            <Card variant="outline" labelSize="xs" label="Goal 1">
+              <Block size="md" color="tertiary">
+                Delivered. A single source of truth for software ownership, spend, and health gave finance and IT a unified view for the first time, eliminating the data fragmentation that made confident decisions impossible.
+              </Block>
+            </Card>
+            <Card variant="outline" labelSize="xs" label="Goal 2">
+              <Block size="md" color="tertiary">
+                Directional. The financial context and spend visibility delivered in Phase 1 established the data foundation. Deeper reconciliation against publisher and vendor records and spend-to-utilization connections at the department level are the natural next step for Phase 2.
+              </Block>
+            </Card>
+            <Card variant="outline" labelSize="xs" label="Goal 3">
+              <Block size="md" color="tertiary">
+                Delivered. Inactive license distribution and reclamation workflows translated utilization data into dollar-denominated opportunities, giving enterprise customers like Broadcom the intelligence to act on unused licenses at scale.
+              </Block>
+            </Card>
+          </CardRow>
+        </Section>
+
+        {/* ── section.reflection ── */}
+        <Section className={styles.reflection}>
+          <LabelBlock size="display" label="Reflection" />
+          <CardRow>
+            <Card variant="filled" title="End-to-End Accountability">
+              <Block size="md" color="tertiary">
+                Working closely with our Director of Product reinforced a rigor I applied to every decision: every data point had to earn its place, pressure-tested against its source, dependencies, and how a Fortune 500 team would actually act on it. That discipline sharpened engineering conversations and ensured every metric held up the moment a customer tried to use it.
+              </Block>
+            </Card>
+            <Card variant="filled" title="Tangible Artifacts Move Teams Faster Than Discussion">
+              <Block size="md" color="tertiary">
+                In a fast-moving startup, a real prototype surfaces gaps, opposing ideas, and priorities faster than any sketch or abstract debate. The goal isn&apos;t to be right, it&apos;s to put something concrete in front of cross-functional partners whose different mental models will pressure-test and strengthen the direction.
+              </Block>
+            </Card>
+            <Card variant="filled" title="Parallel Prototyping as a Velocity Tool">
+              <Block size="md" color="tertiary">
+                AI compressed the path from ambiguity to direction. Work that once took rounds of research synthesis, stakeholder meetings, and competitor hunting could be explored and validated in a fraction of the time.
+              </Block>
+            </Card>
+            <Card variant="filled" title="Transparency as a Trust Foundation">
+              <Block size="md" color="tertiary">
+                Unifying data across systems creates a black-box risk, so I treated transparency as a design requirement. I surfaced metric definitions and calculations consistently across every view to reduce ambiguity.
+              </Block>
+            </Card>
+          </CardRow>
+        </Section>
+
+        {/* ── section.next-steps ── */}
+        <Section className={styles.nextSteps}>
+          <LabelBlock
+            className={styles.nextStepsTextBlock}
+            size="display"
+            label="Next Steps"
+            body="Phase 1 made reclamation actionable at the software title level. Phase 2 expanded that intelligence to the portfolio, enabling vendor level comparisons across operational, compliance, and financial dashboards."
           />
         </Section>
       </main>

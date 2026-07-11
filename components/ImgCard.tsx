@@ -13,13 +13,14 @@ interface ImgCardProps {
   aspectRatio?: string
   className?: string
   images?: ImageItem[]
+  layout?: 'row' | 'column'
 }
 
-export default function ImgCard({ children, caption, aspectRatio, className, images }: ImgCardProps) {
+export default function ImgCard({ children, caption, aspectRatio, className, images, layout = 'row' }: ImgCardProps) {
   return (
     <Card variant="outline" className={className}>
       {images ? (
-        <div className={`${styles.inner} ${styles.innerMulti}`}>
+        <div className={`${styles.inner} ${styles.innerMulti} ${layout === 'column' ? styles.innerMultiColumn : ''}`}>
           {images.slice(0, 4).map((img, i) => (
             <div key={i} className={styles.imgColumn}>
               <div className={styles.imgWrapper}>

@@ -24,6 +24,11 @@
   flex-direction: row;
 }
 
+/* div.inner — multi-image variant: column layout (stacked) */
+.innerMultiColumn {
+  flex-direction: column;
+}
+
 /* div.imgColumn — one column per image in multi-image variant */
 .imgColumn {
   display:        flex;

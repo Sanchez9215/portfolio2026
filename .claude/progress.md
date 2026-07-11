@@ -2,54 +2,23 @@
 
 ## Session Workflow
 
-1. Read this file + `components/built-components.md` + `styles/globals.css`
+1. Read this file + `guidelines.md` + `components/built-components.md` + `styles/globals.css` + `.claude/skills/component-builder/SKILL.md` + `.claude/skills/section-builder/SKILL.md`
 2. User provides a Figma node + context — layer names follow component and DOM element naming conventions; existing tokens/components referenced where possible
 3. **Before invoking any skill** — independently verify:
    - Read `components/built-components.md` — cross-reference every named component layer in the Figma against the registry
    - Read `design-system/tokens.json` and `styles/globals.css` — resolve all token bindings
+   - Only the parent layer name is authoritative (e.g. `ImgCard`, `LabelBlock.Display`) — treat it as the component reference and look up its real prop API in the codebase. Do not derive structure from Figma's internal sub-layer tree. If it's unclear how content maps into the component's props, ask before building.
+   - To resolve a token tier, match the Figma style's full combination of properties (font-family, weight, size, line-height) against the codebase's token definitions — not just the Figma style's name, and not just a single raw pixel value in isolation. If nothing lines up cleanly, ask which tier to use rather than guessing. Don't request a screenshot when metadata + design context already answer the question.
 4. Branch on intent:
    - **New component** → run `/component-builder` — complete pre-build checklist, wait for confirm before writing code
-   - **New section** → check registry for any new components first; run `/component-builder` for each, then `/section-builder`
+   - **New section** → check registry for any new components first; run `/component-builder` for each, then `/section-builder`; before proposing any CSS, grep the stylesheet for existing structural patterns — reuse exact matches, present the closest match and ask if nothing fits exactly, only propose a new rule after confirming with the user that nothing existing covers it
 5. Update this file
 
-## Mistake Patterns & Inefficiencies
-
-| # | Pattern | Impact | Fix applied |
-|---|---------|--------|-------------|
-| 1 | Jumped to a downstream step without completing the prerequisite gate | Required user correction mid-session | Always complete prerequisite checks in order before advancing to the next step |
-| 2 | Read a reference source but didn't apply it to validate the current task — treated it as a formality | Missed existing built components; required correction | Reading a registry or doc means actively cross-referencing it against every decision in the task, not skimming it |
-| 3 | Chose an incorrect anchor point for an insertion, placing content in the wrong position | User had to correct placement | Always use the most stable, unambiguous anchor for insertions — prefer a structural boundary over a sibling element |
-| 4 | Applied an abbreviated form of a name instead of following the established naming convention | User correction | Never shorten names. Use the full form as specified by the convention, derived directly from the source (e.g. Figma layer name) |
-| 5 | Widened the scope of analysis beyond what the task required — audited unrelated parts of the codebase when the task was purely additive | Introduced confusion; required user redirection | If the task is additive, touch only what is needed. Do not audit unrelated internals |
-| 6 | Proposed a value for a shared property that deviated from the established convention without a documented reason | User correction | Always default to the convention already in use for a shared property. Only deviate when the design explicitly documents a reason |
-| 7 | Used a wrapper div + CSS class solely to apply a grid column span to a child component | Extra DOM node, unmaintainable class name | Use a parent child selector (`> *`) when all siblings share the same span; use `className` on the component only for unique per-instance overrides |
-| 8 | Proposed new CSS rules for a layout already covered by existing classes — did not grep the stylesheet or cross-reference the existing section pattern before planning | User had to redirect; extra unnecessary work | Before proposing any new CSS rule, search the stylesheet for the structural pattern first. If an existing class covers the layout, reuse it. |
-
-## Component System — Standardized Primitives (completed this session)
-
-`TextBlock` and `DetailBlock` were deleted and replaced with a unified token-driven primitive system. No hardcoding anywhere.
-
-| Component | What it is |
-|---|---|
-| `Label` | Clash Display, semibold, uppercase. Sizes: xs\|sm\|md\|lg\|xl |
-| `Title` | Cabinet Grotesk bold. Sizes: xs\|sm\|md\|lg |
-| `Block` | Cabinet Grotesk regular. Sizes: xs\|sm\|md\|lg. Color: primary\|secondary(default)\|tertiary |
-| `LabelBlock` | Label + optional Block(tertiary). Sizes: xs–lg. At `display`: Label(xl) + bold statement + bold support (separate color tokens) |
-| `TitleBlock` | Title + optional Block(tertiary). Sizes: xs\|sm\|md\|lg |
-| `Card` | variant: filled\|outline\|ghost. `size` (xs\|sm\|md\|lg) sets default labelSize+titleSize for header. `labelSize`/`titleSize` as explicit overrides. `headerGap` (xs\|sm\|md\|lg\|xl, default sm) controls header→content spacing independently from `gap` (children spacing, default md). Exposes `data-tb-heading` on header. |
-
-**Gap rules:**
-- Within a block (label/title → body): `--spacing-sm` (8px)
-- Between Card header and content: `headerGap` prop (default sm = 8px)
-- Between Card children: `gap` prop (default md)
-
-`AnnotationCard` — **deleted**. Was a redundant wrapper; replaced everywhere with `Card + TitleBlock` children directly.
-
-`InsightGoalRow` — rebuilt using Card(ghost, separator). API changed from `insight`/`goal` named props to `items: [Item, Item]`. SVG connector still targets `[data-tb-heading]` on Card headers.
-
-All usages in `page.tsx` and `SectionIntroduction.tsx` updated to new primitives.
+---
 
 ## Built sections (in page order)
+
+Format: plain numbered list, `` `section.name` `` only — no inline structure/annotation notes. Anything worth recording about a section belongs in `## Deferred (Roadmap)` (future work) or `## Resume Context` (active mid-build state) instead — never appended to the list entry, since the actual structure is always in the code.
 
 1. `SectionIntroduction`
 2. `section.brief`
@@ -65,67 +34,73 @@ All usages in `page.tsx` and `SectionIntroduction.tsx` updated to new primitives
 12. `section.modular-design-approach`
 13. `section.parallel-prototyping`
 14. `section.prototype-validation`
-15. `section.gaps-identified`
-16. `section.all-software-view`
-17. `section.core-attribute-intent`
-18. `section.software-profile`
-19. `section.software-profile-quote`
-20. `section.utilization-and-cost`
-21. `section.software-profile-prototype-1`
-22. `section.lifecycle-timeline`
-23. `section.generating-events`
-24. `section.event-iterations`
-25. `section.unifying-systems` — LabelBlock(display) + Block(lg) + ImgCard(single: Claude Profile Prototype) top row; ImgCard(3-image: Employee/Financial/Devices tab prototypes) bottom row. **Note:** User specified this comes after `section.final-lifecycle-timeline`, which has not yet been built. Appended to end for now; reorder when that section is added.
+15. `section.overview-prototype-1`
+16. `section.overview-prototype-2`
+17. `section.gaps-identified`
+18. `section.all-software-view`
+19. `section.core-attribute-intent`
+20. `section.all-software-prototype-1`
+21. `section.software-profile`
+22. `section.software-profile-quote`
+23. `section.utilization-and-cost`
+24. `section.profile-prototype-1`
+25. `section.lifecycle-timeline`
+26. `section.generating-events`
+27. `section.event-iterations`
+28. `section.final-lifecycle-timeline`
+29. `section.unifying-systems`
+30. `section.unifying-systems-prototype` (`section.final-prototype`, between this and #29 in Figma, intentionally skipped)
+31. `section.testing-the-experience`
+32. `section.two-track-validation`
+33. `section.cross-functional-sessions`
+34. `section.phase-one-clarity`
+35. `section.all-software-direction-issues`
+36. `section.direction-issue-annotations`
+37. `section.all-software-experience-issues`
+38. `section.experience-issue-annotations`
+39. `section.all-software-final`
+40. `section.all-software-final-design`
+41. `section.table-anatomy`
+42. `section.row-anatomy`
+43. `section.tool-tips`
+44. `section.tool-tips-final-design`
+45. `section.design-system-refinements`
+46. `section.refinement-annotations`
+47. `section.custimizable-columns`
+48. `section.custimizable-columns-final`
+49. `section.Drag-and-Drop-Reordering`
+50. `section.Drag-and-Drop-final`
+51. `section.software-profile-issues`
+52. `section.profile-issue-annotations`
+53. `section.software-profile-final`
+54. `section.profile-final-design`
+55. `section.scope-tradeoffs`
+56. `section.descoped-views`
+57. `section.inactive-license-distribution`
+58. `section.distribution-overview`
+59. `section.inactive-by-departments`
+60. `section.inactive-by-costCenter`
+61. `section.overview-revisit`
+62. `section.overview-final`
+63. `section.completion`
+64. `section.final-design`
+65. `section.impact`
+66. `section.goal-connections`
+67. `section.reflection`
+68. `section.next-steps`
 
-## New tokens
+---
 
-- `display-metric` — 72px/79px/-0.02em desktop · 40px/44px mobile
-- `title-xs/sm/md/lg` — Cabinet Grotesk Bold, static. 12/14/16/18px. LS: -0.01em.
-
-## Pending — Design System token updates
-
-Not yet applied. Require explicit go-ahead before touching any file.
-
-| Token | Change | New value |
-|---|---|---|
-| `--text-primary` | update | grey-650 `#96A0B2` |
-| `--text-display` | update | grey-300 `#E6EFFE` |
-| `--nav-menu-item-text` | update | grey-300 `#E6EFFE` |
-| `--action-secondary-text` | update | grey-300 `#E6EFFE` |
-
-New typography tokens pending sizes from Edgar: `body-xl`, `caption-label`, `caption-body`
-
-## Deferred
+## Deferred (Roadmap)
 
 - **`section.insights-and-goals` scroll parallax** — insight column shifts `translateX(-8px)`, goal column shifts `translateX(+8px)`, driven by ScrollTrigger. Connector recalculates from base positions ± offset. Desktop only via `gsap.matchMedia`.
+- **`Section` layout prop** — give `Section.tsx` a `layout="grid"|"flex"` prop so flex sections never receive `cs-grid` in the first place, instead of winning a specificity fight against it.
 
-## Next — `section.final-lifecycle-timeline`
+---
 
-Slots between `section.event-iterations` (#24) and `section.unifying-systems` (#25 → becomes #26).
+## Resume Context
 
-**Figma:** node `2-47797`, file `C3PsgZV3jZMHgm4bFZJOVP`
+Active mid-build or about-to-build state, keyed by keyword. Multiple sessions may run in parallel — keep one entry per active thread. Remove an entry once its section is complete and folded into `## Built sections`.
 
-**Layout:** `Label(xl)` stacked above a 3-column row: left `ol.decisions` | center `ImgCard(flex-1)` | right `ol.decisions`.
-
-**No new CSS needed for the 3-column layout** — reuse existing classes:
-- `styles.prototypeValidationContainer` → outer row wrapper (`div.wrapper`)
-- `styles.prototypeValidationColumn` → both `ol` columns (203px, flex-col, gap-xl, no list-style)
-- `styles.prototypeValidationImgCard` → center ImgCard (flex-1)
-
-**Open question:** Does the Section need a new class for the flex-column stack (Label above row)? `styles.prototypeValidation` would work structurally but uses `--spacing-5xl` (128px); Figma gap is 64px (`--spacing-3xl`). Confirm before writing.
-
-**Image:** `/images/software-observability/timeline-prototype-2.jpg` — caption "Profile Prototype 02"
-
-**Cards — both columns use `title` prop (Cabinet Grotesk Bold), not `label` (Clash Display):**
-
-Left `ol`:
-1. `Card(filled, sm)` `title="Event Search"` + `Block(sm, tertiary)` — "Enables users to instantly locate specific lifecycle events without manually scrolling through long timelines."
-2. `Card(filled, sm)` `title="Event Filtering by Type"` + `Block(sm, tertiary)` — "Reduces noise by allowing teams to focus only on events relevant to their role or task."
-
-Right `ol`:
-1. `Card(filled, sm)` `title="Timeline Navigation"` + `Block(sm, tertiary)` — "Built for enterprise customers managing multi-year subscription histories, enabling effortless navigation across extensive event timelines."
-2. `Card(filled, sm)` `title="Milestone Based Events"` + `Block(sm, tertiary)` — "Milestone events reduce noise and surface lifecycle moments that provide operational insights. I proposed introducing custom configuration in a future iteration so enterprises could define milestone triggers that reflect their unique workflows and performance measures."
-
-**Import needed:** Add `Label` to page.tsx imports.
-
-**Mistake pattern #8 to add:** Proposed new CSS rules for a layout already covered by existing classes; did not cross-reference the stylesheet before planning. Fix: grep for structural patterns before proposing any new rule.
+### `testing-the-experience`
+Section is structurally complete in `page.tsx`/CSS (LabelBlock display + Block(lg) + full-width ImgCard). The ImgCard's "Full Prototype" caption has no image wired in yet — asset still pending. Next step: get the prototype image asset, drop it in `public/images/software-observability/`, wire it into the `ImgCard` as `src`/`alt`.

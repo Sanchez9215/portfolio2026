@@ -21,3 +21,6 @@
 | context-block           | components/ContextBlock.tsx                                                   |
 | insight-goal-row        | components/InsightGoalRow.tsx — items: [{label, title, body}, {label, title, body}]; Card(ghost, separator) per item + SVG dashed connector |
 | content-hub             | components/ContentHub.tsx                                                     |
+| card-row                | components/CardRow.tsx — horizontal row of Cards; size: fill(default, flex stretch)\|span2(grid-column:span 2 per card, count-independent, requires SectionImg/subgrid ancestor) |
+| card-column              | components/CardColumn.tsx — vertical stack of Cards (`<ol>`); width comes from parent track |
+| section-img             | components/SectionImg.tsx — image + annotation-card composite Section; layout: row(cards flank image)\|column(cards above/below image)\|corner(full-width CardRow top, image bottom-left, CardColumn bottom-right); props: before?, image (node or array, up to 3), after? |

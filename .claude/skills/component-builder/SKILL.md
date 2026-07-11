@@ -15,6 +15,14 @@ Builds Next.js + Tailwind components for Edgar Sanchez's portfolio using:
 
 ---
 
+## Never do this
+
+- **Never resolve a token tier from a single raw value.** Match font-family + weight + size + line-height together against the codebase token definitions. If nothing lines up cleanly, ask rather than guess.
+- **Never derive a component's internal structure from Figma's sub-layer tree.** Only the parent layer name is authoritative (e.g. `ImgCard`, `LabelBlock.Display`). Look up the real prop API in the codebase. Ask if the mapping is unclear.
+- **Never treat reading a reference source as a formality.** Actively cross-reference `built-components.md` against every layer in the Figma — not just a skim.
+
+---
+
 ## Before Writing Any Code — Required Gate
 
 **Do not write any code until the following checklist is completed and confirmed by the user.**

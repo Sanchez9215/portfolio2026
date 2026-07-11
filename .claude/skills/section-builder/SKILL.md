@@ -4,6 +4,17 @@ Adds a new section to any case study page in the portfolio.
 
 ---
 
+## Never do this
+
+- **Never propose new CSS without grepping the stylesheet first.** Search for the structural pattern before writing any rule. Reuse an existing class if it applies.
+- **Never put a grid-column rule on a child when the section's own class can handle it.** Use `> *` on the section class when all direct children share the same span. Only add `className` to a child for unique per-instance overrides.
+- **Never use a wrapper div solely to apply a column span.** Use `> *` or `> :nth-child(n)` on the parent.
+- **Never replace `grid-template-columns` on a Section.** Use `nth-child` column spans to position children within the 12-col grid.
+- **Never use `!important` to force a layout override.** Win specificity with an element-qualified selector (e.g. `section.foo`).
+- **Never derive a component's internal structure from Figma's sub-layer tree.** Only the parent layer name is authoritative. Look up the real prop API in the codebase.
+
+---
+
 ## Layout system
 
 Every section uses the `Section` component as a shell. It applies `cs-grid` (12-col, `column-gap: --spacing-xl`, `padding-inline: --spacing-xl`) and `padding-block: --spacing-5xl`. Components inside are layout-agnostic — column placement comes from the page-level module CSS.
