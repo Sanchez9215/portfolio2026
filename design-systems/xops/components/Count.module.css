@@ -1,0 +1,8 @@
+.count {
+  font-family: var(--xops-font-family);
+  font-weight: var(--xops-font-weight-medium);
+  font-size: var(--xops-typography-heading-24-font-size);
+  line-height: var(--xops-typography-heading-24-line-height);
+  color: var(--xops-count-text);
+  white-space: nowrap;
+}

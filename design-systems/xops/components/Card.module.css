@@ -1,0 +1,24 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--xops-spacing-8);
+  height: 100%;
+  padding: var(--xops-spacing-16);
+  background-color: var(--xops-white);
+  border: var(--xops-border-width-1) solid var(--xops-border-divider);
+  border-radius: var(--xops-radius-12);
+}
+
+.title {
+  font-family: var(--xops-font-family);
+  font-weight: var(--xops-font-weight-medium);
+  font-size: var(--xops-typography-subheading-16-font-size);
+  line-height: var(--xops-typography-subheading-16-line-height);
+  color: var(--xops-text-primary);
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  flex: 1 0 auto;
+}

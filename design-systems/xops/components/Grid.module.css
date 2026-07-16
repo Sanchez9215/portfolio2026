@@ -1,0 +1,13 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(var(--xops-grid-columns), 1fr);
+  gap: var(--xops-grid-gutter-default);
+}
+
+.gutterTight {
+  gap: var(--xops-grid-gutter-tight);
+}
+
+.item {
+  grid-column: span var(--xops-grid-item-span, 12);
+}

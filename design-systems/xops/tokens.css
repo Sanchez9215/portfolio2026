@@ -1,0 +1,229 @@
+/*
+ * XOPS design system — typography + color foundations only.
+ * Namespaced with --xops- to stay isolated from the portfolio's own tokens (styles/globals.css).
+ * Source of truth: design-systems/xops/tokens.json. See DECISIONS.md for the audit trail.
+ * Spacing, radius, and elevation are intentionally not yet defined here — deferred.
+ */
+
+:root {
+  /* Primitives — Grey ramp (anchor: 500 = audited border/disabled color) */
+  --xops-grey-50: #f9fafb;
+  --xops-grey-100: #f0f2f5;
+  --xops-grey-200: #e0e5eb;
+  --xops-grey-300: #c8d0da;
+  --xops-grey-400: #afbaca;
+  --xops-grey-500: #94a3b8;
+  --xops-grey-600: #7286a1;
+  --xops-grey-700: #556781;
+  --xops-grey-800: #3d4a5c;
+  --xops-grey-900: #252c37;
+  --xops-grey-950: #111418;
+
+  /* Primitives — Brand ramp (anchor: 500 = audited brand color) */
+  --xops-brand-50: #f1f6fe;
+  --xops-brand-100: #dbeaff;
+  --xops-brand-200: #bdd8ff;
+  --xops-brand-300: #8fbeff;
+  --xops-brand-400: #5ca0ff;
+  --xops-brand-500: #1677ff;
+  --xops-brand-600: #1174ff;
+  --xops-brand-700: #0066f5;
+  --xops-brand-800: #0055cc;
+  --xops-brand-900: #0046a8;
+  --xops-brand-950: #052e66;
+
+  /* Primitives — Success ramp (anchor: 500 = audited success color) */
+  --xops-success-50: #f2fdf9;
+  --xops-success-100: #d9fcf0;
+  --xops-success-200: #aff8e0;
+  --xops-success-300: #77f3ca;
+  --xops-success-400: #30edaf;
+  --xops-success-500: #10b981;
+  --xops-success-600: #0d9669;
+  --xops-success-700: #0a7552;
+  --xops-success-800: #07553b;
+  --xops-success-900: #043424;
+  --xops-success-950: #051a13;
+
+  /* Primitives — Warning ramp (anchor: 500 = audited warning color) */
+  --xops-warning-50: #fdf9f2;
+  --xops-warning-100: #fdefd8;
+  --xops-warning-200: #fcdeac;
+  --xops-warning-300: #f9c671;
+  --xops-warning-400: #f6a927;
+  --xops-warning-500: #f59e0b;
+  --xops-warning-600: #ce8408;
+  --xops-warning-700: #9d6506;
+  --xops-warning-800: #6c4504;
+  --xops-warning-900: #402903;
+  --xops-warning-950: #1e1505;
+
+  /* Primitives — Danger ramp (anchor: 500 = audited danger color) */
+  --xops-danger-50: #fcf2f2;
+  --xops-danger-100: #fcd9d9;
+  --xops-danger-200: #f8afaf;
+  --xops-danger-300: #f37777;
+  --xops-danger-400: #ed3030;
+  --xops-danger-500: #ef4444;
+  --xops-danger-600: #e21313;
+  --xops-danger-700: #a90e0e;
+  --xops-danger-800: #750a0a;
+  --xops-danger-900: #4b0606;
+  --xops-danger-950: #220707;
+
+  /* Primitives — absolute (not part of a ramp) */
+  --xops-white: #ffffff;
+
+  /* Primitives — chart color library (general-purpose data-viz colors, no fixed category meaning) */
+  --xops-chart-1: #ffa07a;
+  --xops-chart-2: #00c49a;
+  --xops-chart-3: #7b61ff;
+  --xops-chart-4: #00b7c2;
+  --xops-chart-5: #c46dea;
+  --xops-chart-6: #279bf4;
+  --xops-chart-7: #d891ef;
+  --xops-chart-8: #46a828;
+
+  /* Primitives — spacing */
+  --xops-spacing-4: 4px;
+  --xops-spacing-6: 6px;
+  --xops-spacing-8: 8px;
+  --xops-spacing-12: 12px;
+  --xops-spacing-16: 16px;
+  --xops-spacing-24: 24px;
+  --xops-spacing-32: 32px;
+  --xops-spacing-48: 48px;
+  --xops-spacing-64: 64px;
+
+  /* Primitives — radius */
+  --xops-radius-2: 2px;
+  --xops-radius-6: 6px;
+  --xops-radius-8: 8px;
+  --xops-radius-12: 12px;
+  --xops-radius-16: 16px;
+  --xops-radius-full: 9999px;
+
+  /* Primitives — border width */
+  --xops-border-width-1: 1px;
+  --xops-border-width-2: 2px;
+
+  /* Primitives — icon size */
+  --xops-icon-size-16: 16px;
+  --xops-icon-size-20: 20px;
+
+  /* Primitives — control height (shared across Button/Dropdown/Input) */
+  --xops-control-height-small: 24px;
+  --xops-control-height-medium: 32px;
+  --xops-control-height-large: 36px;
+
+  /* Primitives — logo tile size (LogoTile) */
+  --xops-logo-tile-size-small: 24px;
+  --xops-logo-tile-size-medium: 32px;
+  --xops-logo-tile-size-large: 60px;
+
+  /* Primitives — legend swatch size (Legend) */
+  --xops-legend-swatch-size: 12px;
+
+  /* Semantic — state */
+  --xops-state-hover-on-brand: var(--xops-brand-700);
+  --xops-state-hover-on-surface: var(--xops-grey-100);
+  --xops-state-active-on-brand: var(--xops-brand-800);
+  --xops-state-active-on-surface: var(--xops-grey-200);
+  --xops-state-focus-ring: var(--xops-brand-300);
+  --xops-state-focus-ring-width: var(--xops-border-width-2);
+  --xops-state-disabled-background: var(--xops-grey-100);
+  --xops-state-disabled-text: var(--xops-grey-400);
+  --xops-state-disabled-border: var(--xops-white);
+
+  /* Semantic — text */
+  --xops-text-primary: var(--xops-grey-900);
+  --xops-text-secondary: var(--xops-grey-700);
+  --xops-text-disabled: var(--xops-grey-500);
+  --xops-text-inverse: var(--xops-white);
+
+  /* Semantic — border */
+  --xops-border-divider: var(--xops-grey-200);
+  --xops-border-interactive: var(--xops-grey-500);
+
+  /* Semantic — surface */
+  --xops-surface-table-header: var(--xops-grey-50);
+  --xops-surface-table-row-hover: var(--xops-grey-50);
+  --xops-surface-pagination-bar: rgba(200, 208, 218, 0.25);
+  --xops-surface-selected: var(--xops-brand-50);
+  --xops-surface-empty-state: var(--xops-grey-50);
+  --xops-surface-stat: var(--xops-grey-50);
+  --xops-surface-page: var(--xops-white);
+
+  /* Semantic — brand */
+  --xops-brand-primary: var(--xops-brand-500);
+
+  /* Semantic — status */
+  --xops-status-success-solid: var(--xops-success-500);
+  --xops-status-success-tint: var(--xops-success-200);
+  --xops-status-success-text: var(--xops-success-800);
+
+  --xops-status-warning-solid: var(--xops-warning-500);
+  --xops-status-warning-tint: var(--xops-warning-200);
+  --xops-status-warning-text: var(--xops-warning-800);
+
+  --xops-status-danger-solid: var(--xops-danger-500);
+  --xops-status-danger-tint: var(--xops-danger-200);
+  --xops-status-danger-text: var(--xops-danger-800);
+
+  --xops-status-neutral-tint: var(--xops-grey-100);
+  --xops-status-neutral-text: var(--xops-grey-800);
+
+  /* Semantic — button */
+  --xops-button-radius: var(--xops-radius-6);
+  --xops-button-padding-x: var(--xops-spacing-12);
+  --xops-button-padding-y: var(--xops-spacing-6);
+  --xops-button-gap: var(--xops-spacing-8);
+  --xops-button-border-width: var(--xops-border-width-1);
+  --xops-button-icon-size: var(--xops-icon-size-20);
+  --xops-button-text-on-primary: var(--xops-white);
+  --xops-button-text-on-secondary: var(--xops-grey-700);
+  --xops-button-border: var(--xops-grey-200);
+
+  /* Semantic — nav */
+  --xops-nav-background-active: var(--xops-brand-100);
+
+  /* Semantic — header */
+  --xops-header-avatar-background: var(--xops-brand-200);
+  --xops-header-avatar-radius: var(--xops-radius-full);
+  --xops-header-notification-badge-radius: var(--xops-radius-full);
+
+  /* Semantic — count */
+  --xops-count-text: var(--xops-grey-600);
+
+  /* Grid — dashboard column system, sibling to Primitives/Semantic (not nested under either) */
+  --xops-grid-columns: 12;
+  --xops-grid-gutter-default: var(--xops-spacing-16);
+  --xops-grid-gutter-tight: var(--xops-spacing-8);
+  --xops-grid-margin: var(--xops-spacing-32);
+
+  /* Typography */
+  --xops-font-family: 'Jost', system-ui, sans-serif;
+  --xops-font-weight-regular: 400;
+  --xops-font-weight-medium: 500;
+
+  --xops-typography-body-12-font-size: 12px;
+  --xops-typography-body-12-line-height: 18px;
+
+  --xops-typography-body-14-font-size: 14px;
+  --xops-typography-body-14-line-height: 20px;
+
+  --xops-typography-subheading-16-font-size: 16px;
+  --xops-typography-subheading-16-line-height: 24px;
+
+  --xops-typography-title-18-font-size: 18px;
+  --xops-typography-title-18-line-height: 28px;
+
+  --xops-typography-heading-20-font-size: 20px;
+  --xops-typography-heading-20-line-height: 28px;
+
+  --xops-typography-heading-24-font-size: 24px;
+  --xops-typography-heading-24-line-height: 32px;
+
+  --xops-typography-button-label-font-size: 14px;
+  --xops-typography-button-label-line-height: 20px;
+}

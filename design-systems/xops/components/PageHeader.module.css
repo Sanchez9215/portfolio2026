@@ -1,0 +1,42 @@
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.left {
+  display: flex;
+  align-items: center;
+  gap: var(--xops-spacing-16);
+}
+
+.title {
+  margin: 0;
+  font-family: var(--xops-font-family);
+  font-weight: var(--xops-font-weight-medium);
+  font-size: var(--xops-typography-heading-24-font-size);
+  line-height: var(--xops-typography-heading-24-line-height);
+  color: var(--xops-text-primary);
+  white-space: nowrap;
+}
+
+.titleWithDivider {
+  padding-right: var(--xops-spacing-12);
+  border-right: var(--xops-border-width-1) solid var(--xops-border-divider);
+}
+
+.meta {
+  display: flex;
+  align-items: center;
+  gap: var(--xops-spacing-6);
+}
+
+.metaText {
+  font-family: var(--xops-font-family);
+  font-weight: var(--xops-font-weight-regular);
+  font-size: var(--xops-typography-body-14-font-size);
+  line-height: var(--xops-typography-body-14-line-height);
+  color: var(--xops-text-secondary);
+  white-space: nowrap;
+}

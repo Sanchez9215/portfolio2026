@@ -1,0 +1,56 @@
+.legend {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--xops-spacing-6) var(--xops-spacing-12);
+  width: 100%;
+}
+
+.labelGroup {
+  display: flex;
+  align-items: center;
+  gap: var(--xops-spacing-8);
+}
+
+.swatch {
+  width: var(--xops-legend-swatch-size);
+  height: var(--xops-legend-swatch-size);
+  border-radius: var(--xops-radius-2);
+  flex-shrink: 0;
+}
+
+.label {
+  font-family: var(--xops-font-family);
+  font-weight: var(--xops-font-weight-medium);
+  font-size: var(--xops-typography-body-14-font-size);
+  line-height: var(--xops-typography-body-14-line-height);
+  color: var(--xops-text-secondary);
+}
+
+.valueGroup {
+  display: flex;
+  align-items: center;
+  gap: var(--xops-spacing-8);
+}
+
+.value {
+  font-family: var(--xops-font-family);
+  font-weight: var(--xops-font-weight-regular);
+  font-size: var(--xops-typography-body-14-font-size);
+  line-height: var(--xops-typography-body-14-line-height);
+  color: var(--xops-text-primary);
+}
+
+.meta {
+  font-family: var(--xops-font-family);
+  font-weight: var(--xops-font-weight-regular);
+  font-size: var(--xops-typography-body-12-font-size);
+  line-height: var(--xops-typography-body-12-line-height);
+  color: var(--xops-text-secondary);
+}

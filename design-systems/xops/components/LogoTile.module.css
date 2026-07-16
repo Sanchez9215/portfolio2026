@@ -1,0 +1,31 @@
+.tile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+  background-color: var(--xops-white);
+  border: var(--xops-border-width-1) solid var(--xops-grey-100);
+  border-radius: var(--xops-radius-6);
+}
+
+.small {
+  width: var(--xops-logo-tile-size-small);
+  height: var(--xops-logo-tile-size-small);
+}
+
+.medium {
+  width: var(--xops-logo-tile-size-medium);
+  height: var(--xops-logo-tile-size-medium);
+}
+
+.large {
+  width: var(--xops-logo-tile-size-large);
+  height: var(--xops-logo-tile-size-large);
+}
+
+.image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}

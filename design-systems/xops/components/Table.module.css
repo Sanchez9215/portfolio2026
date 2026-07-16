@@ -1,0 +1,145 @@
+.outer {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.wrapper {
+  background-color: var(--xops-white);
+  border-radius: var(--xops-radius-12) var(--xops-radius-12) 0 0;
+}
+
+.bare {
+  border-radius: var(--xops-radius-6) var(--xops-radius-6) 0 0;
+  overflow: hidden;
+}
+
+.scroll {
+  overflow-x: auto;
+  overflow-y: auto;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.scrollFade {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 164px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.scrollFadeVisible {
+  opacity: 1;
+}
+
+.scrollFadeLeft {
+  left: 0;
+  background: linear-gradient(to right, var(--xops-brand-50), transparent);
+}
+
+.scrollFadeRight {
+  right: 0;
+  background: linear-gradient(to left, var(--xops-brand-50), transparent);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.headerCell {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background-color: var(--xops-surface-table-header);
+  padding: var(--xops-spacing-12);
+  border-bottom: var(--xops-border-width-1) solid var(--xops-border-divider);
+  font-family: var(--xops-font-family);
+  font-size: var(--xops-typography-body-14-font-size);
+  line-height: var(--xops-typography-body-14-line-height);
+  font-weight: var(--xops-font-weight-medium);
+  color: var(--xops-text-secondary);
+  text-align: left;
+}
+
+.wrapper .headerCell {
+  padding-left: var(--xops-spacing-24);
+}
+
+.headerCell[data-width="auto"] {
+  white-space: nowrap;
+}
+
+.headerCell[data-align="right"] {
+  text-align: right;
+}
+
+.headerCell[data-align="center"] {
+  text-align: center;
+}
+
+.sortButton {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--xops-spacing-4);
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.sortIconDesc {
+  transform: rotate(180deg);
+}
+
+.row .bodyCell {
+  border-bottom: var(--xops-border-width-1) solid var(--xops-border-divider);
+}
+
+.row:last-child .bodyCell {
+  border-bottom: none;
+}
+
+.row:hover .bodyCell {
+  background-color: var(--xops-surface-table-row-hover);
+}
+
+.bodyCell {
+  padding: var(--xops-spacing-12);
+  font-family: var(--xops-font-family);
+  font-size: var(--xops-typography-body-14-font-size);
+  line-height: var(--xops-typography-body-14-line-height);
+  font-weight: var(--xops-font-weight-regular);
+  color: var(--xops-text-primary);
+  text-align: left;
+}
+
+.wrapper .bodyCell {
+  padding-left: var(--xops-spacing-24);
+}
+
+.bodyCell[data-width="auto"] {
+  white-space: nowrap;
+}
+
+.bodyCell[data-width="fixed"] {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bodyCell[data-align="right"] {
+  text-align: right;
+}
+
+.bodyCell[data-align="center"] {
+  text-align: center;
+}

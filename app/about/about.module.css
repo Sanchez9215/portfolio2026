@@ -1,0 +1,226 @@
+/* ============================================================
+   About — page layout
+   Grid: cs-grid (12-col, column-gap --spacing-xl, padding-inline --spacing-xl)
+   Naming: {sectionName}{ComponentType}{n}
+   All values resolve through CSS custom properties → tokens.json.
+   ============================================================ */
+
+
+/* ── shared ─────────────────────────────────────────────────── */
+
+.sectionHeader {
+  grid-column: 1 / -1;
+}
+
+
+/* ── section.about-hero ─────────────────────────────────────── */
+
+.hero {
+  align-items: center;
+  row-gap: var(--spacing-xl);
+}
+
+.heroPortrait {
+  grid-column: 1 / 5;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  aspect-ratio: 4 / 5;
+}
+
+.heroPortraitImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.heroText {
+  grid-column: 5 / -1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2xl);
+}
+
+.heroFacts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-md);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.heroFact {
+  font-family: var(--font-family-display);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--text-label-sm-size);
+  line-height: var(--text-label-sm-lh);
+  letter-spacing: var(--text-label-sm-ls);
+  text-transform: uppercase;
+  word-spacing: var(--word-spacing-display);
+  color: var(--text-tertiary);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: var(--border-card) var(--border-style-default) var(--surface-card-border);
+  border-radius: var(--radius-pill);
+}
+
+
+/* ── section.how-i-operate ──────────────────────────────────── */
+
+.operate {
+  row-gap: var(--spacing-3xl);
+}
+
+.operateCards {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: var(--spacing-xl);
+  align-items: stretch;
+}
+
+.operateCards > * {
+  flex: 1 0 0;
+  min-width: 0;
+}
+
+
+/* ── section.principles ─────────────────────────────────────── */
+
+.principles {
+  padding-block: 0 var(--spacing-5xl);
+}
+
+.principlesCards {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: var(--spacing-xl);
+}
+
+.principleCard {
+  flex: 1 0 0;
+  min-width: 0;
+}
+
+
+/* ── section.designing-with-ai ──────────────────────────────── */
+
+.ai {
+  row-gap: var(--spacing-3xl);
+}
+
+.aiCards {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: var(--spacing-xl);
+  align-items: stretch;
+}
+
+.aiCards > * {
+  flex: 1 0 0;
+  min-width: 0;
+}
+
+.aiHighlight {
+  grid-column: 1 / -1;
+  padding: var(--spacing-xl);
+}
+
+
+/* ── section.in-their-words ─────────────────────────────────── */
+
+.words {
+  row-gap: var(--spacing-3xl);
+  padding-block: var(--spacing-5xl) var(--spacing-3xl);
+}
+
+.featuredQuote {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+.featuredAttribution {
+  align-self: flex-start;
+}
+
+/* Marquee rows sit outside the cs-grid for a full-bleed run */
+.marqueeStack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl);
+  padding-bottom: var(--spacing-5xl);
+}
+
+
+/* ── section.off-duty ───────────────────────────────────────── */
+
+.offDuty {
+  row-gap: var(--spacing-3xl);
+}
+
+.offDutyText {
+  grid-column: 1 / 8;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl);
+}
+
+.offDutyBody {
+  max-width: 60ch;
+}
+
+.offDutyLink {
+  color: var(--text-accent);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.offDutyLink:hover {
+  color: var(--text-case-study-hover);
+}
+
+.offDutyGallery {
+  grid-column: 1 / -1;
+}
+
+
+/* ── section.say-hello ──────────────────────────────────────── */
+
+.cta {
+  padding-block: var(--spacing-5xl);
+}
+
+.ctaInner {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2xl);
+}
+
+.ctaActions {
+  display: flex;
+  gap: var(--spacing-md);
+}
+
+
+/* ── mobile ─────────────────────────────────────────────────── */
+
+@media (max-width: 393px) {
+  .heroPortrait,
+  .heroText,
+  .offDutyText {
+    grid-column: 1 / -1;
+  }
+
+  .operateCards,
+  .principlesCards,
+  .aiCards {
+    flex-direction: column;
+  }
+
+  .ctaActions {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

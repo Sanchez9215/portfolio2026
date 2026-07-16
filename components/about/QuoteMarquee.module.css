@@ -1,0 +1,134 @@
+/* ============================================================
+   QuoteMarquee — ⚑ NEW COMPONENT (built for /about, pending review)
+   Seamless loop: .track holds two identical copies of the card
+   set; the keyframe slides exactly one copy-width (-50%).
+   All values resolve through CSS custom properties → tokens.json.
+   ============================================================ */
+
+.marquee {
+  overflow: hidden;
+  width: 100%;
+  /* Soft fade at both edges so cards enter/exit gracefully */
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent,
+    black 6%,
+    black 94%,
+    transparent
+  );
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    black 6%,
+    black 94%,
+    transparent
+  );
+}
+
+.track {
+  display: flex;
+  width: max-content;
+  animation: marquee-scroll 90s linear infinite;
+}
+
+.reverse {
+  animation-direction: reverse;
+}
+
+.marquee:hover .track,
+.marquee:focus-within .track {
+  animation-play-state: paused;
+}
+
+.duplicate {
+  display: flex;
+}
+
+@keyframes marquee-scroll {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* ── card ─────────────────────────────────────────────────── */
+
+.quoteCard {
+  width: 420px;
+  flex-shrink: 0;
+  margin-right: var(--spacing-xl);
+  padding: var(--spacing-lg);
+  background: var(--surface-base);
+  transition: border-color 200ms ease;
+}
+
+.quoteCard:hover {
+  border-color: var(--surface-card-border-hover);
+}
+
+.quote {
+  font-family: var(--font-family-body);
+  font-weight: var(--font-weight-regular);
+  font-size: var(--text-body-lg-size);
+  line-height: var(--text-body-lg-lh);
+  letter-spacing: var(--text-body-lg-ls);
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+/* ── attribution ──────────────────────────────────────────── */
+
+.attribution {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.name {
+  font-family: var(--font-family-display);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--text-label-sm-size);
+  line-height: var(--text-label-sm-lh);
+  letter-spacing: var(--text-label-sm-ls);
+  text-transform: uppercase;
+  color: var(--text-primary);
+  text-decoration: none;
+  width: fit-content;
+}
+
+a.name:hover {
+  color: var(--text-case-study-hover);
+}
+
+.role {
+  font-family: var(--font-family-body);
+  font-size: var(--text-body-sm-size);
+  line-height: var(--text-body-sm-lh);
+  color: var(--text-subtle);
+}
+
+/* ── reduced motion — static scrollable row ───────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee {
+    overflow-x: auto;
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+
+  .track {
+    animation: none;
+  }
+
+  .duplicate {
+    display: none;
+  }
+}
+
+/* ── mobile ───────────────────────────────────────────────── */
+
+@media (max-width: 393px) {
+  .quoteCard {
+    width: 300px;
+    margin-right: var(--spacing-md);
+  }
+}

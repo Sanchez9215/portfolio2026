@@ -1,0 +1,31 @@
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding-inline: var(--xops-spacing-12);
+  border-radius: var(--xops-radius-full);
+  font-family: var(--xops-font-family);
+  font-weight: var(--xops-font-weight-regular);
+  font-size: var(--xops-typography-body-14-font-size);
+  line-height: var(--xops-typography-body-14-line-height);
+  white-space: nowrap;
+}
+
+.success {
+  background-color: var(--xops-status-success-tint);
+  color: var(--xops-status-success-text);
+}
+
+.warning {
+  background-color: var(--xops-status-warning-tint);
+  color: var(--xops-status-warning-text);
+}
+
+.danger {
+  background-color: var(--xops-status-danger-tint);
+  color: var(--xops-status-danger-text);
+}
+
+.neutral {
+  background-color: var(--xops-status-neutral-tint);
+  color: var(--xops-status-neutral-text);
+}

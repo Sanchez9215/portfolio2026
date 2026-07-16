@@ -24,3 +24,6 @@
 | card-row                | components/CardRow.tsx — horizontal row of Cards; size: fill(default, flex stretch)\|span2(grid-column:span 2 per card, count-independent, requires SectionImg/subgrid ancestor) |
 | card-column              | components/CardColumn.tsx — vertical stack of Cards (`<ol>`); width comes from parent track |
 | section-img             | components/SectionImg.tsx — image + annotation-card composite Section; layout: row(cards flank image)\|column(cards above/below image)\|corner(full-width CardRow top, image bottom-left, CardColumn bottom-right); props: before?, image (node or array, up to 3), after? |
+| quote-marquee ⚑NEW      | components/about/QuoteMarquee.tsx — auto-scrolling testimonial row (CSS loop, pause on hover, reduced-motion fallback); props: quotes[{quote,name,role,href?}], direction: left\|right. Built for /about, no Figma source — pending review |
+| number-card ⚑NEW        | components/about/NumberCard.tsx — indexed statement card: display-metric numeral + uppercase label title + body children; hover border/numeral accent. Built for /about, no Figma source — pending review |
+| snapshot-gallery ⚑NEW   | components/about/SnapshotGallery.tsx — rotated "snapshot" photo cards with uppercase caption plates, straighten on hover; props: snapshots[{src,alt,caption}]. Built for /about, no Figma source — pending review |

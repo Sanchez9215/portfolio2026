@@ -1,0 +1,107 @@
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--xops-button-gap);
+  height: var(--xops-control-height-medium);
+  padding-inline: var(--xops-button-padding-x);
+  border-radius: var(--xops-button-radius);
+  border: var(--xops-button-border-width) solid transparent;
+  font-family: var(--xops-font-family);
+  font-weight: var(--xops-font-weight-medium);
+  font-size: var(--xops-typography-button-label-font-size);
+  line-height: var(--xops-typography-button-label-line-height);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 var(--xops-state-focus-ring-width) var(--xops-state-focus-ring);
+}
+
+.button:disabled {
+  background-color: var(--xops-state-disabled-background);
+  color: var(--xops-state-disabled-text);
+  border-color: var(--xops-state-disabled-border);
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.primary {
+  background-color: var(--xops-brand-primary);
+  color: var(--xops-button-text-on-primary);
+}
+
+.primary:hover {
+  background-color: var(--xops-state-hover-on-brand);
+}
+
+.primary:active {
+  background-color: var(--xops-state-active-on-brand);
+}
+
+.secondary {
+  background-color: var(--xops-white);
+  color: var(--xops-button-text-on-secondary);
+  border-color: var(--xops-button-border);
+}
+
+.secondary:hover {
+  background-color: var(--xops-state-hover-on-surface);
+}
+
+.secondary:active {
+  background-color: var(--xops-state-active-on-surface);
+}
+
+.text {
+  background-color: transparent;
+  color: var(--xops-text-primary);
+  border-color: transparent;
+  padding: 0;
+}
+
+.text:hover {
+  background-color: var(--xops-state-hover-on-surface);
+}
+
+.text:active {
+  background-color: var(--xops-state-active-on-surface);
+}
+
+.text:disabled {
+  background-color: transparent;
+  color: var(--xops-state-disabled-text);
+  border-color: transparent;
+}
+
+.iconOnly {
+  padding: 0;
+  width: var(--xops-control-height-medium);
+}
+
+.small {
+  height: var(--xops-control-height-small);
+}
+
+.small.iconOnly {
+  width: var(--xops-control-height-small);
+}
+
+.large {
+  height: var(--xops-control-height-large);
+}
+
+.large.iconOnly {
+  width: var(--xops-control-height-large);
+}
+
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--xops-button-icon-size);
+  height: var(--xops-button-icon-size);
+  flex-shrink: 0;
+}

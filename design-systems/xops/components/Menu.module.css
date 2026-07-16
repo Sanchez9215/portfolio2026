@@ -1,0 +1,33 @@
+.panel {
+  margin: 0;
+  padding: var(--xops-spacing-4);
+  list-style: none;
+  background-color: var(--xops-white);
+  border: var(--xops-border-width-1) solid var(--xops-border-divider);
+  border-radius: var(--xops-radius-6);
+}
+
+.option {
+  display: block;
+  width: 100%;
+  padding: var(--xops-spacing-8) var(--xops-spacing-12);
+  background: none;
+  border: none;
+  border-radius: var(--xops-radius-6);
+  font-family: var(--xops-font-family);
+  font-size: var(--xops-typography-body-14-font-size);
+  line-height: var(--xops-typography-body-14-line-height);
+  color: var(--xops-text-primary);
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.option:hover {
+  background-color: var(--xops-state-hover-on-surface);
+}
+
+.optionSelected {
+  background-color: var(--xops-nav-background-active);
+  color: var(--xops-brand-primary);
+}

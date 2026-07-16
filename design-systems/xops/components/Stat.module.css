@@ -1,0 +1,40 @@
+.stat {
+  display: flex;
+  flex: 1 0 0%;
+  flex-direction: column;
+  gap: var(--xops-spacing-8);
+  padding: var(--xops-spacing-16);
+  background-color: var(--xops-surface-stat);
+  border-radius: var(--xops-radius-6);
+  min-width: 0;
+}
+
+.label {
+  font-family: var(--xops-font-family);
+  font-weight: var(--xops-font-weight-medium);
+  font-size: var(--xops-typography-body-14-font-size);
+  line-height: var(--xops-typography-body-14-line-height);
+  color: var(--xops-text-secondary);
+}
+
+.valueRow {
+  display: flex;
+  align-items: center;
+  gap: var(--xops-spacing-8);
+}
+
+.value {
+  font-family: var(--xops-font-family);
+  font-weight: var(--xops-font-weight-regular);
+  font-size: var(--xops-typography-heading-24-font-size);
+  line-height: var(--xops-typography-heading-24-line-height);
+  color: var(--xops-text-primary);
+}
+
+.meta {
+  font-family: var(--xops-font-family);
+  font-weight: var(--xops-font-weight-regular);
+  font-size: var(--xops-typography-body-14-font-size);
+  line-height: var(--xops-typography-body-14-line-height);
+  color: var(--xops-text-secondary);
+}

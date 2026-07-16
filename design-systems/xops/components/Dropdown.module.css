@@ -1,0 +1,61 @@
+.root {
+  position: relative;
+  display: inline-block;
+}
+
+.trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--xops-spacing-8);
+  height: var(--xops-control-height-medium);
+  padding-inline: var(--xops-spacing-12) var(--xops-spacing-8);
+  background-color: var(--xops-white);
+  border: var(--xops-border-width-1) solid var(--xops-border-divider);
+  border-radius: var(--xops-radius-6);
+  font-family: var(--xops-font-family);
+  font-size: var(--xops-typography-body-14-font-size);
+  line-height: var(--xops-typography-body-14-line-height);
+  color: var(--xops-text-primary);
+  cursor: pointer;
+}
+
+.small {
+  height: var(--xops-control-height-small);
+}
+
+.large {
+  height: var(--xops-control-height-large);
+}
+
+.trigger:hover {
+  background-color: var(--xops-state-hover-on-surface);
+}
+
+.trigger:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 var(--xops-state-focus-ring-width) var(--xops-state-focus-ring);
+}
+
+.trigger:disabled {
+  background-color: var(--xops-state-disabled-background);
+  color: var(--xops-state-disabled-text);
+  border-color: var(--xops-state-disabled-border);
+  cursor: not-allowed;
+}
+
+.chevron {
+  transition: transform 0.15s ease;
+}
+
+.chevronOpen {
+  transform: rotate(180deg);
+}
+
+.panel {
+  position: absolute;
+  top: calc(100% + var(--xops-spacing-4));
+  left: 0;
+  z-index: 10;
+  min-width: 100%;
+}

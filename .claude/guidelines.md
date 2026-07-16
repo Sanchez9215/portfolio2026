@@ -1,27 +1,27 @@
-# Building Guidelines — Portfolio Case Studies
+# Building Guidelines
 
-Read this file at the start of every session, alongside `progress.md`.  
-These are strict prohibitions derived from real mistakes. Follow them unconditionally.
+**Intent:** Project-agnostic process rules for *how* to build in this repo — not what to build, and never project-specific detail.
+
+**When to use:** Read at the start of any session touching build work, regardless of which project — portfolio pages, XOPS, or anything future — alongside that project's own doc set.
+
+These are strict prohibitions derived from real mistakes, written at the level of intent so they hold regardless of which project's tools, skills, or file layout are in play. Follow them unconditionally.
 
 ---
 
 ## Session Start
 
-**Never respond to the first task without reading all six required files.**
-
-Required reading, in order: `progress.md` → `guidelines.md` → `components/built-components.md` → `styles/globals.css` → `.claude/skills/component-builder/SKILL.md` → `.claude/skills/section-builder/SKILL.md`
-
-The skill files define the exact build gates and checklists. Skipping them causes process violations mid-session.
+**Never respond to the first task without reading the active project's full doc set and design-system source of truth.**
+That means: the project's own build-state doc (e.g. `progress.md`), this file, its component registry, and its token/style source of truth — plus any skill files that define build gates or checklists for the kind of work being done. Skipping any of these causes process violations mid-session.
 
 ---
 
 ## Session Handoff
 
-**Resume Context is a mid-session checkpoint, not a session-end summary.**  
-Write a Resume Context entry only when you need to interrupt and hand off — context limit approaching, abrupt stop, or mid-build pause before clearing chat. A clean session ends with the Built sections list updated and any new Deferred items added — no Resume Context entry needed.
+**Resume Context is a mid-session checkpoint, not a session-end summary.**
+Write a Resume Context entry only when you need to interrupt and hand off — context limit approaching, abrupt stop, or mid-build pause before clearing chat. A clean session ends with the build-state doc's completed-work list updated and any new deferred items added — no Resume Context entry needed.
 
-**End every session that touches docs or builds with "Ready to clear."**  
-After updating `progress.md` (or any other doc) following a build, always close with the literal line "Ready to clear." This confirms all doc updates and builds are finished with no loose ends, so the user can safely clear the chat. Only say it once `## Resume Context` reflects reality — any unfinished build, deferred roadmap item, or flagged mistake must be recorded there (or in `## Deferred (Roadmap)`) first. If there are loose ends, state them instead of saying "Ready to clear."
+**End every session that touches docs or builds with "Ready to clear."**
+After updating the build-state doc (or any other doc) following a build, always close with the literal line "Ready to clear." This confirms all doc updates and builds are finished with no loose ends, so the user can safely clear the chat. Only say it once Resume Context reflects reality — any unfinished build, deferred roadmap item, or flagged mistake must be recorded there (or in the project's Deferred/Roadmap section) first. If there are loose ends, state them instead of saying "Ready to clear."
 
 ---
 
@@ -30,59 +30,65 @@ After updating `progress.md` (or any other doc) following a build, always close 
 **Never remove a Resume Context entry unless the user explicitly confirms it is complete.**
 Resume Context entries track outstanding work. Removing one because a build session finished is incorrect — only remove it when the specific pending task (e.g., a missing asset) has been resolved.
 
-**Never jump to a downstream step without completing the prerequisite gate.**  
+**Never jump to a downstream step without completing the prerequisite gate.**
 Always finish each step in the session workflow before advancing. Skipping ahead requires a correction mid-session.
 
-**Never treat reading a reference source as a formality.**  
-Reading `built-components.md`, `globals.css`, or any registry means actively cross-referencing it against every decision in the task — not skimming it.
+**Never treat reading a reference source as a formality.**
+Reading a component registry, a token/style file, or any other registry means actively cross-referencing it against every decision in the task — not skimming it.
 
-**Never widen scope beyond what the task requires.**  
+**Never widen scope beyond what the task requires.**
 Additive tasks touch only what is needed. Do not audit or refactor unrelated code.
 
-**Never deviate from an established convention without a documented design reason.**  
-If a shared property (naming, column span, component variant) already has an established pattern, default to it. Only deviate when the design explicitly requires something different.
+**Never deviate from an established convention without a documented design reason.**
+If a shared property (naming, layout position, component variant) already has an established pattern, default to it. Only deviate when the design explicitly requires something different.
 
-**Never assume new sections belong in the middle of the page to match a narrative position.**  
-New sections provided in a build session are appended work — place them at the very bottom of the page (before `</main>`), after the last existing `<Section>`, unless the user explicitly says otherwise. Do not infer placement from where the content would "logically" sit in the case study's story.
+**Never place new work in a position that matches a narrative or logical fit instead of actual append order.**
+New work (a new page section, a new item in a build-order list) is appended work — place it at the true end of the existing structure, matching where it will actually land, not where it would "logically" sit in the story. Any doc that tracks build order (e.g. a completed-work list) must mirror the real, current position of what it describes — it is not append-only independent of that reality. If something is ever inserted mid-structure, its doc entry moves to match, not stay wherever it was last appended.
 
-**The `## Built sections` list in `progress.md` must match actual page position.**  
-It is not append-only independent of layout — it mirrors `page.tsx` order. Since new sections are placed at the bottom of the page (previous rule), their list entries also land at the bottom, in the same order. If a section is ever inserted mid-page, its list entry must move to match that position, not stay wherever it was last appended.
+**Always use the most stable, unambiguous anchor for insertions.**
+Prefer a structural boundary over a sibling element as the insertion point.
 
-**Always use the most stable, unambiguous anchor for insertions.**  
-Prefer a structural boundary (e.g., `</main>`, a section comment) over a sibling element as the insertion point.
+**Never verify each component in Storybook/dev-server one at a time while building toward a batch milestone.**
+When several components are being built toward one larger goal (e.g. all the pieces for one screen), defer Storybook/dev-server checks until the whole batch is done, then verify together — not after every individual piece.
 
-**Never shorten names.**  
-Use the full form derived directly from the source (Figma layer name, CSS class, component name). Never abbreviate.
+**Never shorten names.**
+Use the full form derived directly from the source (design-tool layer name, class name, component name). Never abbreviate.
 
----
-
-## Layout & CSS — section-builder
-
-**Never propose new CSS without grepping the stylesheet first.**  
-Before writing any rule, search for the structural pattern in the module CSS. If an existing class covers the layout, reuse it exactly. Only propose a new rule after confirming nothing existing applies.
-
-**Never put a grid-column rule on a child when the section's own class can handle it.**  
-When all direct children of a section share the same column span, put the rule on the section class via `> *`. Only add `className` to a child for unique per-instance overrides (e.g., one child needs a different span than its siblings).
-
-**Never use a wrapper div solely to apply a column span.**  
-Use `> *` or `> :nth-child(n)` on the parent instead. Extra DOM nodes for layout only are not acceptable.
-
-**Never replace `grid-template-columns` on a Section.**  
-The 12-col grid is the system. Use `nth-child` column spans to position children. Only override `grid-template-columns` if the layout is entirely incompatible with 12 columns (rare — confirm with user first).
-
-**Never use `!important` to force a layout override.**  
-Win specificity with an element-qualified selector (e.g., `section.foo`) instead.
+**Never make a CSS, structural, or behavioral call and disclose it after writing it — ask before, every time, with no "small decision" exception.**
+Disclosing a decision after it's already in the code is not the same as asking permission for it — the user can only ever react to what already happened. If a choice isn't a pure bug fix (i.e. it changes what something looks like, does, or is composed of, beyond what was explicitly discussed) — a border added to fix clipping, a hover/selected style with no design source to check it against, matching one component's radius to another's, a default picked because nothing else was specified — stop and ask before writing it. This applies even when the choice feels small, obviously correct, or purely mechanical in the moment. There is no threshold of "small enough to just do it" — that judgment call is itself the thing that keeps getting made without consent. When genuinely unsure whether something counts (e.g., a one-line CSS fix with only one sane implementation), ask anyway rather than deciding it doesn't count.
 
 ---
 
-## Token Resolution — component-builder
+## Layout & CSS
 
-**Never resolve a token tier from a single raw value.**  
-Match the full property combination — font-family + weight + size + line-height — against the codebase token definitions. A single pixel value or a Figma style name in isolation is not sufficient. If nothing lines up cleanly, ask rather than guess.
+**Never propose new CSS without searching the existing stylesheet(s) first.**
+Before writing any rule, search for the structural pattern already in use. If an existing class covers the layout, reuse it exactly. Only propose a new rule after confirming nothing existing applies.
+
+**Never put a layout rule on a child when the parent's own class can handle it.**
+When all direct children of a container share the same layout treatment, put the rule on the parent via a child-combinator selector. Only add a class to a child for a unique per-instance override.
+
+**Never use a wrapper element solely to apply a layout rule.**
+Use a combinator selector on the parent instead. Extra DOM nodes for layout only are not acceptable.
+
+**Never override a project's established layout system (e.g. its grid) without confirming first.**
+The system in place is the system to build within. Only override its core structure (e.g. replacing a grid's column template) if the layout is entirely incompatible with it — rare, and confirm with the user before doing it.
+
+**Never use `!important` to force a layout override.**
+Win specificity with a more specific, element-qualified selector instead.
 
 ---
 
-## Component Usage — component-builder & section-builder
+## Token Resolution
 
-**Never derive a component's internal structure from Figma's sub-layer tree.**  
-Only the parent layer name is authoritative (e.g., `ImgCard`, `LabelBlock.Display`). Look up the real prop API in the codebase. If how content maps to props is unclear, ask before building.
+**Never resolve a token tier from a single raw value.**
+Match the full property combination — e.g. font-family + weight + size + line-height — against the codebase's token definitions. A single pixel value or a design-tool style name in isolation is not sufficient. If nothing lines up cleanly, ask rather than guess.
+
+**Never assume a design system's foundational tokens are inherited correctly — verify they're explicitly applied.**
+When building new component CSS, explicitly check that base properties (e.g. font-family) are set from the project's own token file rather than assuming a parent or global style will supply the right value. A missing explicit declaration can silently pull in the wrong design system's styling.
+
+---
+
+## Component Usage
+
+**Never derive a component's internal structure from a design source's sub-layer/node tree.**
+Only the top-level named reference is authoritative. Look up the real prop API in the codebase. If how content maps to props is unclear, ask before building.
