@@ -1,4 +1,5 @@
 import React from "react";
+import Link from "next/link";
 import Icon from "./Icon";
 import styles from "./Sidebar.module.css";
 
@@ -14,6 +15,11 @@ type NavLeafKey =
   | "users";
 
 type SoftwareSubKey = "overview" | "all-software";
+
+const SOFTWARE_SUB_ROUTES: Record<SoftwareSubKey, string> = {
+  overview: "/work/software-observability/xops-overview",
+  "all-software": "/work/software-observability/xops-all-software",
+};
 
 type NavItemData = {
   key: NavLeafKey;
@@ -60,25 +66,31 @@ export default function Sidebar({ activeItem, activeSoftwareItem }: SidebarProps
           <NavButton icon="code_blocks" label="Software" expanded={softwareExpanded} />
           {softwareExpanded && (
             <ul className={styles.submenu}>
-              <li
-                className={[
-                  styles.submenuItem,
-                  activeSoftwareItem === "overview" ? styles.submenuItemActive : "",
-                ]
-                  .filter(Boolean)
-                  .join(" ")}
-              >
-                Overview
+              <li>
+                <Link
+                  href={SOFTWARE_SUB_ROUTES.overview}
+                  className={[
+                    styles.submenuItem,
+                    activeSoftwareItem === "overview" ? styles.submenuItemActive : "",
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
+                >
+                  Overview
+                </Link>
               </li>
-              <li
-                className={[
-                  styles.submenuItem,
-                  activeSoftwareItem === "all-software" ? styles.submenuItemActive : "",
-                ]
-                  .filter(Boolean)
-                  .join(" ")}
-              >
-                All Software
+              <li>
+                <Link
+                  href={SOFTWARE_SUB_ROUTES["all-software"]}
+                  className={[
+                    styles.submenuItem,
+                    activeSoftwareItem === "all-software" ? styles.submenuItemActive : "",
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
+                >
+                  All Software
+                </Link>
               </li>
             </ul>
           )}

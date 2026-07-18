@@ -1,0 +1,53 @@
+.surface {
+  position: relative;
+  overflow: hidden;
+  background-color: var(--xops-white);
+  width: 100%;
+  height: 100%;
+}
+
+.blobs {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Used instead of `.blobs` whenever `scale !== 1`. Sized to the ~551x160px surface the
+   blob offsets were originally tuned against (SoftwareProfile's Summary Card 1), not the
+   actual host box — `scale` then shrinks this whole reference canvas as one unit.
+   `.surface`'s own overflow:hidden does the real clipping, so a smaller host still gets
+   the full, uncropped composition scaled down to fit, instead of the offsets being
+   pre-clipped by a smaller box first (which is what left it stuck in the corner). */
+.blobsScaled {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 551px;
+  height: 160px;
+  transform-origin: 0 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.blob {
+  position: absolute;
+  filter: blur(124px);
+  animation: xops-magic-blob-spin var(--xops-motion-duration-slow) var(--xops-motion-easing-default);
+}
+
+@keyframes xops-magic-blob-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.content {
+  position: relative;
+  z-index: 1;
+  height: 100%;
+}

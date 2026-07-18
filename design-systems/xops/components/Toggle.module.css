@@ -1,0 +1,54 @@
+.track {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  height: var(--xops-control-height-medium);
+  padding: var(--xops-spacing-2);
+  background-color: var(--xops-grey-100);
+  border-radius: var(--xops-radius-full);
+}
+
+.track.small {
+  height: var(--xops-control-height-small);
+}
+
+.track.large {
+  height: var(--xops-control-height-large);
+}
+
+.thumb {
+  position: absolute;
+  top: var(--xops-spacing-2);
+  bottom: var(--xops-spacing-2);
+  left: 0;
+  background-color: var(--xops-brand-primary);
+  border-radius: var(--xops-radius-full);
+  transition:
+    transform var(--xops-motion-duration-default) var(--xops-motion-easing-default),
+    width var(--xops-motion-duration-default) var(--xops-motion-easing-default);
+}
+
+.option {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding-inline: var(--xops-spacing-16);
+  background-color: transparent;
+  border: var(--xops-border-width-1) solid transparent;
+  border-radius: var(--xops-radius-full);
+  font-family: var(--xops-font-family);
+  font-weight: var(--xops-font-weight-medium);
+  font-size: var(--xops-typography-body-14-font-size);
+  line-height: var(--xops-typography-body-14-line-height);
+  color: var(--xops-text-secondary);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color var(--xops-motion-duration-default) var(--xops-motion-easing-default);
+}
+
+.optionActive {
+  color: var(--xops-button-text-on-primary);
+}

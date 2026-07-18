@@ -43,6 +43,14 @@
   pointer-events: none;
 }
 
+.tabLargeDisabled {
+  background-color: var(--xops-state-disabled-background);
+  color: var(--xops-state-disabled-text);
+  border-color: var(--xops-state-disabled-border);
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
 .selected {
   background-color: var(--xops-nav-background-active);
   color: var(--xops-brand-primary);
@@ -106,7 +114,9 @@
 }
 
 .tab:disabled .labelRow,
-.tab:disabled .statValue {
+.tab:disabled .statValue,
+.tabLargeDisabled .labelRow,
+.tabLargeDisabled .statValue {
   color: var(--xops-state-disabled-text);
 }
 

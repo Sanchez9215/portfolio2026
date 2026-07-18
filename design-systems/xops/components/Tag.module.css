@@ -29,3 +29,8 @@
   background-color: var(--xops-status-neutral-tint);
   color: var(--xops-status-neutral-text);
 }
+
+.caution {
+  background-color: var(--xops-status-caution-tint);
+  color: var(--xops-status-caution-text);
+}

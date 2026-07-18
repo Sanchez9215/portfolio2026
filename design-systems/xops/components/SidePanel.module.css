@@ -1,0 +1,93 @@
+.overlay {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: calc(100vw - 210px);
+  display: flex;
+  justify-content: flex-end;
+  pointer-events: none;
+  z-index: 100;
+}
+
+.panel {
+  position: relative;
+  height: 100%;
+  min-height: 0;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--xops-spacing-24);
+  padding: var(--xops-spacing-16);
+  background-color: var(--xops-white);
+  border: var(--xops-border-width-1) solid var(--xops-border-divider);
+  border-radius: var(--xops-radius-12) 0 0 var(--xops-radius-12);
+  box-shadow: var(--xops-elevation-1-left);
+  pointer-events: auto;
+  transform: translateX(100%);
+  transition: transform var(--xops-motion-duration-default) var(--xops-motion-easing-default);
+}
+
+.panel.open {
+  transform: translateX(0);
+}
+
+.resizeHandle {
+  position: absolute;
+  top: 0;
+  left: -3px;
+  width: 6px;
+  height: 100%;
+  cursor: col-resize;
+  touch-action: none;
+  z-index: 10;
+}
+
+.resizeHandle:hover,
+.resizeHandleActive {
+  background-color: var(--xops-state-hover-on-surface);
+}
+
+.topNav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  flex-shrink: 0;
+  padding-top: var(--xops-spacing-4);
+  padding-bottom: var(--xops-spacing-8);
+  border-bottom: var(--xops-border-width-1) solid var(--xops-border-divider);
+}
+
+.iconButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: none;
+  border: none;
+  border-radius: var(--xops-radius-6);
+  cursor: pointer;
+  padding: 0;
+}
+
+.iconButton:hover {
+  background-color: var(--xops-state-hover-on-surface);
+}
+
+.iconButton:active {
+  background-color: var(--xops-state-active-on-surface);
+}
+
+.iconButton:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 var(--xops-state-focus-ring-width) var(--xops-state-focus-ring);
+}
+
+.content {
+  flex: 1 0 0;
+  min-height: 0;
+  width: 100%;
+  overflow-y: auto;
+}

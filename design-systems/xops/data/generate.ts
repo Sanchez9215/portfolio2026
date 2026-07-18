@@ -1,0 +1,484 @@
+// Seeded, deterministic generator — the "recipe" that expands into the five source
+// tables. Same (seed, employeeCount) → byte-identical dataset every run. Commit the
+// recipe, not the ~50K rows it produces. Org size is the single knob.
+
+import type {
+  Dataset,
+  OrgConfig,
+  OrgDepartment,
+  OrgCostCenter,
+  OrgRegion,
+  HrRow,
+  ProcurementRow,
+  EvaluationRow,
+  PublisherAssignmentRow,
+  IdentityActivityRow,
+  OpenSourceRow,
+  ProductCatalogEntry,
+  LifecycleStage,
+  WorkerStatus,
+} from "./types";
+import { PRODUCT_CATALOG } from "./catalog";
+
+// Fixed "as of" date so activity windows, renewals, and tenure are all deterministic.
+export const AS_OF = new Date("2026-01-15T00:00:00Z");
+const COMPANY_DOMAIN = "vantageglobal.com";
+
+// ---------------------------------------------------------------------------
+// Seeded PRNG (mulberry32) + typed helpers
+// ---------------------------------------------------------------------------
+
+function mulberry32(a: number): () => number {
+  return function () {
+    a |= 0;
+    a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), a | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+interface Rng {
+  next: () => number;
+  int: (min: number, max: number) => number;
+  float: (min: number, max: number) => number;
+  pick: <T>(arr: readonly T[]) => T;
+  chance: (p: number) => boolean;
+  shuffle: <T>(arr: readonly T[]) => T[];
+  weighted: <T>(items: { value: T; weight: number }[]) => T;
+}
+
+function createRng(seed: number): Rng {
+  const rand = mulberry32(seed);
+  const int = (min: number, max: number) => Math.floor(rand() * (max - min + 1)) + min;
+  return {
+    next: rand,
+    int,
+    float: (min, max) => rand() * (max - min) + min,
+    pick: <T,>(arr: readonly T[]) => arr[Math.floor(rand() * arr.length)],
+    chance: (p) => rand() < p,
+    shuffle: <T,>(arr: readonly T[]) => {
+      const a = [...arr];
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(rand() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    },
+    weighted: <T,>(items: { value: T; weight: number }[]) => {
+      const total = items.reduce((s, i) => s + i.weight, 0);
+      let r = rand() * total;
+      for (const it of items) {
+        r -= it.weight;
+        if (r <= 0) return it.value;
+      }
+      return items[items.length - 1].value;
+    },
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Date helpers
+// ---------------------------------------------------------------------------
+
+const DAY_MS = 86_400_000;
+const addDays = (d: Date, n: number) => new Date(d.getTime() + n * DAY_MS);
+const addMonths = (d: Date, n: number) => {
+  const x = new Date(d);
+  x.setUTCMonth(x.getUTCMonth() + n);
+  return x;
+};
+const iso = (d: Date) => d.toISOString().slice(0, 10);
+const monthsBetween = (a: Date, b: Date) =>
+  (b.getUTCFullYear() - a.getUTCFullYear()) * 12 + (b.getUTCMonth() - a.getUTCMonth());
+
+// ---------------------------------------------------------------------------
+// Static reference pools
+// ---------------------------------------------------------------------------
+
+const DEPARTMENTS: { id: string; name: string; parent: string; weight: number; icTitle: string }[] = [
+  { id: "eng", name: "Engineering", parent: "Technology", weight: 22, icTitle: "Software Engineer" },
+  { id: "product", name: "Product", parent: "Technology", weight: 5, icTitle: "Product Manager" },
+  { id: "design", name: "Design", parent: "Technology", weight: 3, icTitle: "Product Designer" },
+  { id: "it", name: "IT", parent: "Technology", weight: 5, icTitle: "IT Systems Administrator" },
+  { id: "security", name: "Security", parent: "Technology", weight: 3, icTitle: "Security Engineer" },
+  { id: "data", name: "Data & Analytics", parent: "Technology", weight: 4, icTitle: "Data Analyst" },
+  { id: "sales", name: "Sales", parent: "Go-To-Market", weight: 16, icTitle: "Account Executive" },
+  { id: "marketing", name: "Marketing", parent: "Go-To-Market", weight: 6, icTitle: "Marketing Specialist" },
+  { id: "cs", name: "Customer Success", parent: "Go-To-Market", weight: 6, icTitle: "Customer Success Manager" },
+  { id: "support", name: "Customer Support", parent: "Go-To-Market", weight: 8, icTitle: "Support Specialist" },
+  { id: "finance", name: "Finance", parent: "Corporate", weight: 5, icTitle: "Financial Analyst" },
+  { id: "hr", name: "People", parent: "Corporate", weight: 3, icTitle: "People Partner" },
+  { id: "legal", name: "Legal", parent: "Corporate", weight: 2, icTitle: "Corporate Counsel" },
+  { id: "ops", name: "Operations", parent: "Corporate", weight: 6, icTitle: "Operations Analyst" },
+  { id: "procurement", name: "Procurement", parent: "Corporate", weight: 2, icTitle: "Procurement Specialist" },
+  { id: "exec", name: "Executive", parent: "Corporate", weight: 1, icTitle: "Chief of Staff" },
+];
+
+const REGIONS: { code: string; name: string; weight: number; country: string; cities: string[] }[] = [
+  { code: "NA", name: "North America", weight: 50, country: "US", cities: ["Austin", "Seattle", "Denver", "Chicago", "Boston", "Toronto", "San Francisco", "New York", "Atlanta", "Vancouver"] },
+  { code: "EMEA", name: "EMEA", weight: 25, country: "GB", cities: ["London", "Dublin", "Berlin", "Amsterdam", "Paris", "Madrid", "Stockholm", "Warsaw", "Munich", "Lisbon"] },
+  { code: "APAC", name: "APAC", weight: 18, country: "SG", cities: ["Singapore", "Sydney", "Tokyo", "Bangalore", "Melbourne", "Seoul", "Hong Kong", "Manila"] },
+  { code: "LATAM", name: "LATAM", weight: 7, country: "BR", cities: ["Sao Paulo", "Mexico City", "Bogota", "Buenos Aires", "Santiago"] },
+];
+
+const MANAGEMENT_LEVELS: { value: string; weight: number }[] = [
+  { value: "IC", weight: 78 },
+  { value: "Manager", weight: 14 },
+  { value: "Director", weight: 6 },
+  { value: "VP", weight: 2 },
+];
+
+const RESELLERS = ["CDW", "SHI International", "Insight Enterprises", "Zones", "Connection", "SoftwareOne", "Direct"];
+const PAYMENT_TERMS = ["Net 30", "Net 45", "Net 60"];
+const EVENT_TYPES = ["user.authentication.sso", "user.session.start", "app.oauth2.token.grant", "user.authentication.verify"];
+
+const FIRST_NAMES = ["Aaliyah","Aaron","Adrian","Ahmed","Aiden","Alan","Alejandro","Alexis","Alice","Amara","Amelia","Amir","Ana","Andre","Angela","Anika","Anthony","Aria","Arjun","Ashley","Aurora","Ava","Benjamin","Bianca","Blake","Brandon","Brianna","Caleb","Camila","Carlos","Carmen","Caroline","Chen","Chloe","Chris","Claire","Cole","Daniel","Daria","David","Delphine","Diego","Dmitri","Elena","Eli","Elias","Elise","Emily","Emma","Eric","Esther","Ethan","Ezra","Fatima","Felix","Fiona","Gabriel","Grace","Hannah","Hassan","Henry","Hina","Ibrahim","Imani","Isaac","Isabella","Ivan","Jack","Jade","Jamal","James","Jasmine","Javier","Jenna","Jesse","Jia","Joel","Jonah","Jordan","Jose","Julia","Kai","Kaiya","Karan","Katherine","Kenji","Kiara","Lars","Laura","Leah","Leo","Liam","Lily","Lucas","Luna","Maya","Mateo","Mei","Micah","Mohammed","Nadia","Naomi","Natalie","Nathan","Nina","Noah","Nora","Olivia","Omar","Oscar","Priya","Quinn","Rachel","Rafael","Ravi","Rebecca","Riya","Robert","Rosa","Ruth","Ryan","Sadie","Samuel","Sara","Sean","Sofia","Sophia","Tara","Theo","Thomas","Tomas","Uma","Victor","Violet","Wei","William","Wren","Xavier","Yara","Yusuf","Zain","Zara","Zoe"];
+
+const LAST_NAMES = ["Abbott","Acosta","Adams","Aguilar","Ali","Andersen","Bailey","Baker","Banerjee","Barnes","Bautista","Bennett","Bishop","Brooks","Bryant","Cabrera","Campbell","Carter","Castillo","Chan","Chen","Cho","Clark","Cohen","Cole","Collins","Cook","Cooper","Cruz","Dalton","Davis","Delgado","Diaz","Dixon","Dubois","Duncan","Edwards","Ellis","Ferguson","Fischer","Fleming","Flores","Foster","Fujimoto","Gallagher","Garcia","Gill","Goldberg","Gomez","Grant","Griffin","Gupta","Hansen","Harris","Hayashi","Hernandez","Holloway","Hoffman","Huang","Ibrahim","Iyer","Jackson","Jensen","Johnson","Kaur","Keller","Khan","Kim","Klein","Kobayashi","Kowalski","Lam","Lambert","Larsen","Lee","Lopez","Lowe","Maddox","Mahmoud","Malik","Marshall","Martin","Martinez","Mbeki","McCarthy","Mehta","Mendez","Meyer","Miller","Mitchell","Mora","Morales","Murphy","Nakamura","Nguyen","Nielsen","Novak","OBrien","Okafor","Oliveira","Olsen","Ortiz","Osei","Palmer","Park","Patel","Pereira","Perry","Peterson","Pham","Phillips","Powell","Price","Ramirez","Reddy","Reyes","Reynolds","Rivera","Roberts","Robinson","Rossi","Russo","Saito","Salazar","Santos","Schneider","Schwartz","Sharma","Silva","Simmons","Singh","Smith","Snyder","Soto","Stewart","Sullivan","Suzuki","Tanaka","Taylor","Thompson","Torres","Tran","Turner","Vargas","Vasquez","Wagner","Walsh","Wang","Ward","Watanabe","Watson","Weber","Webb","Williams","Wilson","Wong","Wright","Yamamoto","Yang","Yoon","Young","Zhang","Zhao","Zimmerman"];
+
+// Assignment reach as a fraction of the relevant population (affinity depts if set, else org).
+const REACH: Record<ProductCatalogEntry["adoption"], [number, number]> = {
+  universal: [0.8, 0.98],
+  broad: [0.45, 0.75],
+  departmental: [0.35, 0.65],
+  niche: [0.1, 0.3],
+};
+
+const STAGE_WEIGHTS: { value: LifecycleStage; weight: number }[] = [
+  { value: "operational", weight: 58 },
+  { value: "renewal", weight: 18 },
+  { value: "rollout", weight: 12 },
+  { value: "evaluation", weight: 12 },
+];
+
+// Consumption products can't be "in evaluation" (no license request), so they draw
+// from the purchased stages only.
+const STAGE_WEIGHTS_PURCHASED: { value: Exclude<LifecycleStage, "evaluation">; weight: number }[] = [
+  { value: "operational", weight: 64 },
+  { value: "renewal", weight: 22 },
+  { value: "rollout", weight: 14 },
+];
+
+// ---------------------------------------------------------------------------
+// Generation
+// ---------------------------------------------------------------------------
+
+function buildConfig(rng: Rng): { config: OrgConfig; costCentersByDept: Record<string, string[]> } {
+  const regions: OrgRegion[] = REGIONS.map((r) => ({ code: r.code, name: r.name }));
+  const departments: OrgDepartment[] = DEPARTMENTS.map((d) => ({
+    departmentId: d.id,
+    departmentName: d.name,
+    parentOrg: d.parent,
+  }));
+
+  const costCenters: OrgCostCenter[] = [];
+  const costCentersByDept: Record<string, string[]> = {};
+  let code = 1000;
+  for (const d of DEPARTMENTS) {
+    const count = rng.int(1, 3);
+    costCentersByDept[d.id] = [];
+    for (let i = 0; i < count; i++) {
+      const cc = `CC-${code}`;
+      code += 10;
+      costCenters.push({ code: cc, name: `${d.name}${count > 1 ? ` ${i + 1}` : ""}`, departmentId: d.id });
+      costCentersByDept[d.id].push(cc);
+    }
+  }
+  return { config: { regions, departments, costCenters }, costCentersByDept };
+}
+
+function buildEmployees(
+  rng: Rng,
+  count: number,
+  costCentersByDept: Record<string, string[]>,
+): HrRow[] {
+  const deptChoices = DEPARTMENTS.map((d) => ({ value: d, weight: d.weight }));
+  const regionChoices = REGIONS.map((r) => ({ value: r, weight: r.weight }));
+  const usedNames = new Set<string>();
+  const usedEmails = new Set<string>();
+  const employees: HrRow[] = [];
+
+  for (let i = 0; i < count; i++) {
+    // Unique full name
+    let first = rng.pick(FIRST_NAMES);
+    let last = rng.pick(LAST_NAMES);
+    let guard = 0;
+    while (usedNames.has(`${first} ${last}`) && guard++ < 50) {
+      first = rng.pick(FIRST_NAMES);
+      last = rng.pick(LAST_NAMES);
+    }
+    usedNames.add(`${first} ${last}`);
+
+    // Unique email
+    const base = `${first}.${last}`.toLowerCase().replace(/[^a-z.]/g, "");
+    let email = `${base}@${COMPANY_DOMAIN}`;
+    let n = 1;
+    while (usedEmails.has(email)) email = `${base}${++n}@${COMPANY_DOMAIN}`;
+    usedEmails.add(email);
+
+    const dept = rng.weighted(deptChoices);
+    const region = rng.weighted(regionChoices);
+    const level = rng.weighted(MANAGEMENT_LEVELS);
+    const jobTitle =
+      level === "IC" ? dept.icTitle : level === "Manager" ? `${dept.name} Manager` : `${level}, ${dept.name}`;
+
+    const hireDate = addDays(AS_OF, -rng.int(30, 2920)); // up to ~8 years tenure
+    const terminated = rng.chance(0.06);
+    let terminationDate: string | null = null;
+    if (terminated) {
+      const span = Math.max(1, Math.floor((AS_OF.getTime() - hireDate.getTime()) / DAY_MS));
+      terminationDate = iso(addDays(hireDate, rng.int(Math.min(90, span), span)));
+    }
+
+    employees.push({
+      employeeId: `E-${String(10000 + i)}`,
+      email,
+      firstName: first,
+      lastName: last,
+      workerName: `${first} ${last}`,
+      department: dept.id,
+      costCenter: rng.pick(costCentersByDept[dept.id]),
+      location: rng.pick(region.cities),
+      region: region.code,
+      jobTitle,
+      managementLevel: level,
+      workerStatus: (terminated ? "Terminated" : "Active") as WorkerStatus,
+      hireDate: iso(hireDate),
+      terminationDate,
+    });
+  }
+  return employees;
+}
+
+function contractWindow(rng: Rng, stage: Exclude<LifecycleStage, "evaluation">): {
+  effective: Date;
+  expiration: Date;
+  termMonths: number;
+} {
+  let effective: Date;
+  let expiration: Date;
+  if (stage === "rollout") {
+    effective = addDays(AS_OF, -rng.int(15, 180));
+    const termMonths = rng.pick([12, 24, 36]);
+    expiration = addMonths(effective, termMonths);
+    return { effective, expiration, termMonths };
+  }
+  if (stage === "renewal") {
+    effective = addMonths(AS_OF, -rng.int(10, 34));
+    expiration = addDays(AS_OF, rng.int(5, 180));
+  } else {
+    // operational
+    effective = addMonths(AS_OF, -rng.int(7, 28));
+    expiration = addDays(AS_OF, rng.int(181, 900));
+  }
+  const termMonths = Math.max(12, Math.round(monthsBetween(effective, expiration) / 12) * 12);
+  return { effective, expiration, termMonths };
+}
+
+function buildContractsAndUsage(
+  rng: Rng,
+  employees: HrRow[],
+): {
+  procurement: ProcurementRow[];
+  evaluation: EvaluationRow[];
+  openSource: OpenSourceRow[];
+  publisher: PublisherAssignmentRow[];
+  identity: IdentityActivityRow[];
+} {
+  const procurement: ProcurementRow[] = [];
+  const evaluation: EvaluationRow[] = [];
+  const openSource: OpenSourceRow[] = [];
+  const publisher: PublisherAssignmentRow[] = [];
+  const identity: IdentityActivityRow[] = [];
+
+  const employeesByDept: Record<string, HrRow[]> = {};
+  for (const e of employees) (employeesByDept[e.department] ??= []).push(e);
+
+  let contractSeq = 100;
+  let poSeq = 100000;
+  let reqSeq = 100;
+
+  for (const product of PRODUCT_CATALOG) {
+    // Population the product draws from, and its reach into that population.
+    const pool =
+      product.affinity && product.affinity.length > 0
+        ? product.affinity.flatMap((d) => employeesByDept[d] ?? [])
+        : employees;
+    const [lo, hi] = REACH[product.adoption];
+    const target = Math.max(1, Math.round(pool.length * rng.float(lo, hi)));
+    const unitPrice = Math.round(rng.float(product.priceMin, product.priceMax));
+
+    // ----- Open source: tracked by adoption (Component / Version / Users) — no contract, no seats -----
+    if (product.licenseModel === "open-source") {
+      openSource.push({
+        sku: product.sku,
+        name: product.name,
+        publisher: product.publisher,
+        version: `${rng.int(1, 12)}.${rng.int(0, 20)}`,
+        users: target,
+      });
+      continue;
+    }
+
+    const seatBased = product.licenseModel === "enterprise" || product.licenseModel === "perpetual";
+    // Consumption is usage-billed — it never sits in an "evaluation" (license-request) state.
+    const stage = seatBased ? rng.weighted(STAGE_WEIGHTS) : rng.weighted(STAGE_WEIGHTS_PURCHASED);
+
+    // ----- In Evaluation: request only, no contract, no assignments -----
+    if (stage === "evaluation") {
+      evaluation.push({
+        requestId: `REQ-2025-${String(reqSeq++).padStart(4, "0")}`,
+        productName: product.name,
+        productSku: product.sku,
+        publisher: product.publisher,
+        edition: product.edition,
+        licensesRequested: target,
+        estimatedAnnualCost: target * unitPrice,
+        requestedDate: iso(addDays(AS_OF, -rng.int(5, 120))),
+      });
+      continue;
+    }
+
+    const { effective, expiration, termMonths } = contractWindow(rng, stage);
+
+    // ----- Consumption: usage-billed spend row — cost is visible, but no seats/assignments/utilization -----
+    if (!seatBased) {
+      const annualCost = rng.int(120_000, 2_400_000);
+      procurement.push({
+        contractId: `CW-2024-${String(contractSeq++).padStart(4, "0")}`,
+        poNumber: `PO-${poSeq++}`,
+        supplierName: rng.pick(RESELLERS),
+        productName: product.name,
+        productSku: product.sku,
+        publisher: product.publisher,
+        commodity: product.category,
+        licenseModel: product.licenseModel,
+        quantity: 0,
+        unitPrice: 0,
+        annualCost,
+        acquisitionCost: undefined,
+        annualMaintenance: undefined,
+        currency: "USD",
+        contractEffectiveDate: iso(effective),
+        contractExpirationDate: iso(expiration),
+        contractTermMonths: termMonths,
+        totalContractValue: Math.round(annualCost * (termMonths / 12)),
+        paymentTerms: rng.pick(PAYMENT_TERMS),
+        noticePeriodDeadline: iso(addDays(expiration, -rng.int(30, 90))),
+        autoRenew: rng.chance(0.5) ? "Automatic" : "Manual",
+      });
+      continue;
+    }
+
+    // ----- Seat-based (enterprise / perpetual): contract + assignments + activity -----
+    const assignedCount = Math.min(target, pool.length);
+    const quantity = Math.ceil(assignedCount / rng.float(0.8, 0.95)); // purchased ≥ assigned
+
+    const isPerpetual = product.licenseModel === "perpetual";
+    const acquisitionCost = isPerpetual ? quantity * unitPrice : undefined;
+    const annualMaintenance = isPerpetual ? Math.round((acquisitionCost as number) * rng.float(0.18, 0.22)) : undefined;
+    const annualCost = isPerpetual ? (annualMaintenance as number) : quantity * unitPrice;
+    const totalContractValue = Math.round(annualCost * (termMonths / 12)) + (acquisitionCost ?? 0);
+
+    procurement.push({
+      contractId: `CW-2024-${String(contractSeq++).padStart(4, "0")}`,
+      poNumber: `PO-${poSeq++}`,
+      supplierName: rng.pick(RESELLERS),
+      productName: product.name,
+      productSku: product.sku,
+      publisher: product.publisher,
+      commodity: product.category,
+      licenseModel: product.licenseModel,
+      quantity,
+      unitPrice,
+      annualCost,
+      acquisitionCost,
+      annualMaintenance,
+      currency: "USD",
+      contractEffectiveDate: iso(effective),
+      contractExpirationDate: iso(expiration),
+      contractTermMonths: termMonths,
+      totalContractValue,
+      paymentTerms: rng.pick(PAYMENT_TERMS),
+      noticePeriodDeadline: iso(addDays(expiration, -rng.int(30, 90))),
+      autoRenew: rng.chance(0.5) ? "Automatic" : "Manual",
+    });
+
+    // Assign to a random subset — affinity employees first, then spill to the rest.
+    const affinitySet = new Set(product.affinity ?? []);
+    const affinityFirst = rng.shuffle(pool);
+    const rest = affinitySet.size > 0 ? rng.shuffle(employees.filter((e) => !affinitySet.has(e.department))) : [];
+    const ordered = [...affinityFirst, ...rest];
+    const assignees = ordered.slice(0, assignedCount);
+
+    // Per-product baseline utilization → varied, realistic active/inactive split.
+    const activeProb = rng.float(0.5, 0.95);
+
+    for (const emp of assignees) {
+      const assignedAt = addDays(effective, rng.int(0, Math.max(1, Math.floor((AS_OF.getTime() - effective.getTime()) / DAY_MS))));
+      publisher.push({
+        userPrincipalName: emp.email,
+        skuPartNumber: product.sku,
+        servicePlanName: product.edition,
+        assignmentStatus: rng.chance(0.97) ? "Assigned" : "Enabled",
+        assignedDateTime: iso(assignedAt),
+        usageLocation: REGIONS.find((r) => r.code === emp.region)?.country ?? "US",
+      });
+
+      const active = emp.workerStatus === "Terminated" ? rng.chance(0.05) : rng.chance(activeProb);
+      let lastActivityAt: string | null;
+      if (active) {
+        lastActivityAt = iso(addDays(AS_OF, -rng.int(1, 89)));
+      } else if (rng.chance(0.15)) {
+        lastActivityAt = null; // never signed in
+      } else {
+        lastActivityAt = iso(addDays(AS_OF, -rng.int(91, 500)));
+      }
+      identity.push({
+        userEmail: emp.email,
+        targetApp: product.sku,
+        lastEventType: rng.pick(EVENT_TYPES),
+        lastActivityAt,
+        outcome: rng.chance(0.98) ? "SUCCESS" : "FAILURE",
+      });
+    }
+  }
+
+  return { procurement, evaluation, openSource, publisher, identity };
+}
+
+export interface GenerateOptions {
+  seed?: number;
+  employeeCount?: number;
+}
+
+export function buildDataset(options: GenerateOptions = {}): Dataset {
+  const seed = options.seed ?? 20260115;
+  const employeeCount = options.employeeCount ?? 3000;
+  const rng = createRng(seed);
+
+  const { config, costCentersByDept } = buildConfig(rng);
+  const hr = buildEmployees(rng, employeeCount, costCentersByDept);
+  const { procurement, evaluation, openSource, publisher, identity } = buildContractsAndUsage(rng, hr);
+
+  return {
+    generatedAt: iso(AS_OF),
+    seed,
+    employeeCount,
+    config,
+    catalog: PRODUCT_CATALOG,
+    procurement,
+    evaluation,
+    openSource,
+    hr,
+    publisher,
+    identity,
+  };
+}
+
+// Memoized default dataset — computed once per JS context.
+let _dataset: Dataset | null = null;
+export function getDataset(): Dataset {
+  return (_dataset ??= buildDataset());
+}

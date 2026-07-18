@@ -1,0 +1,261 @@
+.profile {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+}
+
+.headerSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--xops-spacing-16);
+  padding-bottom: var(--xops-spacing-16);
+  border-bottom: var(--xops-border-width-1) solid var(--xops-border-divider);
+  width: 100%;
+}
+
+.appHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.description {
+  font-family: var(--xops-font-family);
+  font-weight: var(--xops-font-weight-regular);
+  font-size: var(--xops-typography-body-14-font-size);
+  line-height: var(--xops-typography-body-14-line-height);
+  color: var(--xops-text-secondary);
+  width: 100%;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  gap: var(--xops-spacing-16);
+  overflow-y: auto;
+  padding-top: var(--xops-spacing-24);
+}
+
+.summaryCard {
+  width: 100%;
+  border-radius: var(--xops-radius-12);
+}
+
+.summaryCardContent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--xops-spacing-16);
+  width: 100%;
+  padding: var(--xops-spacing-16);
+}
+
+.summaryCardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.summaryCardTitleRow {
+  display: flex;
+  align-items: center;
+  gap: var(--xops-spacing-8);
+}
+
+.summaryCardTitle {
+  font-family: var(--xops-font-family);
+  font-weight: var(--xops-font-weight-medium);
+  font-size: var(--xops-typography-subheading-16-font-size);
+  line-height: var(--xops-typography-subheading-16-line-height);
+  color: var(--xops-text-primary);
+}
+
+.summaryCardIcon {
+  width: var(--xops-icon-size-16);
+  height: var(--xops-icon-size-16);
+}
+
+.summaryCardValue {
+  font-family: var(--xops-font-family);
+  font-weight: var(--xops-font-weight-regular);
+  font-size: var(--xops-typography-subheading-16-font-size);
+  line-height: var(--xops-typography-subheading-16-line-height);
+  color: var(--xops-text-primary);
+}
+
+.summaryCardTiles {
+  display: flex;
+  gap: var(--xops-spacing-8);
+  width: 100%;
+}
+
+.licensesCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--xops-spacing-16);
+  width: 100%;
+  padding: var(--xops-spacing-16) var(--xops-spacing-16) var(--xops-spacing-24);
+  border-bottom: var(--xops-border-width-1) solid var(--xops-border-divider);
+}
+
+.utilizationCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--xops-spacing-16);
+  width: 100%;
+  padding: var(--xops-spacing-16) var(--xops-spacing-16) var(--xops-spacing-24);
+  border-bottom: var(--xops-border-width-1) solid var(--xops-border-divider);
+}
+
+.detailContainer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--xops-spacing-16);
+  width: 100%;
+  padding: var(--xops-spacing-16);
+}
+
+.detailHeader {
+  display: flex;
+  flex-direction: column;
+  gap: var(--xops-spacing-8);
+  width: 100%;
+}
+
+.breakdownOptions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.viewByGroup {
+  display: flex;
+  align-items: center;
+  gap: var(--xops-spacing-8);
+}
+
+.metricGroup {
+  display: flex;
+  align-items: center;
+  gap: var(--xops-spacing-8);
+}
+
+.breakdownLabel {
+  font-family: var(--xops-font-family);
+  font-weight: var(--xops-font-weight-regular);
+  font-size: var(--xops-typography-body-14-font-size);
+  line-height: var(--xops-typography-body-14-line-height);
+  color: var(--xops-text-secondary);
+}
+
+.unusedLicensesRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  width: 100%;
+  padding: var(--xops-spacing-6) var(--xops-spacing-12);
+  background-color: var(--xops-surface-stat);
+  border-radius: var(--xops-radius-6);
+}
+
+.unusedLicensesLabel {
+  font-family: var(--xops-font-family);
+  font-weight: var(--xops-font-weight-regular);
+  font-size: var(--xops-typography-body-14-font-size);
+  line-height: var(--xops-typography-body-14-line-height);
+  color: var(--xops-text-secondary);
+}
+
+.unusedLicensesValueGroup {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--xops-spacing-8);
+  flex-shrink: 0;
+}
+
+.unusedLicensesValue {
+  font-family: var(--xops-font-family);
+  font-weight: var(--xops-font-weight-regular);
+  font-size: var(--xops-typography-body-14-font-size);
+  line-height: var(--xops-typography-body-14-line-height);
+  color: var(--xops-text-primary);
+}
+
+.unusedLicensesMeta {
+  font-family: var(--xops-font-family);
+  font-weight: var(--xops-font-weight-regular);
+  font-size: var(--xops-typography-body-12-font-size);
+  line-height: var(--xops-typography-body-12-line-height);
+  color: var(--xops-text-secondary);
+}
+
+.renewalStat {
+  flex: 0 0 auto;
+  width: 200px;
+}
+
+.identity {
+  display: flex;
+  align-items: center;
+  gap: var(--xops-spacing-16);
+  min-width: 0;
+}
+
+.identityText {
+  display: flex;
+  flex-direction: column;
+  gap: var(--xops-spacing-4);
+  min-width: 0;
+}
+
+.name {
+  font-family: var(--xops-font-family);
+  font-weight: var(--xops-font-weight-medium);
+  font-size: var(--xops-typography-title-18-font-size);
+  line-height: var(--xops-typography-title-18-line-height);
+  color: var(--xops-text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fullName {
+  font-family: var(--xops-font-family);
+  font-weight: var(--xops-font-weight-regular);
+  font-size: var(--xops-typography-body-14-font-size);
+  line-height: var(--xops-typography-body-14-line-height);
+  color: var(--xops-text-primary);
+}
+
+.metaRow {
+  display: flex;
+  align-items: center;
+  gap: var(--xops-spacing-8);
+}
+
+.metaItem {
+  display: flex;
+  align-items: center;
+  gap: var(--xops-spacing-4);
+}
+
+.metaIcon {
+  width: var(--xops-icon-size-16);
+  height: var(--xops-icon-size-16);
+}
+
+.metaText {
+  font-family: var(--xops-font-family);
+  font-weight: var(--xops-font-weight-regular);
+  font-size: var(--xops-typography-body-12-font-size);
+  line-height: var(--xops-typography-body-12-line-height);
+  color: var(--xops-text-secondary);
+  white-space: nowrap;
+}

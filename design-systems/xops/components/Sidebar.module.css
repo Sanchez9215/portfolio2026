@@ -88,6 +88,11 @@
   font-size: var(--xops-typography-body-14-font-size);
   line-height: var(--xops-typography-body-14-line-height);
   color: var(--xops-text-primary);
+  text-decoration: none;
+}
+
+.submenuItem:hover {
+  background-color: var(--xops-state-hover-on-surface);
 }
 
 .submenuItemActive {

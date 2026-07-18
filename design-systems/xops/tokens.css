@@ -2,7 +2,7 @@
  * XOPS design system — typography + color foundations only.
  * Namespaced with --xops- to stay isolated from the portfolio's own tokens (styles/globals.css).
  * Source of truth: design-systems/xops/tokens.json. See DECISIONS.md for the audit trail.
- * Spacing, radius, and elevation are intentionally not yet defined here — deferred.
+ * Elevation has a first value (elevation.1, from Tooltip) but is not yet a full scale.
  */
 
 :root {
@@ -71,6 +71,19 @@
   --xops-danger-900: #4b0606;
   --xops-danger-950: #220707;
 
+  /* Primitives — Caution ramp (anchor: 500 = #FF9500, high-priority renewal urgency) */
+  --xops-caution-50: #fdf8f1;
+  --xops-caution-100: #ffeed6;
+  --xops-caution-200: #ffdba8;
+  --xops-caution-300: #ffc16a;
+  --xops-caution-400: #ffa11d;
+  --xops-caution-500: #ff9500;
+  --xops-caution-600: #d57d00;
+  --xops-caution-700: #a25f00;
+  --xops-caution-800: #6f4100;
+  --xops-caution-900: #412600;
+  --xops-caution-950: #1e1304;
+
   /* Primitives — absolute (not part of a ramp) */
   --xops-white: #ffffff;
 
@@ -84,7 +97,14 @@
   --xops-chart-7: #d891ef;
   --xops-chart-8: #46a828;
 
+  /* Primitives — accent color library (decorative-only, not data-representing) */
+  --xops-accent-teal: #00d1de;
+  --xops-accent-light-purple: #9572df;
+  --xops-accent-dark-purple: #5d5fef;
+  --xops-accent-magenta: #ef5da8;
+
   /* Primitives — spacing */
+  --xops-spacing-2: 2px;
   --xops-spacing-4: 4px;
   --xops-spacing-6: 6px;
   --xops-spacing-8: 8px;
@@ -97,6 +117,7 @@
 
   /* Primitives — radius */
   --xops-radius-2: 2px;
+  --xops-radius-4: 4px;
   --xops-radius-6: 6px;
   --xops-radius-8: 8px;
   --xops-radius-12: 12px;
@@ -123,6 +144,24 @@
 
   /* Primitives — legend swatch size (Legend) */
   --xops-legend-swatch-size: 12px;
+  --xops-bar-height: 24px;
+  --xops-bar-height-18: 18px;
+  --xops-bar-height-16: 16px;
+
+  /* Primitives — elevation (first value, from Tooltip) */
+  --xops-elevation-1: 0px 16px 50px 0px rgba(148, 163, 184, 0.02),
+    0px 10px 32px 0px rgba(148, 163, 184, 0.03), 0px 6px 18px 0px rgba(148, 163, 184, 0.05),
+    0px 3px 8px 0px rgba(148, 163, 184, 0.06), 0px 1px 2px 0px rgba(148, 163, 184, 0.08);
+
+  /* Primitives — elevation, left-cast variant (elevation.1 with offset axis flipped, for panels entering from the right) */
+  --xops-elevation-1-left: -16px 0px 50px 0px rgba(148, 163, 184, 0.02),
+    -10px 0px 32px 0px rgba(148, 163, 184, 0.03), -6px 0px 18px 0px rgba(148, 163, 184, 0.05),
+    -3px 0px 8px 0px rgba(148, 163, 184, 0.06), -1px 0px 2px 0px rgba(148, 163, 184, 0.08);
+
+  /* Primitives — motion (first values, from SidePanel's slide transition) */
+  --xops-motion-duration-default: 300ms;
+  --xops-motion-duration-slow: 1500ms;
+  --xops-motion-easing-default: ease-out;
 
   /* Semantic — state */
   --xops-state-hover-on-brand: var(--xops-brand-700);
@@ -144,6 +183,8 @@
   /* Semantic — border */
   --xops-border-divider: var(--xops-grey-200);
   --xops-border-interactive: var(--xops-grey-500);
+  --xops-border-subtle: var(--xops-grey-100);
+  --xops-border-accent: var(--xops-accent-dark-purple);
 
   /* Semantic — surface */
   --xops-surface-table-header: var(--xops-grey-50);
@@ -153,6 +194,7 @@
   --xops-surface-empty-state: var(--xops-grey-50);
   --xops-surface-stat: var(--xops-grey-50);
   --xops-surface-page: var(--xops-white);
+  --xops-surface-tooltip-section: var(--xops-grey-50);
 
   /* Semantic — brand */
   --xops-brand-primary: var(--xops-brand-500);
@@ -172,6 +214,10 @@
 
   --xops-status-neutral-tint: var(--xops-grey-100);
   --xops-status-neutral-text: var(--xops-grey-800);
+
+  --xops-status-caution-solid: var(--xops-caution-500);
+  --xops-status-caution-tint: var(--xops-caution-200);
+  --xops-status-caution-text: var(--xops-caution-800);
 
   /* Semantic — button */
   --xops-button-radius: var(--xops-radius-6);

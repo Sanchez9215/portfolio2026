@@ -4,7 +4,6 @@
   justify-content: space-between;
   padding: var(--xops-spacing-12) var(--xops-spacing-16);
   border-bottom: var(--xops-border-width-1) solid var(--xops-border-divider);
-  border-left: var(--xops-border-width-1) solid var(--xops-border-divider);
   border-right: var(--xops-border-width-1) solid var(--xops-border-divider);
   background-color: var(--xops-white);
 }

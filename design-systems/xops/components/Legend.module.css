@@ -25,6 +25,12 @@
   flex-shrink: 0;
 }
 
+.icon {
+  width: var(--xops-icon-size-16);
+  height: var(--xops-icon-size-16);
+  flex-shrink: 0;
+}
+
 .label {
   font-family: var(--xops-font-family);
   font-weight: var(--xops-font-weight-medium);
@@ -50,7 +56,7 @@
 .meta {
   font-family: var(--xops-font-family);
   font-weight: var(--xops-font-weight-regular);
-  font-size: var(--xops-typography-body-12-font-size);
-  line-height: var(--xops-typography-body-12-line-height);
+  font-size: var(--xops-typography-body-14-font-size);
+  line-height: var(--xops-typography-body-14-line-height);
   color: var(--xops-text-secondary);
 }

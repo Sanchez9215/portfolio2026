@@ -1,6 +1,6 @@
 # XOPS Decision Log
 
-**Scope:** DECISIONS.md is pure strategic narrative — Edgar's own systems-thinking story: trade-offs weighed, direction chosen, judgment calls, ideas that shaped the approach. It is never UI detail, never token/px/color values, never code-level reasoning, and never a change-log of implementation steps. Its dual purpose: (a) so Edgar doesn't need to re-derive his own past reasoning, and (b) it's raw material that could genuinely feed a future case study about building this system — demonstrating an end-to-end owner and systems thinker who metabolizes complexity, prototypes to think, and drives through ambiguity, not someone narrating how they set a CSS property. Every entry should clear that bar: a real trade-off, a real pivot, or a real judgment call with reasoning — not a build-order log or an implementation-detail record.
+**Scope:** DECISIONS.md is pure strategic narrative — Edgar's systems-thinking story: trade-offs weighed, direction chosen, judgment calls and the reasoning behind them. Never UI detail, never token/px/color values, never code-level reasoning, never a change-log of implementation steps. Dual purpose: (a) Edgar doesn't re-derive his own past reasoning; (b) raw material for a future case study about building this system — demonstrating an end-to-end owner and systems thinker, not someone narrating how they set a CSS property. Every entry must clear that bar: a real trade-off, a real pivot, or a real judgment call with reasoning. Meta-decisions about the workflow and doc system itself clear the bar too — how the work gets structured is part of the story.
 
 Not a status tracker (`progress.md`) or a roadmap (`PLAN.md`).
 
@@ -32,26 +32,14 @@ Entries are drafted **only when the user explicitly flags something as decision-
 
 ---
 
-## Decision 002: Separate, namespaced design system — not an extension of the portfolio's
+## Decision 002: Separate, namespaced design system at repo root — not an extension of the portfolio's
 
 **Spokes:**
-- Portfolio already has its own token/component system (`design-system/tokens.json`, `styles/globals.css`, `components/`) built for Edgar's personal brand
-- XOPS screens need to look like XOPS's product, not the portfolio's brand
-- Intent to reuse this system for future XOPS-sourced case studies, not just this one — needs to outlive a single case study page
+- Portfolio already has its own token/component system built for Edgar's personal brand; XOPS screens need to look like XOPS's product, not the portfolio's brand
+- Intent to reuse this system for future XOPS-sourced case studies — it must outlive a single case study page, so it can't be scoped inside the case-study route where it would die with that page
+- Portfolio's own `design-system/` already lives at repo root — consistent sibling pattern
 
-**Decision:** New system at `design-systems/xops/`, fully separate token file, `xops-` prefix on all CSS custom properties and component names, so the two systems never resolve against each other.
-
-**Leads to:** 003
-
----
-
-## Decision 003: File placement — root-level `design-systems/xops/`, not nested in the case study route
-
-**Spokes:**
-- If scoped inside `app/work/[case-study]/`, it dies with that page and can't be reused for a second XOPS case study later
-- Portfolio's own `design-system/` already lives at root as a sibling — consistent pattern
-
-**Decision:** `design-systems/xops/` at repo root; case study route imports from it, doesn't own it.
+**Decision:** New system at root-level `design-systems/xops/`, fully separate token file, `xops-` prefix on all CSS custom properties and component names, so the two systems never resolve against each other. The case study route imports from it, doesn't own it. (Absorbs former Decision 003 — file placement was the direct follow-through of the same isolation/reuse reasoning.)
 
 **Leads to:** 004
 
@@ -62,19 +50,14 @@ Entries are drafted **only when the user explicitly flags something as decision-
 **Spokes:**
 - Core "trick" requested: press a button, watch old UI organically become the redesigned UI
 - GSAP already in stack (entrance/scroll animations elsewhere in the portfolio)
-- Not all XOPS UI updates were the same kind of change — user confirmed the 3 target screens are a mix of visual-only and structural changes, varies per screen
+- The 3 target screens are a mix of visual-only and structural changes, varying per screen
 
-**Decision:** Represent each screen's old/new state as one component with a `variant="legacy"|"modern"` prop, not two separate components swapped out. Animation technique branches per element: CSS-custom-property tween for visual-only changes (color/spacing/radius/type, same structure), FLIP transition for structural changes (moved/resized/relayout).
+**Decision:** Represent each screen's old/new state as one component with a `variant="legacy"|"modern"` prop, not two separate components swapped out. Animation technique branches per element: CSS-custom-property tween for visual-only changes, FLIP transition for structural ones. Which parts of each screen are which is classified during the Foundations Audit against actual Figma files, not guessed up front (former sub-decision 004b).
 
 ### Sub-decision 004a: Single component + variant prop, not swapped components
 
 **Spokes:** A true "morph" only reads as organic if it's the same DOM interpolating, not one element replaced by another
 **Decision:** `variant` prop pattern locked in as the baseline for every screen/component in this system.
-
-### Sub-decision 004b: Per-screen classification deferred to Foundations Audit
-
-**Spokes:** Don't yet know, screen by screen, which parts are visual-only vs. structural — needs the actual Figma files
-**Decision:** Classification happens during Phase 1 (Foundations Audit), not guessed now.
 
 **Leads to:** 005
 
@@ -84,9 +67,8 @@ Entries are drafted **only when the user explicitly flags something as decision-
 
 **Spokes:**
 - User wants the "insides" (actual code) visible, not just the rendered UI — reinforces the front-end-execution story from 001
-- Storybook 8 is already in the stack and solves live-render + source-panel out of the box via its Docs addon
-- But the toggle needs to live inside the case-study narrative itself, not link out to a separate app — bespoke fits the presentation better than embedding Storybook
-- User explicitly chose to skip Storybook for this and go step by step rather than solve it now
+- Storybook solves live-render + source-panel out of the box, but the toggle needs to live inside the case-study narrative itself, not link out to a separate app — bespoke fits the presentation better
+- User explicitly chose to go step by step rather than solve it now
 
 **Decision:** Bespoke code-reveal toggle, deferred to Phase 6 (after screens exist). Kept conceptually distinct from the transform toggle — one flips UI state, the other flips UI vs. source — so they don't collapse into the same control.
 
@@ -101,7 +83,7 @@ Entries are drafted **only when the user explicitly flags something as decision-
 - `section-builder` is placement logic only, doesn't reference token source
 - Neither skill covers assembling a full product UI screen from primitives — a new kind of build this system introduces
 
-**Decision:** Fork `component-builder` → `xops-component-builder` (same rules, repointed paths). Reuse `section-builder` as-is for placing the whole module into the case-study narrative. Screen-assembly has no existing skill yet — will be defined once primitives exist (Phase 2/3 boundary).
+**Decision:** Fork `component-builder` → `xops-component-builder` (same rules, repointed paths). Reuse `section-builder` as-is for placing the whole module into the case-study narrative. Screen-assembly has no existing skill yet — will be defined once primitives exist.
 
 **Leads to:** 007
 
@@ -121,16 +103,15 @@ Entries are drafted **only when the user explicitly flags something as decision-
 ## Decision 008: Foundations audit scoped to representative nodes, fed incrementally
 
 **Spokes:**
-- User directed that only structural design data (Figma node variables) counts as accurate — screenshots are not a reliable source, with one exception: the single static legacy asset that has no corresponding Figma node at all
-- User scoped the audit down deliberately: rather than surveying every screen up front, foundations get established from a small representative pair of nodes
-- User set the ongoing workflow: additional screens get fed in one at a time as they're actually built, not gathered proactively in a batch sweep
+- User directed that only structural design data (Figma node variables) counts as accurate — screenshots aren't a reliable source, with one exception: the single legacy asset that has no corresponding Figma node at all
+- Rather than surveying every screen up front, foundations get established from a small representative pair of nodes; additional screens feed in one at a time as they're actually built, not gathered in a proactive batch sweep
 
 **Decision:** Foundations are audited from node-level variable data only, and only for nodes the user hands over — no proactive multi-screen surveys.
 
 ### Sub-decision 008a: Foundation node selection
 
-**Spokes:** Overview's legacy/final pairing looked unreliable as a before/after reference (didn't line up with the local screenshot), so user set it aside rather than resolving the ambiguity in the moment
-**Decision:** User selected Software Profile's legacy/final pair as the two foundation-defining nodes, and separately called for All Software plus one legacy reference node to be brought in afterward specifically to cross-check and fill gaps in that base pair
+**Spokes:** Overview's legacy/final pairing looked unreliable as a before/after reference, so user set it aside rather than resolving the ambiguity in the moment
+**Decision:** User selected Software Profile's legacy/final pair as the two foundation-defining nodes, with All Software plus one legacy reference node brought in afterward specifically to cross-check and fill gaps in that base pair
 **Leads to:** 009
 
 ---
@@ -138,13 +119,12 @@ Entries are drafted **only when the user explicitly flags something as decision-
 ## Decision 009: Typography and color foundations locked
 
 **Spokes:**
-- Software Profile's color palette held identical across legacy and final, which reframed the screen's redesign as structural rather than a repaint (ties back to [[004]]/[[004a]])
-- All Software's data showed two parallel 14px type styles were both real, separate named styles rather than one inconsistent one — the system still needed a single canonical value going forward, which was user's call to make
-- The legacy reference node confirmed a genuine color shift between generations and validated an inverse-text pattern already suspected from All Software final
-- User directed that badge tint colors must derive from the solid semantic colors, using the same ramp logic already established in the portfolio's own token system, rather than carrying over the file's raw one-off values as-is — this caught and corrected an inconsistency where the design's Warning badge used an off-brand raw color instead of its own semantic Warning color
-- User then directed badge text colors to derive from those same solid hues as well, and set the accessibility bar deliberately above what the design file actually shipped with
+- Software Profile's color palette held identical across legacy and final, which reframed that screen's redesign as structural rather than a repaint (ties back to [[004]]/[[004a]])
+- All Software surfaced two parallel same-size type styles that were both real, separately named styles — the system still needed a single canonical value going forward, which was the user's call to make
+- The legacy reference node confirmed a genuine color shift between generations
+- User directed that badge tint and text colors derive from the solid semantic colors, using the same ramp logic as the portfolio's token system, rather than transcribing the file's raw one-off values — and set the accessibility bar deliberately above what the design file actually shipped with. The file's own values can be wrong; derivation catches what transcription would carry forward.
 
-**Decision:** Type scale and color locked by user's explicit calls on each open item, written to `design-systems/xops/tokens.json`/`tokens.css`, mirroring the portfolio's own token structure but fully separate per [[002]]. Spacing, radius, and elevation intentionally left open — no direction given on these yet.
+**Decision:** Type scale and color locked by user's explicit calls on each open item, written to XOPS token files, mirroring the portfolio's token structure but fully separate per [[002]]. Spacing, radius, and elevation intentionally left open — no direction given yet.
 
 **Leads to:** 010
 
@@ -153,16 +133,12 @@ Entries are drafted **only when the user explicitly flags something as decision-
 ## Decision 010: Full numbered color ramps, anchor always at step 500, no one-off hex values
 
 **Spokes:**
-- User compared the audited color palette against the portfolio's own `tokens.json` and pointed out the mismatch: the portfolio uses full numbered ramps (`grey.50`→`grey.1100`, etc.) with `Semantic` aliasing specific steps, while XOPS only had discrete one-off hex values per role — user wanted the same structure adopted, not a simplified version
-- First attempt anchored the Grey/Neutral ramp at whichever step the audited value happened to match in an external reference palette (Tailwind), landing it at step 400 while Success/Warning/Danger coincidentally landed at 500 — user called this out: the anchor should always sit at 500, consistently, regardless of what an external palette's own numbering happens to produce
-- User then asked why Tailwind was being used at all if the ramps were meant to be custom, and directed that **all five ramps** (not just Grey) be fully custom-generated rather than borrowing any external palette's values — full consistency, nothing borrowed
-- Separately, an early draft of `tokens.json` used descriptive primitive names (`ink`, `slate`, `mist`, `fog`, `sky`, `cloud`) instead of numbered steps — an assumption made unilaterally before ramps existed, never checked with the user, and left in place after the ramps were built instead of being reconciled. User flagged this explicitly as a mistake, not a style preference.
-- User then directed that every remaining flat semantic value (`text.primary`, `text.secondary`, `border.divider`, `surface.table-header`, `surface.empty-state`, `surface.selected`) be resolved to its closest ramp step rather than staying as one-offs — "no 1-offs" was the explicit bar
+- User compared the audited palette against the portfolio's own `tokens.json` and pointed out the mismatch: the portfolio uses full numbered ramps with `Semantic` aliasing specific steps, while XOPS only had discrete one-off values per role — user wanted the same structure adopted, not a simplified version
+- A first ramp attempt borrowed an external palette's (Tailwind's) numbering, letting the anchor land wherever that palette's steps happened to put it — user's calls: the anchor sits at step 500, always, for every family; and all five ramps are fully custom-generated, nothing borrowed from any external palette's values
+- An early draft had used descriptive primitive names invented unilaterally before the ramps existed, then left unreconciled after — user flagged this explicitly as a mistake, not a style preference
+- "No 1-offs" set as the explicit bar: every remaining flat semantic value resolves to its closest ramp step
 
-**Decision:**
-- All five color families are custom-generated 50–950 ramps, anchor value grafted in exactly at step 500 for every family — no external palette used as a source of values at all, only as a reference point during exploration
-- Every `Semantic` role resolves to a named primitive step, with one deliberate exception: `text.inverse` stays an absolute pure-white primitive since snapping it to the nearest ramp step would undermine its purpose of maximum contrast on dark surfaces
-- Badge tint/text pairing re-verified against the new custom values — passes cleanly this time, unlike the earlier Tailwind-based attempt
+**Decision:** All five color families are custom-generated 50–950 ramps anchored at step 500. Every `Semantic` role resolves to a named primitive step, with one deliberate exception: `text.inverse` stays absolute pure white, since snapping it to a ramp step would undermine its purpose of maximum contrast on dark surfaces.
 
 **Leads to:** 011
 
@@ -172,11 +148,10 @@ Entries are drafted **only when the user explicitly flags something as decision-
 
 **Spokes:**
 - User specified the scales directly rather than asking for an audit — deliberate, hand-picked values, not derived from Figma measurements this time
-- User explicitly deferred elevation — no work wanted on it right now
-- User asked whether a semantic layer was needed above these primitives, framing the whole system as something to "evolve as we go, build complexity as we need" rather than fully specify up front
-- Precedent noted from the portfolio's own `tokens.json`: its semantic spacing layer is minimal, not a full wrapper over every primitive step — supported the case for skipping a semantic layer here too until an actual recurring named measurement shows up
+- User explicitly deferred elevation
+- User framed the whole system as something to "evolve as we go, build complexity as we need" rather than fully specify up front; the portfolio's own minimal semantic-spacing layer supported skipping one here too
 
-**Decision:** `Primitives.spacing` and `Primitives.radius` only, `{px}`-keyed (`spacing-16`, `radius-12`, etc.), no semantic aliasing layer. A semantic entry gets added later, one at a time, only when a specific measurement recurs across real components — not pre-built speculatively. Elevation remains fully deferred, no scale, no direction given yet.
+**Decision:** `Primitives.spacing` and `Primitives.radius` only, `{px}`-keyed, no semantic aliasing layer. A semantic entry gets added later, one at a time, only when a specific measurement recurs across real components — not pre-built speculatively. Elevation remains fully deferred.
 
 **Leads to:** 012
 
@@ -185,11 +160,11 @@ Entries are drafted **only when the user explicitly flags something as decision-
 ## Decision 012: No formal component-builder skill fork yet — build primitives directly
 
 **Spokes:**
-- Starting the Button primitive, the agent proposed forking `xops-component-builder` (mirroring the portfolio's `component-builder` skill, with its full pre-build-checklist gate) before writing any code
-- User rejected this: no components exist yet in this system — the priority right now is establishing primitives and system foundations, not standing up a heavyweight build-and-registry process around zero prior art
-- User's direction: "once we establish basic building blocks then we start establishing a doc of how to reference them" — the reference/registry doc comes *after* real components exist to document, not before
+- Starting the Button primitive, the agent proposed forking `xops-component-builder` (with its full pre-build-checklist gate) before writing any code
+- User rejected this: no components exist yet — the priority is establishing primitives and foundations, not standing up a heavyweight build-and-registry process around zero prior art
+- User's direction: the reference/registry doc comes *after* real components exist to document, not before
 
-**Decision:** Build Button (and other early primitives) directly, without the full skill-gated process. A lighter reference doc for how to build/reference XOPS components gets written once there's a real registry to document — not scaffolded speculatively.
+**Decision:** Build Button (and other early primitives) directly, without the skill-gated process. A lighter reference doc gets written once there's a real registry to document — not scaffolded speculatively.
 
 **Leads to:** 013
 
@@ -198,29 +173,16 @@ Entries are drafted **only when the user explicitly flags something as decision-
 ## Decision 013: External design-system references — structure only, never naming or values
 
 **Spokes:**
-- User shared external `DESIGN.md`-style analyses of other products' marketing sites (studied purely for how a reference document like that organizes itself), asking to understand structure and best practice before building the Button primitive's state checklist
-- Early in this analysis the agent drifted into treating pattern *convergence* across two references as validation for specific XOPS naming choices (e.g. citing it as backing for a proposed token name) — user corrected this immediately and drew an absolute line
-- User's rule: nothing from an external reference — no token name, value, naming pattern, or modeling choice — informs XOPS directly. XOPS's actual names, values, and structure come only from audited Figma data and user direction
-- User then refined what *is* fair game to extract: not naming conventions either, but the **coverage skeleton** — the checklist of dimensions a complete system has to answer (does this component type need an icon-only variant? does text need a tertiary/disabled tier? does the button get its own typography role?) — the questions, never the answers
+- User shared external `DESIGN.md`-style analyses of other products' sites, studied purely for how a reference document organizes itself, before building the Button primitive's state checklist
+- The analysis drifted into treating pattern *convergence* across references as validation for specific XOPS naming choices — user corrected immediately and drew an absolute line: nothing from an external reference — no token name, value, naming pattern, or modeling choice — informs XOPS directly. XOPS's names, values, and structure come only from audited Figma data and user direction
+- User then refined what *is* fair game to extract: the **coverage skeleton** — the checklist of dimensions a complete system has to answer (does this component type need an icon-only variant? does the button get its own typography role?) — the questions, never the answers
 
-**Decision:** External references (marketing or product design systems) are studied only for (a) how a spec document organizes itself, and (b) the completeness-checklist categories/dimensions a system of that kind accounts for. Never token names, never values, never naming or modeling patterns. This is a strict, standing rule for all future reference material, not scoped to any one session.
+**Decision:** External references are studied only for (a) how a spec document organizes itself, and (b) the completeness-checklist dimensions a system of that kind accounts for. Never names, never values, never modeling patterns. A strict, standing rule for all future reference material.
 
 ### Sub-decision 013a: First four references were marketing sites — a scope mismatch for product-UI state coverage
 
-**Spokes:** The four references gathered first (two dark/light SaaS marketing brands, one enterprise marketing site, one editorial marketing site) all cover a shallower interaction-state surface than product UI needs — marketing CTAs rarely need `disabled`, `loading`, or `selected` states, which are exactly the states a product button requires
-**Decision:** User flagged this mismatch directly; a genuine product design system reference (not marketing) is needed to meaningfully extend the state-coverage checklist beyond what a CTA button demonstrates. Noted as an open ask — user to provide a product-system link when ready.
-
-**Leads to:** 014
-
----
-
-## Decision 014: `xops-design-system-analysis` skill — an accumulating coverage-checklist tool
-
-**Spokes:**
-- Per Decision 013's refined scope (skeleton/coverage extraction, never naming or values), user asked for this to become a standing, reusable skill rather than a one-off exercise — fed by successive reference analyses over time, getting sharper with each one
-- The skill's job is to diff a reference's demonstrated coverage dimensions (color role tiers, typography roles, variant dimensions, state coverage, elevation model) against XOPS's current state and surface gaps as open questions — never to write to `tokens.json` directly
-
-**Decision:** Create `xops-design-system-analysis`, name confirmed by user. Output feeds `progress.md`'s Resume Context and drafted `DECISIONS.md` entries; an accumulating findings log lives alongside the rest of the XOPS doc set. Not yet built — pending the doc-set relocation in Decision 015 so the skill and its log land in the right place from the start.
+**Spokes:** All four references gathered first were marketing sites, covering a shallower interaction-state surface than product UI needs — marketing CTAs rarely need `disabled`, `loading`, or `selected`, exactly the states a product button requires
+**Decision:** A genuine product design system reference is needed to meaningfully extend the state-coverage checklist. Noted as an open ask — user to provide a product-system link when ready.
 
 **Leads to:** 015
 
@@ -229,26 +191,26 @@ Entries are drafted **only when the user explicitly flags something as decision-
 ## Decision 015: Doc-set storage restructured — centralized under `.claude/projects/`, matching portfolio pages
 
 **Spokes:**
-- Portfolio-page projects store their doc set at `.claude/projects/<page-name>/`; XOPS, as the first non-portfolio project, had instead kept its doc set colocated with its code at `design-systems/xops/` — an inconsistency between the two project types
-- This exact mismatch had already been flagged as a known gap in the `new-nonportfolio` skill ("scaffolds under `design-systems/<name>/` even when the project doesn't need its own design system... kept as-is for now... restructure this when it comes up again") — this was that moment
-- User confirmed the direction: centralize doc sets for both project types under `.claude/projects/<name>/`; code, tokens, and components stay wherever they already lived (`design-systems/<name>/` for non-portfolio projects)
+- Portfolio-page projects store their doc set at `.claude/projects/<page-name>/`; XOPS, as the first non-portfolio project, had kept its doc set colocated with its code — an inconsistency between the two project types
+- This exact mismatch had already been flagged as a known gap in the `new-nonportfolio` skill ("restructure this when it comes up again") — this was that moment
+- User confirmed the direction: centralize doc sets for both project types; code, tokens, and components stay where they already lived
 
-**Decision:** Moved `PLAN.md`, `xops-progress.md` (renamed `progress.md`, matching the portfolio-page naming convention), and `DECISIONS.md` from `design-systems/xops/` to `.claude/projects/xops/`. `design-systems/xops/` now holds code/tokens only (`tokens.json`, `tokens.css`, `components/`). Updated CLAUDE.md's Project Structure and Project Doc Sets sections, and the `new-nonportfolio` skill's scaffolding targets, to reflect the doc-set location as identical across both project types going forward.
+**Decision:** Doc set moved to `.claude/projects/xops/` (with `progress.md` renamed to match the portfolio-page convention); `design-systems/xops/` now holds code/tokens only. CLAUDE.md and the `new-nonportfolio` skill updated so the doc-set location is structurally identical across both project types going forward.
 
 **Leads to:** 016
 
 ---
 
-## Decision 016: `design-system-analysis` skill — agnostic scope, per-project log, pattern-distillation step
+## Decision 016: `design-system-analysis` skill — agnostic scope, pattern-distillation over adopt/decline
 
 **Spokes:**
-- User redirected the skill's scope mid-build: it should be usable by any future design-system project, not tied to XOPS specifically — the working name `xops-design-system-analysis` was renamed accordingly
-- User asked where the findings log should live given the agnostic skill — resolved as project-scoped (`.claude/projects/<name>/analysis-log.md`), separate from `PLAN.md`/`progress.md`/`DECISIONS.md`, since a gap analysis is always relative to one project's current state even though the *method* producing it isn't
-- User specified the log be categorized (typography, spacing, components, colors, etc.), matching the tiered structure the first Carbon research pass already produced
-- User then corrected the graduation model twice: first, that findings shouldn't just move to `PLAN.md` on a vague "user confirms" basis — there needed to be an actual distillation system; second, that distillation isn't a binary adopt/decline — it's recognizing *patterns* in how references architect a dimension (naming shape, modeling choice, layering strategy — never literal tokens) and then either selecting one observed approach or combining ideas from several into a new, fully original XOPS direction
+- Grew out of [[013]]'s refined scope: user asked for the reference-analysis exercise to become a standing, reusable skill fed by successive analyses over time — surfacing coverage gaps as open questions, never writing to `tokens.json` directly (absorbs former Decision 014, whose XOPS-specific framing was superseded almost immediately)
+- User redirected the scope mid-build: usable by any future design-system project, not tied to XOPS — renamed from `xops-design-system-analysis` accordingly
+- Findings log resolved as project-scoped, since a gap analysis is always relative to one project's current state even though the *method* producing it isn't
+- User corrected the graduation model twice: findings don't graduate to `PLAN.md` on a vague "user confirms" basis — there needed to be an actual distillation system; and distillation isn't a binary adopt/decline — it's recognizing *patterns* in how references architect a dimension (naming shape, modeling choice, layering strategy — never literal tokens), then either selecting one observed approach or combining ideas from several into a new, fully original XOPS direction
 - User chose to finish this skill before resuming the Button build, judging it would pay off across all future work, not just the current primitive
 
-**Decision:** `design-system-analysis` skill built at `.claude/skills/design-system-analysis/SKILL.md` — agnostic across projects, targets whichever project's doc set is specified. Six-step process: identify target project → intake reference (index/nav first for docs sites, folder/file architecture for source repos; multi-page work delegated to a background research pass) → extract into seven categories (production-structure map, typography, color, spacing, radius, elevation, components), capturing both existence gaps and structural approaches observed → distill each item to a disposition (Select / Combine / Declined / Needs more data) → graduate only Select/Combine items to `PLAN.md` → write everything to the target project's `analysis-log.md`. First pass run against Carbon Design System; all findings currently dispositioned "Needs more data" pending cross-reference against the queued GitHub Primer, Blueprint.js, and Atlassian passes.
+**Decision:** `design-system-analysis` built agnostic across projects: intake a reference, extract coverage into structural categories, distill each finding to a disposition (Select / Combine / Declined / Needs more data), graduate only accepted items to the target project's `PLAN.md`. First pass run against Carbon. (The per-project `analysis-log.md` this created was later retired in [[028]].)
 
 **Leads to:** 017
 
@@ -257,12 +219,11 @@ Entries are drafted **only when the user explicitly flags something as decision-
 ## Decision 017: Value-level confirmation gate — broken twice, now made explicit and non-negotiable
 
 **Spokes:**
-- While building Button, the agent tokenized `border-width` (1px) and `icon-size` (20px) by copying the raw numbers straight out of the Figma output and hardcoding them into `Button.module.css`, without proposing them as token values or asking — caught by the user, who asked directly why no design details had been surfaced for confirmation
-- Shortly after, building the `Semantic.state` color layer (hover/active/focus/disabled), the agent picked specific ramp steps unilaterally — `brand.600` for hover-on-brand, `brand.700` for active-on-brand, `grey.100`/`grey.200` for hover/active-on-surface, `brand.500` reused for the focus ring, and an opacity-based (`0.4`) mechanism for disabled — and wrote all of it directly to `tokens.json`/`tokens.css` with zero confirmation
-- Both failures happened despite an existing rule already covering this exact case (`progress.md`'s own Session Workflow: "New foundation token → confirm with user before locking in a value") — the rule existed but wasn't specific enough to actually stop the behavior; treating a single-ramp-step shift or a raw Figma number as an "obvious default" let the agent route around it both times
+- Building Button, the agent twice wrote unconfirmed values straight into the system: first hardcoding raw Figma measurements as tokens without surfacing them, then choosing every `Semantic.state` ramp step and mechanism unilaterally and writing it all to the token files with zero confirmation
+- Both failures happened despite an existing rule already covering this exact case — the rule wasn't specific enough to actually stop the behavior; anything that felt like an "obvious default" (a single ramp-step shift, a raw number from Figma) routed around it
 - User's direction: strengthen the documentation itself so this doesn't recur — not just apologize and self-correct in the moment
 
-**Decision:** The value-confirmation rule is rewritten to be explicit about the exact failure mode (a ramp step, a px number, an opacity, "one step darker" reasoning — anything that feels like an obvious default is exactly what must be confirmed, not exempted) and added in three places: `progress.md`'s Session Workflow (the operational checklist actually followed during XOPS work), `CLAUDE.md`'s Agent Behaviour section (portfolio-wide, since the same failure mode applies to any design-system project), and here, so the failure itself — not just the corrected rule — is on permanent record. All six unconfirmed `Semantic.state` values are reopened pending the user's actual review.
+**Decision:** The value-confirmation rule rewritten to name the exact failure mode — anything that feels like an obvious default is exactly what must be confirmed, not exempted — and added in three places: `progress.md`'s Session Workflow, `CLAUDE.md`'s Agent Behaviour (the same failure mode applies to any design-system project), and here, so the failure itself — not just the corrected rule — is on permanent record. All unconfirmed state values reopened pending the user's actual review.
 
 **Leads to:** 018
 
@@ -271,19 +232,14 @@ Entries are drafted **only when the user explicitly flags something as decision-
 ## Decision 018: `Semantic.state` values confirmed — disabled goes color-based, not opacity-based
 
 **Spokes:**
-- Reviewing the reopened state values, user adjusted two of the agent's original proposals one ramp step darker: `hover.on-brand` → `brand.700`, `active.on-brand` → `brand.800`
-- User rejected the opacity-based disabled mechanism outright: a single opacity multiplier reads inconsistently across variants with different base luminance — a saturated `brand.500` primary and a near-white secondary fade to very different perceived "disabled-ness" at the same value
+- Reviewing the reopened values, user adjusted the hover/active proposals one ramp step darker
+- User rejected the opacity-based disabled mechanism outright: a single opacity multiplier reads inconsistently across variants with different base luminance — a saturated primary and a near-white secondary fade to very different perceived "disabled-ness" at the same value
 - In its place: one uniform neutral treatment applied to every variant, rather than a distinct color set per variant — simpler, and it fully resolves the inconsistency since there's no longer a per-variant base color for an opacity multiplier to interact with
-- For focus, user changed the mechanism as well as the value: a box-shadow ring rather than the border/outline the agent had assumed, at `#8FBEFF` — resolved to the already-existing `brand.300` (an exact match) rather than a new raw value, per Decision 010
-- `text-on-secondary` reconfirmed at `grey.700` after being seen live in Storybook — the near-tie flagged earlier didn't change the call
+- For focus, user changed the mechanism as well as the value: a box-shadow ring rather than the border/outline the agent had assumed, resolved to an already-existing ramp step rather than a new raw value, per [[010]]
 
-**Decision:**
-- Hover/active values adjusted one ramp step darker from the original proposal per user review
-- Disabled goes uniform-neutral across every variant instead of opacity-based — no per-variant color set, no opacity token retained
-- Focus mechanism changed to a box-shadow ring rather than border/outline, resolved to an existing ramp step rather than a new raw value, per [[010]]
-- Button's full state checklist (default, hover, active/pressed, focus, disabled) is complete; `selected` intentionally excluded, not applicable to any of the 4 Figma variants
+**Decision:** Disabled goes uniform-neutral across every variant — no per-variant color set, no opacity token retained. Focus is a box-shadow ring on an existing ramp step. Button's full state checklist (default, hover, active, focus, disabled) is complete; `selected` intentionally excluded — not applicable to any of the four Figma variants.
 
-**Note:** This log is getting long — a cleanup/consolidation pass is warranted soon, flagged for a future session rather than done here.
+**Note:** First flag that this log was getting long — consolidation later done in [[028]] and [[030]].
 
 **Leads to:** 019
 
@@ -292,12 +248,12 @@ Entries are drafted **only when the user explicitly flags something as decision-
 ## Decision 019: Overview is three designs, not two — v1 gets reconstructed, not audited
 
 **Spokes:**
-- Overview turns out not to follow the usual legacy/final pairing every other screen has used: there are three designs — **legacy v1** (screenshot only, no Figma node — the same asset-less exception already flagged generically in Decision 008), **legacy v2**, and **final** (both of the latter two have real Figma nodes)
-- This resolves the open "Overview node mapping ambiguity" noted in Decision 008a (where the legacy/final pairing looked unreliable against a local screenshot and was set aside rather than resolved) — the ambiguity existed because there was a v1/v2 split nobody had named yet, not because the node data itself was wrong
-- User's direction: v1 doesn't need its own audit — its elements can be reconstructed from v2 and final's actual node data, since no node exists to audit it against directly
-- Separately, user reconfirmed the general approach going forward: build driven by actual screen requirements (pull the real Figma nodes, see what's net-new against what's already built) rather than pre-guessing the next primitive from `analysis-log.md`'s candidate list top-down
+- Overview doesn't follow the usual legacy/final pairing: there are three designs — **legacy v1** (screenshot only, no Figma node — the asset-less exception already flagged in [[008]]), **legacy v2**, and **final** (both with real Figma nodes)
+- This resolves [[008a]]'s open Overview ambiguity: the pairing looked unreliable because a v1/v2 split existed that nobody had named yet, not because the node data was wrong
+- User's direction: v1 doesn't need its own audit — its elements can be reconstructed from v2 and final's actual node data
+- User reconfirmed the general approach going forward: build driven by actual screen requirements (pull the real Figma nodes, see what's net-new against what's built) rather than pre-guessing the next primitive top-down
 
-**Decision:** Overview build order: v2 and final are the two real sources; v1 is reconstructed from their elements, not independently audited. Next screen after Overview is All Software, legacy first. Next primitive/pattern selection is deferred until the actual Overview Figma nodes are pulled and checked against what Button already covers.
+**Decision:** Overview build order: v2 and final are the two real sources; v1 is reconstructed from their elements. Next screen after Overview is All Software, legacy first. Next primitive selection deferred until the actual Overview nodes are pulled and checked against what Button already covers.
 
 **Leads to:** 021
 
@@ -309,7 +265,7 @@ Entries are drafted **only when the user explicitly flags something as decision-
 - The corrected screens came with real Figma style names that mapped closely onto ramps already established in earlier audits
 - Several off-scale measurements showed up (values that don't land on an existing spacing/radius step)
 
-**Decision:** Treated close matches as confirmation of the existing system rather than grounds to fork new anchors — new tokens were added only where a genuinely new role appeared (submenu-selected background, avatar placeholder background, and a general-purpose `full` radius step for circular elements with no fit in the stepped 6/8/12/16 scale). Off-scale measurements were rounded to the nearest existing step rather than growing the scale for one-off numbers.
+**Decision:** Treated close matches as confirmation of the existing system rather than grounds to fork new anchors — new tokens added only where a genuinely new role appeared (two new surface roles, plus a general-purpose `full` radius step for circular elements that no stepped value fits). Off-scale measurements rounded to the nearest existing step rather than growing the scale for one-off numbers.
 
 **Leads to:** 023
 
@@ -321,7 +277,7 @@ Entries are drafted **only when the user explicitly flags something as decision-
 - Every XOPS screen nests inside the nav + header shell — building it first (rather than dashboard content) was the user's sequencing call
 - Avatar has no photo asset available; search has no backing functionality yet
 
-**Decision:** Built `Sidebar` and `GlobalHeader` as the first two components. Avatar and search were left as inert placeholders — deliberately out of scope for a shell build, not an oversight.
+**Decision:** Built `Sidebar` and `GlobalHeader` as the first two components. Avatar and search left as inert placeholders — deliberately out of scope for a shell build, not an oversight.
 
 **Leads to:** 024
 
@@ -342,9 +298,9 @@ Entries are drafted **only when the user explicitly flags something as decision-
 
 **Spokes:**
 - Overview v2 is the final design with a couple of cards removed — treating it as legitimate final-design source, not a throwaway legacy version (extends [[019]]'s three-design framing)
-- Before building any card, tab, or table component, user asked whether a dashboard/card grid pattern existed to build against — the analysis log's "Grid/layout-system tie-in" and "Layout primitives" items were still open/inconclusive
+- Before building any card, tab, or table component, user asked whether a dashboard/card grid pattern existed to build against — the grid/layout question was still open
 
-**Decision:** Build order revised to establish the grid system first, then cards/tabs/table. V2 (471:7000) confirmed usable as final-design source for Overview's dashboard body, excluding its sidebar/global-header/page-header (those come from the already-built shell, not this node).
+**Decision:** Build order revised to establish the grid system first, then cards/tabs/table. V2 confirmed usable as final-design source for Overview's dashboard body, excluding its shell regions (those come from the already-built shell, not this node).
 
 **Leads to:** 027
 
@@ -353,9 +309,9 @@ Entries are drafted **only when the user explicitly flags something as decision-
 ## Decision 027: `Grid` — new top-level token tier, sibling to `Primitives`/`Semantic`
 
 **Spokes:**
-- Ran `/design-system-analysis` against Carbon 2x Grid, Fluent 2 Layout, and Ant Design Grid + Layout (Druids inaccessible — SPA gated behind auth)
+- Ran `/design-system-analysis` against Carbon 2x Grid, Fluent 2 Layout, and Ant Design Grid + Layout
 - Carbon and Ant both place grid as its own top-level foundation, not nested under an alias/semantic tier
-- Ant draws a hard distinction between "Layout" (page regions: header/sider/content/footer) and "Grid" (column system) — XOPS already has page-region components (Sidebar/GlobalHeader/PageHeader) separate from any column system, so reusing "Layout" as the new tier name would collide
+- Ant draws a hard distinction between "Layout" (page regions) and "Grid" (column system) — XOPS already has page-region components separate from any column system, so reusing "Layout" as the tier name would collide
 
 **Decision:** Added `Grid` as a new top-level tier. Fixed 12-column model chosen as user's own call — not driven by reference convergence, which split between fixed/fluid/multi-mode approaches. Responsive breakpoints declined for now — Overview is single fixed-width; revisit once a second dashboard screen exists to inform real breakpoint bundling. (Concrete values in `design-systems/xops/tokens.json`.)
 
@@ -366,29 +322,95 @@ Entries are drafted **only when the user explicitly flags something as decision-
 ## Decision 028: Documentation workflow redefined — one job per doc, `analysis-log.md` retired
 
 **Spokes:**
-- Across a long build session, `progress.md` and `DECISIONS.md` had both drifted into holding full implementation detail — token names, exact px/color values, accessibility contrast math, Figma node IDs — alongside their actual jobs (status tracking, strategic narrative), making them expensive to write and expensive to read
-- A separate `analysis-log.md` had been holding external-reference research findings as a permanent artifact, but that content only has value in the live moment of deciding — nobody re-reads "Ant does X, Carbon does Y" after the decision is made and built
-- User pointed to `case-study-audit/SKILL.md`'s crisp persona/scope/deliverable definition as the model worth matching: every doc or skill should have exactly one job with a hard scope boundary — that discipline is what makes a doc actually get used instead of skimmed once and ignored
-- User's real intent for this file clarified directly, correcting an earlier assumption: `DECISIONS.md` was never meant as practical bookkeeping to avoid re-litigating settled questions. Its sole purpose is capturing strategic systems-thinking narrative — direction, trade-offs, judgment — which doubles as raw material for a future case study demonstrating exactly the technical-systems-thinker persona `case-study-audit` screens for
-- This whole doc set is read only by agents and by Edgar himself — no team or handoff audience — which shaped how far the redefinition needed to go; no reason to over-formalize for a reader who doesn't exist
+- Across a long build session, `progress.md` and `DECISIONS.md` had both drifted into holding full implementation detail — token names, exact values, node IDs — alongside their actual jobs, making them expensive to write and expensive to read
+- `analysis-log.md` had been holding external-reference research as a permanent artifact, but that content only has value in the live moment of deciding — nobody re-reads "Ant does X, Carbon does Y" after the decision is made and built
+- User pointed to `case-study-audit/SKILL.md`'s crisp persona/scope/deliverable definition as the model: every doc or skill should have exactly one job with a hard scope boundary — that discipline is what makes a doc actually get used instead of skimmed once and ignored
+- User's real intent for this file clarified directly, correcting an earlier assumption: `DECISIONS.md` was never practical bookkeeping to avoid re-litigating settled questions. Its sole purpose is strategic systems-thinking narrative — direction, trade-offs, judgment — doubling as raw material for a future case study demonstrating exactly the technical-systems-thinker persona `case-study-audit` screens for
+- This doc set is read only by agents and by Edgar himself — no team or handoff audience — so no reason to over-formalize for a reader who doesn't exist
 
 **Decision:** Four-way scope split, one job per doc:
 - `guidelines.md` — project-agnostic process rules (how to build, never what)
 - `PLAN.md` — destination/spec (end-state architecture, phase sequencing, what "done" looks like)
 - `progress.md` — status board only (what's built/not/next, one line per item, no implementation detail)
-- `DECISIONS.md` (this file) — strategic narrative only, scope note now stated at the top of the file itself
+- `DECISIONS.md` (this file) — strategic narrative only, scope note stated at the top of the file itself
 
-`analysis-log.md` retired entirely — the `design-system-analysis` skill's research/checklist dialogue now resolves live in conversation and doesn't persist to a dedicated log by default; a decision only lands here if it genuinely clears the strategic bar. Existing entries in this file were re-audited against the new scope: trimmed where implementation detail was mixed in with real judgment (kept the trade-off, cut the token/px/hex specifics), removed outright where an entry was pure implementation log with no strategic content (former Decisions 020, 022, 025 — folded what little was worth keeping into adjacent entries, e.g. the `radius.full` addition into 021).
+`analysis-log.md` retired entirely — the `design-system-analysis` skill's research dialogue now resolves live in conversation; a decision only lands here if it clears the strategic bar. Existing entries re-audited against the new scope: trimmed where implementation detail was mixed in with real judgment, removed outright where an entry was pure implementation log (former Decisions 020, 022, 025 — what little was worth keeping folded into adjacent entries, e.g. the `radius.full` addition into 021).
+
+**Leads to:** 029, and later 030 when the log drifts heavy again
 
 ---
 
 ## Decision 029: `Stat` kept separate from `Card`; standardized to filled-only across all reference instances
 
 **Spokes:**
-- Pulling multiple Figma references for the same "labeled metric" shape (License Utilization's stat-pair, Zoom's Ownership tiles, Infrastructure Data Health's metric/summary tiles, Top Spend's floating stat box) surfaced that the source design itself is inconsistent — some instances plain/borderless, some filled with two different near-identical fill values — confirming Figma isn't the source of truth here and this shape needed active standardization, not transcription
-- Considered folding `Stat` into `Card` as a chrome/background variant instead of a separate component, since both are "boxes with content." Rejected: `Card` is a generic arbitrary-content container while `Stat` has a fixed internal shape (label/value/optional meta); `Stat` tiles are routinely placed inside a `Card` (e.g. Data Health's Summary Card), which would force `Card` to also solve its own nested-chrome contradiction from within the same component
-- License Utilization's Total Owned/Assigned pair was the one plain/borderless instance in Figma; user chose to override it to filled rather than carry the inconsistency forward, prioritizing one unified `Stat` look system-wide over exact fidelity to that one source frame
+- Pulling the same "labeled metric" shape from four different Figma frames surfaced that the source design itself is inconsistent — some instances plain/borderless, some filled with two near-identical fill values — confirming Figma isn't the source of truth here; this shape needed active standardization, not transcription
+- Considered folding `Stat` into `Card` as a chrome/background variant, since both are "boxes with content." Rejected: `Card` is a generic arbitrary-content container while `Stat` has a fixed internal shape (label/value/optional meta); `Stat` tiles are routinely placed inside a `Card`, which would force `Card` to solve its own nested-chrome contradiction from within the same component
+- The one plain/borderless instance in Figma was overridden to filled by user's call — one unified `Stat` look system-wide over exact fidelity to that one source frame
 
-**Decision:** `Stat` built as its own filled-only content primitive, deliberately kept separate from `Card`. Reusability was the deciding factor — user flagged up front that this shape will recur across future dashboard panels beyond this one card, which argued for a chrome-optional primitive over a one-off layout baked into License Utilization specifically.
+**Decision:** `Stat` built as its own filled-only content primitive, deliberately kept separate from `Card`. Reusability was the deciding factor — user flagged up front that this shape will recur across future dashboard panels, which argued for a chrome-optional primitive over a one-off layout baked into one card.
 
-**Leads to:** License Utilization card build continues — legend row and hand-built SVG donut chart next; the card's warning banner is deferred into the future notifications system rather than built standalone.
+**Leads to:** License Utilization card build continues — legend row and hand-built SVG donut chart next; the card's warning banner is deferred into the future notifications system rather than built standalone. Also 030.
+
+---
+
+## Decision 030: Second consolidation pass — the log's case-study purpose enforced, meta-decisions made first-class
+
+**Spokes:**
+- Despite [[028]]'s cleanup, the log had re-accumulated value-level and procedural detail — spokes enumerating specific ramp steps and hex values, blow-by-blow sequencing of who proposed what when — burying the judgment calls the file exists to preserve
+- User re-clarified the long-term purpose directly: this file is raw material for a future visual case-study artifact showing a hiring manager how Edgar navigates design work *with* AI — the workflow he set up, how documentation stayed accurate while building, how work got roadmapped, what judgment calls got made and why. Today's only readers are Edgar and agent sessions; the future reader is the one the writing has to serve
+- Explicitly *not* the fix: `progress.md`'s one-line-per-entry format. This file's job is narrative reasoning; over-compressing it would destroy the case-study material the same way bloat does — the bar is strategic altitude, not brevity
+- Decisions about the doc system and workflow itself (scope splits, consolidation passes, efficiency corrections) are part of the story this log tells — they demonstrate the AI-assisted working method as much as any token decision does, so they get logged as decisions, not performed as silent edits
+
+**Decision:** Every entry re-audited against the scope bar; value-level and procedural detail cut where it had re-accumulated (heaviest in 009, 010, 016–018); former Decisions 003 and 014 absorbed into 002 and 016 as direct continuations of the same threads with no independent judgment call. Standing principle going forward: periodic consolidation is part of the workflow, and each pass is itself recorded here as a meta-decision.
+
+## Decision 031: "Designing for Data Uncertainty" — modularity is the data-model work, not a feature bolted onto it
+
+**Spokes:**
+- The case study makes a claim: Data Ops had higher priorities before software integrations, so the design was built not knowing which sources would exist or how complete they'd be — every view crafted so that removing a metric or an entire data category wouldn't break the experience or the story it tells. The obvious way to *show* this is a purpose-built toggle sitting on top of the finished screens.
+- But every number across the three built views is currently a hardcoded, pre-formatted display string with no idea what upstream source it depends on. A hardcoded "$4.6M" can't reshape itself when Procurement drops out — you'd have to hardcode the reshaped states too, which fakes the exact principle the case study is arguing. The demonstration is only honest if the reshaping *falls out of* the data's structure rather than being staged.
+- The annotated source map made the dependency graph concrete: five upstream sources (Procurement / Identity Providers / Publisher Portals / HR / Config-as-Code), each metric traceable to a combination. Drop Procurement and every dollar column vanishes; drop Identity and active/inactive/utilization vanish; drop HR and the division + terminated-employee analysis vanish. The reshaping is genuinely legible, not cosmetic — which is what makes it worth showing.
+- So modularity and the "make the data real" work are the same task seen from two angles. Source-provenance tagging folds into the synthetic-dataset build rather than being a separate later layer — merging them is the point, not a shortcut.
+- Placement: the demo is a section in the software-observability case-study page (via `section-builder`), not a new screen. The Insights dashboard from the reference images is a *future* build; it was shared only to read the source map, and will eventually consume the same dataset — it is not the demo surface.
+
+**Decision:** Model one synthetic dataset of raw values, each field tagged with its source(s), metrics defined as functions of those fields; populate all three existing views from it and keep it Insights-ready. The modularity toggle is downstream and only built once that model exists. Recorded as `PLAN.md` 11 (source-tagged data model, foundation) + 12 (modularity demonstration), superseding the earlier "Table CSV → real-fetch data wiring" framing.
+
+## Decision 032: License-model tabs get distinct column shapes, not one shared schema
+
+**Spokes:**
+- Top Spend By License Model's Enterprise Agreements tab set the baseline columns; the open question was whether the remaining tabs reuse that schema or diverge. The license model itself changes what's even measurable, so a shared schema would force meaningless columns.
+- Open Source has no per-seat purchase and no single vendor to bill — the meaningful row identity is the component itself, and adoption is a raw user count. It collapses to Component / Version / Users, with no logo tile (no publisher to anchor one, and Edgar has no OSS logos).
+- Perpetual is owned outright: a one-time acquisition plus recurring maintenance, not a subscription. It keeps the utilization spine but replaces recurring spend with Acquisition Cost + Annual Maintenance, and surfaces a distinct Assigned column (new to the license-model tables) alongside Unassigned.
+- Consumption-based stays disabled — no confident column model for usage-metered licensing yet.
+
+**Decision:** Each tab owns its own column set; shared tooltips and icons carry over wherever the same metric reappears (Unassigned / Assigned / Inactive / Active / Utilization). Tab-switching is wired now; rows stay empty until the source-tagged dataset (031) populates them.
+
+## Decision 033: The data model becomes five real source tables at their true grain — not per-software aggregate scalars
+
+**Spokes:**
+- [[031]] locked *that* one source-tagged dataset would feed all three views, but left its shape open — the working assumption was per-software aggregate scalars (one object per product carrying tagged totals). Edgar reframed the goal: the case study should *show the actual files/tables each data source would produce*, as realistically as a live export from procurement, an identity provider, an HR system, a publisher portal, and config-as-code — not pre-summarized totals.
+- Working through aggregate-scalars vs. per-row (per-seat) modeling surfaced the real payoff of going row-level: the employee drill-downs stop being hand-authored samples (today only one product → one department is real) and become genuine — every count on every screen is the same underlying rows filtered differently. The modularity story (hide a source, its dependent metrics vanish) then *falls out of the joins* instead of being staged, which is the honesty bar [[031]] set.
+- Performance was never the real constraint — tables paginate and in-memory aggregation over tens of thousands of rows is trivial; the actual limits are repo bloat and coherent generation, both addressed by generating the data in-repo rather than committing a giant file. That is what makes Edgar's "populate every software fully, not just one hero row" call feasible: full population becomes a property of the join model, not manual work per product.
+- Security/compliance data (Overview's compliance card + non-compliant table) doesn't map cleanly onto the five sources — and is slated to leave the case study anyway — so it's deliberately excluded from the model and left decorative rather than force-fitting a sixth source to accommodate it.
+
+**Decision:** Model the data as five source tables at their real-world grain (config / procurement / HR / publisher assignments / identity activity), joined by keys, with every displayed metric defined as a join-and-count across them. Synthetic data is generated in-repo — org size is the tunable knob, exact size still open — never stored in an external service. Every software gets fully populated, because population is emergent from the join model rather than authored per product. Security-compliance data stays decorative and out of scope, pending its removal from the case study.
+
+**Leads to:** 033a
+
+### Sub-decision 033a: Hosted database (Supabase) considered and declined for the live data path
+
+**Spokes:**
+- The relational five-table shape naturally suggests a real database, and a live backend would lend "real infrastructure" credibility to the case study.
+- But the signature interaction — the modularity morph — has to be instant and reshape the UI in place; a per-toggle round-trip to a hosted DB introduces latency, loading states, and a failure mode that fights the organic transform. Dropping a "source" in the demo is a UI operation over in-memory tables, not literally dropping a database table.
+- This is a portfolio on Vercel: an external dependency that can pause, rate-limit, or fail mid-visit is a real risk a self-contained dataset doesn't carry. And the data is synthetic and read-only, so a backend's actual value — auth, mutations, realtime, persistence — goes entirely unused.
+- Keeping the data in-repo also keeps the planned code-reveal fully inspectable: the "insides" are the generator and the join logic, not something hidden behind remote credentials.
+
+**Decision:** Live data stays in-memory, generated in-repo; no hosted database on the runtime path. A database is reserved only as an optional *documentation* device — e.g. showing real SQL joins in the code-reveal — if the "real infrastructure" story proves worth telling, never as the source the running UI reads from.
+
+### Sub-decision 033b: Synthetic data authored by a seeded, deterministic generator — logged as part of the build method
+
+**Spokes:**
+- The dataset could be authored as a committed literal (rows typed by hand or dumped by an AI) or produced by a generator. A large literal bloats the repo, is painful to keep internally consistent, and silently drifts as the model evolves.
+- The modularity demo — and any later "make the org bigger or smaller" change — needs the dataset to be re-scalable from a single knob, not re-authored.
+- Edgar wants *how the data is manufactured* to be a visible part of the build story; the method itself is case-study material, not just plumbing.
+
+**Decision:** Author the synthetic data with a **seeded, deterministic generator** committed as small code. It is reproducible (same seed → identical dataset on every load, deploy, and teammate — no flicker, no drift), tunable (one knob sets org size), repo-lean (ship the recipe, not the rows), and self-contained (no external dependency, keeping the code-reveal fully inspectable). Recorded deliberately as part of the process, because the *way* the data is built demonstrates the same systems thinking the case study exists to show.

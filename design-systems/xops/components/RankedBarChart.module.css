@@ -1,0 +1,78 @@
+.chart {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--xops-spacing-16);
+  width: 100%;
+  /* Caps at 10.5 rows (row height 32px = spacing-6 padding top/bottom + body-14's
+     20px line-height) so an 11th row peeks in as a scroll affordance. */
+  max-height: 336px;
+  overflow-y: auto;
+}
+
+.labels {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+
+.labelRow {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-block: var(--xops-spacing-6);
+  padding-right: var(--xops-spacing-8);
+  width: 100%;
+}
+
+.label {
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--xops-font-family);
+  font-weight: var(--xops-font-weight-regular);
+  font-size: var(--xops-typography-body-14-font-size);
+  line-height: var(--xops-typography-body-14-line-height);
+  color: var(--xops-text-secondary);
+  text-align: right;
+}
+
+.bars {
+  display: flex;
+  flex-direction: column;
+  flex: 1 0 0;
+  min-width: 0;
+}
+
+.barRow {
+  display: flex;
+  align-items: center;
+  gap: var(--xops-spacing-16);
+  padding-block: var(--xops-spacing-6);
+  width: 100%;
+}
+
+.barRowHoverable {
+  cursor: pointer;
+}
+
+.track {
+  flex: 1 0 0;
+  min-width: 0;
+}
+
+.bar {
+  height: var(--xops-bar-height-18);
+  border-radius: var(--xops-radius-4);
+  outline-style: solid;
+  transition: outline-color var(--xops-motion-duration-default) var(--xops-motion-easing-default);
+}
+
+.value {
+  flex-shrink: 0;
+  font-family: var(--xops-font-family);
+  font-weight: var(--xops-font-weight-regular);
+  font-size: var(--xops-typography-body-14-font-size);
+  line-height: var(--xops-typography-body-14-line-height);
+  color: var(--xops-text-primary);
+}

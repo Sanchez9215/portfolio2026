@@ -7,6 +7,8 @@ export type DropdownSize = "small" | "medium" | "large";
 
 export type DropdownOption<T extends string = string> = MenuOption<T>;
 
+export type DropdownOpenDirection = "up" | "down";
+
 export type DropdownProps<T extends string = string> = {
   value: T;
   options: DropdownOption<T>[];
@@ -14,6 +16,7 @@ export type DropdownProps<T extends string = string> = {
   ariaLabel: string;
   size?: DropdownSize;
   disabled?: boolean;
+  openDirection?: DropdownOpenDirection;
   className?: string;
 };
 
@@ -24,6 +27,7 @@ export function Dropdown<T extends string = string>({
   ariaLabel,
   size = "medium",
   disabled,
+  openDirection = "up",
   className,
 }: DropdownProps<T>) {
   const [open, setOpen] = useState(false);
@@ -73,7 +77,9 @@ export function Dropdown<T extends string = string>({
       </button>
       {open && (
         <Menu
-          className={styles.panel}
+          className={[styles.panel, openDirection === "down" ? styles.panelDown : ""]
+            .filter(Boolean)
+            .join(" ")}
           options={options}
           value={value}
           ariaLabel={ariaLabel}

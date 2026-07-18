@@ -1,7 +1,7 @@
 import React, { ReactNode } from "react";
 import styles from "./Tag.module.css";
 
-export type TagStatus = "success" | "warning" | "danger" | "neutral";
+export type TagStatus = "success" | "warning" | "danger" | "neutral" | "caution";
 
 export type TagProps = {
   status: TagStatus;

@@ -59,7 +59,7 @@
   background-color: transparent;
   color: var(--xops-text-primary);
   border-color: transparent;
-  padding: 0;
+  padding-inline: var(--xops-spacing-12);
 }
 
 .text:hover {
@@ -71,6 +71,27 @@
 }
 
 .text:disabled {
+  background-color: transparent;
+  color: var(--xops-state-disabled-text);
+  border-color: transparent;
+}
+
+.link {
+  background-color: transparent;
+  color: var(--xops-brand-primary);
+  border-color: transparent;
+  padding-inline: var(--xops-spacing-12);
+}
+
+.link:hover {
+  background-color: var(--xops-state-hover-on-surface);
+}
+
+.link:active {
+  background-color: var(--xops-state-active-on-surface);
+}
+
+.link:disabled {
   background-color: transparent;
   color: var(--xops-state-disabled-text);
   border-color: transparent;

@@ -1,4 +1,6 @@
 import React from "react";
+import Icon from "./Icon";
+import { Tooltip, TooltipProps } from "./Tooltip";
 import styles from "./Legend.module.css";
 
 export type LegendItem = {
@@ -6,6 +8,7 @@ export type LegendItem = {
   value: string;
   meta?: string;
   color: string;
+  tooltip?: Omit<TooltipProps, "children" | "className">;
 };
 
 export type LegendProps = {
@@ -21,6 +24,11 @@ export function Legend({ items, className }: LegendProps) {
           <div className={styles.labelGroup}>
             <span className={styles.swatch} style={{ backgroundColor: item.color }} />
             <p className={styles.label}>{item.label}</p>
+            {item.tooltip && (
+              <Tooltip {...item.tooltip}>
+                <Icon name="InfoCircle" color="var(--xops-text-secondary)" className={styles.icon} />
+              </Tooltip>
+            )}
           </div>
           <div className={styles.valueGroup}>
             <span className={styles.value}>{item.value}</span>

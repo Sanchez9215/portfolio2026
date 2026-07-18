@@ -1,0 +1,139 @@
+.root {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  line-height: 0;
+  cursor: pointer;
+}
+
+.panel {
+  position: fixed;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: var(--xops-spacing-8);
+  width: 336px;
+  padding: var(--xops-spacing-12);
+  background-color: var(--xops-white);
+  border: var(--xops-border-width-1) solid var(--xops-border-subtle);
+  border-radius: var(--xops-radius-6);
+  box-shadow: var(--xops-elevation-1);
+  text-align: left;
+  white-space: normal;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+}
+
+.title,
+.description {
+  margin: 0;
+  font-family: var(--xops-font-family);
+  font-size: var(--xops-typography-body-14-font-size);
+  line-height: var(--xops-typography-body-14-line-height);
+  color: var(--xops-text-primary);
+}
+
+.title {
+  font-weight: var(--xops-font-weight-medium);
+}
+
+.description {
+  font-weight: var(--xops-font-weight-regular);
+}
+
+.details {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--xops-surface-tooltip-section);
+  border-radius: var(--xops-radius-6);
+}
+
+.detailsRow {
+  display: flex;
+  flex-direction: column;
+  gap: var(--xops-spacing-4);
+  padding: var(--xops-spacing-8) var(--xops-spacing-12);
+}
+
+.detailsRow:not(:last-child) {
+  border-bottom: var(--xops-border-width-1) solid var(--xops-border-divider);
+}
+
+.detailsLabel,
+.detailsValue,
+.legendPillLabel,
+.legendPillRange {
+  margin: 0;
+  font-family: var(--xops-font-family);
+  font-size: var(--xops-typography-body-12-font-size);
+  line-height: var(--xops-typography-body-12-line-height);
+}
+
+.detailsLabel {
+  font-weight: var(--xops-font-weight-medium);
+  color: var(--xops-text-secondary);
+}
+
+.detailsValue {
+  font-weight: var(--xops-font-weight-regular);
+  color: var(--xops-text-primary);
+}
+
+.legendItems {
+  display: flex;
+  gap: var(--xops-spacing-8);
+}
+
+.legendPill {
+  display: flex;
+  flex-direction: column;
+  width: 96px;
+  padding: var(--xops-spacing-6);
+  border-radius: var(--xops-radius-6);
+}
+
+.legendPillLabel {
+  font-weight: var(--xops-font-weight-medium);
+}
+
+.legendPillRange {
+  font-weight: var(--xops-font-weight-regular);
+}
+
+.footer {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.success {
+  background-color: var(--xops-status-success-tint);
+  color: var(--xops-status-success-text);
+}
+
+.warning {
+  background-color: var(--xops-status-warning-tint);
+  color: var(--xops-status-warning-text);
+}
+
+.danger {
+  background-color: var(--xops-status-danger-tint);
+  color: var(--xops-status-danger-text);
+}
+
+.neutral {
+  background-color: var(--xops-status-neutral-tint);
+  color: var(--xops-status-neutral-text);
+}

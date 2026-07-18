@@ -1,0 +1,18 @@
+.track {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: var(--xops-bar-height);
+  background-color: var(--xops-border-divider);
+  border-radius: var(--xops-radius-6);
+  overflow: hidden;
+}
+
+.segment {
+  height: 100%;
+  min-width: 0;
+}
+
+.segmentDivider {
+  border-right: var(--xops-border-width-1) solid var(--xops-white);
+}

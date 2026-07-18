@@ -7,6 +7,29 @@
   background-color: var(--xops-surface-stat);
   border-radius: var(--xops-radius-6);
   min-width: 0;
+  overflow: hidden;
+}
+
+.statWhite {
+  background-color: var(--xops-white);
+}
+
+.statMagic {
+  padding: 0;
+  background-color: transparent;
+}
+
+.magicInner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--xops-spacing-8);
+  padding: var(--xops-spacing-16);
+}
+
+.labelRow {
+  display: flex;
+  align-items: center;
+  gap: var(--xops-spacing-4);
 }
 
 .label {
@@ -17,10 +40,19 @@
   color: var(--xops-text-secondary);
 }
 
+.icon {
+  width: var(--xops-icon-size-16);
+  height: var(--xops-icon-size-16);
+}
+
 .valueRow {
   display: flex;
   align-items: center;
   gap: var(--xops-spacing-8);
+}
+
+.valueRowBetween {
+  justify-content: space-between;
 }
 
 .value {
@@ -29,6 +61,13 @@
   font-size: var(--xops-typography-heading-24-font-size);
   line-height: var(--xops-typography-heading-24-line-height);
   color: var(--xops-text-primary);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.valueSmall {
+  font-size: var(--xops-typography-body-14-font-size);
+  line-height: var(--xops-typography-body-14-line-height);
 }
 
 .meta {

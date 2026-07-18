@@ -1,0 +1,45 @@
+.view {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  gap: var(--xops-spacing-24);
+  overflow-y: auto;
+}
+
+.topBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.heading {
+  display: flex;
+  flex-direction: column;
+  gap: var(--xops-spacing-4);
+  width: 100%;
+}
+
+.unitLabel {
+  font-family: var(--xops-font-family);
+  font-weight: var(--xops-font-weight-regular);
+  font-size: var(--xops-typography-body-14-font-size);
+  line-height: var(--xops-typography-body-14-line-height);
+  color: var(--xops-text-secondary);
+}
+
+.unitValue {
+  font-family: var(--xops-font-family);
+  font-weight: var(--xops-font-weight-medium);
+  font-size: var(--xops-typography-heading-24-font-size);
+  line-height: var(--xops-typography-heading-24-line-height);
+  color: var(--xops-text-primary);
+}
+
+.summaryTiles {
+  display: flex;
+  gap: var(--xops-spacing-8);
+  width: 100%;
+}
