@@ -34,7 +34,30 @@
   font-size: var(--xops-typography-body-14-font-size);
   line-height: var(--xops-typography-body-14-line-height);
   color: var(--xops-text-secondary);
-  text-align: right;
+  text-align: left;
+}
+
+.labelButton {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--xops-font-family);
+  font-weight: var(--xops-font-weight-regular);
+  font-size: var(--xops-typography-body-14-font-size);
+  line-height: var(--xops-typography-body-14-line-height);
+  color: var(--xops-text-secondary);
+  text-align: left;
+  background-color: transparent;
+  border: none;
+  border-radius: var(--xops-radius-4);
+  padding-inline: var(--xops-spacing-4);
+  cursor: pointer;
+}
+
+.labelButton:hover {
+  background-color: var(--xops-state-hover-on-surface);
+  color: var(--xops-text-primary);
 }
 
 .bars {

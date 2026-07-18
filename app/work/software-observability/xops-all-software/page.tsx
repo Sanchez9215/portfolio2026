@@ -25,11 +25,14 @@ import {
 } from "../../../../design-systems/xops/components/EmployeeBreakdownView";
 import { TooltipProps } from "../../../../design-systems/xops/components/Tooltip";
 import { getDataset } from "../../../../design-systems/xops/data/generate";
+import { formatCount, formatCurrency, formatPercent, EM_DASH } from "../../../../design-systems/xops/lib/format";
 import {
   productSummaries,
   ProductSummary,
   inactiveByDepartment,
   terminatedByDepartment,
+  inactiveByCostCenter,
+  terminatedByCostCenter,
   inactiveEmployees,
   terminatedEmployees,
 } from "../../../../design-systems/xops/data/metrics";
@@ -144,17 +147,6 @@ function formatRenewalDuration(days: number): string {
   return `${years} year${years === 1 ? "" : "s"}`;
 }
 
-function formatCurrency(value: number) {
-  return `$${Math.round(value).toLocaleString()}`;
-}
-
-// Render-time share formatter; guards the zero-denominator case (e.g. consumption products
-// carry no seats, so any per-seat share is undefined rather than a division by zero).
-function formatPercent(part: number, total: number) {
-  if (total <= 0) return "0%";
-  return `${Math.round((part / total) * 100)}%`;
-}
-
 // ISO date → "Mmm D, YYYY", matching the format the audited screens already displayed.
 // UTC-pinned so the generator's UTC dates never shift a day under a local timezone.
 function formatDate(iso: string) {
@@ -165,8 +157,6 @@ function formatDate(iso: string) {
     timeZone: "UTC",
   });
 }
-
-const EM_DASH = "—";
 
 const softwareColumns: Column<ProductSummary>[] = [
   {
@@ -248,7 +238,7 @@ const softwareColumns: Column<ProductSummary>[] = [
     width: "auto",
     align: "right",
     sortable: true,
-    render: (row) => (row.seatBased ? row.purchased.toLocaleString() : EM_DASH),
+    render: (row) => (row.seatBased ? formatCount(row.purchased) : EM_DASH),
   },
 ];
 
@@ -277,6 +267,7 @@ export default function XopsAllSoftwarePage() {
   const [employeeBreakdownContext, setEmployeeBreakdownContext] = useState<EmployeeBreakdownContext | null>(
     null,
   );
+  const [viewBy, setViewBy] = useState<string>("top-departments");
 
   const selectedRow = summaries.find((row) => row.sku === selectedRowId);
 
@@ -293,17 +284,27 @@ export default function XopsAllSoftwarePage() {
 
   const inactiveDrillRows: InactiveEmployeeRow[] =
     selectedRow && employeeBreakdownContext
-      ? inactiveEmployees(ds, selectedRow.sku, employeeBreakdownContext.unitId).map((e) => ({
+      ? inactiveEmployees(
+          ds,
+          selectedRow.sku,
+          employeeBreakdownContext.unitId,
+          employeeBreakdownContext.groupBy,
+        ).map((e) => ({
           name: e.name,
           daysInactive: e.daysInactive,
-          lastActivity: e.lastActivity ? formatDate(e.lastActivity) : "Never",
+          lastActivity: e.lastActivity ? formatDate(e.lastActivity) : "Never signed in",
           status: e.workerStatus,
         }))
       : [];
 
   const terminatedDrillRows: TerminatedEmployeeRow[] =
     selectedRow && employeeBreakdownContext
-      ? terminatedEmployees(ds, selectedRow.sku, employeeBreakdownContext.unitId).map((e) => ({
+      ? terminatedEmployees(
+          ds,
+          selectedRow.sku,
+          employeeBreakdownContext.unitId,
+          employeeBreakdownContext.groupBy,
+        ).map((e) => ({
           name: e.name,
           terminationDate: formatDate(e.terminationDate),
           daysSinceTermination: e.daysSinceTermination,
@@ -311,18 +312,24 @@ export default function XopsAllSoftwarePage() {
         }))
       : [];
 
+  const groupBy: "department" | "costCenter" = viewBy === "cost-center" ? "costCenter" : "department";
+
   const departmentBreakdown: DepartmentBreakdown[] = selectedRow
-    ? inactiveByDepartment(ds, selectedRow.sku).map((r) => ({
-        id: r.departmentId,
-        label: r.label,
-        count: r.count,
-        cost: r.cost,
-      }))
+    ? (groupBy === "costCenter" ? inactiveByCostCenter(ds, selectedRow.sku) : inactiveByDepartment(ds, selectedRow.sku)).map(
+        (r) => ({
+          id: r.unitId,
+          label: r.label,
+          count: r.count,
+          cost: r.cost,
+        }),
+      )
     : [];
 
   const terminatedEmployeesBreakdown: DepartmentBreakdown[] = selectedRow
-    ? terminatedByDepartment(ds, selectedRow.sku).map((r) => ({
-        id: r.departmentId,
+    ? (
+        groupBy === "costCenter" ? terminatedByCostCenter(ds, selectedRow.sku) : terminatedByDepartment(ds, selectedRow.sku)
+      ).map((r) => ({
+        id: r.unitId,
         label: r.label,
         count: r.count,
         cost: r.cost,
@@ -480,11 +487,11 @@ export default function XopsAllSoftwarePage() {
             inactiveWastePercent={formatPercent(selectedRow.inactiveWaste, selectedRow.opportunity)}
             unassignedWasteAmount={formatCurrency(selectedRow.unassignedWaste)}
             unassignedWastePercent={formatPercent(selectedRow.unassignedWaste, selectedRow.opportunity)}
-            licensesPurchasedTotal={selectedRow.purchased.toLocaleString()}
-            assignedValue={selectedRow.assigned.toLocaleString()}
+            licensesPurchasedTotal={formatCount(selectedRow.purchased, { compact: true })}
+            assignedValue={formatCount(selectedRow.assigned, { compact: true })}
             assignedPercent={formatPercent(selectedRow.assigned, selectedRow.purchased)}
             assignedTooltip={assignedTooltip}
-            unassignedLicensesValue={selectedRow.unassigned.toLocaleString()}
+            unassignedLicensesValue={formatCount(selectedRow.unassigned, { compact: true })}
             unassignedLicensesPercent={formatPercent(selectedRow.unassigned, selectedRow.purchased)}
             unassignedTooltip={unassignedTooltip}
             utilizationRateValue={`${selectedRow.utilization}%`}
@@ -492,15 +499,15 @@ export default function XopsAllSoftwarePage() {
             utilizationRateStatus={utilizationStatus(selectedRow.utilization)}
             utilizationTooltip={utilizationTooltip}
             activeCount={selectedRow.active}
-            activeValue={selectedRow.active.toLocaleString()}
+            activeValue={formatCount(selectedRow.active, { compact: true })}
             activePercent={formatPercent(selectedRow.active, selectedRow.purchased)}
             activeTooltip={activeTooltip}
             inactiveCount={selectedRow.inactive}
-            inactiveValue={selectedRow.inactive.toLocaleString()}
+            inactiveValue={formatCount(selectedRow.inactive, { compact: true })}
             inactivePercent={formatPercent(selectedRow.inactive, selectedRow.purchased)}
             inactiveTooltip={inactiveTooltip}
             licensesPurchasedCount={selectedRow.purchased}
-            unusedLicensesValue={(selectedRow.inactive + selectedRow.unassigned).toLocaleString()}
+            unusedLicensesValue={formatCount(selectedRow.inactive + selectedRow.unassigned, { compact: true })}
             unusedLicensesPercent={formatPercent(
               selectedRow.inactive + selectedRow.unassigned,
               selectedRow.purchased,
@@ -508,6 +515,8 @@ export default function XopsAllSoftwarePage() {
             departmentBreakdown={departmentBreakdown}
             terminatedEmployeesBreakdown={terminatedEmployeesBreakdown}
             distributionTooltip={distributionTooltip}
+            viewBy={viewBy}
+            onViewByChange={setViewBy}
             onViewInactiveEmployees={(context) => {
               setEmployeeBreakdownContext(context);
               setPanelView("inactive-employees");

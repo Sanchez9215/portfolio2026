@@ -40,7 +40,7 @@ export default function MessageThread({ className }: MessageThreadProps) {
         </div>
 
         <div className={styles.rowRight}>
-          <img src="/face.svg" alt="" aria-hidden="true" className={styles.emoji} />
+          <img src="/images/software-observability/face.jpg" alt="" aria-hidden="true" className={styles.emoji} />
         </div>
 
       </div>

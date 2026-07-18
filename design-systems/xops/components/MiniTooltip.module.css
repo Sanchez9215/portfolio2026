@@ -1,0 +1,20 @@
+.root {
+  display: inline-flex;
+  position: relative;
+  min-width: 0;
+}
+
+.bubble {
+  position: fixed;
+  z-index: 1000;
+  white-space: nowrap;
+  background-color: var(--xops-grey-900);
+  color: var(--xops-text-inverse);
+  font-family: var(--xops-font-family);
+  font-weight: var(--xops-font-weight-regular);
+  font-size: var(--xops-typography-body-12-font-size);
+  line-height: var(--xops-typography-body-12-line-height);
+  padding: var(--xops-spacing-4) var(--xops-spacing-8);
+  border-radius: var(--xops-radius-6);
+  pointer-events: none;
+}

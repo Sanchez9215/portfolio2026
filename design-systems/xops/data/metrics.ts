@@ -37,6 +37,7 @@ interface Index {
   activityByKey: Map<string, string | null>; // `${email}|${sku}` → lastActivityAt
   editionBySku: Map<string, string>;
   deptName: Map<string, string>;
+  ccName: Map<string, string>;
 }
 
 const _indexCache = new WeakMap<Dataset, Index>();
@@ -67,7 +68,10 @@ function getIndex(ds: Dataset): Index {
   const deptName = new Map<string, string>();
   for (const d of ds.config.departments) deptName.set(d.departmentId, d.departmentName);
 
-  const index: Index = { hrByEmail, procBySku, assignmentsBySku, activityByKey, editionBySku, deptName };
+  const ccName = new Map<string, string>();
+  for (const c of ds.config.costCenters) ccName.set(c.code, c.name);
+
+  const index: Index = { hrByEmail, procBySku, assignmentsBySku, activityByKey, editionBySku, deptName, ccName };
   _indexCache.set(ds, index);
   return index;
 }
@@ -217,15 +221,17 @@ export function orgTotals(ds: Dataset): OrgTotals {
 // ---------------------------------------------------------------------------
 
 export interface BreakdownRow {
-  departmentId: string;
+  unitId: string; // departmentId or cost-center code, depending on which grouping was requested
   label: string;
   count: number;
   cost: number;
 }
 
-function groupByDepartment(
+function groupByUnit(
   ds: Dataset,
   sku: string,
+  unitOf: (emp: HrRow) => string,
+  nameOf: (idx: Index, unitId: string) => string,
   predicate: (emp: HrRow, lastActivityAt: string | null) => boolean,
 ): BreakdownRow[] {
   const idx = getIndex(ds);
@@ -238,26 +244,42 @@ function groupByDepartment(
     if (!emp) continue;
     const last = idx.activityByKey.get(`${a.userPrincipalName}|${sku}`) ?? null;
     if (!predicate(emp, last)) continue;
-    counts.set(emp.department, (counts.get(emp.department) ?? 0) + 1);
+    const unitId = unitOf(emp);
+    counts.set(unitId, (counts.get(unitId) ?? 0) + 1);
   }
   return Array.from(counts.entries())
-    .map(([departmentId, count]) => ({
-      departmentId,
-      label: idx.deptName.get(departmentId) ?? departmentId,
+    .map(([unitId, count]) => ({
+      unitId,
+      label: nameOf(idx, unitId),
       count,
       cost: count * unitCost,
     }))
     .sort((a, b) => b.count - a.count);
 }
 
+const byDepartment = (emp: HrRow) => emp.department;
+const departmentName = (idx: Index, unitId: string) => idx.deptName.get(unitId) ?? unitId;
+const byCostCenter = (emp: HrRow) => emp.costCenter;
+const costCenterName = (idx: Index, unitId: string) => idx.ccName.get(unitId) ?? unitId;
+
 // Inactive licenses (assigned, no activity in 90d) grouped by department.
 export function inactiveByDepartment(ds: Dataset, sku: string): BreakdownRow[] {
-  return groupByDepartment(ds, sku, (_emp, last) => !isActive(last));
+  return groupByUnit(ds, sku, byDepartment, departmentName, (_emp, last) => !isActive(last));
 }
 
 // Licenses still assigned to terminated employees, grouped by department.
 export function terminatedByDepartment(ds: Dataset, sku: string): BreakdownRow[] {
-  return groupByDepartment(ds, sku, (emp) => emp.workerStatus === "Terminated");
+  return groupByUnit(ds, sku, byDepartment, departmentName, (emp) => emp.workerStatus === "Terminated");
+}
+
+// Inactive licenses (assigned, no activity in 90d) grouped by cost center.
+export function inactiveByCostCenter(ds: Dataset, sku: string): BreakdownRow[] {
+  return groupByUnit(ds, sku, byCostCenter, costCenterName, (_emp, last) => !isActive(last));
+}
+
+// Licenses still assigned to terminated employees, grouped by cost center.
+export function terminatedByCostCenter(ds: Dataset, sku: string): BreakdownRow[] {
+  return groupByUnit(ds, sku, byCostCenter, costCenterName, (emp) => emp.workerStatus === "Terminated");
 }
 
 // ---------------------------------------------------------------------------
@@ -273,12 +295,17 @@ export interface InactiveEmployee {
   workerStatus: string;
 }
 
-export function inactiveEmployees(ds: Dataset, sku: string, departmentId: string): InactiveEmployee[] {
+export function inactiveEmployees(
+  ds: Dataset,
+  sku: string,
+  unitId: string,
+  groupBy: "department" | "costCenter" = "department",
+): InactiveEmployee[] {
   const idx = getIndex(ds);
   const rows: InactiveEmployee[] = [];
   for (const a of idx.assignmentsBySku.get(sku) ?? []) {
     const emp = idx.hrByEmail.get(a.userPrincipalName);
-    if (!emp || emp.department !== departmentId) continue;
+    if (!emp || (groupBy === "costCenter" ? emp.costCenter : emp.department) !== unitId) continue;
     const last = idx.activityByKey.get(`${a.userPrincipalName}|${sku}`) ?? null;
     if (isActive(last)) continue;
     rows.push({
@@ -302,12 +329,23 @@ export interface TerminatedEmployee {
   licenseStatus: "Not Reclaimed"; // still holds the license → by definition unreclaimed
 }
 
-export function terminatedEmployees(ds: Dataset, sku: string, departmentId: string): TerminatedEmployee[] {
+export function terminatedEmployees(
+  ds: Dataset,
+  sku: string,
+  unitId: string,
+  groupBy: "department" | "costCenter" = "department",
+): TerminatedEmployee[] {
   const idx = getIndex(ds);
   const rows: TerminatedEmployee[] = [];
   for (const a of idx.assignmentsBySku.get(sku) ?? []) {
     const emp = idx.hrByEmail.get(a.userPrincipalName);
-    if (!emp || emp.department !== departmentId || emp.workerStatus !== "Terminated" || !emp.terminationDate) continue;
+    if (
+      !emp ||
+      (groupBy === "costCenter" ? emp.costCenter : emp.department) !== unitId ||
+      emp.workerStatus !== "Terminated" ||
+      !emp.terminationDate
+    )
+      continue;
     rows.push({
       employeeId: emp.employeeId,
       name: emp.workerName,

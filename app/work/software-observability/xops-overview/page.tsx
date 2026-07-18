@@ -24,6 +24,7 @@ import {
   FilterTabOption,
 } from "../../../../design-systems/xops/components/FilterTabs";
 import { getDataset } from "../../../../design-systems/xops/data/generate";
+import { formatCount, formatCurrency, formatPercent, formatCountWithPercent } from "../../../../design-systems/xops/lib/format";
 import {
   ProductSummary,
   OpenSourceSummary,
@@ -98,26 +99,6 @@ function utilizationStatus(percent: number): TagStatus {
   if (percent >= 85) return "success";
   if (percent >= 75) return "warning";
   return "danger";
-}
-
-function formatCurrency(value: number) {
-  return `$${Math.round(value).toLocaleString()}`;
-}
-
-// Compact millions — the format the Top Spend table and its header Stat already display
-// ("$18.6M", "$132.2M"). One decimal, always in millions for a consistent column.
-function formatCompactCurrency(value: number) {
-  return `$${(value / 1_000_000).toFixed(1)}M`;
-}
-
-function formatPercent(part: number, total: number) {
-  if (total <= 0) return "0%";
-  return `${Math.round((part / total) * 100)}%`;
-}
-
-// "1,234 (56%)" — the seat-breakdown cell format the lifecycle tables use.
-function countWithPct(count: number, total: number) {
-  return `${count.toLocaleString()} (${formatPercent(count, total)})`;
 }
 
 // ISO date → "Mmm D, YYYY", UTC-pinned so the generator's UTC dates never shift a day.
@@ -241,7 +222,7 @@ const enterpriseColumns: Column<ProductSummary>[] = [
     width: "auto",
     align: "right",
     sortable: true,
-    render: (row) => formatCompactCurrency(row.totalSpend),
+    render: (row) => formatCurrency(row.totalSpend),
   },
   {
     key: "purchased",
@@ -249,7 +230,7 @@ const enterpriseColumns: Column<ProductSummary>[] = [
     width: "auto",
     align: "right",
     sortable: true,
-    render: (row) => row.purchased.toLocaleString(),
+    render: (row) => formatCount(row.purchased),
   },
   {
     key: "unassigned",
@@ -258,7 +239,7 @@ const enterpriseColumns: Column<ProductSummary>[] = [
     align: "right",
     sortable: true,
     tooltip: unassignedTooltip,
-    render: (row) => row.unassigned.toLocaleString(),
+    render: (row) => formatCount(row.unassigned),
   },
   {
     key: "inactive",
@@ -267,7 +248,7 @@ const enterpriseColumns: Column<ProductSummary>[] = [
     align: "right",
     sortable: true,
     tooltip: inactiveTooltip,
-    render: (row) => row.inactive.toLocaleString(),
+    render: (row) => formatCount(row.inactive),
   },
   {
     key: "active",
@@ -276,7 +257,7 @@ const enterpriseColumns: Column<ProductSummary>[] = [
     align: "right",
     sortable: true,
     tooltip: activeTooltip,
-    render: (row) => row.active.toLocaleString(),
+    render: (row) => formatCount(row.active),
   },
   {
     key: "utilization",
@@ -295,7 +276,7 @@ const enterpriseColumns: Column<ProductSummary>[] = [
     align: "right",
     sortable: true,
     tooltip: opportunityTooltip,
-    render: (row) => formatCompactCurrency(row.opportunity),
+    render: (row) => formatCurrency(row.opportunity),
   },
 ];
 
@@ -323,7 +304,7 @@ const openSourceColumns: Column<OpenSourceSummary>[] = [
     width: "auto",
     align: "right",
     sortable: true,
-    render: (row) => row.users.toLocaleString(),
+    render: (row) => formatCount(row.users),
   },
 ];
 
@@ -361,7 +342,7 @@ const perpetualColumns: Column<ProductSummary>[] = [
     width: "auto",
     align: "right",
     sortable: true,
-    render: (row) => row.purchased.toLocaleString(),
+    render: (row) => formatCount(row.purchased),
   },
   {
     key: "unassigned",
@@ -370,7 +351,7 @@ const perpetualColumns: Column<ProductSummary>[] = [
     align: "right",
     sortable: true,
     tooltip: unassignedTooltip,
-    render: (row) => row.unassigned.toLocaleString(),
+    render: (row) => formatCount(row.unassigned),
   },
   {
     key: "assigned",
@@ -379,7 +360,7 @@ const perpetualColumns: Column<ProductSummary>[] = [
     align: "right",
     sortable: true,
     tooltip: assignedTooltip,
-    render: (row) => row.assigned.toLocaleString(),
+    render: (row) => formatCount(row.assigned),
   },
   {
     key: "inactive",
@@ -388,7 +369,7 @@ const perpetualColumns: Column<ProductSummary>[] = [
     align: "right",
     sortable: true,
     tooltip: inactiveTooltip,
-    render: (row) => row.inactive.toLocaleString(),
+    render: (row) => formatCount(row.inactive),
   },
   {
     key: "active",
@@ -397,7 +378,7 @@ const perpetualColumns: Column<ProductSummary>[] = [
     align: "right",
     sortable: true,
     tooltip: activeTooltip,
-    render: (row) => row.active.toLocaleString(),
+    render: (row) => formatCount(row.active),
   },
   {
     key: "utilization",
@@ -438,7 +419,7 @@ const inEvaluationColumns: Column<EvaluationSummary>[] = [
     width: "auto",
     align: "right",
     sortable: true,
-    render: (row) => row.licensesRequested.toLocaleString(),
+    render: (row) => formatCount(row.licensesRequested),
   },
   {
     key: "estimatedAnnualCost",
@@ -474,7 +455,7 @@ const rolloutColumns: Column<ProductSummary>[] = [
     width: "auto",
     align: "right",
     sortable: true,
-    render: (row) => row.purchased.toLocaleString(),
+    render: (row) => formatCount(row.purchased),
   },
   {
     key: "utilization",
@@ -494,7 +475,7 @@ const rolloutColumns: Column<ProductSummary>[] = [
     align: "right",
     sortable: true,
     tooltip: assignedTooltip,
-    render: (row) => countWithPct(row.assigned, row.purchased),
+    render: (row) => formatCountWithPercent(row.assigned, row.purchased),
   },
   {
     key: "inactive",
@@ -503,7 +484,7 @@ const rolloutColumns: Column<ProductSummary>[] = [
     align: "right",
     sortable: true,
     tooltip: inactiveTooltip,
-    render: (row) => countWithPct(row.inactive, row.purchased),
+    render: (row) => formatCountWithPercent(row.inactive, row.purchased),
   },
   {
     key: "active",
@@ -512,7 +493,7 @@ const rolloutColumns: Column<ProductSummary>[] = [
     align: "right",
     sortable: true,
     tooltip: activeTooltip,
-    render: (row) => countWithPct(row.active, row.purchased),
+    render: (row) => formatCountWithPercent(row.active, row.purchased),
   },
   {
     key: "monthsSincePurchase",
@@ -548,7 +529,7 @@ const operationalColumns: Column<ProductSummary>[] = [
     width: "auto",
     align: "right",
     sortable: true,
-    render: (row) => row.purchased.toLocaleString(),
+    render: (row) => formatCount(row.purchased),
   },
   {
     key: "unassigned",
@@ -557,7 +538,7 @@ const operationalColumns: Column<ProductSummary>[] = [
     align: "right",
     sortable: true,
     tooltip: unassignedTooltip,
-    render: (row) => countWithPct(row.unassigned, row.purchased),
+    render: (row) => formatCountWithPercent(row.unassigned, row.purchased),
   },
   {
     key: "assigned",
@@ -566,7 +547,7 @@ const operationalColumns: Column<ProductSummary>[] = [
     align: "right",
     sortable: true,
     tooltip: assignedTooltip,
-    render: (row) => countWithPct(row.assigned, row.purchased),
+    render: (row) => formatCountWithPercent(row.assigned, row.purchased),
   },
   {
     key: "inactive",
@@ -575,7 +556,7 @@ const operationalColumns: Column<ProductSummary>[] = [
     align: "right",
     sortable: true,
     tooltip: inactiveTooltip,
-    render: (row) => countWithPct(row.inactive, row.purchased),
+    render: (row) => formatCountWithPercent(row.inactive, row.purchased),
   },
   {
     key: "active",
@@ -584,7 +565,7 @@ const operationalColumns: Column<ProductSummary>[] = [
     align: "right",
     sortable: true,
     tooltip: activeTooltip,
-    render: (row) => countWithPct(row.active, row.purchased),
+    render: (row) => formatCountWithPercent(row.active, row.purchased),
   },
   {
     key: "utilization",
@@ -648,7 +629,7 @@ const renewalColumns: Column<ProductSummary>[] = [
     width: "auto",
     align: "right",
     sortable: true,
-    render: (row) => row.purchased.toLocaleString(),
+    render: (row) => formatCount(row.purchased),
   },
   {
     // Efficiency Rate = Active ÷ Purchased — overall efficiency, distinct from Utilization (Active ÷ Assigned).
@@ -727,17 +708,17 @@ export default function XopsOverviewPage() {
 
   const utilizationCard = useMemo(() => {
     const { totalOwned, assigned, active, inactive, unassigned } = totals;
-    const pct = (n: number) =>
-      totalOwned > 0 ? `${((n / totalOwned) * 100).toFixed(1)}%` : "0%";
+    const pct = (n: number) => formatPercent(n, totalOwned);
+    const compactCount = (n: number) => formatCount(n, { compact: true });
     return {
-      totalOwned: totalOwned.toLocaleString(),
-      assigned: assigned.toLocaleString(),
+      totalOwned: compactCount(totalOwned),
+      assigned: compactCount(assigned),
       assignedPct: pct(assigned),
-      active: active.toLocaleString(),
+      active: compactCount(active),
       activePct: pct(active),
-      inactive: inactive.toLocaleString(),
+      inactive: compactCount(inactive),
       inactivePct: pct(inactive),
-      unassigned: unassigned.toLocaleString(),
+      unassigned: compactCount(unassigned),
       unassignedPct: pct(unassigned),
       activeCount: active,
       inactiveCount: inactive,
@@ -749,25 +730,25 @@ export default function XopsOverviewPage() {
     {
       value: "in-evaluation",
       label: "In Evaluation",
-      stat: evaluationRows.length.toLocaleString(),
+      stat: formatCount(evaluationRows.length),
       tooltip: inEvaluationTooltip,
     },
     {
       value: "rollout",
       label: "Rollout",
-      stat: rolloutRows.length.toLocaleString(),
+      stat: formatCount(rolloutRows.length),
       tooltip: rolloutTooltip,
     },
     {
       value: "operational",
       label: "Operational",
-      stat: operationalRows.length.toLocaleString(),
+      stat: formatCount(operationalRows.length),
       tooltip: operationalTooltip,
     },
     {
       value: "renewal",
       label: "Renewal",
-      stat: renewalRows.length.toLocaleString(),
+      stat: formatCount(renewalRows.length),
       tooltip: renewalTooltip,
     },
   ];
@@ -915,7 +896,7 @@ export default function XopsOverviewPage() {
                   </div>
                   <Stat
                     label="Total Annual Spend"
-                    value={formatCompactCurrency(annualSpend)}
+                    value={formatCurrency(annualSpend, { compact: true })}
                     meta="13%"
                     style={{ flex: "0 0 auto" }}
                   />

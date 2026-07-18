@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import styles from "./RankedBarChart.module.css";
 import {
   ChartTooltip,
@@ -6,6 +6,10 @@ import {
   ChartTooltipAction,
 } from "./ChartTooltip";
 import { useChartHover } from "./useChartHover";
+import { MiniTooltip } from "./MiniTooltip";
+import { formatCount } from "../lib/format";
+
+const COPIED_RESET_MS = 1500;
 
 // Same tint/opacity as DonutChart's HOVER_HALO_TINT; width tuned down from
 // DonutChart's HOVER_HALO_WIDTH (8px) to 6px for the all-around bar outline.
@@ -16,6 +20,7 @@ export type RankedBarRow = {
   label: string;
   value: number;
   color: string;
+  code?: string; // e.g. a cost-center code — when present, label becomes a copy-to-clipboard button
   tooltip?: {
     rows: ChartTooltipRow[];
     opportunity?: ChartTooltipRow;
@@ -27,14 +32,17 @@ export type RankedBarChartProps = {
   rows: RankedBarRow[];
   labelWidth?: number;
   className?: string;
+  valueFormat?: (value: number) => string;
 };
 
 const DEFAULT_LABEL_WIDTH = 164;
+const defaultValueFormat = (value: number) => formatCount(value, { compact: true });
 
 export function RankedBarChart({
   rows,
   labelWidth = DEFAULT_LABEL_WIDTH,
   className,
+  valueFormat = defaultValueFormat,
 }: RankedBarChartProps) {
   const max = Math.max(0, ...rows.map((row) => row.value));
   const {
@@ -44,21 +52,44 @@ export function RankedBarChart({
     hide: hideTooltip,
     cancelHide,
   } = useChartHover<string>();
+  const [copiedCode, setCopiedCode] = useState<string | null>(null);
 
   const hoveredRow = hoveredLabel
     ? rows.find((row) => row.label === hoveredLabel)
     : null;
 
+  const handleCopyCode = (code: string) => {
+    navigator.clipboard.writeText(code).then(() => {
+      setCopiedCode(code);
+      setTimeout(() => setCopiedCode((current) => (current === code ? null : current)), COPIED_RESET_MS);
+    });
+  };
+
   return (
     <div className={[styles.chart, className].filter(Boolean).join(" ")}>
       <div className={styles.labels} style={{ width: labelWidth }}>
-        {rows.map((row) => (
-          <div key={row.label} className={styles.labelRow}>
-            <p className={styles.label} title={row.label}>
-              {row.label}
-            </p>
-          </div>
-        ))}
+        {rows.map((row) =>
+          row.code ? (
+            <div key={row.label} className={styles.labelRow}>
+              <MiniTooltip label={copiedCode === row.code ? "Copied!" : "Copy Code"}>
+                <button
+                  type="button"
+                  className={styles.labelButton}
+                  title={row.label}
+                  onClick={() => handleCopyCode(row.code!)}
+                >
+                  {row.label}
+                </button>
+              </MiniTooltip>
+            </div>
+          ) : (
+            <div key={row.label} className={styles.labelRow}>
+              <p className={styles.label} title={row.label}>
+                {row.label}
+              </p>
+            </div>
+          ),
+        )}
       </div>
       <div className={styles.bars}>
         {rows.map((row) => (
@@ -87,7 +118,7 @@ export function RankedBarChart({
                 }}
               />
             </div>
-            <span className={styles.value}>{row.value.toLocaleString()}</span>
+            <span className={styles.value}>{valueFormat(row.value)}</span>
           </div>
         ))}
       </div>

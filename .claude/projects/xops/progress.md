@@ -101,6 +101,11 @@ All in `design-systems/xops/components/`, matching Storybook story per component
 - **employee breakdown view** — `EmployeeBreakdownView.tsx`, drill-down screen (Back to Profile/Export CSV roadmap stub, Opportunity + metric `Stat` pair, sortable `Table`); inactive and terminated modes, opened from `ChartTooltip`'s action button
 - **side panel resize** — `SidePanel.tsx` gained drag-to-widen via Pointer Events (min = default 580px, max 900px), replacing the old fixed Grid-colSpan width
 - **global header border fix** — dropped redundant `border-left` that doubled against `Sidebar`'s own `border-right`
+- **ranked bar chart `valueFormat` prop** — per-chart value formatter (default count-compact); fixes Count/Opportunity toggle rendering dollar values as counts
+- **mini tooltip** — `MiniTooltip.tsx`, single-line hover hint (grey-900 bg/white text), portal-positioned below-left of trigger; lighter than `Tooltip`'s rich info panel
+- **ranked bar chart copy-code labels** — optional `code` per row renders the label as a button + `MiniTooltip` ("Copy Code"/"Copied!"), copies to clipboard on click; used only for Cost Center rows
+- **Software Profile Cost Center view wired real** — `viewBy` lifted to the page, `inactiveByCostCenter`/`terminatedByCostCenter` added to `metrics.ts`, drill-downs grouped by cost center via `EmployeeBreakdownContext.groupBy`; previously decorative (reused department rows)
+- **cost-center master data** — `generate.ts`'s `COST_CENTERS` curated table replaces placeholder `CC-1000`/"Engineering 2" generation with realistic segmented codes + authored names (~30 entries across all departments)
 
 ### Patterns
 
@@ -144,6 +149,7 @@ All in `design-systems/xops/components/`, matching Storybook story per component
 - **Table row-selection transition** — `rowSelected` background/border should ease in, not snap
 - **`expand_content` icon behavior** — decorative in `SidePanel`; roadmapped to expand the panel to full main-section width
 - **Full ARIA radiogroup for `FilterTabs`** — roving tabindex + arrow keys per WAI-ARIA APG; large variant only got a minimal div + Enter/Space fix
+- **Button padding review** — small buttons and icon-bearing buttons currently share the same `padding-inline` as all other sizes/variants; revisit sizing for both
 
 ---
 

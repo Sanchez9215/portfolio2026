@@ -3,6 +3,7 @@ import styles from "./Pagination.module.css";
 import { Dropdown, DropdownOption } from "./Dropdown";
 import Button from "./Button";
 import Icon from "./Icon";
+import { formatCount } from "../lib/format";
 
 export type PaginationProps = {
   page: number;
@@ -63,7 +64,7 @@ export function Pagination({
           {rangeStart}-{rangeEnd}
         </span>
         <span>of</span>
-        <span>{totalItems.toLocaleString()}</span>
+        <span>{formatCount(totalItems)}</span>
       </div>
 
       <div className={styles.right}>

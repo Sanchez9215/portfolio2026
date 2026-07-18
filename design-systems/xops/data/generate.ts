@@ -129,6 +129,77 @@ const MANAGEMENT_LEVELS: { value: string; weight: number }[] = [
   { value: "VP", weight: 2 },
 ];
 
+// Curated cost-center master data, one entry per real financial sub-unit within a
+// department — mirrors how a real controlling module (e.g. SAP KOSTL/KTEXT) stores a
+// mnemonic code and a human-authored description as sibling fields, not one derived
+// from the other. Count per department varies (1-3) same as real orgs.
+const COST_CENTERS: Record<string, { code: string; name: string }[]> = {
+  eng: [
+    { code: "CC-ENG-CORE-PLAT", name: "Core Platform Engineering" },
+    { code: "CC-ENG-INFRA-CLOUD", name: "Cloud Infrastructure & DevOps" },
+    { code: "CC-ENG-QA-RELIABILITY", name: "Quality Engineering & Site Reliability" },
+  ],
+  product: [
+    { code: "CC-PROD-STRATEGY", name: "Product Strategy & Roadmap Planning" },
+    { code: "CC-PROD-ANALYTICS", name: "Product Analytics & Experimentation" },
+  ],
+  design: [
+    { code: "CC-DESIGN-OPS", name: "Product Design Operations & Prototyping Systems" },
+    { code: "CC-DESIGN-RESEARCH", name: "User Research Labs & Participant Compensation" },
+  ],
+  it: [
+    { code: "CC-IT-HELPDESK", name: "Internal Employee IT Support & Hardware Procurement" },
+    { code: "CC-IT-INFRA-AWS", name: "Cloud Infrastructure & AWS Web Hosting" },
+  ],
+  security: [
+    { code: "CC-SEC-CYBER-OPS", name: "Cybersecurity Operations & Data Protection Systems" },
+    { code: "CC-SEC-GRC", name: "Governance, Risk & Compliance Programs" },
+  ],
+  data: [
+    { code: "CC-DATA-PLATFORM", name: "Data Platform & Warehouse Engineering" },
+    { code: "CC-DATA-SCIENCE", name: "Data Science & Applied Machine Learning" },
+  ],
+  sales: [
+    { code: "CC-SALES-ENABLEMENT", name: "Sales Training, Onboarding & Material Production" },
+    { code: "CC-SALES-FIELD-NA", name: "Field Sales Operations (North America)" },
+    { code: "CC-SALES-FIELD-INTL", name: "Field Sales Operations (International)" },
+  ],
+  marketing: [
+    { code: "CC-MKTG-BRAND-GLOBAL", name: "Global Brand Strategy & Creative Agencies" },
+    { code: "CC-MKTG-EVENTS-CONF", name: "Corporate Events, Trade Shows & Conferences" },
+    { code: "CC-MKTG-DEMAND-GEN", name: "Demand Generation & Paid Media" },
+  ],
+  cs: [
+    { code: "CC-CS-ONBOARDING", name: "Customer Onboarding & Implementation" },
+    { code: "CC-CS-RENEWALS", name: "Renewals & Account Expansion" },
+  ],
+  support: [
+    { code: "CC-SUPPORT-TIER1", name: "Frontline Support Operations" },
+    { code: "CC-SUPPORT-TOOLING", name: "Support Tooling & Knowledge Base" },
+  ],
+  finance: [
+    { code: "CC-FIN-INTERNAL-AUDIT", name: "Internal Audit, Compliance & Tax Risk Management" },
+    { code: "CC-FIN-FPA", name: "Financial Planning & Analysis" },
+  ],
+  hr: [
+    { code: "CC-HR-US-REC", name: "Corporate Recruiting & Talent Acquisition (US)" },
+    { code: "CC-HR-BENEFITS", name: "Employee Benefits Administration & Insurance" },
+  ],
+  legal: [
+    { code: "CC-LEGAL-IP-PATENTS", name: "Intellectual Property & Patent Law Protection" },
+    { code: "CC-LEGAL-CONTRACTS", name: "Commercial Contracts & Vendor Agreements" },
+  ],
+  ops: [
+    { code: "CC-OPS-FAC-HQ", name: "Corporate Headquarters Facilities & Maintenance" },
+    { code: "CC-OPS-BIZOPS", name: "Business Operations & Process Improvement" },
+  ],
+  procurement: [
+    { code: "CC-PROC-VENDOR-MGMT", name: "Vendor Management & Sourcing" },
+    { code: "CC-PROC-SOFTWARE", name: "Software Asset & License Procurement" },
+  ],
+  exec: [{ code: "CC-EXEC-CORP-TRAVEL", name: "Executive Leadership & Corporate Travel Expenses" }],
+};
+
 const RESELLERS = ["CDW", "SHI International", "Insight Enterprises", "Zones", "Connection", "SoftwareOne", "Direct"];
 const PAYMENT_TERMS = ["Net 30", "Net 45", "Net 60"];
 const EVENT_TYPES = ["user.authentication.sso", "user.session.start", "app.oauth2.token.grant", "user.authentication.verify"];
@@ -164,7 +235,7 @@ const STAGE_WEIGHTS_PURCHASED: { value: Exclude<LifecycleStage, "evaluation">; w
 // Generation
 // ---------------------------------------------------------------------------
 
-function buildConfig(rng: Rng): { config: OrgConfig; costCentersByDept: Record<string, string[]> } {
+function buildConfig(): { config: OrgConfig; costCentersByDept: Record<string, string[]> } {
   const regions: OrgRegion[] = REGIONS.map((r) => ({ code: r.code, name: r.name }));
   const departments: OrgDepartment[] = DEPARTMENTS.map((d) => ({
     departmentId: d.id,
@@ -174,15 +245,11 @@ function buildConfig(rng: Rng): { config: OrgConfig; costCentersByDept: Record<s
 
   const costCenters: OrgCostCenter[] = [];
   const costCentersByDept: Record<string, string[]> = {};
-  let code = 1000;
   for (const d of DEPARTMENTS) {
-    const count = rng.int(1, 3);
     costCentersByDept[d.id] = [];
-    for (let i = 0; i < count; i++) {
-      const cc = `CC-${code}`;
-      code += 10;
-      costCenters.push({ code: cc, name: `${d.name}${count > 1 ? ` ${i + 1}` : ""}`, departmentId: d.id });
-      costCentersByDept[d.id].push(cc);
+    for (const cc of COST_CENTERS[d.id] ?? []) {
+      costCenters.push({ code: cc.code, name: cc.name, departmentId: d.id });
+      costCentersByDept[d.id].push(cc.code);
     }
   }
   return { config: { regions, departments, costCenters }, costCentersByDept };
@@ -458,7 +525,7 @@ export function buildDataset(options: GenerateOptions = {}): Dataset {
   const employeeCount = options.employeeCount ?? 3000;
   const rng = createRng(seed);
 
-  const { config, costCentersByDept } = buildConfig(rng);
+  const { config, costCentersByDept } = buildConfig();
   const hr = buildEmployees(rng, employeeCount, costCentersByDept);
   const { procurement, evaluation, openSource, publisher, identity } = buildContractsAndUsage(rng, hr);
 

@@ -80,7 +80,7 @@ export function EmployeeBreakdownView({
       label: "Days Inactive",
       width: "flex",
       sortable: true,
-      render: (row) => (row.daysInactive === null ? "Never active" : `${row.daysInactive} days`),
+      render: (row) => (row.daysInactive === null ? "Never signed in" : `${row.daysInactive} days`),
     },
     { key: "lastActivity", label: "Last Activity", width: "flex", sortable: true },
     { key: "status", label: "Employment Status", width: "flex", sortable: true },

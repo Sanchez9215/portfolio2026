@@ -11,6 +11,7 @@ import Icon from "./Icon";
 import { Tooltip, TooltipProps } from "./Tooltip";
 import { TagStatus } from "./Tag";
 import { MagicSurface } from "./MagicSurface";
+import { formatCount, formatCurrency, formatPercent } from "../lib/format";
 import styles from "./SoftwareProfile.module.css";
 
 const viewByOptions: DropdownOption[] = [
@@ -18,9 +19,9 @@ const viewByOptions: DropdownOption[] = [
   { value: "cost-center", label: "Cost Center" },
 ];
 
-const metricOptions: ToggleOption<"count" | "cost">[] = [
+const metricOptions: ToggleOption<"count" | "opportunity">[] = [
   { value: "count", label: "Count" },
-  { value: "cost", label: "Cost" },
+  { value: "opportunity", label: "Opportunity" },
 ];
 
 // Cycled by index — matches RankedBarChart's chart-library color convention (established
@@ -44,12 +45,13 @@ export type DepartmentBreakdown = {
 };
 
 export type EmployeeBreakdownContext = {
-  unitId: string; // departmentId, for fetching the unit's employee rows
+  unitId: string; // departmentId or cost-center code, for fetching the unit's employee rows
   unitLabel: string;
   unitValue: string;
   metricValue: string;
   metricPercent: string;
   opportunityValue: string;
+  groupBy: "department" | "costCenter"; // which axis unitId is keyed on
 };
 
 export type SoftwareProfileProps = {
@@ -94,6 +96,8 @@ export type SoftwareProfileProps = {
   departmentBreakdown: DepartmentBreakdown[];
   distributionTooltip: Omit<TooltipProps, "children" | "className">;
   terminatedEmployeesBreakdown: DepartmentBreakdown[];
+  viewBy: string;
+  onViewByChange: (viewBy: string) => void;
   onViewInactiveEmployees?: (context: EmployeeBreakdownContext) => void;
   onViewTerminatedEmployees?: (context: EmployeeBreakdownContext) => void;
 };
@@ -140,26 +144,28 @@ export function SoftwareProfile({
   departmentBreakdown,
   distributionTooltip,
   terminatedEmployeesBreakdown,
+  viewBy,
+  onViewByChange,
   onViewInactiveEmployees,
   onViewTerminatedEmployees,
 }: SoftwareProfileProps) {
-  const [viewBy, setViewBy] = useState<string>("top-departments");
-  const [metric, setMetric] = useState<"count" | "cost">("count");
+  const [metric, setMetric] = useState<"count" | "opportunity">("count");
 
   const formatBreakdownTotal = (rows: DepartmentBreakdown[]) => {
-    const total = rows.reduce((sum, row) => sum + row[metric], 0);
-    return metric === "cost" ? `$${total.toLocaleString()}` : total.toLocaleString();
+    const total = rows.reduce((sum, row) => sum + row[metric === "opportunity" ? "cost" : "count"], 0);
+    return metric === "opportunity" ? formatCurrency(total, { compact: true }) : formatCount(total, { compact: true });
   };
 
-  // Tooltip's "% of Total" is always count-based, independent of the Count/Cost toggle.
+  // Tooltip's "% of Total" is always count-based, independent of the Count/Opportunity toggle.
   const formatSharePercent = (count: number, rows: DepartmentBreakdown[]) => {
     const totalCount = rows.reduce((sum, row) => sum + row.count, 0);
-    return totalCount > 0 ? `${((count / totalCount) * 100).toFixed(1)}%` : "0%";
+    return formatPercent(count, totalCount);
   };
 
-  // Cost Center has no real grouping data yet — reuses the department-shaped mock rows
-  // (decorative, per user direction) but the title reflects the selected grouping.
-  const distributionUnitLabel = viewBy === "cost-center" ? "Cost Center" : "Department";
+  const groupBy: "department" | "costCenter" = viewBy === "cost-center" ? "costCenter" : "department";
+  const distributionUnitLabel = groupBy === "costCenter" ? "Cost Center" : "Department";
+  const rankedBarValueFormat = (value: number) =>
+    metric === "opportunity" ? formatCurrency(value, { compact: true }) : formatCount(value, { compact: true });
 
   return (
     <div className={styles.profile}>
@@ -304,7 +310,7 @@ export function SoftwareProfile({
                 <Dropdown
                   value={viewBy}
                   options={viewByOptions}
-                  onChange={setViewBy}
+                  onChange={onViewByChange}
                   ariaLabel="View by"
                   openDirection="down"
                 />
@@ -321,19 +327,21 @@ export function SoftwareProfile({
             headerValue={formatBreakdownTotal(departmentBreakdown)}
           >
             <RankedBarChart
+              valueFormat={rankedBarValueFormat}
               rows={departmentBreakdown.map((department, index) => ({
                 label: department.label,
                 value: metric === "count" ? department.count : department.cost,
                 color: departmentChartColors[index % departmentChartColors.length],
+                code: groupBy === "costCenter" ? department.id : undefined,
                 tooltip: {
                   rows: [
-                    { label: "Inactive Licenses", value: department.count.toLocaleString() },
+                    { label: "Inactive Licenses", value: formatCount(department.count, { compact: true }) },
                     {
                       label: "% of Total Inactive",
                       value: formatSharePercent(department.count, departmentBreakdown),
                     },
                   ],
-                  opportunity: { label: "Opportunity", value: `$${department.cost.toLocaleString()}` },
+                  opportunity: { label: "Opportunity", value: formatCurrency(department.cost, { compact: true }) },
                   action: {
                     label: "View Inactive Employees",
                     icon: <Icon name="person" color="var(--xops-text-secondary)" />,
@@ -342,9 +350,10 @@ export function SoftwareProfile({
                         unitId: department.id,
                         unitLabel: distributionUnitLabel,
                         unitValue: department.label,
-                        metricValue: department.count.toLocaleString(),
+                        metricValue: formatCount(department.count, { compact: true }),
                         metricPercent: formatSharePercent(department.count, departmentBreakdown),
-                        opportunityValue: `$${department.cost.toLocaleString()}`,
+                        opportunityValue: formatCurrency(department.cost, { compact: true }),
+                        groupBy,
                       }),
                   },
                 },
@@ -357,19 +366,21 @@ export function SoftwareProfile({
             headerValue={formatBreakdownTotal(terminatedEmployeesBreakdown)}
           >
             <RankedBarChart
+              valueFormat={rankedBarValueFormat}
               rows={terminatedEmployeesBreakdown.map((department, index) => ({
                 label: department.label,
                 value: metric === "count" ? department.count : department.cost,
                 color: departmentChartColors[index % departmentChartColors.length],
+                code: groupBy === "costCenter" ? department.id : undefined,
                 tooltip: {
                   rows: [
-                    { label: "Terminated Employees", value: department.count.toLocaleString() },
+                    { label: "Terminated Employees", value: formatCount(department.count, { compact: true }) },
                     {
                       label: "% of Total Terminated",
                       value: formatSharePercent(department.count, terminatedEmployeesBreakdown),
                     },
                   ],
-                  opportunity: { label: "Opportunity", value: `$${department.cost.toLocaleString()}` },
+                  opportunity: { label: "Opportunity", value: formatCurrency(department.cost, { compact: true }) },
                   action: {
                     label: "View Terminated Employees",
                     icon: <Icon name="person" color="var(--xops-text-secondary)" />,
@@ -378,9 +389,10 @@ export function SoftwareProfile({
                         unitId: department.id,
                         unitLabel: distributionUnitLabel,
                         unitValue: department.label,
-                        metricValue: department.count.toLocaleString(),
+                        metricValue: formatCount(department.count, { compact: true }),
                         metricPercent: formatSharePercent(department.count, terminatedEmployeesBreakdown),
-                        opportunityValue: `$${department.cost.toLocaleString()}`,
+                        opportunityValue: formatCurrency(department.cost, { compact: true }),
+                        groupBy,
                       }),
                   },
                 },

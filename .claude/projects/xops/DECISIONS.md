@@ -384,6 +384,16 @@ Entries are drafted **only when the user explicitly flags something as decision-
 
 **Decision:** Each tab owns its own column set; shared tooltips and icons carry over wherever the same metric reappears (Unassigned / Assigned / Inactive / Active / Utilization). Tab-switching is wired now; rows stay empty until the source-tagged dataset (031) populates them.
 
+## Decision 034: Number formatting gets one shared, `Intl`-backed convention — surface (not number type) decides compact vs. full
+
+**Spokes:**
+- [[033]]'s row-level join model made every dashboard number computed rather than a hardcoded string, which is what finally made this decidable — real magnitudes now exist across all three screens to check a rule against (currency spans ~$100 to ~$50M; counts reach ~48K), instead of guessing at ranges in the abstract.
+- The existing numbers already disagreed with each other for no reason — `utilization` was rounded to an integer, `SoftwareProfile`'s efficiency stat carried one decimal — same kind of value (a 0–100 rate), two different rules, purely from being written at different times with no shared reference.
+- A `design-system-analysis` pass against Intuit Content Design, SAP Fiori, and Salesforce Lightning's number-formatting guidance surfaced the real fork: none of the three treat "compact vs. full" as a property of the *number* — it's a property of *where it's shown*. A table scanned for exact comparison wants full grouped digits; a glanceable tile, legend value, or chart axis wants abbreviation. That reframing is what resolved the core open question from `PLAN.md` #8 (decimal precision / grouping / abbreviation thresholds).
+- Null handling forked the same way mid-decision: a blank/not-applicable cell (e.g. no seats on a consumption product) and a meaningful negative fact (a license never once used) look identical as a bare dash, but only one of them is actually empty — the other is the entire point of the tool and deserves to be said in words ("Never signed in"), not hidden in punctuation.
+
+**Decision:** One shared `Intl.NumberFormat`-backed utility (`en-US` fixed, no multi-locale build) with field-type precision presets (counts/currency at 0 decimals, percentages at 0 decimals) and a `compact` flag set by the consuming surface — tables always pass full digits, tiles/`Legend`/chart axes pass compact (abbreviate ≥10,000). Grouping separators on for all counts and currency; identifiers (SKUs, employee IDs) never grouped or abbreviated. Empty state splits in two: `—` for genuinely not-applicable, explicit words for a meaningful null (e.g. "Never signed in"). Full resolved anatomy lives in the `design-system-analysis` conversation this session; `PLAN.md` #8 carries the build task.
+
 ## Decision 033: The data model becomes five real source tables at their true grain — not per-software aggregate scalars
 
 **Spokes:**
