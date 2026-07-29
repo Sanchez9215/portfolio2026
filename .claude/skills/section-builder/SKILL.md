@@ -19,6 +19,10 @@ Adds a new section to any case study page in the portfolio.
 
 Every section uses the `Section` component as a shell. It applies `cs-grid` (12-col, `column-gap: --spacing-xl`, `padding-inline: --spacing-xl`) and `padding-block: --spacing-5xl`. Components inside are layout-agnostic — column placement comes from the page-level module CSS.
 
+**New default (as of `section.framework`, Software Observability): a new section's own content fills 100vh.** Not a change to `Section.tsx` itself (no height prop) — the section-owning component sets its own `height: 100vh` internally, same as `TheProblemPinnedScene`/`FrameworkScene` do, and is placed via `grid-column: 1 / -1` in the page module CSS if it's freeform (see below) or full-bleed.
+
+A section whose content is a **spatial composition** (a diagram, not column-based text/cards) can go freeform — absolute-positioned, ignoring `cs-grid`'s column placement entirely for its internal layout — rather than being forced into 12 columns. Confirm this with the user before building; it's a real departure from every other section's convention, not a default to assume.
+
 ## Naming convention
 
 `{sectionName}{ComponentType}{n}` — append index only when the same component type appears more than once in a section.

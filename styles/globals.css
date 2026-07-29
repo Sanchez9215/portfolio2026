@@ -125,6 +125,9 @@
   --color-yellow-800: #D48518;
   --color-yellow-900: #BF5D06;
 
+  /* Red */
+  --color-red-500: #FF7878;
+
   /* ----------------------------------------------------------
      PRIMITIVES — Typography
      ---------------------------------------------------------- */
@@ -144,6 +147,7 @@
   --spacing-xs:  4px;
   --spacing-sm:  8px;
   --spacing-md:  16px;
+  --spacing-mlg: 20px;
   --spacing-lg:  24px;
   --spacing-xl:  32px;
   --spacing-2xl: 48px;
@@ -188,6 +192,14 @@
   --surface-card:              var(--color-grey-1000);
   --surface-card-border:       var(--color-grey-900);
   --surface-card-border-hover: var(--color-yellow-500);
+  --surface-section-inverse:   var(--color-grey-500);
+
+  /* ----------------------------------------------------------
+     SEMANTIC — Badge
+     ---------------------------------------------------------- */
+
+  --badge-fill: var(--color-grey-900);
+  --badge-text: var(--color-grey-500);
 
   /* ----------------------------------------------------------
      SEMANTIC — Nav
@@ -239,6 +251,8 @@
   --text-body-display-statement: var(--color-grey-500);
   --text-body-display-support:   var(--color-grey-700);
   --text-accent:                 var(--color-blue-500);
+  --text-inverse-primary:        var(--color-grey-900);
+  --text-inverse-secondary:      var(--color-grey-800);
   --text-dark-display:           var(--color-grey-1100);
   --text-case-study-hover:       var(--color-yellow-500);
 
@@ -247,6 +261,7 @@
      ---------------------------------------------------------- */
 
   --accent-primary: var(--color-blue-500);
+  --accent-warning: var(--color-red-500);
 
   /* ----------------------------------------------------------
      SEMANTIC — Border
@@ -309,67 +324,76 @@
   --word-spacing-display: 0.2em;
 
   /* ----------------------------------------------------------
-     TYPOGRAPHY SCALE — Fluid
-     Viewport range: 390px (min) → 1920px (max)
-     Formula per token: clamp(min, intercept + slope·vw, max)
-       slope  = (max − min) / (1920 − 390) × 100
-       intercept = min − slope/100 × 390
-     Line-heights clamp in parallel with the same min/max anchors
-     so proportions hold at every viewport width.
-     Body and static label tokens are unchanged (no clamp).
+     TYPOGRAPHY SCALE — Static
+     Source of truth: Responsive/Desktop tier (1440px) in tokens.json.
+     Fluid clamp() scaling disconnected for now — fixed px values only.
+     Body and static label tokens are unchanged.
+     Default line-height multiplier for any new type step is 1.2x
+     font-size, unless a token already exists at a different value.
      ---------------------------------------------------------- */
 
-  /* display-metric  390→1920: 40→72px  /  lh 44→79px — semantic alias for numeric metric values */
-  --text-display-metric-size: clamp(40px, 31.84px + 2.09vw, 72px);
-  --text-display-metric-lh:   clamp(44px, 35.08px + 2.29vw, 79px);
+  /* display-metric — semantic alias for numeric metric values */
+  --text-display-metric-size: 96px;
+  --text-display-metric-lh:   104px;
   --text-display-metric-ls:   -0.02em;
 
-  /* display-lg  390→1920: 40→72px  /  lh 44→79px */
-  --text-display-lg-size:     clamp(40px, 31.84px + 2.09vw, 72px);
-  --text-display-lg-lh:       clamp(44px, 35.08px + 2.29vw, 79px);
+  /* display-lg */
+  --text-display-lg-size:     72px;
+  --text-display-lg-lh:       79px;
   --text-display-lg-ls:       -0.02em;
 
-  /* display-md  390→1920: 32→64px  /  lh 35→70px */
-  --text-display-md-size:     clamp(32px, 23.85px + 2.09vw, 64px);
-  --text-display-md-lh:       clamp(35px, 26.08px + 2.29vw, 70px);
+  /* display-md */
+  --text-display-md-size:     64px;
+  --text-display-md-lh:       70px;
   --text-display-md-ls:       -0.02em;
 
-  /* display-sm  390→1920: 28→48px  /  lh 31→53px */
-  --text-display-sm-size:     clamp(28px, 22.90px + 1.31vw, 48px);
-  --text-display-sm-lh:       clamp(31px, 25.39px + 1.44vw, 53px);
+  /* display-sm */
+  --text-display-sm-size:     48px;
+  --text-display-sm-lh:       53px;
   --text-display-sm-ls:       -0.02em;
 
-  /* heading-xl   390→1920: 20→32px  /  lh 25→40px */
-  --text-heading-xl-size:     clamp(20px, 16.94px + 0.78vw, 32px);
-  --text-heading-xl-lh:       clamp(25px, 21.18px + 0.98vw, 40px);
+  /* heading-xl */
+  --text-heading-xl-size:     32px;
+  --text-heading-xl-lh:       40px;
   --text-heading-xl-ls:       -0.01em;
 
-  /* heading-lg   390→1920: 18→24px  /  lh 22→30px */
-  --text-heading-lg-size:     clamp(18px, 16.47px + 0.39vw, 24px);
-  --text-heading-lg-lh:       clamp(22px, 19.96px + 0.52vw, 30px);
+  /* heading-lg */
+  --text-heading-lg-size:     24px;
+  --text-heading-lg-lh:       30px;
   --text-heading-lg-ls:       -0.01em;
 
-  /* heading-md   390→1920: 16→18px  /  lh 20→22px */
-  --text-heading-md-size:     clamp(16px, 15.49px + 0.13vw, 18px);
-  --text-heading-md-lh:       clamp(20px, 19.49px + 0.13vw, 22px);
+  /* heading-md */
+  --text-heading-md-size:     18px;
+  --text-heading-md-lh:       22px;
   --text-heading-md-ls:       -0.01em;
 
-  /* heading-sm   390→1920: 14→16px  /  lh 17→20px */
-  --text-heading-sm-size:     clamp(14px, 13.49px + 0.13vw, 16px);
-  --text-heading-sm-lh:       clamp(17px, 16.24px + 0.20vw, 20px);
+  /* heading-sm */
+  --text-heading-sm-size:     16px;
+  --text-heading-sm-lh:       20px;
   --text-heading-sm-ls:       -0.01em;
 
-  /* heading-xs   390→1920: 12→14px  /  lh 15→17px */
-  --text-heading-xs-size:     clamp(12px, 11.49px + 0.13vw, 14px);
-  --text-heading-xs-lh:       clamp(15px, 14.49px + 0.13vw, 17px);
+  /* heading-xs */
+  --text-heading-xs-size:     14px;
+  --text-heading-xs-lh:       17px;
   --text-heading-xs-ls:       -0.01em;
 
-  /* body-display  390→1920: 26→52px  /  lh 31→62px */
-  --text-body-display-size: clamp(26px, 19.37px + 1.70vw, 52px);
-  --text-body-display-lh:   clamp(31px, 23.08px + 2.03vw, 62px);
+  /* body-display */
+  --text-body-display-size: 52px;
+  --text-body-display-lh:   1.2;
   --text-body-display-ls:   0;
 
+  /* body-display-sm */
+  --text-body-display-sm-size: 40px;
+  --text-body-display-sm-lh:   1.2;
+  --text-body-display-sm-ls:   0;
+
   /* body — static, no clamp */
+  /* body-xl — 24px. Currently used ONLY by the Software Observability
+     message-bubble text (TheProblemPinnedScene); not a general body step. */
+  --text-body-xl-size:        24px;
+  --text-body-xl-lh:          29px;
+  --text-body-xl-ls:          0;
+
   --text-body-lg-size:        18px;
   --text-body-lg-lh:          24px;
   --text-body-lg-ls:          0;

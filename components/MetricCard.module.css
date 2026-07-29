@@ -1,11 +1,19 @@
 .metricCard {
-  flex: 1 0 0;
+  /* min-width:0 removes the implicit auto-minimum grid/flex items otherwise
+     get from their own content (min-content — for text, the width of its
+     longest unbreakable word). Without it, a parent grid's equal 1fr tracks
+     can still end up uneven when one card's content has a wider min-content
+     than the other's, since the track has to grow to fit it. width:100%
+     makes the stretch explicit rather than relying on justify-items:stretch
+     alone. */
+  min-width: 0;
+  width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: var(--spacing-sm);
-  padding: var(--spacing-3xl);
+  /* padding: var(--spacing-3xl); */
 }
 
 .value {
@@ -20,10 +28,29 @@
 
 .label {
   font-family: var(--font-family-body);
-  font-weight: var(--font-weight-regular);
-  font-size: var(--text-body-md-size);
-  line-height: var(--text-body-md-lh);
-  letter-spacing: var(--text-body-md-ls);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--text-body-lg-size);
+  line-height: var(--text-body-lg-lh);
+  letter-spacing: var(--text-body-lg-ls);
   color: var(--text-tertiary);
   text-align: center;
+  /* Unset (0) everywhere by default — a local context can set this to shift
+     just this instance's label + source, e.g. the second metric card. */
+  padding-left: var(--metric-label-padding-left, 0);
+}
+
+.source {
+  display: block;
+  font-family: var(--font-family-body);
+  font-weight: var(--font-weight-regular);
+  font-size: var(--text-body-lg-size);
+  line-height: var(--text-body-lg-lh);
+  letter-spacing: var(--text-body-lg-ls);
+  /* Independent hook from .label's --text-tertiary, defaulting to the same
+     value everywhere else — lets a local context (e.g. a card background
+     that changes) recolor the citation link without also recoloring .label. */
+  color: var(--metric-source-color, var(--text-tertiary));
+  text-decoration: underline;
+  text-align: center;
+  padding-left: var(--metric-label-padding-left, 0);
 }

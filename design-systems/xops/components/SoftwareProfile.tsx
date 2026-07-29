@@ -173,7 +173,7 @@ export function SoftwareProfile({
         <div className={styles.appHeader}>
           <div className={styles.identity}>
             <LogoTile src={logo} alt={name} size="large" />
-            <div className={styles.identityText}>
+            <div className={styles.identityText} data-hotspot="vendor-contact">
               <p className={styles.name} title={name}>
                 {name}
               </p>
@@ -187,53 +187,56 @@ export function SoftwareProfile({
               </div>
             </div>
           </div>
-          <Stat
-            label="Renewal"
-            icon
-            value={renewalDate}
-            tag={{ status: renewalStatus, label: renewalLabel }}
-            valueSize="small"
-            spaceBetween
-            tooltip={renewalTooltip}
-            className={styles.renewalStat}
-          />
+          <div className={styles.renewalStat} data-hotspot="renewal">
+            <Stat
+              label="Renewal"
+              icon
+              value={renewalDate}
+              tag={{ status: renewalStatus, label: renewalLabel }}
+              valueSize="small"
+              spaceBetween
+              tooltip={renewalTooltip}
+            />
+          </div>
         </div>
         <p className={styles.description}>{description}</p>
       </div>
       <div className={styles.content}>
-        <MagicSurface className={styles.summaryCard}>
-          <div className={styles.summaryCardContent}>
-            <div className={styles.summaryCardHeader}>
-              <div className={styles.summaryCardTitleRow}>
-                <p className={styles.summaryCardTitle}>Opportunity</p>
-                <Tooltip {...opportunityTooltip}>
-                  <Icon name="InfoCircle" color="var(--xops-text-secondary)" className={styles.summaryCardIcon} />
-                </Tooltip>
+        <div data-hotspot="opportunity-summary">
+          <MagicSurface className={styles.summaryCard}>
+            <div className={styles.summaryCardContent}>
+              <div className={styles.summaryCardHeader}>
+                <div className={styles.summaryCardTitleRow}>
+                  <p className={styles.summaryCardTitle}>Opportunity</p>
+                  <Tooltip {...opportunityTooltip}>
+                    <Icon name="InfoCircle" color="var(--xops-text-secondary)" className={styles.summaryCardIcon} />
+                  </Tooltip>
+                </div>
+                <p className={styles.summaryCardValue}>{opportunityTotal}</p>
               </div>
-              <p className={styles.summaryCardValue}>{opportunityTotal}</p>
+              <div className={styles.summaryCardTiles} data-hotspot="opportunity-breakdown">
+                <Stat
+                  label="Inactive Waste"
+                  value={inactiveWasteAmount}
+                  meta={inactiveWastePercent}
+                  surface="white"
+                />
+                <Stat
+                  label="Unassigned Waste"
+                  value={unassignedWasteAmount}
+                  meta={unassignedWastePercent}
+                  surface="white"
+                />
+              </div>
             </div>
-            <div className={styles.summaryCardTiles}>
-              <Stat
-                label="Inactive Waste"
-                value={inactiveWasteAmount}
-                meta={inactiveWastePercent}
-                surface="white"
-              />
-              <Stat
-                label="Unassigned Waste"
-                value={unassignedWasteAmount}
-                meta={unassignedWastePercent}
-                surface="white"
-              />
-            </div>
-          </div>
-        </MagicSurface>
-        <div className={styles.licensesCard}>
+          </MagicSurface>
+        </div>
+        <div className={styles.licensesCard} data-hotspot="licenses-purchased">
           <div className={styles.summaryCardHeader}>
             <p className={styles.summaryCardTitle}>Licenses Purchased</p>
             <p className={styles.summaryCardValue}>{licensesPurchasedTotal}</p>
           </div>
-          <div className={styles.summaryCardTiles}>
+          <div className={styles.summaryCardTiles} data-hotspot="status-tags">
             <Stat
               label="Assigned"
               value={assignedValue}
@@ -254,7 +257,7 @@ export function SoftwareProfile({
             />
           </div>
         </div>
-        <div className={styles.utilizationCard}>
+        <div className={styles.utilizationCard} data-hotspot="utilization-status">
           <p className={styles.summaryCardTitle}>Utilization Status</p>
           <BarChart
             total={licensesPurchasedCount}
@@ -288,7 +291,7 @@ export function SoftwareProfile({
               },
             ]}
           />
-          <div className={styles.unusedLicensesRow}>
+          <div className={styles.unusedLicensesRow} data-hotspot="reclaimable-total">
             <p className={styles.unusedLicensesLabel}>Unused Licenses (Inactive + Unassigned)</p>
             <div className={styles.unusedLicensesValueGroup}>
               <span className={styles.unusedLicensesValue}>{unusedLicensesValue}</span>
@@ -305,7 +308,7 @@ export function SoftwareProfile({
               </Tooltip>
             </div>
             <div className={styles.breakdownOptions}>
-              <div className={styles.viewByGroup}>
+              <div className={styles.viewByGroup} data-hotspot="view-by-toggle">
                 <span className={styles.breakdownLabel}>View By</span>
                 <Dropdown
                   value={viewBy}
@@ -315,90 +318,94 @@ export function SoftwareProfile({
                   openDirection="down"
                 />
               </div>
-              <div className={styles.metricGroup}>
+              <div className={styles.metricGroup} data-hotspot="metric-toggle">
                 <span className={styles.breakdownLabel}>Metric</span>
                 <Toggle value={metric} options={metricOptions} onChange={setMetric} ariaLabel="Metric" />
               </div>
             </div>
           </div>
-          <Card
-            title={`Inactive Licenses by ${distributionUnitLabel}`}
-            titleSize="body-14"
-            headerValue={formatBreakdownTotal(departmentBreakdown)}
-          >
-            <RankedBarChart
-              valueFormat={rankedBarValueFormat}
-              rows={departmentBreakdown.map((department, index) => ({
-                label: department.label,
-                value: metric === "count" ? department.count : department.cost,
-                color: departmentChartColors[index % departmentChartColors.length],
-                code: groupBy === "costCenter" ? department.id : undefined,
-                tooltip: {
-                  rows: [
-                    { label: "Inactive Licenses", value: formatCount(department.count, { compact: true }) },
-                    {
-                      label: "% of Total Inactive",
-                      value: formatSharePercent(department.count, departmentBreakdown),
+          <div data-hotspot="department-breakdown-chart">
+            <Card
+              title={`Inactive Licenses by ${distributionUnitLabel}`}
+              titleSize="body-14"
+              headerValue={formatBreakdownTotal(departmentBreakdown)}
+            >
+              <RankedBarChart
+                valueFormat={rankedBarValueFormat}
+                rows={departmentBreakdown.map((department, index) => ({
+                  label: department.label,
+                  value: metric === "count" ? department.count : department.cost,
+                  color: departmentChartColors[index % departmentChartColors.length],
+                  code: groupBy === "costCenter" ? department.id : undefined,
+                  tooltip: {
+                    rows: [
+                      { label: "Inactive Licenses", value: formatCount(department.count, { compact: true }) },
+                      {
+                        label: "% of Total Inactive",
+                        value: formatSharePercent(department.count, departmentBreakdown),
+                      },
+                    ],
+                    opportunity: { label: "Opportunity", value: formatCurrency(department.cost, { compact: true }) },
+                    action: {
+                      label: "View Inactive Employees",
+                      icon: <Icon name="person" color="var(--xops-text-secondary)" />,
+                      onClick: () =>
+                        onViewInactiveEmployees?.({
+                          unitId: department.id,
+                          unitLabel: distributionUnitLabel,
+                          unitValue: department.label,
+                          metricValue: formatCount(department.count, { compact: true }),
+                          metricPercent: formatSharePercent(department.count, departmentBreakdown),
+                          opportunityValue: formatCurrency(department.cost, { compact: true }),
+                          groupBy,
+                        }),
                     },
-                  ],
-                  opportunity: { label: "Opportunity", value: formatCurrency(department.cost, { compact: true }) },
-                  action: {
-                    label: "View Inactive Employees",
-                    icon: <Icon name="person" color="var(--xops-text-secondary)" />,
-                    onClick: () =>
-                      onViewInactiveEmployees?.({
-                        unitId: department.id,
-                        unitLabel: distributionUnitLabel,
-                        unitValue: department.label,
-                        metricValue: formatCount(department.count, { compact: true }),
-                        metricPercent: formatSharePercent(department.count, departmentBreakdown),
-                        opportunityValue: formatCurrency(department.cost, { compact: true }),
-                        groupBy,
-                      }),
                   },
-                },
-              }))}
-            />
-          </Card>
-          <Card
-            title={`Licenses Assigned to Terminated Employees by ${distributionUnitLabel}`}
-            titleSize="body-14"
-            headerValue={formatBreakdownTotal(terminatedEmployeesBreakdown)}
-          >
-            <RankedBarChart
-              valueFormat={rankedBarValueFormat}
-              rows={terminatedEmployeesBreakdown.map((department, index) => ({
-                label: department.label,
-                value: metric === "count" ? department.count : department.cost,
-                color: departmentChartColors[index % departmentChartColors.length],
-                code: groupBy === "costCenter" ? department.id : undefined,
-                tooltip: {
-                  rows: [
-                    { label: "Terminated Employees", value: formatCount(department.count, { compact: true }) },
-                    {
-                      label: "% of Total Terminated",
-                      value: formatSharePercent(department.count, terminatedEmployeesBreakdown),
+                }))}
+              />
+            </Card>
+          </div>
+          <div data-hotspot="terminated-breakdown-chart">
+            <Card
+              title={`Licenses Assigned to Terminated Employees by ${distributionUnitLabel}`}
+              titleSize="body-14"
+              headerValue={formatBreakdownTotal(terminatedEmployeesBreakdown)}
+            >
+              <RankedBarChart
+                valueFormat={rankedBarValueFormat}
+                rows={terminatedEmployeesBreakdown.map((department, index) => ({
+                  label: department.label,
+                  value: metric === "count" ? department.count : department.cost,
+                  color: departmentChartColors[index % departmentChartColors.length],
+                  code: groupBy === "costCenter" ? department.id : undefined,
+                  tooltip: {
+                    rows: [
+                      { label: "Terminated Employees", value: formatCount(department.count, { compact: true }) },
+                      {
+                        label: "% of Total Terminated",
+                        value: formatSharePercent(department.count, terminatedEmployeesBreakdown),
+                      },
+                    ],
+                    opportunity: { label: "Opportunity", value: formatCurrency(department.cost, { compact: true }) },
+                    action: {
+                      label: "View Terminated Employees",
+                      icon: <Icon name="person" color="var(--xops-text-secondary)" />,
+                      onClick: () =>
+                        onViewTerminatedEmployees?.({
+                          unitId: department.id,
+                          unitLabel: distributionUnitLabel,
+                          unitValue: department.label,
+                          metricValue: formatCount(department.count, { compact: true }),
+                          metricPercent: formatSharePercent(department.count, terminatedEmployeesBreakdown),
+                          opportunityValue: formatCurrency(department.cost, { compact: true }),
+                          groupBy,
+                        }),
                     },
-                  ],
-                  opportunity: { label: "Opportunity", value: formatCurrency(department.cost, { compact: true }) },
-                  action: {
-                    label: "View Terminated Employees",
-                    icon: <Icon name="person" color="var(--xops-text-secondary)" />,
-                    onClick: () =>
-                      onViewTerminatedEmployees?.({
-                        unitId: department.id,
-                        unitLabel: distributionUnitLabel,
-                        unitValue: department.label,
-                        metricValue: formatCount(department.count, { compact: true }),
-                        metricPercent: formatSharePercent(department.count, terminatedEmployeesBreakdown),
-                        opportunityValue: formatCurrency(department.cost, { compact: true }),
-                        groupBy,
-                      }),
                   },
-                },
-              }))}
-            />
-          </Card>
+                }))}
+              />
+            </Card>
+          </div>
         </div>
       </div>
     </div>

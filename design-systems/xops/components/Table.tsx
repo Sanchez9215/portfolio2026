@@ -37,6 +37,24 @@ export type TableProps<T extends Record<string, unknown>> = {
   onRowClick?: (row: T) => void;
   /** Pins to the bottom of the scroll area with rows scrolling behind it (e.g. `Pagination`), instead of stacking below in normal flow. */
   pagination?: ReactNode;
+  /** Optional per-row tint (existing status tokens only) — e.g. flagging a threshold breach. Additive; omit for the default untinted row. */
+  rowStatus?: (row: T) => "warning" | "danger" | undefined;
+  /** Left/right hidden-overflow gradient overlays. Additive; defaults to on. */
+  scrollFade?: boolean;
+  /** data-hotspot id applied to every row where rowStatus(row) === "danger" — lets an external overlay target the flagged-row group as one unit. */
+  dangerHotspotId?: string;
+  /** Disables the body's internal vertical scroll (rows past the fold render but are
+   *  clipped by an ancestor instead) — for a live embed whose row positions need to
+   *  stay fixed while a hotspot overlay measures them. Horizontal scroll is unaffected. */
+  disableVerticalScroll?: boolean;
+  /** Blocks user-driven horizontal scroll (wheel/touch/drag/scrollbar) while leaving
+   *  `scrollToX`'s programmatic scrollTo unaffected — for a live embed whose column
+   *  position must only move as a scripted beat, never by direct user input. */
+  disableHorizontalScroll?: boolean;
+  /** Programmatically (smooth) scrolls the body horizontally to its start or end —
+   *  for a live embed that needs to auto-reveal off-screen columns as a scripted
+   *  beat. Omit for normal user-driven scroll. */
+  scrollToX?: "start" | "end";
 };
 
 function colStyle(width: ColumnWidth): CSSProperties {
@@ -56,12 +74,25 @@ export function Table<T extends Record<string, unknown>>({
   selectedRowKey,
   onRowClick,
   pagination,
+  rowStatus,
+  scrollFade = true,
+  dangerHotspotId,
+  disableVerticalScroll = false,
+  disableHorizontalScroll = false,
+  scrollToX,
 }: TableProps<T>) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const paginationRef = useRef<HTMLDivElement>(null);
   const [showLeftFade, setShowLeftFade] = useState(false);
   const [showRightFade, setShowRightFade] = useState(false);
   const [paginationHeight, setPaginationHeight] = useState(0);
+
+  useEffect(() => {
+    if (!scrollToX) return;
+    const el = scrollRef.current;
+    if (!el) return;
+    el.scrollTo({ left: scrollToX === "end" ? el.scrollWidth : 0, behavior: "smooth" });
+  }, [scrollToX]);
 
   useEffect(() => {
     const el = paginationRef.current;
@@ -103,7 +134,19 @@ export function Table<T extends Record<string, unknown>>({
       <div
         ref={scrollRef}
         className={styles.scroll}
-        style={pagination ? { paddingBottom: paginationHeight } : undefined}
+        style={{
+          ...(pagination ? { paddingBottom: paginationHeight } : undefined),
+          // "hidden", not "visible" — the CSS spec forces a "visible" overflow-y back to
+          // "auto" whenever overflow-x isn't also "visible" (which it isn't once
+          // disableHorizontalScroll sets overflow-x: hidden), silently re-enabling
+          // scroll. "hidden" clips instead of the ancestor, but the ancestor (LiveEmbed's
+          // fixed-height container) already clips at the same boundary, so nothing
+          // additional is lost.
+          ...(disableVerticalScroll ? { overflowY: "hidden" } : undefined),
+          // overflow: hidden still allows programmatic scrollTo (scrollToX) — it only
+          // blocks user-driven wheel/touch/drag/scrollbar interaction.
+          ...(disableHorizontalScroll ? { overflowX: "hidden" } : undefined),
+        }}
       >
       <table className={styles.table}>
         <colgroup>
@@ -181,9 +224,12 @@ export function Table<T extends Record<string, unknown>>({
                 styles.row,
                 onRowClick ? styles.rowClickable : "",
                 rowKey(row) === selectedRowKey ? styles.rowSelected : "",
+                rowStatus?.(row) === "warning" ? styles.rowWarning : "",
+                rowStatus?.(row) === "danger" ? styles.rowDanger : "",
               ]
                 .filter(Boolean)
                 .join(" ")}
+              data-hotspot={rowStatus?.(row) === "danger" ? dangerHotspotId : undefined}
               onClick={onRowClick ? () => onRowClick(row) : undefined}
             >
               {columns.map((column) => (
@@ -202,16 +248,20 @@ export function Table<T extends Record<string, unknown>>({
         </tbody>
       </table>
       </div>
-      <div
-        className={[styles.scrollFade, styles.scrollFadeLeft, showLeftFade ? styles.scrollFadeVisible : ""]
-          .filter(Boolean)
-          .join(" ")}
-      />
-      <div
-        className={[styles.scrollFade, styles.scrollFadeRight, showRightFade ? styles.scrollFadeVisible : ""]
-          .filter(Boolean)
-          .join(" ")}
-      />
+      {scrollFade && (
+        <div
+          className={[styles.scrollFade, styles.scrollFadeLeft, showLeftFade ? styles.scrollFadeVisible : ""]
+            .filter(Boolean)
+            .join(" ")}
+        />
+      )}
+      {scrollFade && (
+        <div
+          className={[styles.scrollFade, styles.scrollFadeRight, showRightFade ? styles.scrollFadeVisible : ""]
+            .filter(Boolean)
+            .join(" ")}
+        />
+      )}
       {pagination && (
         <div ref={paginationRef} className={styles.paginationOverlay}>
           {pagination}

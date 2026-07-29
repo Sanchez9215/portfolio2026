@@ -18,6 +18,8 @@ export type DropdownProps<T extends string = string> = {
   disabled?: boolean;
   openDirection?: DropdownOpenDirection;
   className?: string;
+  /** Caps the option panel height with scroll when there are many options. Additive; omit for the default unbounded panel. */
+  maxMenuHeight?: number;
 };
 
 export function Dropdown<T extends string = string>({
@@ -29,6 +31,7 @@ export function Dropdown<T extends string = string>({
   disabled,
   openDirection = "up",
   className,
+  maxMenuHeight,
 }: DropdownProps<T>) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -83,6 +86,7 @@ export function Dropdown<T extends string = string>({
           options={options}
           value={value}
           ariaLabel={ariaLabel}
+          maxHeight={maxMenuHeight}
           onSelect={(selected) => {
             onChange(selected);
             setOpen(false);

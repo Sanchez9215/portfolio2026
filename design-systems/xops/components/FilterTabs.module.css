@@ -120,7 +120,80 @@
   color: var(--xops-state-disabled-text);
 }
 
+/* variant="underline" — full-width text tabs sharing a bottom rule, active = brand underline */
+.groupUnderline {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  gap: var(--xops-spacing-16);
+  border-bottom: var(--xops-border-width-1) solid var(--xops-border-divider);
+}
+
+.tabUnderline {
+  flex: 1 0 0%;
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--xops-spacing-8) var(--xops-spacing-8) var(--xops-spacing-12);
+  background-color: transparent;
+  border: none;
+  border-bottom: var(--xops-border-width-1) solid transparent;
+  /* pull the tab's own border onto the group's shared bottom rule */
+  margin-bottom: calc(-1 * var(--xops-border-width-1));
+  color: var(--xops-text-secondary);
+  font-family: var(--xops-font-family);
+  font-weight: var(--xops-font-weight-medium);
+  font-size: var(--xops-typography-body-14-font-size);
+  line-height: var(--xops-typography-body-14-line-height);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.tabUnderline:hover:not(:disabled):not(.selected) {
+  color: var(--xops-text-primary);
+}
+
+.tabUnderline:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 var(--xops-state-focus-ring-width) var(--xops-state-focus-ring);
+}
+
+.tabUnderline:disabled {
+  color: var(--xops-state-disabled-text);
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.tabUnderline.selected {
+  background-color: transparent;
+  color: var(--xops-brand-primary);
+  border-bottom-color: var(--xops-brand-primary);
+}
+
 .infoIcon {
   width: var(--xops-icon-size-16);
   height: var(--xops-icon-size-16);
+}
+
+.tabStat {
+  margin-left: var(--xops-spacing-16);
+  color: inherit;
+  font-weight: var(--xops-font-weight-regular);
+}
+
+.tabBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 24px;
+  margin-left: var(--xops-spacing-8);
+  padding: 0 var(--xops-spacing-4);
+  border-radius: var(--xops-radius-full);
+  background-color: var(--xops-status-danger-solid);
+  color: var(--xops-white);
+  font-weight: var(--xops-font-weight-medium);
+  font-size: var(--xops-typography-body-12-font-size);
+  line-height: var(--xops-typography-body-12-line-height);
 }

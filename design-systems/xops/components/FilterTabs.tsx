@@ -7,6 +7,8 @@ export type FilterTabOption<T extends string = string> = {
   value: T;
   label: string;
   stat?: string;
+  /** Default variant only — small circular alert count next to the label, reusing GlobalHeader's notification-badge token values. Additive; omit for a plain tab. */
+  badge?: number;
   disabled?: boolean;
   tooltip?: Omit<TooltipProps, "children" | "className">;
 };
@@ -15,7 +17,7 @@ export type FilterTabsProps<T extends string = string> = {
   options: FilterTabOption<T>[];
   value: T;
   onChange: (value: T) => void;
-  variant?: "default" | "large";
+  variant?: "default" | "large" | "underline";
   size?: "small" | "medium" | "large";
   ariaLabel: string;
   className?: string;
@@ -31,11 +33,17 @@ export function FilterTabs<T extends string = string>({
   className,
 }: FilterTabsProps<T>) {
   const large = variant === "large";
-  const sizeClass = !large && size !== "medium" ? styles[size] : undefined;
+  const underline = variant === "underline";
+  const sizeClass = !large && !underline && size !== "medium" ? styles[size] : undefined;
 
   return (
     <div
-      className={[styles.group, large ? styles.groupLarge : "", className]
+      className={[
+        styles.group,
+        large ? styles.groupLarge : "",
+        underline ? styles.groupUnderline : "",
+        className,
+      ]
         .filter(Boolean)
         .join(" ")}
       role="radiogroup"
@@ -43,6 +51,26 @@ export function FilterTabs<T extends string = string>({
     >
       {options.map((option) => {
         const selected = option.value === value;
+
+        if (underline) {
+          // Underline variant — full-width text tabs sharing a bottom rule, the active one
+          // marked by a brand underline (not a pill). Structurally the same radiogroup.
+          return (
+            <button
+              key={option.value}
+              type="button"
+              role="radio"
+              aria-checked={selected}
+              disabled={option.disabled}
+              className={[styles.tabUnderline, selected ? styles.selected : ""]
+                .filter(Boolean)
+                .join(" ")}
+              onClick={() => onChange(option.value)}
+            >
+              {option.label}
+            </button>
+          );
+        }
 
         if (large) {
           // Large tabs carry a tooltip trigger, which renders its own <button> — a <button>
@@ -100,6 +128,10 @@ export function FilterTabs<T extends string = string>({
             onClick={() => onChange(option.value)}
           >
             {option.label}
+            {option.stat && <span className={styles.tabStat}>{option.stat}</span>}
+            {typeof option.badge === "number" && (
+              <span className={styles.tabBadge}>{option.badge}</span>
+            )}
           </button>
         );
       })}

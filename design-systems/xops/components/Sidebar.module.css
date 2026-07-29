@@ -89,6 +89,11 @@
   line-height: var(--xops-typography-body-14-line-height);
   color: var(--xops-text-primary);
   text-decoration: none;
+  /* button-variant reset (onNavigate embed mode renders this as a <button>) */
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
 }
 
 .submenuItem:hover {

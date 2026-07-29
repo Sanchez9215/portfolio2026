@@ -171,6 +171,14 @@
     inset 0 calc(var(--xops-border-width-1) * -1) 0 0 var(--xops-brand-primary);
 }
 
+.rowWarning .bodyCell {
+  background-color: var(--xops-status-warning-tint);
+}
+
+.rowDanger .bodyCell {
+  background-color: var(--xops-status-danger-tint);
+}
+
 .bodyCell {
   padding: var(--xops-spacing-12);
   font-family: var(--xops-font-family);

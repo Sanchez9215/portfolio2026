@@ -1,0 +1,36 @@
+/* ============================================================
+   LiveEmbed — scales a full-size live component into a fixed-
+   aspect-ratio frame. Container defines the visible crop;
+   .canvas renders children at native width, then scales down.
+   ============================================================ */
+
+.container {
+  position:      relative;
+  width:         100%;
+  aspect-ratio:  16 / 10;
+  overflow:      hidden;
+}
+
+.canvas {
+  position:        absolute;
+  top:             0;
+  left:            0;
+  transform-origin: top left;
+  transition:      transform 500ms ease;
+}
+
+/* Free-scroll window mode (scroll prop). Fills a height-bounded parent and
+   scrolls the scaled canvas natively. */
+.scrollContainer {
+  position:   relative;
+  width:      100%;
+  height:     100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Holds the scaled canvas height so the scrollbar tracks visible content. */
+.sizer {
+  position: relative;
+  width:    100%;
+}

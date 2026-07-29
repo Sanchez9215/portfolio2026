@@ -1,0 +1,154 @@
+/* One-off legacy component — existing --xops-* tokens only, no new values. */
+
+.backdrop {
+  position:   fixed;
+  inset:      0;
+  background-color: rgba(17, 20, 24, 0.32);
+  z-index:    20;
+  display:    flex;
+  align-items: center;
+  justify-content: center;
+  /* Panel insets 32px from the backdrop's own top/bottom — the backdrop itself
+     matches the bounds element's edges exactly (see AlertsPanel.tsx). */
+  padding:    32px 0;
+  /* Fades in/out rather than mounting/unmounting instantly — the panel is a
+     child, so this one opacity also carries its fade (see AlertsPanel.tsx's
+     `rendered` lag, matched to this duration). */
+  opacity:    0;
+  transition: opacity 250ms ease;
+}
+
+.backdropVisible {
+  opacity: 1;
+}
+
+.panel {
+  width: 700px;
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--xops-spacing-16);
+  background-color: var(--xops-white);
+  border-radius: var(--xops-radius-12);
+  box-shadow: var(--xops-elevation-1);
+  padding: var(--xops-spacing-16);
+  overflow: hidden;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: var(--xops-spacing-8);
+}
+
+.title {
+  margin: 0;
+  font-family: var(--xops-font-family);
+  font-weight: var(--xops-font-weight-medium);
+  font-size: var(--xops-typography-subheading-16-font-size);
+  line-height: var(--xops-typography-subheading-16-line-height);
+  color: var(--xops-text-primary);
+}
+
+.countBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 var(--xops-spacing-4);
+  border-radius: var(--xops-radius-full);
+  background-color: var(--xops-status-danger-solid);
+  color: var(--xops-white);
+  font-family: var(--xops-font-family);
+  font-weight: var(--xops-font-weight-medium);
+  font-size: var(--xops-typography-body-12-font-size);
+  line-height: var(--xops-typography-body-12-line-height);
+}
+
+.closeButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: none;
+  border: none;
+  border-radius: var(--xops-radius-6);
+  cursor: pointer;
+}
+
+.closeButton:hover {
+  background-color: var(--xops-state-hover-on-surface);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  border: var(--xops-border-width-1) solid var(--xops-border-divider);
+  border-radius: var(--xops-radius-8);
+}
+
+.card {
+  display: flex;
+  gap: var(--xops-spacing-8);
+  padding: var(--xops-spacing-16);
+  border-bottom: var(--xops-border-width-1) solid var(--xops-border-divider);
+  border-radius: 0;
+}
+
+.card:last-child {
+  border-bottom: none;
+}
+
+.cardIcon {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.cardContent {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--xops-spacing-64);
+  flex: 1;
+  min-width: 0;
+}
+
+.cardText {
+  display: flex;
+  flex-direction: column;
+  gap: var(--xops-spacing-8);
+  min-width: 0;
+}
+
+.cardTitle {
+  margin: 0;
+  font-family: var(--xops-font-family);
+  font-weight: var(--xops-font-weight-medium);
+  font-size: var(--xops-typography-body-14-font-size);
+  line-height: var(--xops-typography-body-14-line-height);
+  color: var(--xops-text-primary);
+}
+
+.cardDescription {
+  margin: 0;
+  font-family: var(--xops-font-family);
+  font-weight: var(--xops-font-weight-regular);
+  font-size: var(--xops-typography-body-14-font-size);
+  line-height: var(--xops-typography-body-14-line-height);
+  color: var(--xops-text-secondary);
+}
+
+.cardCta {
+  flex-shrink: 0;
+  width: 96px;
+}

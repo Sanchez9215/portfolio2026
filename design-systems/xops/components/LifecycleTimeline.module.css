@@ -1,0 +1,89 @@
+.timeline {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--xops-spacing-16);
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--xops-spacing-16);
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+}
+
+.searchRow {
+  display: flex;
+  align-items: center;
+  gap: var(--xops-spacing-4);
+  width: 280px;
+  padding: var(--xops-spacing-6) var(--xops-spacing-12);
+  border: var(--xops-border-width-1) solid var(--xops-border-divider);
+  border-radius: var(--xops-radius-6);
+}
+
+.searchIcon {
+  width: var(--xops-icon-size-16);
+  height: var(--xops-icon-size-16);
+  flex-shrink: 0;
+}
+
+.searchInput {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: none;
+  font-family: var(--xops-font-family);
+  font-weight: var(--xops-font-weight-regular);
+  font-size: var(--xops-typography-body-14-font-size);
+  line-height: var(--xops-typography-body-14-line-height);
+  color: var(--xops-text-primary);
+}
+
+.searchInput::placeholder {
+  color: var(--xops-text-disabled);
+}
+
+.log {
+  border: var(--xops-border-width-1) solid var(--xops-border-divider);
+  border-radius: var(--xops-radius-12);
+  padding: var(--xops-spacing-16) var(--xops-spacing-12);
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.spine {
+  display: flex;
+  flex-direction: column;
+  gap: var(--xops-spacing-16);
+  position: relative;
+}
+
+/* Vertical connector running behind the markers — self-authored (no Figma asset), a plain
+   CSS line rather than an imported SVG. Centered through the date chip's midpoint. */
+.spine::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(var(--xops-control-height-medium) / 2);
+  width: var(--xops-border-width-1);
+  background-color: var(--xops-border-divider);
+  z-index: 0;
+}
+
+.emptyState {
+  font-family: var(--xops-font-family);
+  font-weight: var(--xops-font-weight-regular);
+  font-size: var(--xops-typography-body-14-font-size);
+  line-height: var(--xops-typography-body-14-line-height);
+  color: var(--xops-text-disabled);
+  text-align: center;
+  padding: var(--xops-spacing-24) 0;
+}

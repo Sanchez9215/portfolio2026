@@ -1,7 +1,8 @@
+import { forwardRef } from 'react'
 import styles from './Block.module.css'
 
 export type BlockSize = 'xs' | 'sm' | 'md' | 'lg'
-export type BlockColor = 'primary' | 'secondary' | 'tertiary'
+export type BlockColor = 'primary' | 'secondary' | 'tertiary' | 'inverse'
 
 interface BlockProps {
   size: BlockSize
@@ -10,10 +11,15 @@ interface BlockProps {
   className?: string
 }
 
-export default function Block({ size, color = 'secondary', children, className }: BlockProps) {
+const Block = forwardRef<HTMLParagraphElement, BlockProps>(function Block(
+  { size, color = 'secondary', children, className },
+  ref
+) {
   return (
-    <p className={`${styles.block} ${styles[size]} ${styles[color]}${className ? ` ${className}` : ''}`}>
+    <p ref={ref} className={`${styles.block} ${styles[size]} ${styles[color]}${className ? ` ${className}` : ''}`}>
       {children}
     </p>
   )
-}
+})
+
+export default Block

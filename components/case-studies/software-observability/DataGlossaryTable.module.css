@@ -1,0 +1,52 @@
+.scrollWrapper {
+  width:         100%;
+  border:        var(--border-card) solid var(--surface-card-border);
+  border-radius: var(--radius-md);
+}
+
+.table {
+  display: grid;
+}
+
+.headerRow,
+.bodyRow {
+  display:               grid;
+  grid-template-columns: 0.8fr 1.4fr 1fr 1.2fr 1.6fr 0.9fr;
+}
+
+.headerRow {
+  background: var(--surface-card);
+}
+
+.bodyRow:not(:last-child) {
+  border-bottom: var(--border-card) solid var(--surface-card-border);
+}
+
+.headerCell {
+  min-width:      0;
+  padding:        var(--spacing-md);
+  font-family:    var(--font-family-display);
+  font-weight:    var(--font-weight-semibold);
+  font-size:      var(--text-heading-xs-size);
+  line-height:    var(--text-heading-xs-lh);
+  color:          var(--text-primary);
+  text-transform: uppercase;
+  border-bottom:  var(--border-card) solid var(--surface-card-border);
+  border-right:   var(--border-card) solid var(--surface-card-border);
+}
+
+.bodyCell {
+  min-width:    0;
+  padding:      var(--spacing-md);
+  font-family:  var(--font-family-body);
+  font-weight:  var(--font-weight-regular);
+  font-size:    var(--text-body-sm-size);
+  line-height:  var(--text-body-sm-lh);
+  color:        var(--text-secondary);
+  border-right: var(--border-card) solid var(--surface-card-border);
+}
+
+.headerCell:last-child,
+.bodyCell:last-child {
+  border-right: none;
+}

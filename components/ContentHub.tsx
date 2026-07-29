@@ -64,12 +64,18 @@ function wrapWords(text: string, maxChars: number): string[] {
   return lines
 }
 
-function bboxEdge(box: DOMRect, dx: number, dy: number): { x: number; y: number } {
+// Gap between a label and the spokes touching it — the box is inflated by `pad`
+// so the spoke endpoint lands `pad` px outside the text (--spacing-md = 16px).
+const LABEL_PAD = 16
+
+function bboxEdge(box: DOMRect, dx: number, dy: number, pad = 0): { x: number; y: number } {
   const cx = box.x + box.width / 2
   const cy = box.y + box.height / 2
   if (Math.abs(dx) < 0.001 && Math.abs(dy) < 0.001) return { x: cx, y: cy }
-  const tx = Math.abs(dx) > 0.001 ? (box.width / 2) / Math.abs(dx) : Infinity
-  const ty = Math.abs(dy) > 0.001 ? (box.height / 2) / Math.abs(dy) : Infinity
+  const halfW = box.width / 2 + pad
+  const halfH = box.height / 2 + pad
+  const tx = Math.abs(dx) > 0.001 ? halfW / Math.abs(dx) : Infinity
+  const ty = Math.abs(dy) > 0.001 ? halfH / Math.abs(dy) : Infinity
   const t = Math.min(tx, ty)
   return { x: cx + dx * t, y: cy + dy * t }
 }
@@ -176,101 +182,136 @@ export default function ContentHub({ title, nodes }: Props) {
         }
       })
 
-      // Clamp all non-hub nodes
-      const padX = 80; const padY = 28
-      simNodes.forEach(n => {
-        if (!n.isHub) {
-          n.x = Math.max(padX, Math.min(W - padX, n.x ?? cx))
-          n.y = Math.max(padY, Math.min(H - padY, n.y ?? cy))
-        }
-      })
+      // Draw the labels + spokes at the current node positions. Returned map
+      // (node id → label element) lets us measure the real label boxes so the
+      // fit below can guarantee nothing clips.
+      function paint(): Map<string, SVGElement> {
+        while (svg.firstChild) svg.removeChild(svg.firstChild)
+        svg.setAttribute('width', String(W))
+        svg.setAttribute('height', String(H))
 
-      while (svg.firstChild) svg.removeChild(svg.firstChild)
-      svg.setAttribute('width', String(W))
-      svg.setAttribute('height', String(H))
+        // Pass 1 — render labels
+        const labelGroup = el('g') as SVGGElement
+        svg.appendChild(labelGroup)
+        const els = new Map<string, SVGElement>()
 
-      // Pass 1 — render labels
-      const labelGroup = el('g') as SVGGElement
-      svg.appendChild(labelGroup)
-      const nodeEls = new Map<string, SVGElement>()
+        for (const node of simNodes) {
+          const x = node.x!
+          const y = node.y!
 
-      for (const node of simNodes) {
-        const x = node.x!
-        const y = node.y!
+          if (node.isHub) {
+            const words = node.name.split(' ')
+            const lineH = 30 // --text-label-xl-lh, matches the enlarged hub type
+            const g = el('g') as SVGGElement
+            words.forEach((word, i) => {
+              const t = el('text') as SVGTextElement
+              t.setAttribute('x', String(cx))
+              t.setAttribute('y', String(cy + (i - (words.length - 1) / 2) * lineH))
+              t.setAttribute('class', styles.hubText)
+              t.setAttribute('dominant-baseline', 'middle')
+              t.textContent = word
+              g.appendChild(t)
+            })
+            labelGroup.appendChild(g)
+            els.set(node.id, g)
+          } else {
+            const isLeft = x < cx - 4
+            const anchor = isLeft ? 'end' : 'start'
+            const offsetX = isLeft ? -10 : 10
+            const lines = wrapWords(node.name, 18)
+            const lineH = 24 // --text-body-lg-lh, matches the enlarged leaf type
+            const totalH = (lines.length - 1) * lineH
 
-        if (node.isHub) {
-          const words = node.name.split(' ')
-          const lineH = 20
-          const g = el('g') as SVGGElement
-          words.forEach((word, i) => {
             const t = el('text') as SVGTextElement
-            t.setAttribute('x', String(cx))
-            t.setAttribute('y', String(cy + (i - (words.length - 1) / 2) * lineH))
-            t.setAttribute('class', styles.hubText)
-            t.setAttribute('dominant-baseline', 'middle')
-            t.textContent = word
-            g.appendChild(t)
-          })
-          labelGroup.appendChild(g)
-          nodeEls.set(node.id, g)
-        } else {
-          const isLeft = x < cx - 4
-          const anchor = isLeft ? 'end' : 'start'
-          const offsetX = isLeft ? -10 : 10
-          const lines = wrapWords(node.name, 18)
-          const lineH = 15
-          const totalH = (lines.length - 1) * lineH
+            t.setAttribute('text-anchor', anchor)
+            t.setAttribute('class', node.isIntermediate ? styles.intermediateText : styles.leafText)
 
-          const t = el('text') as SVGTextElement
-          t.setAttribute('text-anchor', anchor)
-          t.setAttribute('class', node.isIntermediate ? styles.intermediateText : styles.leafText)
+            lines.forEach((lineText, i) => {
+              const ts = el('tspan') as SVGTSpanElement
+              ts.setAttribute('x', String(x + offsetX))
+              ts.setAttribute('y', String(y - totalH / 2 + i * lineH))
+              ts.setAttribute('dominant-baseline', 'middle')
+              ts.textContent = lineText
+              t.appendChild(ts)
+            })
 
-          lines.forEach((lineText, i) => {
-            const ts = el('tspan') as SVGTSpanElement
-            ts.setAttribute('x', String(x + offsetX))
-            ts.setAttribute('y', String(y - totalH / 2 + i * lineH))
-            ts.setAttribute('dominant-baseline', 'middle')
-            ts.textContent = lineText
-            t.appendChild(ts)
-          })
-
-          labelGroup.appendChild(t)
-          nodeEls.set(node.id, t)
+            labelGroup.appendChild(t)
+            els.set(node.id, t)
+          }
         }
+
+        // Pass 2 — draw spokes from bbox edge to bbox edge
+        const spokeGroup = el('g') as SVGGElement
+        svg.insertBefore(spokeGroup, labelGroup)
+
+        for (const lnk of links as any[]) {
+          const srcId = typeof lnk.source === 'object' ? lnk.source.id : lnk.source
+          const tgtId = typeof lnk.target === 'object' ? lnk.target.id : lnk.target
+          const srcEl = els.get(srcId)
+          const tgtEl = els.get(tgtId)
+          if (!srcEl || !tgtEl) continue
+
+          const srcBox = (srcEl as SVGGraphicsElement).getBBox()
+          const tgtBox = (tgtEl as SVGGraphicsElement).getBBox()
+
+          const srcCx = srcBox.x + srcBox.width / 2
+          const srcCy = srcBox.y + srcBox.height / 2
+          const tgtCx = tgtBox.x + tgtBox.width / 2
+          const tgtCy = tgtBox.y + tgtBox.height / 2
+
+          const dx = tgtCx - srcCx
+          const dy = tgtCy - srcCy
+
+          const p1 = bboxEdge(srcBox, dx, dy, LABEL_PAD)
+          const p2 = bboxEdge(tgtBox, -dx, -dy, LABEL_PAD)
+
+          const line = el('line') as SVGLineElement
+          line.setAttribute('x1', String(p1.x))
+          line.setAttribute('y1', String(p1.y))
+          line.setAttribute('x2', String(p2.x))
+          line.setAttribute('y2', String(p2.y))
+          line.setAttribute('class', styles.spoke)
+          spokeGroup.appendChild(line)
+        }
+
+        return els
       }
 
-      // Pass 2 — draw spokes from bbox edge to bbox edge
-      const spokeGroup = el('g') as SVGGElement
-      svg.insertBefore(spokeGroup, labelGroup)
+      // Paint once at the raw simulation scale to MEASURE each label's real box,
+      // then scale the node POSITIONS (never the text — so the type stays at its
+      // set size and legible) so the whole web + its labels fills the container
+      // while staying inside a 32px inset. This spreads the web to the edges yet
+      // guarantees no label clips at the (scroll-clipped) container bounds.
+      // sx≠sy so it still fills wider than tall on the 2:1 box.
+      const INSET = 32
+      const nodeEls = paint()
 
-      for (const lnk of links as any[]) {
-        const srcId = typeof lnk.source === 'object' ? lnk.source.id : lnk.source
-        const tgtId = typeof lnk.target === 'object' ? lnk.target.id : lnk.target
-        const srcEl = nodeEls.get(srcId)
-        const tgtEl = nodeEls.get(tgtId)
-        if (!srcEl || !tgtEl) continue
+      let sx = Infinity; let sy = Infinity
+      for (const node of simNodes) {
+        if (node.isHub) continue
+        const box = (nodeEls.get(node.id) as SVGGraphicsElement).getBBox()
+        const nx = node.x!; const ny = node.y!
+        const dx = nx - cx; const dy = ny - cy
+        const relLeft = box.x - nx
+        const relRight = box.x + box.width - nx
+        const relTop = box.y - ny
+        const relBottom = box.y + box.height - ny
+        // Largest scale that still keeps this label's far edge inside the inset.
+        if (dx > 0.5) sx = Math.min(sx, (W - INSET - cx - relRight) / dx)
+        else if (dx < -0.5) sx = Math.min(sx, (INSET - cx - relLeft) / dx)
+        if (dy > 0.5) sy = Math.min(sy, (H - INSET - cy - relBottom) / dy)
+        else if (dy < -0.5) sy = Math.min(sy, (INSET - cy - relTop) / dy)
+      }
+      if (!Number.isFinite(sx) || sx <= 0) sx = 1
+      if (!Number.isFinite(sy) || sy <= 0) sy = 1
 
-        const srcBox = (srcEl as SVGGraphicsElement).getBBox()
-        const tgtBox = (tgtEl as SVGGraphicsElement).getBBox()
-
-        const srcCx = srcBox.x + srcBox.width / 2
-        const srcCy = srcBox.y + srcBox.height / 2
-        const tgtCx = tgtBox.x + tgtBox.width / 2
-        const tgtCy = tgtBox.y + tgtBox.height / 2
-
-        const dx = tgtCx - srcCx
-        const dy = tgtCy - srcCy
-
-        const p1 = bboxEdge(srcBox, dx, dy)
-        const p2 = bboxEdge(tgtBox, -dx, -dy)
-
-        const line = el('line') as SVGLineElement
-        line.setAttribute('x1', String(p1.x))
-        line.setAttribute('y1', String(p1.y))
-        line.setAttribute('x2', String(p2.x))
-        line.setAttribute('y2', String(p2.y))
-        line.setAttribute('class', styles.spoke)
-        spokeGroup.appendChild(line)
+      if (Math.abs(sx - 1) > 0.001 || Math.abs(sy - 1) > 0.001) {
+        simNodes.forEach(n => {
+          if (n.isHub) return
+          n.x = cx + ((n.x ?? cx) - cx) * sx
+          n.y = cy + ((n.y ?? cy) - cy) * sy
+        })
+        paint()
       }
     }
 

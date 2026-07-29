@@ -1,0 +1,74 @@
+/* Observability-first eye collage — internal element styling only. Grid
+   placement (grid-column / vertical / bleed) lives in the page module CSS
+   (software-observability.module.css), per the section-builder convention. */
+
+.blob {
+  display: block;
+  width: 100%;
+  height: 100%;
+  color: var(--color-blue-500);
+}
+
+/* Each eye box takes its width from its grid column span; height follows the
+   almond aspect-ratio. The almond SVG fills it; the pupil + copy sit inside. */
+.eye {
+  position: relative;
+  aspect-ratio: 900 / 372;
+}
+
+.almond {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  color: var(--color-grey-500);
+}
+
+/* Pupil: a dark circle centred on the almond. GSAP owns the transform
+   (xPercent/yPercent centre it; x/y carry the cursor-follow offset). Width
+   (% of almond width) is set inline per eye. */
+.pupil {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--color-grey-1100);
+}
+
+/* Big eye's copy: rendered ABOVE the pupil, coloured the same as the almond,
+   and blended with `lighten` so it is invisible over the light almond and only
+   lights up where the dark pupil passes beneath it — a moving spotlight.
+   `isolation` scopes the blend to this eye's own almond + pupil. */
+.eyeText {
+  isolation: isolate;
+}
+
+.eyeCopy {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 41%;
+  margin: 0;
+  text-align: center;
+  font-family: var(--font-family-body);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--text-body-display-size);
+  line-height: var(--text-body-display-lh);
+  letter-spacing: var(--text-body-display-ls);
+  color: var(--color-grey-500);
+  mix-blend-mode: lighten;
+  pointer-events: none;
+}
+
+/* Detail paragraph — typography only; placement in the page module. */
+.detail {
+  margin: 0;
+  font-family: var(--font-family-body);
+  font-weight: var(--font-weight-regular);
+  font-size: var(--text-body-lg-size);
+  line-height: var(--text-body-lg-lh);
+  letter-spacing: var(--text-body-lg-ls);
+  color: var(--color-grey-1100);
+}

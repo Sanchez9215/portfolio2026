@@ -18,6 +18,14 @@ export type TooltipProps = {
   legend?: TooltipLegendItem[];
   children?: ReactNode;
   className?: string;
+  /** Forces the panel open regardless of hover/focus — used to programmatically
+   *  expose a tooltip (e.g. the case study's hotspot annotation spotlighting the
+   *  Inactive definition). Repositions every frame while forced so it stays glued
+   *  to its trigger as the live embed pans. */
+  forceOpen?: boolean;
+  /** `data-hotspot` id applied to the portaled panel — lets an external overlay
+   *  target the open panel itself (e.g. the case study's hotspot spotlighting). */
+  hotspotId?: string;
 };
 
 // Must match .panel's width in Tooltip.module.css — used to detect right-edge overflow before render.
@@ -33,51 +41,70 @@ export function Tooltip({
   legend,
   children,
   className,
+  forceOpen = false,
+  hotspotId,
 }: TooltipProps) {
-  const [open, setOpen] = useState(false);
+  const [hovered, setHovered] = useState(false);
   const [position, setPosition] = useState<Position | null>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const hideTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
 
+  const open = hovered || forceOpen;
+
   useEffect(() => {
-    if (!open || !triggerRef.current || !panelRef.current) return;
-    const triggerRect = triggerRef.current.getBoundingClientRect();
-    const panelHeight = panelRef.current.getBoundingClientRect().height;
+    if (!open) return;
 
-    const fitsAbove = triggerRect.top - GAP - panelHeight >= 0;
+    const reposition = () => {
+      if (!triggerRef.current || !panelRef.current) return;
+      const triggerRect = triggerRef.current.getBoundingClientRect();
+      const panelHeight = panelRef.current.getBoundingClientRect().height;
 
-    if (fitsAbove) {
-      const overflowsRight = triggerRect.left + PANEL_WIDTH > window.innerWidth - GAP;
-      setPosition({
-        top: triggerRect.top - GAP - panelHeight,
-        ...(overflowsRight
-          ? { right: window.innerWidth - triggerRect.right }
-          : { left: triggerRect.left }),
-      });
-    } else {
-      // Not enough room above (e.g. a header near the top of the viewport) — flip to a
-      // right-side flyout, top-anchored so the icon sits at the panel's top-left corner.
-      const fitsRight = triggerRect.right + GAP + PANEL_WIDTH <= window.innerWidth;
-      setPosition({
-        top: triggerRect.top,
-        ...(fitsRight
-          ? { left: triggerRect.right + GAP }
-          : { right: window.innerWidth - triggerRect.left + GAP }),
-      });
-    }
-  }, [open]);
+      const fitsAbove = triggerRect.top - GAP - panelHeight >= 0;
+
+      if (fitsAbove) {
+        const overflowsRight = triggerRect.left + PANEL_WIDTH > window.innerWidth - GAP;
+        setPosition({
+          top: triggerRect.top - GAP - panelHeight,
+          ...(overflowsRight
+            ? { right: window.innerWidth - triggerRect.right }
+            : { left: triggerRect.left }),
+        });
+      } else {
+        // Not enough room above (e.g. a header near the top of the viewport) — flip to a
+        // right-side flyout, top-anchored so the icon sits at the panel's top-left corner.
+        const fitsRight = triggerRect.right + GAP + PANEL_WIDTH <= window.innerWidth;
+        setPosition({
+          top: triggerRect.top,
+          ...(fitsRight
+            ? { left: triggerRect.right + GAP }
+            : { right: window.innerWidth - triggerRect.left + GAP }),
+        });
+      }
+    };
+
+    reposition();
+
+    // When forced open the trigger can move without a hover event — the live
+    // embed pans/scales the canvas it lives in — so track it every frame.
+    if (!forceOpen) return;
+    let frame = requestAnimationFrame(function loop() {
+      reposition();
+      frame = requestAnimationFrame(loop);
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [open, forceOpen]);
 
   // A short close delay so the cursor can travel from the icon onto the panel
   // without the gap between them closing it first.
   const show = () => {
     clearTimeout(hideTimeoutRef.current);
-    setOpen(true);
+    setHovered(true);
   };
   const hide = () => {
     hideTimeoutRef.current = setTimeout(() => {
-      setOpen(false);
-      setPosition(null);
+      setHovered(false);
+      if (!forceOpen) setPosition(null);
     }, 250);
   };
 
@@ -101,6 +128,7 @@ export function Tooltip({
             ref={panelRef}
             className={styles.panel}
             role="tooltip"
+            data-hotspot={hotspotId}
             style={
               position
                 ? { top: position.top, left: position.left, right: position.right }

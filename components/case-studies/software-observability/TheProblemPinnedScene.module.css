@@ -1,0 +1,235 @@
+/* ============================================================
+   TheProblemPinnedScene — pinned detail block + growing message board
+   section.the-problem, Software Observability case study
+   ============================================================ */
+
+/* Scroll-track only — no visuals of its own. Its height (set in JS to
+   calc(100vh + runway)) is the scroll distance the sticky .stage travels
+   through: one viewport for the stage itself + the beats' runway. Because
+   this height is fixed and the card grows only INSIDE the sticky stage (never
+   changing this element's height), the next section always follows exactly
+   here — no pin-spacer desync, no reserved void. */
+.scene {
+  position: relative;
+}
+
+/* The always-full-viewport stage. Sticks to the top of the viewport while
+   .scene scrolls through its runway, then releases and scrolls away naturally
+   at the end — carrying the finished (fullscreen quote) card up out of view
+   and revealing the next section, with no abrupt reset. top:0 (behind the
+   fixed nav); content is padded below the nav and the fullscreen card centers
+   its content clear of it. */
+.stage {
+  position:              sticky;
+  top:                   0;
+  height:                100vh;
+  display:               grid;
+  grid-template-columns: repeat(4, 1fr);
+  column-gap:            var(--spacing-xl);
+  align-content:         start;
+  padding-top:           var(--nav-height);
+}
+
+.detailBlock {
+  grid-column: 1 / 3;
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-xl);
+}
+
+.messageContainer {
+  position:     relative;
+  grid-column:  1 / 5;
+  /* Hugs the card. The card's fullscreen growth is via real width/height but
+     it lives inside the fixed-height sticky .stage, so it never changes this
+     element's — or .scene's — layout height. */
+}
+
+.messageCard {
+  position:      relative;
+  border:        none;
+  background:    var(--surface-card);
+  border-radius: var(--radius-md);
+  padding:       var(--spacing-md);
+  /* Scoped overrides — .messageCard is the shared ancestor of the label
+     group and the metrics (but NOT of .messageScreen's bubbles, a sibling),
+     so redefining these here recolors "The Problem" label, body/support
+     lines, the metric value, and the metric label caption to black, without
+     touching Label.module.css / LabelBlock.module.css / MetricCard.module.css
+     defaults used everywhere else on the site. Safe as a static (unanimated)
+     override: this content only ever becomes visible after growEnd, by
+     which point the card's background-color tween to --accent-warning has
+     already finished — the grey/black combination is never actually seen. */
+  --text-primary:                var(--text-dark-display);
+  --text-body-display-statement: var(--text-dark-display);
+  --text-tertiary:               var(--text-dark-display);
+  /* Covers QuoteBlock's bodyDisplay (--text-secondary) and emphasis
+     (--text-subtle) — safe here since nothing else under .messageCard reads
+     either variable. */
+  --text-secondary:              var(--text-dark-display);
+  --text-subtle:                 var(--text-dark-display);
+  /* quote.svg is a flat-fill <img>, not inline SVG — brightness(0) maps its
+     solid fill to black regardless of source color. */
+  --quote-mark-filter:           brightness(0);
+  /* MetricCard's .source (citation link) has its own hook, distinct from
+     --text-tertiary above, so it can land on grey-900 instead of full black. */
+  --metric-source-color:         var(--color-grey-900);
+  /* An even 50/50 split — 4 of the 8 available columns (.problemQuoteGroup)
+     each — rather than QuoteBlock's own 60/40 default. Exact
+     text-wrap:balance row count depends on live rendering — check visually. */
+  --quote-content-basis:         50%;
+  --quote-row-gap:               var(--spacing-2xl);
+}
+
+/* Same 12-column convention as .cs-grid (styles/globals.css) — reused here
+   directly since this overlay isn't a Section and can't pick it up that way.
+   A child of .messageCard: the card grows by animating its real width/height
+   (not transform:scale), so this fills the card at true pixel size and its
+   12-col grid is measured against the real fullscreen width — no counter-
+   scaling needed. Vertically centered (align-content:center), matching
+   .problemMetrics/.problemQuote. row-gap is deliberately not used here (it'd
+   apply uniformly to every row); each child below sets its own margin-top so
+   the label→body gap can differ from any future addition. */
+.problemReveal {
+  position:              absolute;
+  inset:                 0;
+  display:               grid;
+  grid-template-columns: repeat(12, 1fr);
+  column-gap:            var(--spacing-xl);
+  align-content:         center;
+  padding-inline:        var(--spacing-xl);
+  text-align:            left;
+  pointer-events:        none;
+}
+
+/* Wraps the label + body + support text as one rigid block, so the exit
+   animation (TheProblemPinnedScene) can translate/fade it as a single unit
+   instead of each line moving by a fraction of its own height. Center 6 of
+   12 columns (3 to spare on each side) — reused as-is by the quote wrapper
+   and the metrics group below, so all three beats share one span. */
+.problemLabelGroup {
+  grid-column: 4 / 10;
+}
+
+.problemRevealBody {
+  margin-top: var(--spacing-md);
+}
+
+/* Second PROBLEM_BODY_LINES row only — .statement's text-wrap:balance would
+   otherwise auto-wrap this line into an unwanted third visual row now that
+   the card's content column is narrower (center-6 span); forcing it to stay
+   on one line, even if it runs slightly past the column, reads better. */
+.problemBodyLineNoWrap {
+  white-space: nowrap;
+}
+
+/* A sibling of .problemReveal (not a child), so it centers independently of
+   wherever the label content's own flow/exit leaves it — see
+   TheProblemPinnedScene's JSX comment. Same 12-col + align-content:center
+   pattern as .problemReveal/.problemQuote, so .problemLabelGroup's span can
+   be reused for the metrics group below. */
+.problemMetrics {
+  position:              absolute;
+  inset:                 0;
+  display:               grid;
+  grid-template-columns: repeat(12, 1fr);
+  align-content:         center;
+  padding-inline:        var(--spacing-xl);
+  pointer-events:        none;
+}
+
+/* Content-hugging inner group — the exit animation (TheProblemPinnedScene)
+   targets THIS, not .problemMetrics: .problemMetrics is inset:0 (its own box
+   spans the full card), so a yPercent transform on it would move by a
+   percentage of the whole card's height rather than the cards' own height,
+   the same bug the label's exit already ran into. Applied alongside
+   .problemLabelGroup (for the shared center-6 span) in the JSX. A real
+   2-column grid (not flex) so each card is a genuine half — 3 of the 6
+   columns — regardless of gap size: unlike the earlier flex approach, a real
+   grid's column-gap never skews the 1fr tracks' equality. */
+.problemMetricsGroup {
+  display:               grid;
+  grid-template-columns: repeat(2, 1fr);
+  column-gap:            var(--spacing-3xl);
+}
+
+/* Second metric card only ("$19.8M") — its label caption and source link
+   shift right, via MetricCard's own --metric-label-padding-left hook. */
+.metricSecond {
+  --metric-label-padding-left: var(--spacing-xl);
+}
+
+/* A sibling of .problemReveal and .problemMetrics — vertically centered
+   (align-content:center) rather than top-anchored, matching where the
+   metrics sat before it. This card's final beat. */
+.problemQuote {
+  position:              absolute;
+  inset:                 0;
+  display:               grid;
+  grid-template-columns: repeat(12, 1fr);
+  align-content:         center;
+  padding-inline:        var(--spacing-xl);
+  pointer-events:        none;
+}
+
+/* Center 8 of 12 columns (2 to spare on each side) — wider than
+   .problemLabelGroup's center-6, since the quote's content/emphasis split
+   4-and-4 needs more room than the label or metrics beats. */
+.problemQuoteGroup {
+  grid-column: 3 / 11;
+}
+
+/* A sibling of .messageCard, not a child — so as the card grows to
+   fullscreen (real width/height + translate) the messages DON'T grow or move
+   with it; they stay put over the card's resting band until their own rows
+   slide out. inset matches .messageCard's padding so they overlay exactly
+   where they'd sit inside the resting card. */
+.messageScreen {
+  position:       absolute;
+  /* inset: top right bottom left. top = spacing-3xl (64px); bottom =
+     spacing-md (16px); left/right pulled OUT by spacing-sm (-8px) so each
+     side's message overhangs the card edge by 8px — the layering/peek
+     effect. */
+  inset:          var(--spacing-3xl) calc(-1 * var(--spacing-sm)) var(--spacing-md);
+  display:        flex;
+  flex-direction: column;
+  gap:            var(--spacing-lg);
+}
+
+.rowLeft {
+  display:         flex;
+  justify-content: flex-start;
+}
+
+.rowRight {
+  display:         flex;
+  justify-content: flex-end;
+}
+
+.bubble {
+  border:        var(--border-card) var(--border-style-default) var(--surface-card-border);
+  border-radius: var(--radius-default);
+  padding:       var(--spacing-mlg);
+  max-width:     75%;
+  /* Left (received) bubbles — grey-900 fill. .bubbleSent overrides for the
+     right (sent) side. */
+  background:    var(--color-grey-900);
+}
+
+.bubbleSent {
+  background: var(--accent-primary);
+}
+
+.bubbleText {
+  font-family:    var(--font-family-body);
+  font-weight:    var(--font-weight-semibold);
+  font-size:      var(--text-body-xl-size);
+  line-height:    var(--text-body-xl-lh);
+  letter-spacing: var(--text-body-xl-ls);
+  color:          var(--text-secondary);
+  margin:         0;
+}
+
+.emoji {
+  width:  calc(var(--icon-2xl) + var(--spacing-md)); /* 80px */
+  height: calc(var(--icon-2xl) + var(--spacing-md));
+}

@@ -45,8 +45,10 @@
   display: block;
 }
 
-/* div.labelWrapper — only rendered when caption is provided */
-.labelWrapper {
+/* div.labelWrapper — only rendered when caption is provided.
+   Card variant only: offsets the label an extra step in from the image,
+   on top of Card's own padding — bare variant sits flush with the image. */
+.card .labelWrapper {
   padding-left: var(--spacing-md);
 }
 
@@ -60,4 +62,19 @@
   word-spacing:   var(--word-spacing-display);
   text-transform: uppercase;
   color:          var(--text-primary);
+}
+
+.caption.inverse {
+  color: var(--text-inverse-primary);
+}
+
+/* div — bare variant root: no border/padding, structural only */
+.bare {
+  width: 100%;
+}
+
+/* Bare variant: label sits above the image, not below (card variant keeps
+   the original image-then-label order). */
+.bare .labelWrapper {
+  order: -1;
 }

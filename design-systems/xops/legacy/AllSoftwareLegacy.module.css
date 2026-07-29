@@ -1,0 +1,69 @@
+/*
+ * Legacy All Software — one-off screen-specific styles only.
+ * Reuses existing --xops-* tokens throughout; never introduces new token values.
+ * Colocated in legacy/ deliberately so it never resolves against the main
+ * design-systems/xops/components tree (see .claude/projects/xops/DECISIONS.md 024).
+ */
+
+.toolbarRow {
+  display: flex;
+  align-items: center;
+  gap: var(--xops-spacing-16);
+}
+
+.regionGroup {
+  display: flex;
+  align-items: center;
+  gap: var(--xops-spacing-16);
+  padding-right: var(--xops-spacing-16);
+  border-right: var(--xops-border-width-1) solid var(--xops-border-divider);
+}
+
+.tableWrapper {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+/* "Tighter rows" adjustment (user-confirmed): body-cell vertical padding only,
+   spacing-12 → spacing-8. Higher specificity than Table.module.css's .bodyCell
+   wins regardless of source order; horizontal padding is left untouched. */
+.tableWrapper :global(td) {
+  padding-top: var(--xops-spacing-8);
+  padding-bottom: var(--xops-spacing-8);
+}
+
+/* Count badge (user-confirmed, Figma 61:34348): scoped restyle of the shared
+   Count span into a grey pill — the shared Count/PageHeader stay untouched.
+   `h2 + span` uniquely targets Count (the meta span is not adjacent to the h2). */
+.pageHeader :global(h2 + span) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--xops-spacing-6);
+  background-color: var(--xops-border-divider);
+  border-radius: var(--xops-radius-6);
+  color: var(--xops-text-primary);
+  font-size: var(--xops-typography-heading-20-font-size);
+  line-height: var(--xops-typography-heading-20-line-height);
+}
+
+/* Drop the title's hairline divider (user-confirmed) so the title sits 16px
+   from the badge — removing titleWithDivider's border + padding-right leaves
+   only PageHeader .left's spacing-16 gap. Higher specificity wins. */
+.pageHeader :global(h2) {
+  padding-right: 0;
+  border-right: none;
+}
+
+/* Table radius (user-confirmed): all four corners at the final version's
+   radius-12 (the shared Table's .wrapper only rounds the top, since the modern
+   table's bottom is covered by pagination — legacy has none). overflow:hidden
+   so the rounded corners actually clip the sticky header + last row. Scoped to
+   the legacy table's direct child (the Table's outer div). */
+.tableWrapper > div {
+  border: var(--xops-border-width-1) solid var(--xops-border-divider);
+  border-radius: var(--xops-radius-12);
+  overflow: hidden;
+}

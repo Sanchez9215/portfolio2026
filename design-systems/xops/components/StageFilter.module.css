@@ -1,0 +1,54 @@
+.group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--xops-spacing-16);
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--xops-spacing-8);
+  padding: var(--xops-spacing-6) var(--xops-spacing-12) var(--xops-spacing-6) var(--xops-spacing-6);
+  border: var(--xops-border-width-1) solid var(--xops-border-divider);
+  border-radius: var(--xops-radius-full);
+  background-color: var(--xops-white);
+  cursor: pointer;
+}
+
+.pill:hover {
+  background-color: var(--xops-state-hover-on-surface);
+}
+
+.pill:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 var(--xops-state-focus-ring-width) var(--xops-state-focus-ring);
+}
+
+/* Toggled off — dims the pill so its events read as filtered out without hiding the legend key */
+.inactive {
+  opacity: 0.4;
+}
+
+.dot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: var(--xops-control-height-small);
+  height: var(--xops-control-height-small);
+  border-radius: var(--xops-radius-full);
+}
+
+.dotIcon {
+  width: var(--xops-icon-size-16);
+  height: var(--xops-icon-size-16);
+}
+
+.label {
+  font-family: var(--xops-font-family);
+  font-weight: var(--xops-font-weight-regular);
+  font-size: var(--xops-typography-body-14-font-size);
+  line-height: var(--xops-typography-body-14-line-height);
+  color: var(--xops-text-primary);
+  white-space: nowrap;
+}

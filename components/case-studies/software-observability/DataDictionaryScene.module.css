@@ -1,0 +1,177 @@
+/* ============================================================
+   DataDictionaryScene — pinned scaffold table build → real Data
+   Dictionary table. section.data-dictionary, Software Observability
+   case study
+   ============================================================ */
+
+/* Scroll-track only. Height is set in JS to calc(100vh + RUNWAY) — one
+   viewport for the sticky .stage + the beats' runway. Same mechanism as
+   TheProblemPinnedScene/FrameworkScene: the stage sticks for exactly that
+   distance, then releases and scrolls away with no pin-spacer desync. */
+.scene {
+  position: relative;
+}
+
+.stage {
+  position:       sticky;
+  top:            0;
+  height:         100vh;
+  display:        grid;
+  align-items:    center;
+  justify-items:  center;
+  padding-top:    var(--nav-height);
+}
+
+/* Real DataGlossaryTable, mounted only to measure its actual rendered
+   header/row/column dimensions at this viewport width (see
+   DataDictionaryScene.tsx) — invisible and out of the grid flow so it
+   never affects .stage's layout or is seen. */
+.measureWrap {
+  position:       absolute;
+  top:            0;
+  left:           0;
+  width:          100%;
+  opacity:        0;
+  pointer-events: none;
+  z-index:        -1;
+}
+
+.tableWrap {
+  position:     relative;
+  width:        100%;
+  /* Breaks away from .stage's shared centering so the table shrinks/grows
+     anchored at its own top-left corner, not the viewport center. */
+  align-self:   start;
+  justify-self: start;
+}
+
+/* ── table ───────────────────────────────────────────────── */
+
+.table {
+  display:               grid;
+  grid-template-columns: 437px 1fr 1fr 0px 0px 0px;
+  grid-template-rows:    64px 176px 224px 224px 0px 0px 0px 0px;
+  width:                 100%;
+  border:                var(--border-card) solid var(--surface-card-border);
+  border-radius:         var(--radius-md);
+  overflow:              hidden;
+}
+
+.headerCell1,
+.headerCell2,
+.headerCell3,
+.headerCell4,
+.headerCell5,
+.headerCell6 {
+  position:      relative;
+  grid-row:      1;
+  border-bottom: var(--border-card) solid var(--surface-card-border);
+  display:       flex;
+  align-items:   center;
+  padding:       var(--spacing-md) var(--spacing-lg);
+  overflow:      hidden;
+}
+
+.headerCell1 { grid-column: 1; }
+.headerCell2 { grid-column: 2; }
+.headerCell3 { grid-column: 3; }
+.headerCell4 { grid-column: 4; }
+.headerCell5 { grid-column: 5; }
+.headerCell6 { grid-column: 6; }
+
+/* Absolutely-positioned fill, scaled in from the top by GSAP (scaleY,
+   transform-origin:top) — the header cell's own background lives here
+   rather than on the cell itself, so the wipe animates independently of
+   the label content sitting above it. */
+.headerFill {
+  position:   absolute;
+  inset:      0;
+  background: var(--surface-card);
+}
+
+/* Positioned to fill the cell's content box (inside its padding) so the old
+   placeholder label and the new real column-name label can sit exactly on
+   top of each other and cross-fade in place. */
+.headerContent {
+  position:    absolute;
+  inset:       0;
+  display:     flex;
+  align-items: center;
+  padding:     var(--spacing-md) var(--spacing-lg);
+  white-space: nowrap;
+}
+
+.realHeaderLabel {
+  font-family:    var(--font-family-display);
+  font-weight:    var(--font-weight-semibold);
+  font-size:      var(--text-heading-xs-size);
+  line-height:    var(--text-heading-xs-lh);
+  letter-spacing: var(--text-heading-xs-ls);
+  color:          var(--text-primary);
+  text-transform: uppercase;
+}
+
+/* Body cells — grid position set inline per cell (see .tsx: 7 rows × 6
+   columns, generated from real glossary data), border on every cell; the
+   coincident 1px line at the table's own outer edge is invisible overlap. */
+.bodyCell {
+  position:      relative;
+  border-right:  var(--border-card) solid var(--surface-card-border);
+  border-bottom: var(--border-card) solid var(--surface-card-border);
+  /* Matches DataGlossaryTable's real .bodyCell padding exactly — row
+     heights are measured from that real table, so a mismatched padding
+     here would wrap real content differently and clip it. */
+  padding:       var(--spacing-md);
+  overflow:      hidden;
+}
+
+/* Old scaffold placeholder text (fades up and out in phase 5) — sits inside
+   the same bodyCell as the incoming real text, absolutely positioned so
+   both can cross-fade in place without affecting cell layout. */
+.oldStatement {
+  position: absolute;
+  inset:    0;
+  padding:  var(--spacing-lg);
+  font-family:    var(--font-family-body);
+  font-weight:    var(--font-weight-semibold);
+  font-size:      var(--text-body-display-sm-size);
+  line-height:    var(--text-body-display-sm-lh);
+  letter-spacing: var(--text-body-display-sm-ls);
+  color:          var(--text-secondary);
+}
+
+/* nowrap: at mount the column is still its wide pre-shrink width while the
+   font is still display-sm-sized, so without this each authored line could
+   itself soft-wrap — 3+ rendered rows instead of exactly 2. Any overflow
+   this causes before the shrink catches up is clipped by .table's own
+   overflow:hidden. */
+.oldStatementLine {
+  margin:      0;
+  white-space: nowrap;
+}
+
+.realBodyCellText {
+  margin:      0;
+  font-family: var(--font-family-body);
+  font-weight: var(--font-weight-regular);
+  font-size:   var(--text-body-sm-size);
+  line-height: var(--text-body-sm-lh);
+  letter-spacing: var(--text-body-sm-ls);
+  color:       var(--text-secondary);
+}
+
+/* Column divider lines — drawn in via stroke-dasharray/dashoffset, on top
+   of the table (which has its own static outer border + row borders via
+   CSS, unanimated). pointer-events:none so it never blocks table content. */
+.dividers {
+  position:       absolute;
+  top:            0;
+  left:           0;
+  pointer-events: none;
+}
+
+.dividerLine {
+  stroke:       var(--surface-card-border);
+  stroke-width: var(--border-width-sm);
+  fill:         none;
+}

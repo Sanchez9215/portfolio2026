@@ -1,0 +1,281 @@
+.profile {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+}
+
+/* Sticky header — App Title + Description only (Ownership scrolls with the rest, per
+   the source design's own sticky/z-index hints on this exact sub-tree). Lives inside
+   .content (the scroll container) since position:sticky requires a scrolling ancestor. */
+.stickyHeader {
+  display: flex;
+  flex-direction: column;
+  gap: var(--xops-spacing-16);
+  padding-bottom: var(--xops-spacing-16);
+  background-color: var(--xops-surface-page);
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  width: 100%;
+}
+
+.appTitle {
+  display: flex;
+  align-items: center;
+  gap: var(--xops-spacing-12);
+  min-width: 0;
+}
+
+.appName {
+  font-family: var(--xops-font-family);
+  font-weight: var(--xops-font-weight-medium);
+  font-size: var(--xops-typography-heading-20-font-size);
+  line-height: var(--xops-typography-heading-20-line-height);
+  color: var(--xops-text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.description {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.descMeta {
+  display: flex;
+  align-items: baseline;
+  gap: var(--xops-spacing-4);
+}
+
+.publisher {
+  font-family: var(--xops-font-family);
+  font-weight: var(--xops-font-weight-regular);
+  font-size: var(--xops-typography-body-12-font-size);
+  line-height: var(--xops-typography-body-12-line-height);
+  color: var(--xops-text-primary);
+}
+
+.dot {
+  font-family: var(--xops-font-family);
+  font-weight: var(--xops-font-weight-medium);
+  font-size: var(--xops-typography-body-14-font-size);
+  line-height: var(--xops-typography-body-14-line-height);
+  color: var(--xops-text-primary);
+}
+
+.category {
+  font-family: var(--xops-font-family);
+  font-weight: var(--xops-font-weight-regular);
+  font-size: var(--xops-typography-body-12-font-size);
+  line-height: var(--xops-typography-body-12-line-height);
+  color: var(--xops-text-secondary);
+}
+
+.descBody {
+  font-family: var(--xops-font-family);
+  font-weight: var(--xops-font-weight-regular);
+  font-size: var(--xops-typography-body-14-font-size);
+  line-height: var(--xops-typography-body-14-line-height);
+  color: var(--xops-text-secondary);
+}
+
+.ownership {
+  display: flex;
+  gap: var(--xops-spacing-16);
+  width: 100%;
+  flex-shrink: 0;
+}
+
+.ownerTile {
+  display: flex;
+  flex-direction: column;
+  flex: 1 0 0%;
+  min-width: 0;
+  padding: var(--xops-spacing-8);
+  background-color: var(--xops-surface-stat);
+  border-radius: var(--xops-radius-6);
+}
+
+.ownerLabel {
+  font-family: var(--xops-font-family);
+  font-weight: var(--xops-font-weight-regular);
+  font-size: var(--xops-typography-body-14-font-size);
+  line-height: var(--xops-typography-body-14-line-height);
+  color: var(--xops-text-secondary);
+}
+
+.ownerValue {
+  font-family: var(--xops-font-family);
+  font-weight: var(--xops-font-weight-regular);
+  font-size: var(--xops-typography-body-14-font-size);
+  line-height: var(--xops-typography-body-14-line-height);
+  color: var(--xops-brand-primary);
+}
+
+/* Single scroll region for the whole profile body — the sticky header and sticky tab
+   strip are descendants of this element (required for position:sticky to engage). No
+   blanket `gap`: the sticky header owns its own bottom spacing (padding-bottom above),
+   so the rhythm to each following block is set individually via margin-top instead. */
+.content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  overflow-y: auto;
+  padding-top: var(--xops-spacing-24);
+}
+
+.summaryCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--xops-spacing-16);
+  width: 100%;
+  margin-top: var(--xops-spacing-24);
+  padding: var(--xops-spacing-16);
+  border: var(--xops-border-width-1) solid var(--xops-border-divider);
+  border-radius: var(--xops-radius-12);
+  flex-shrink: 0;
+}
+
+.purchasedHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.summaryTitle {
+  font-family: var(--xops-font-family);
+  font-weight: var(--xops-font-weight-medium);
+  font-size: var(--xops-typography-subheading-16-font-size);
+  line-height: var(--xops-typography-subheading-16-line-height);
+  color: var(--xops-text-primary);
+}
+
+.summaryValue {
+  font-family: var(--xops-font-family);
+  font-weight: var(--xops-font-weight-regular);
+  font-size: var(--xops-typography-subheading-16-font-size);
+  line-height: var(--xops-typography-subheading-16-line-height);
+  color: var(--xops-text-primary);
+}
+
+/* #EEF2F7 filled panels — absorbed to surface-stat; light custom markup (not Stat) */
+.filledPanel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--xops-spacing-8);
+  width: 100%;
+  padding: var(--xops-spacing-8);
+  background-color: var(--xops-surface-stat);
+  border-radius: var(--xops-radius-6);
+}
+
+.panelRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.panelLabel {
+  font-family: var(--xops-font-family);
+  font-weight: var(--xops-font-weight-regular);
+  font-size: var(--xops-typography-body-14-font-size);
+  line-height: var(--xops-typography-body-14-line-height);
+  color: var(--xops-text-secondary);
+}
+
+.panelValueGroup {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.panelValue {
+  font-family: var(--xops-font-family);
+  font-weight: var(--xops-font-weight-regular);
+  font-size: var(--xops-typography-body-14-font-size);
+  line-height: var(--xops-typography-body-14-line-height);
+  color: var(--xops-text-primary);
+  text-align: right;
+}
+
+.panelUnit {
+  font-family: var(--xops-font-family);
+  font-weight: var(--xops-font-weight-regular);
+  font-size: var(--xops-typography-body-14-font-size);
+  line-height: var(--xops-typography-body-14-line-height);
+  color: var(--xops-text-primary);
+}
+
+.breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: var(--xops-spacing-16);
+  width: 100%;
+}
+
+.breakdownGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--xops-spacing-16);
+  width: 100%;
+}
+
+.costTile {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: var(--xops-spacing-8);
+  background-color: var(--xops-surface-stat);
+  border-radius: var(--xops-radius-6);
+}
+
+.costLabelGroup {
+  display: flex;
+  align-items: center;
+  gap: var(--xops-spacing-8);
+}
+
+.infoIcon {
+  width: var(--xops-icon-size-16);
+  height: var(--xops-icon-size-16);
+}
+
+/* Detail Container — sticky tab strip + tab body; the log below simply flows in normal
+   document flow and takes whatever space remains as the panel scrolls. */
+.detailContainer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--xops-spacing-16);
+  width: 100%;
+  margin-top: var(--xops-spacing-24);
+}
+
+/* Sticky top offset is the sticky header's live-measured height (see component), so tabs
+   dock immediately below it once scrolled past — not a guessed pixel value. */
+.tabStripSticky {
+  position: sticky;
+  z-index: 2;
+  background-color: var(--xops-surface-page);
+  width: 100%;
+}
+
+.tabPlaceholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--xops-spacing-48) var(--xops-spacing-16);
+  font-family: var(--xops-font-family);
+  font-weight: var(--xops-font-weight-regular);
+  font-size: var(--xops-typography-body-14-font-size);
+  line-height: var(--xops-typography-body-14-line-height);
+  color: var(--xops-text-disabled);
+}

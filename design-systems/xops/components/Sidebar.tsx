@@ -14,7 +14,7 @@ type NavLeafKey =
   | "activity-log"
   | "users";
 
-type SoftwareSubKey = "overview" | "all-software";
+export type SoftwareSubKey = "overview" | "all-software";
 
 const SOFTWARE_SUB_ROUTES: Record<SoftwareSubKey, string> = {
   overview: "/work/software-observability/xops-overview",
@@ -45,9 +45,13 @@ const NAV_ITEMS_AFTER_SOFTWARE: NavItemData[] = [
 export type SidebarProps = {
   activeItem?: NavLeafKey;
   activeSoftwareItem?: SoftwareSubKey;
+  /** When set, the software sub-links call this instead of routing via next/link —
+   *  used to drive an in-place embed's screen state (the live case-study hero flow)
+   *  where real routing would navigate the whole portfolio page away. */
+  onNavigate?: (screen: SoftwareSubKey) => void;
 };
 
-export default function Sidebar({ activeItem, activeSoftwareItem }: SidebarProps) {
+export default function Sidebar({ activeItem, activeSoftwareItem, onNavigate }: SidebarProps) {
   const softwareExpanded = Boolean(activeSoftwareItem);
 
   return (
@@ -67,30 +71,20 @@ export default function Sidebar({ activeItem, activeSoftwareItem }: SidebarProps
           {softwareExpanded && (
             <ul className={styles.submenu}>
               <li>
-                <Link
-                  href={SOFTWARE_SUB_ROUTES.overview}
-                  className={[
-                    styles.submenuItem,
-                    activeSoftwareItem === "overview" ? styles.submenuItemActive : "",
-                  ]
-                    .filter(Boolean)
-                    .join(" ")}
-                >
-                  Overview
-                </Link>
+                <SubmenuItem
+                  screen="overview"
+                  label="Overview"
+                  active={activeSoftwareItem === "overview"}
+                  onNavigate={onNavigate}
+                />
               </li>
               <li>
-                <Link
-                  href={SOFTWARE_SUB_ROUTES["all-software"]}
-                  className={[
-                    styles.submenuItem,
-                    activeSoftwareItem === "all-software" ? styles.submenuItemActive : "",
-                  ]
-                    .filter(Boolean)
-                    .join(" ")}
-                >
-                  All Software
-                </Link>
+                <SubmenuItem
+                  screen="all-software"
+                  label="All Software"
+                  active={activeSoftwareItem === "all-software"}
+                  onNavigate={onNavigate}
+                />
               </li>
             </ul>
           )}
@@ -103,6 +97,41 @@ export default function Sidebar({ activeItem, activeSoftwareItem }: SidebarProps
         ))}
       </ul>
     </nav>
+  );
+}
+
+function SubmenuItem({
+  screen,
+  label,
+  active,
+  onNavigate,
+}: {
+  screen: SoftwareSubKey;
+  label: string;
+  active: boolean;
+  onNavigate?: (screen: SoftwareSubKey) => void;
+}) {
+  const className = [styles.submenuItem, active ? styles.submenuItemActive : ""]
+    .filter(Boolean)
+    .join(" ");
+
+  if (onNavigate) {
+    return (
+      <button
+        type="button"
+        className={className}
+        data-hotspot={`nav-${screen}`}
+        onClick={() => onNavigate(screen)}
+      >
+        {label}
+      </button>
+    );
+  }
+
+  return (
+    <Link href={SOFTWARE_SUB_ROUTES[screen]} className={className}>
+      {label}
+    </Link>
   );
 }
 

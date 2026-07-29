@@ -3,8 +3,10 @@
   font-weight:    var(--font-weight-semibold);
   text-transform: uppercase;
   word-spacing:   var(--word-spacing-display);
-  color:          var(--text-primary);
 }
+
+.default { color: var(--text-primary); }
+.inverse { color: var(--text-inverse-secondary); }
 
 .xs { font-size: var(--text-label-xs-size); line-height: var(--text-label-xs-lh); letter-spacing: var(--text-label-xs-ls); }
 .sm { font-size: var(--text-label-sm-size); line-height: var(--text-label-sm-lh); letter-spacing: var(--text-label-sm-ls); }

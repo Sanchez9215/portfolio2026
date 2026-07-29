@@ -1,0 +1,67 @@
+.nav {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  flex-shrink: 0;
+  width: 124px; /* Figma-audited (1498:5851) — one-off layout dimension, not a reusable token */
+}
+
+.year {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: var(--xops-spacing-6) 0 var(--xops-spacing-6) var(--xops-spacing-8);
+  background: none;
+  border: none;
+  border-radius: var(--xops-radius-4);
+  font-family: var(--xops-font-family);
+  font-weight: var(--xops-font-weight-medium);
+  font-size: var(--xops-typography-heading-20-font-size);
+  line-height: var(--xops-typography-heading-20-line-height);
+  color: var(--xops-text-secondary);
+  text-align: right;
+  justify-content: flex-end;
+  cursor: pointer;
+}
+
+.year:hover {
+  color: var(--xops-text-primary);
+}
+
+.yearExpanded {
+  color: var(--xops-brand-primary);
+}
+
+.months {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: 100%;
+}
+
+.month {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  width: 100%;
+  padding: var(--xops-spacing-6) var(--xops-spacing-12);
+  background: none;
+  border: none;
+  border-radius: var(--xops-radius-6);
+  font-family: var(--xops-font-family);
+  font-weight: var(--xops-font-weight-regular);
+  font-size: var(--xops-typography-body-14-font-size);
+  line-height: var(--xops-typography-body-14-line-height);
+  color: var(--xops-text-secondary);
+  text-align: right;
+  cursor: pointer;
+}
+
+.month:hover {
+  color: var(--xops-text-primary);
+}
+
+.monthSelected {
+  background-color: var(--xops-surface-selected);
+  color: var(--xops-brand-primary);
+}

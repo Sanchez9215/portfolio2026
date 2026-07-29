@@ -208,6 +208,27 @@ const FIRST_NAMES = ["Aaliyah","Aaron","Adrian","Ahmed","Aiden","Alan","Alejandr
 
 const LAST_NAMES = ["Abbott","Acosta","Adams","Aguilar","Ali","Andersen","Bailey","Baker","Banerjee","Barnes","Bautista","Bennett","Bishop","Brooks","Bryant","Cabrera","Campbell","Carter","Castillo","Chan","Chen","Cho","Clark","Cohen","Cole","Collins","Cook","Cooper","Cruz","Dalton","Davis","Delgado","Diaz","Dixon","Dubois","Duncan","Edwards","Ellis","Ferguson","Fischer","Fleming","Flores","Foster","Fujimoto","Gallagher","Garcia","Gill","Goldberg","Gomez","Grant","Griffin","Gupta","Hansen","Harris","Hayashi","Hernandez","Holloway","Hoffman","Huang","Ibrahim","Iyer","Jackson","Jensen","Johnson","Kaur","Keller","Khan","Kim","Klein","Kobayashi","Kowalski","Lam","Lambert","Larsen","Lee","Lopez","Lowe","Maddox","Mahmoud","Malik","Marshall","Martin","Martinez","Mbeki","McCarthy","Mehta","Mendez","Meyer","Miller","Mitchell","Mora","Morales","Murphy","Nakamura","Nguyen","Nielsen","Novak","OBrien","Okafor","Oliveira","Olsen","Ortiz","Osei","Palmer","Park","Patel","Pereira","Perry","Peterson","Pham","Phillips","Powell","Price","Ramirez","Reddy","Reyes","Reynolds","Rivera","Roberts","Robinson","Rossi","Russo","Saito","Salazar","Santos","Schneider","Schwartz","Sharma","Silva","Simmons","Singh","Smith","Snyder","Soto","Stewart","Sullivan","Suzuki","Tanaka","Taylor","Thompson","Torres","Tran","Turner","Vargas","Vasquez","Wagner","Walsh","Wang","Ward","Watanabe","Watson","Weber","Webb","Williams","Wilson","Wong","Wright","Yamamoto","Yang","Yoon","Young","Zhang","Zhao","Zimmerman"];
 
+// Deterministic Primary/Secondary owner pair for a product. No owner source table exists
+// yet, so owners are derived from the SKU: same product → same two names every run, drawn
+// from the same roster pools the HR generator uses. FNV-1a hashes the SKU into the PRNG seed.
+function hashString(str: string): number {
+  let h = 2166136261;
+  for (let i = 0; i < str.length; i++) {
+    h ^= str.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+}
+
+export function ownersForSku(sku: string): { primary: string; secondary: string } {
+  const rng = createRng(hashString(sku));
+  const name = () => `${rng.pick(FIRST_NAMES)} ${rng.pick(LAST_NAMES)}`;
+  const primary = name();
+  let secondary = name();
+  while (secondary === primary) secondary = name();
+  return { primary, secondary };
+}
+
 // Assignment reach as a fraction of the relevant population (affinity depts if set, else org).
 const REACH: Record<ProductCatalogEntry["adoption"], [number, number]> = {
   universal: [0.8, 0.98],

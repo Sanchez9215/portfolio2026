@@ -14,7 +14,7 @@ import type {
   LicenseModel,
 } from "./types";
 import { PRODUCT_CATALOG, logoFor } from "./catalog";
-import { AS_OF } from "./generate";
+import { AS_OF, ownersForSku } from "./generate";
 
 const DAY_MS = 86_400_000;
 const ACTIVE_WINDOW_DAYS = 90;
@@ -92,6 +92,9 @@ export type ProductSummary = {
   seatBased: boolean; // false for consumption (usage-billed) → seat metrics don't apply, render "—"
   edition: string;
   reseller: string;
+  // ownership — deterministic synthetic pair keyed off SKU (no owner source table yet)
+  primaryOwner: string;
+  secondaryOwner: string;
   // counts (all joined/derived, never stored)
   purchased: number;
   assigned: number;
@@ -143,6 +146,7 @@ function summarizeProduct(ds: Dataset, proc: ProcurementRow): ProductSummary {
   const unitCost = proc.unitPrice;
   const inactiveWaste = inactive * unitCost;
   const unassignedWaste = unassigned * unitCost;
+  const owners = ownersForSku(proc.productSku);
 
   return {
     sku: proc.productSku,
@@ -154,6 +158,8 @@ function summarizeProduct(ds: Dataset, proc: ProcurementRow): ProductSummary {
     seatBased: proc.licenseModel === "enterprise" || proc.licenseModel === "perpetual",
     edition: idx.editionBySku.get(proc.productSku) ?? "",
     reseller: proc.supplierName,
+    primaryOwner: owners.primary,
+    secondaryOwner: owners.secondary,
     purchased: proc.quantity,
     assigned,
     unassigned,

@@ -1,0 +1,495 @@
+/*
+ * Overview Skeleton — the "Designing for Data Uncertainty" block-build.
+ * A pure-shape (loading-skeleton style) reduction of OverviewLegacy, where every
+ * data block is colored by the SOURCE that feeds it. Dropping a source removes its
+ * blocks and the dashboard reflows (Flip) — wired in a later pass.
+ *
+ * SIZING MODEL (guidelines.md — never invent a pixel dimension):
+ *   WIDTHS  derive from the parent container — width:100% to fill, or a %/flex-ratio.
+ *   HEIGHTS derive from the real thing the shape represents — typography line-height
+ *           tokens for text, control-height / bar-height / logo-tile / swatch tokens
+ *           for controls and chart marks (real tiers taken from OverviewLegacy +
+ *           PageHeader/Stat). Remaining raw pixels are flagged inline.
+ *
+ * COLOR — GRAYSCALE FOR NOW (source palette paused, see below). Depth is read as a
+ *   pyramid viewed from the top: the innermost/most-nested shape is the apex — closest
+ *   to you, LIGHTEST — and each layer outward is farther away and darker:
+ *     leaf shapes  grey-50   (apex, lightest)
+ *     sub-container grey-100
+ *     card / chrome grey-200
+ *     page (base)   grey-300  (farthest, darkest)
+ *   "Light range" chosen for now; shift the endpoints if the depth read is too faint.
+ *
+ * One-off screen-specific styles only; reuses existing --xops-* tokens throughout,
+ * never introduces new token values. Colocated in legacy/ so it never resolves
+ * against the main components tree.
+ */
+
+/* --sc = the active leaf-shape fill; children read background:var(--sc). Custom
+   properties inherit, so setting data-source on a block colors all its shapes.
+   Grayscale-for-now: every leaf = grey-50 (apex). Re-enable the source palette by
+   swapping the single rule below for the commented per-source block. */
+.root [data-source] { --sc: var(--xops-grey-50); }
+
+/* Source palette (paused — re-enable to color leaves by source):
+.root [data-source="financial"]  { --sc: var(--xops-chart-6); }
+.root [data-source="usage"]      { --sc: var(--xops-chart-2); }
+.root [data-source="org"]        { --sc: var(--xops-chart-3); }
+.root [data-source="compliance"] { --sc: var(--xops-danger-500); }
+.root [data-source="neutral"]    { --sc: var(--xops-grey-300); }
+*/
+
+/* ── Shell ─────────────────────────────────────────────────────────── */
+.root {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--xops-grey-300); /* page = base of pyramid, darkest */
+  font-family: var(--xops-font-family);
+}
+
+.sidebar {
+  flex: 0 0 64px; /* structural app-chrome rail width — no token; flagged */
+  background-color: var(--xops-grey-200);
+  border-right: var(--xops-border-width-1) solid var(--xops-border-divider);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--xops-spacing-16);
+  padding: var(--xops-spacing-16) 0;
+}
+
+.sidebarLogo {
+  width: var(--xops-logo-tile-size-medium);
+  height: var(--xops-logo-tile-size-medium);
+  border-radius: var(--xops-radius-8);
+  background-color: var(--xops-grey-50);
+}
+
+.sidebarItem {
+  width: var(--xops-control-height-medium);
+  height: var(--xops-control-height-medium);
+  border-radius: var(--xops-radius-6);
+  background-color: var(--xops-grey-50);
+}
+
+.mainCol {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 56px; /* structural app-chrome header height — no token; flagged */
+  padding: 0 var(--xops-spacing-24);
+  background-color: var(--xops-grey-200);
+  border-bottom: var(--xops-border-width-1) solid var(--xops-border-divider);
+}
+
+.headerSearch {
+  flex: 0 1 320px;
+  height: var(--xops-control-height-medium);
+  border-radius: var(--xops-radius-6);
+  background-color: var(--xops-grey-50);
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: var(--xops-spacing-12);
+}
+
+.headerDot {
+  width: var(--xops-control-height-medium);
+  height: var(--xops-control-height-medium);
+  border-radius: var(--xops-radius-full);
+  background-color: var(--xops-grey-50);
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--xops-spacing-24);
+  padding: var(--xops-grid-margin);
+}
+
+/* ── Page header (title = heading-24, meta = body-14) ──────────────── */
+.pageHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--xops-spacing-16);
+}
+
+.phTitle {
+  width: 28%;
+  height: var(--xops-typography-heading-24-line-height);
+  border-radius: var(--xops-radius-6);
+  background-color: var(--xops-grey-50);
+}
+
+.phMeta {
+  width: 34%;
+  height: var(--xops-typography-body-14-line-height);
+  border-radius: var(--xops-radius-4);
+  background-color: var(--xops-grey-50);
+}
+
+/* ── Cards / panels (surface = grey-200) ───────────────────────────── */
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--xops-spacing-16);
+  height: 100%;
+  background-color: var(--xops-grey-200);
+  border: var(--xops-border-width-1) solid var(--xops-border-divider);
+  border-radius: var(--xops-radius-12);
+  padding: var(--xops-spacing-16);
+}
+
+.sectionTitle {
+  width: 40%;
+  height: var(--xops-typography-subheading-16-line-height);
+  border-radius: var(--xops-radius-4);
+  background-color: var(--xops-grey-50);
+}
+
+/* ── Filter bar — fields split the full row width evenly ───────────── */
+.filterBar {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--xops-spacing-16);
+}
+
+.filterField {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--xops-spacing-8);
+}
+
+.filterFieldLabel {
+  width: 55%;
+  height: var(--xops-typography-body-14-line-height);
+  border-radius: var(--xops-radius-4);
+  background-color: var(--xops-grey-50);
+}
+
+.filterDropdown {
+  width: 100%;
+  height: var(--xops-control-height-medium);
+  border-radius: var(--xops-radius-6);
+  background-color: var(--sc);
+}
+
+.filterDivider {
+  flex: 0 0 auto;
+  width: var(--xops-border-width-1);
+  height: var(--xops-control-height-medium);
+  background-color: var(--xops-border-divider);
+}
+
+/* ── License blocks (bars + legends) ──────────────────────────────── */
+/* Group wrapping the two license blocks — real legacy spaces them 24 apart
+   (.licenseBlocksGroup), not the panel's 16. */
+.licenseBlocksGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--xops-spacing-24);
+}
+
+/* Card-type cards (Usage/Compliance) space their content 24 apart via an inner
+   div inside the real Card, vs the panel's 16 for title→content. */
+.cardContent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--xops-spacing-24);
+}
+
+.licenseBlock {
+  display: flex;
+  flex-direction: column;
+  gap: var(--xops-spacing-8);
+}
+
+.blockHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--xops-spacing-8);
+}
+
+.blockHeaderLabel {
+  flex: 1;
+  height: var(--xops-typography-body-14-line-height);
+  border-radius: var(--xops-radius-4);
+  background-color: var(--xops-grey-50);
+}
+
+.blockHeaderValue {
+  flex: 0 0 20%;
+  height: var(--xops-typography-body-14-line-height);
+  border-radius: var(--xops-radius-4);
+  background-color: var(--sc);
+}
+
+.hbar {
+  display: flex;
+  gap: var(--xops-spacing-2);
+  height: var(--xops-bar-height);
+  width: 100%;
+}
+
+.hbarSeg {
+  height: 100%;
+  border-radius: var(--xops-radius-2);
+  background-color: var(--sc);
+}
+
+.subLabel {
+  width: 42%;
+  height: var(--xops-typography-body-14-line-height);
+  border-radius: var(--xops-radius-4);
+  background-color: var(--xops-grey-50);
+}
+
+.legend {
+  display: flex;
+  flex-direction: column;
+  gap: var(--xops-spacing-8);
+}
+
+.legendRow {
+  display: flex;
+  align-items: center;
+  gap: var(--xops-spacing-8);
+}
+
+.legendSwatch {
+  flex: 0 0 var(--xops-legend-swatch-size);
+  width: var(--xops-legend-swatch-size);
+  height: var(--xops-legend-swatch-size);
+  border-radius: var(--xops-radius-2);
+  background-color: var(--sc);
+}
+
+.legendLabel {
+  flex: 1;
+  height: var(--xops-typography-body-14-line-height);
+  border-radius: var(--xops-radius-4);
+  background-color: var(--xops-grey-50);
+}
+
+.legendValue {
+  flex: 0 0 20%;
+  height: var(--xops-typography-body-14-line-height);
+  border-radius: var(--xops-radius-4);
+  background-color: var(--sc);
+}
+
+.expiringBanner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--xops-spacing-8);
+  padding: var(--xops-spacing-8) var(--xops-spacing-12);
+  border: var(--xops-border-width-1) solid var(--sc);
+  border-radius: var(--xops-radius-6);
+}
+
+.expiringBannerLabel {
+  flex: 1;
+  height: var(--xops-typography-body-14-line-height);
+  border-radius: var(--xops-radius-4);
+  background-color: var(--sc);
+}
+
+.expiringBannerValue {
+  flex: 0 0 22%;
+  height: var(--xops-typography-body-14-line-height);
+  border-radius: var(--xops-radius-4);
+  background-color: var(--sc);
+}
+
+/* ── Stats (sub-container = grey-100; label/value = leaf grey-50) ──── */
+.statRow {
+  display: flex;
+  gap: var(--xops-spacing-8);
+}
+
+.stat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--xops-spacing-8);
+  padding: var(--xops-spacing-16);
+  border-radius: var(--xops-radius-8);
+  background-color: var(--xops-grey-100);
+}
+
+.statLabel {
+  width: 70%;
+  height: var(--xops-typography-body-14-line-height);
+  border-radius: var(--xops-radius-4);
+  background-color: var(--xops-grey-50);
+}
+
+.statValue {
+  width: 45%;
+  height: var(--xops-typography-heading-24-line-height);
+  border-radius: var(--xops-radius-4);
+  background-color: var(--sc);
+}
+
+/* ── Donut — sized as a fraction of its card, kept circular ───────── */
+.donutWrap {
+  display: flex;
+  justify-content: center;
+  padding: var(--xops-spacing-8) 0;
+}
+
+.donut {
+  width: 60%;
+  max-width: 150px;
+  aspect-ratio: 1;
+  border-radius: var(--xops-radius-full);
+  border: 22px solid var(--sc); /* ring thickness — no clean token; flagged */
+  box-sizing: border-box;
+}
+
+/* ── Mini table (sub-container = grey-100; cells = leaf grey-50) ───── */
+.miniTable {
+  display: flex;
+  flex-direction: column;
+  gap: var(--xops-spacing-8);
+  background-color: var(--xops-grey-100);
+  border: var(--xops-border-width-1) solid var(--xops-border-divider);
+  border-radius: var(--xops-radius-12);
+  padding: var(--xops-spacing-12);
+}
+
+.miniRow {
+  display: flex;
+  align-items: center;
+  gap: var(--xops-spacing-16);
+}
+
+.miniCellFlex {
+  flex: 1;
+  height: var(--xops-typography-body-14-line-height);
+  border-radius: var(--xops-radius-4);
+  background-color: var(--sc);
+}
+
+.miniCellAuto {
+  flex: 0 0 20%;
+  height: var(--xops-typography-body-14-line-height);
+  border-radius: var(--xops-radius-4);
+  background-color: var(--sc);
+}
+
+/* ── Lifecycle: stage tabs + toolbar + column table ───────────────── */
+.stageTabs {
+  display: flex;
+  gap: var(--xops-spacing-8);
+}
+
+.stageTab {
+  flex: 1;
+  height: var(--xops-control-height-large);
+  border-radius: var(--xops-radius-6);
+  background-color: var(--sc);
+}
+
+.toolbarRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.toolbarLeft {
+  display: flex;
+  align-items: center;
+  gap: var(--xops-spacing-8);
+  flex: 1;
+}
+
+.searchBox {
+  flex: 0 1 240px;
+  height: var(--xops-control-height-medium);
+  border-radius: var(--xops-radius-6);
+  background-color: var(--xops-grey-50);
+}
+
+.toolbarBtn {
+  flex: 0 0 96px;
+  height: var(--xops-control-height-medium);
+  border-radius: var(--xops-radius-6);
+  background-color: var(--xops-grey-50);
+}
+
+.toolbarBtnSm {
+  flex: 0 0 44px;
+  height: var(--xops-control-height-medium);
+  border-radius: var(--xops-radius-6);
+  background-color: var(--xops-grey-50);
+}
+
+/* Column-oriented table: sub-container = grey-100; each column is a removable
+   source block (flex ratio set inline), cells = leaf grey-50. */
+.columnTable {
+  display: flex;
+  gap: var(--xops-spacing-16);
+  background-color: var(--xops-grey-100);
+  border: var(--xops-border-width-1) solid var(--xops-border-divider);
+  border-radius: var(--xops-radius-12);
+  padding: var(--xops-spacing-16);
+  overflow: hidden;
+}
+
+.tableCol {
+  display: flex;
+  flex-direction: column;
+  gap: var(--xops-spacing-12);
+  min-width: 0;
+}
+
+.colHeader {
+  width: 100%;
+  height: var(--xops-typography-body-14-line-height);
+  border-radius: var(--xops-radius-4);
+  background-color: var(--xops-grey-50);
+}
+
+.colCell {
+  width: 100%;
+  height: var(--xops-typography-body-14-line-height);
+  border-radius: var(--xops-radius-4);
+  background-color: var(--sc);
+}
+
+/* Software anchor column: logo chip (logo-tile medium) + name bar per row */
+.anchorCell {
+  display: flex;
+  align-items: center;
+  gap: var(--xops-spacing-8);
+  width: 100%;
+}
+
+.anchorChip {
+  flex: 0 0 var(--xops-logo-tile-size-medium);
+  width: var(--xops-logo-tile-size-medium);
+  height: var(--xops-logo-tile-size-medium);
+  border-radius: var(--xops-radius-4);
+  background-color: var(--sc);
+}
+
+.anchorName {
+  flex: 1;
+  height: var(--xops-typography-body-14-line-height);
+  border-radius: var(--xops-radius-4);
+  background-color: var(--xops-grey-50);
+}

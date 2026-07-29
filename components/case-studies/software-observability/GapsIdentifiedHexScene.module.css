@@ -1,0 +1,69 @@
+/* "With gaps identified…" hexagon honeycomb — see GapsIdentifiedHexScene.tsx.
+   Sticky 100vh stage in a tall track (height set in JS); the field is a
+   design-size (1440×900) canvas scaled to the stage width, hexagons placed
+   at Figma's exact coordinates. */
+
+.scene {
+  position: relative;
+  width: 100%;
+}
+
+.stage {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  padding-top: var(--spacing-5xl);
+  box-sizing: border-box;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  overflow: visible;
+}
+
+.field {
+  position: relative;
+  flex-shrink: 0;
+  transform: scale(var(--hex-scale, 1));
+  transform-origin: center center;
+}
+
+/* Each hexagon is centered on its (left, top) design coordinate; overflow is
+   visible so a text hexagon's copy (wider than the shape) isn't clipped. */
+.hex {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  overflow: visible;
+}
+
+/* Scaled toward center by --hex-shape-scale so adjacent hexagons get an
+   8px gap instead of tessellating flush (see HEX_GAP in the .tsx). Text
+   (.hexText) is a sibling, not scaled, so copy stays full size. */
+.hexShape {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+  transform: scale(var(--hex-shape-scale, 1));
+  transform-origin: center center;
+}
+
+.hexFilled {
+  background: var(--surface-card);
+  clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
+}
+
+.hexText {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 336px;
+  margin: 0;
+  text-align: center;
+  white-space: pre-line;
+  font-family: var(--font-family-body);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--text-body-display-sm-size);
+  line-height: var(--text-body-display-sm-lh);
+  letter-spacing: var(--text-body-display-sm-ls);
+  color: var(--text-body-display-statement);
+}

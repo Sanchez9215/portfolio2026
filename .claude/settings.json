@@ -55,7 +55,10 @@
       "Bash(curl -sL -o /private/tmp/claude-501/-Users-edgarsanchez-Portfolio/79ff89b3-1377-492d-9847-33b9103c076a/scratchpad/all-software.png \"https://www.figma.com/api/mcp/asset/3db9e70c-1dd9-44ee-8218-e158fc4580d6\")",
       "WebFetch(domain:contentdesign.intuit.com)",
       "WebFetch(domain:www.sap.com)",
-      "WebFetch(domain:developer.salesforce.com)"
+      "WebFetch(domain:developer.salesforce.com)",
+      "Bash(python3 -c \"import json; json.load\\(open\\('design-system/tokens.json'\\)\\)\")",
+      "Bash(curl -sL -o eye-node.png \"https://www.figma.com/api/mcp/asset/4f055df6-0c98-4e2c-805c-3344b192123e\")",
+      "Bash(npx eslint *)"
     ],
     "additionalDirectories": [
       "/Users/edgarsanchez/Portfolio/stories",

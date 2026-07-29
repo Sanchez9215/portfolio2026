@@ -5,222 +5,201 @@
    All values resolve through CSS custom properties → tokens.json.
    ============================================================ */
 
-
 /* ── section.brief ──────────────────────────────────────────── */
 
 .briefTextBlock {
   grid-column: 1 / -1;
 }
 
-
 /* ── section.the-problem ────────────────────────────────────── */
 
 .theProblem {
-  row-gap: var(--spacing-3xl);
+  row-gap: 0;
 }
 
-.theProblemDetailBlock {
-  grid-column: 1 / 4;
-  color:       var(--text-primary);
+.theProblemPinnedScene {
+  grid-column: 5 / 9;
+  margin-bottom: var(--spacing-3xl);
 }
 
-.theProblemMessageThread {
-  grid-column: 1 / 5;
-}
+/* ── section.framework ───────────────────────────────────── */
 
-.theProblemTextBlock {
-  grid-column: 5 / -1;
-}
-
-
-/* ── section.support-metrics ────────────────────────────────── */
-
-.supportMetricsCards {
-  grid-column: 1 / -1;
-  display: flex;
-  gap: var(--spacing-xl);
-}
-
-
-/* ── section.user-quote ─────────────────────────────────────── */
-
-.userQuoteBlock {
+.frameworkScene {
   grid-column: 1 / -1;
 }
-
 
 /* ── section.research ───────────────────────────────────── */
+
+section.research {
+  min-height: 100vh;
+  align-content: center;
+}
 
 .researchContextBlock {
   grid-column: 1 / 4;
 }
 
 .researchContextStat {
-  font-family:    var(--font-family-display);
-  font-weight:    var(--font-weight-semibold);
-  font-size:      var(--text-display-metric-size);
-  line-height:    var(--text-display-metric-lh);
+  font-family: var(--font-family-display);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--text-display-metric-size);
+  line-height: var(--text-display-metric-lh);
   letter-spacing: var(--text-display-metric-ls);
-  color:          var(--text-tertiary);
+  color: var(--text-tertiary);
   text-transform: uppercase;
-  margin:         0;
+  margin: 0;
 }
 
 .researchContent {
-  grid-column:    4 / -1;
-  display:        flex;
-  flex-direction: column;
-  gap:            var(--spacing-xl);
-}
-
-.researchTextBlockMds {
+  grid-column: 4 / -1;
   display: flex;
-  gap:     var(--spacing-xl);
+  flex-direction: column;
+  gap: var(--spacing-xl);
 }
-
-.researchTextBlockMd {
-  flex:      1 0 0;
-  min-width: 0;
-}
-
 
 /* ── section.insights-and-goals ─────────────────────────────── */
 
 section.insightsGoals {
-  display:     flex;
-  align-items: flex-start;
-  gap:         var(--spacing-xl);
+  position: relative;
+  background: var(--surface-section-inverse);
+  row-gap: var(--spacing-5xl);
+}
+
+.insightsGoalsMotionSvg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.insightsGoalsBadge {
+  position: absolute;
+  width: var(--spacing-xl);
+  height: var(--spacing-xl);
+  /* top = the badge's top edge, which is also where the spine stops —
+     center horizontally only, don't shift vertically. */
+  transform: translate(-50%, 0);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--badge-fill);
+  color: var(--badge-text);
+  font-family: var(--font-family-display);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--text-label-md-size);
+  letter-spacing: var(--text-label-md-ls);
+  text-transform: uppercase;
 }
 
 .insightsGoalsLeft {
-  display:        flex;
-  flex-direction: column;
-  gap:            var(--spacing-3xl);
-  flex:           0 0 1024px;
+  grid-column: 1 / 7;
 }
 
-.insightsGoalsRows {
-  display:        flex;
-  flex-direction: column;
-  gap:            var(--spacing-xl);
-}
-
-.insightsGoalsContext {
-  flex:      1 0 0;
-  min-width: 0;
-}
-
-.insightsGoalsContextTitle {
-  font-family:    var(--font-family-display);
-  font-weight:    var(--font-weight-semibold);
-  font-size:      var(--text-label-xl-size);
-  line-height:    var(--text-label-xl-lh);
-  letter-spacing: var(--text-label-xl-ls);
-  text-transform: uppercase;
-  word-spacing:   var(--word-spacing-display);
-  color:          var(--text-primary);
+section.insightsGoals .insightsGoalsContext {
+  grid-column: 9 / 13;
+  gap: var(--spacing-md);
+  padding-left: var(--spacing-xl);
+  /* Aligns "The Experts" label with the display statement's baseline, not
+     the "Insights & Goals" label above it — derived from that label's own
+     line-height + the gap beneath it, not a standalone magic number. */
+  padding-top: calc(var(--text-label-xl-lh) + var(--spacing-md));
 }
 
 .insightsGoalsDescriptions {
-  display:        flex;
-  flex-direction: column;
-  gap:            var(--spacing-xl);
-}
-
-
-/* ── section.observability-first ───────────────────────────── */
-
-section.observabilityFirst {
-  display:        flex;
-  flex-direction: column;
-  gap:            var(--spacing-3xl);
-}
-
-.observabilityFirstTop {
   display: flex;
-  gap:     var(--spacing-xl);
-}
-
-.observabilityFirstContext {
-  flex: 0 0 437px;
-  gap:  var(--spacing-xl);
-}
-
-.observabilityFirstHeading {
-  font-family:    var(--font-family-body);
-  font-weight:    var(--font-weight-bold);
-  font-size:      var(--text-body-display-size);
-  line-height:    var(--text-body-display-lh);
-  letter-spacing: var(--text-body-display-ls);
-  color:          var(--text-secondary);
-  margin:         0;
-}
-
-.observabilityFirstFramework {
-  display:        flex;
   flex-direction: column;
-  flex:           1 0 0;
+  gap: var(--spacing-xl);
 }
 
-.observabilityFirstConnectorRow {
+.insightsGoalsInsights,
+.insightsGoalsGoals {
   display: flex;
-  gap:     var(--spacing-xl);
-  height:  128px;
-}
-
-.observabilityFirstConnector {
-  flex:            1 0 0;
-  display:         flex;
-  justify-content: center;
-}
-
-.observabilityFirstConnector::after {
-  content:     '';
-  display:     block;
-  width:       0;
-  height:      100%;
-  border-left: 0.5px dashed var(--text-primary);
-}
-
-.observabilityFirstBottom {
-  display:        flex;
   flex-direction: column;
-  gap:            var(--spacing-xl);
-  padding-left:   calc(437px + var(--spacing-xl));
+  gap: var(--spacing-md);
 }
 
-.observabilityFirstSupport {
-  font-family:    var(--font-family-body);
-  font-weight:    var(--font-weight-bold);
-  font-size:      var(--text-body-display-size);
-  line-height:    var(--text-body-display-lh);
-  letter-spacing: var(--text-body-display-ls);
-  color:          var(--text-body-display-support);
-  margin:         0;
+.insightsGoalsInsights {
+  grid-column: 1 / 5;
 }
 
+.insightsGoalsGoals {
+  grid-column: 9 / 13;
+}
+
+.insightsGoalsInsights > span,
+.insightsGoalsGoals > span {
+  padding-left: var(--spacing-xl);
+}
+
+.insightsGoalsItems {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3xl);
+}
+
+.insightsGoalsItem {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  padding: var(--spacing-xl);
+}
+
+.insightsGoalsItemHeading {
+  /* 76px total (border-box, so padding is included in this height, not
+     added on top): 60px (exactly 2 lines of heading text, so a 1-line and
+     a 2-line heading in the same row still put their divider — and this
+     row's badge — at the same Y) + 16px gap before the divider line, which
+     is now drawn by the connector/extension SVG, not a static border. The
+     parent's own gap (16px) is what steps down to the body after that. */
+  height: calc(var(--text-heading-lg-lh) * 2 + var(--spacing-md));
+  display: flex;
+  align-items: flex-start;
+  padding-bottom: var(--spacing-md);
+}
+
+.insightsGoalsItemTitle {
+  font-family: var(--font-family-body);
+  font-weight: var(--font-weight-bold);
+  font-size: var(--text-heading-lg-size);
+  line-height: var(--text-heading-lg-lh);
+  letter-spacing: var(--text-heading-lg-ls);
+  color: var(--text-inverse-primary);
+  margin: 0;
+}
+
+.insightsGoalsItemBody {
+  height: 96px;
+  overflow: hidden;
+}
 
 /* ── section.data ────────────────────────────────────────── */
 
 section.data {
-  display:     flex;
-  align-items: flex-start;
-  gap:         var(--spacing-xl);
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  padding-block: 0;
 }
 
 .dataContext {
-  flex: 0 0 437px;
-  gap:  var(--spacing-xl);
+  grid-column: 1 / 5;
+  align-self: center;
+  justify-content: center;
+  align-items: flex-start;
+  text-align: left;
+  gap: var(--spacing-xl);
 }
 
 .dataHeading {
-  font-family:    var(--font-family-body);
-  font-weight:    var(--font-weight-bold);
-  font-size:      var(--text-body-display-size);
-  line-height:    var(--text-body-display-lh);
+  font-family: var(--font-family-body);
+  font-weight: var(--font-weight-bold);
+  font-size: var(--text-body-display-size);
+  line-height: var(--text-body-display-lh);
   letter-spacing: var(--text-body-display-ls);
-  color:          var(--text-secondary);
-  margin:         0;
+  color: var(--text-secondary);
+  margin: 0;
 }
 
 .dataTrackedPeriod {
@@ -228,109 +207,158 @@ section.data {
 }
 
 .dataContainer {
-  flex:                  1 0 0;
-  min-width:             0;
-  display:               grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap:                   32px;
+  grid-column: 5 / -1;
+  height: 100vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-4xl);
+  /* Half the stage's own height on each end, so the first/last hub can pass
+     through the vertical center that DataScrollController's centerFade uses
+     as its focal point (see software-observability page.tsx). */
+  padding-block: 50vh;
 }
 
 .dataType {
-  min-height: 300px;
+  width: 100%;
+  aspect-ratio: 2 / 1;
+  flex-shrink: 0;
 }
-
 
 /* ── section.framework-adaptation ──────────────────────────── */
 
+/* Wrapper spanning Framework Adaptation + Observability so one SVG overlay can
+   draw the funnel/spine/second-funnel as a single continuous line across both.
+   isolation:isolate makes it a stacking context so the overlay (z-index:2) can
+   sit above the blue blob (z-index:1) but behind the grey almond (z-index:3). */
+.frameworkObservabilityWrap {
+  position: relative;
+  isolation: isolate;
+}
+
+.frameworkFunnelSpineSvg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+  pointer-events: none;
+  overflow: visible;
+}
+
 .frameworkAdaptation {
+  min-height: 100vh;
+  align-content: center;
   row-gap: var(--spacing-xl);
 }
 
 .frameworkAdaptationTextBlock {
-  grid-column: 5 / -1;
+  grid-column: 1 /9;
 }
 
-.frameworkAdaptationDetailBlock {
-  grid-column: 5 / 8;
+/* ── section.observability-first (eye collage) ──────────────── */
+
+section.observabilityEyes {
+  min-height: 100vh;
+  padding-block: 0;
 }
 
-
-/* ── section.data-ops ───────────────────────────────────────── */
-
-.dataOpsEditorialContent {
-  grid-column:    1 / -1;
-  display:        flex;
-  flex-direction: column;
-  gap:            var(--spacing-xl);
+/* All collage elements share a single grid row and overlap; vertical position
+   is free, applied per element via translateY below. z-index:3 keeps every
+   collage element above the funnel/spine overlay (z-index:2) so the grey line
+   passes BEHIND the grey almond; the blob drops below it (z-index:1). */
+.observabilityEyes > * {
+  grid-row: 1;
+  align-self: start;
+  z-index: 3;
 }
 
-.dataOpsHeading {
-  font-family:    var(--font-family-body);
-  font-weight:    var(--font-weight-bold);
-  font-size:      var(--text-body-display-size);
-  line-height:    var(--text-body-display-lh);
-  letter-spacing: var(--text-body-display-ls);
-  color:          var(--text-secondary);
-  margin:         0;
-  max-width:      906px;
+/* Blue blob: from the col-2 line, bleeding past the right padding to the true
+   viewport edge; full section height. Sits below the overlay so the grey line
+   paints over it. */
+.observabilityEyes > [data-blob] {
+  grid-column: 1 / -1;
+  justify-self: start;
+  width: calc(100% + var(--spacing-xl));
+  height: 100vh;
+  z-index: 1;
 }
 
-.dataOpsHeadingMuted {
-  color: var(--text-body-display-support);
+/* Eyes. Width comes from the column span; height from the almond aspect-ratio.
+   translateY centres each eye's own height on a viewport-relative Y. */
+.observabilityEyes > [data-eye="top-left"] {
+  grid-column: 1 / 6;
+  transform: translateY(calc(0vh - 50%));
 }
 
-.dataOpsDetailBlock {
-  width: 320px;
+.observabilityEyes > [data-eye="mid-left"] {
+  grid-column: 2 / 5;
+  transform: translateY(calc(48vh - 50%));
 }
 
+.observabilityEyes > [data-eye="upper-mid"] {
+  grid-column: 6 / 8;
+  transform: translateY(calc(22.5vh - 50%));
+}
+
+.observabilityEyes > [data-eye="lower-mid"] {
+  grid-column: 5 / 7;
+  transform: translateY(calc(78vh - 50%));
+}
+
+/* Big eye: anchored on the col-7 line, its natural width overruns the cell so
+   it bleeds off the right edge (134% = 900px design width ÷ ~672px cell). */
+.observabilityEyes > [data-eye="big"] {
+  grid-column: 7 / -1;
+  justify-self: start;
+  width: 134%;
+  transform: translateY(calc(50vh - 50%));
+}
+
+.observabilityEyes > [data-detail] {
+  grid-column: 9 / 12;
+  transform: translateY(77vh);
+}
 
 /* ── section.modular-design-approach ────────────────────────── */
 
 .modularDesignApproach {
   grid-column: 1 / -1;
-  max-width:   907px;
+  max-width: 907px;
 }
 
+/* ── section.data-dictionary ─────────────────────────────────
+   Pinned scaffold-table build (see DataDictionaryScene.tsx) —
+   split out of the old section.prototype-validation. */
 
-/* ── section.prototype-validation ──────────────────────────── */
+section.dataDictionary {
+  row-gap: 0;
+}
+
+.dataDictionaryScene {
+  grid-column: 1 / -1;
+}
+
+/* ── section.prototype-validation ────────────────────────────
+   Now a plain full-viewport LabelBlock reveal (its own built-in
+   scroll trigger), leading into the first hotspot experience. */
 
 section.prototypeValidation {
-  display:        flex;
-  flex-direction: column;
-  gap:            var(--spacing-5xl);
-}
-
-.prototypeValidationTopRow {
-  display:     flex;
-  align-items: flex-start;
-  width:       100%;
-}
-
-.prototypeValidationTopLeft {
-  flex:           1 0 0;
-  min-width:      0;
-  display:        flex;
-  flex-direction: column;
-  gap:            var(--spacing-xl);
-  align-items:    flex-start;
+  min-height: 100vh;
+  align-content: center;
 }
 
 .prototypeValidationTextBlock {
+  grid-column: 1 / -1;
   max-width: 789px;
-}
-
-.prototypeValidationTopLeftBody {
-  width: 320px;
-}
-
-.prototypeValidationTopRight {
-  flex:        0 0 437px;
-  padding-top: 62px;
 }
 
 /* ── section.all-software-view ──────────────────────────────── */
 
 .allSoftwareView {
+  min-height: 100vh;
+  align-content: center;
   row-gap: var(--spacing-xl);
 }
 
@@ -342,73 +370,183 @@ section.prototypeValidation {
   grid-column: 1 / 4;
 }
 
-
 /* ── section.gaps-identified ────────────────────────────────── */
 
-.gapsIdentifiedWrapper {
-  grid-column:    1 / -1;
-  justify-self:   center;
-  display:        flex;
-  flex-direction: column;
-  align-items:    flex-start;
-  gap:            var(--spacing-xl);
+/* Freeform spatial composition (hexagon honeycomb) — confirmed departure
+   from cs-grid's column placement, same convention as section.framework.
+   The two "bleed" hexagons overflow above the stage on purpose, so nothing
+   here clips: no overflow:hidden anywhere in this section's ancestry. */
+section.gapsIdentified {
+  padding-block: 0;
 }
 
-.gapsIdentifiedTextBlock {
-  width: 789px;
+.gapsIdentifiedScene {
+  grid-column: 1 / -1;
 }
-
-.gapsIdentifiedDetailBlock {
-  width: 320px;
-}
-
 
 /* ── section.parallel-prototyping ───────────────────────────── */
 
+/* Sticky 100vh scroll scene (same mechanism as section.data): left display
+   block stays centred while the right prototype column scroll-scrubs. */
 section.parallelPrototyping {
-  display:        flex;
-  flex-direction: column;
-  gap:            var(--spacing-xl);
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  padding-block: 0;
 }
 
-.parallelPrototypingRow {
-  display: flex;
-  gap:     var(--spacing-xl);
+.parallelPrototypingLeft {
+  grid-column: 1 / 7;
+  align-self: center;
+  display: grid;
+  grid-template-columns: subgrid;
+  align-content: center;
+  row-gap: var(--spacing-xl);
 }
 
-.parallelPrototypingImgCard {
-  flex: 0 0 437px;
-}
-
-.parallelPrototypingTextBlock {
-  flex:      1 0 0;
-  min-width: 0;
+.parallelPrototypingLeft > * {
+  grid-column: 1 / -1;
 }
 
 .parallelPrototypingDetailBlock {
-  flex:  0 0 437px;
+  grid-column: 1 / 4;
   color: var(--text-primary);
 }
 
-.parallelPrototypingMultiCard {
-  flex:      1 0 0;
-  min-width: 0;
+.parallelPrototypingScroll {
+  grid-column: 8 / -1;
+  height: 100vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4xl);
 }
 
-
-/* ── section.software-profile-quote ────────────────────────── */
-
-.softwareProfileQuoteWrapper {
-  grid-column:    4 / 12;
-  display:        flex;
+/* Prototype card — label stacked directly on its image, label pins to the
+   top of the scroll column until the next card's label pushes it out.
+   FLAG: replicates ImgCard's image + caption inline; to be standardised into
+   ImgCard (a bare/sticky variant) or a shared PrototypeCard later. */
+.parallelPrototypingCard {
+  display: flex;
   flex-direction: column;
-  gap:            var(--spacing-xl);
+}
+
+.parallelPrototypingCardLabel {
+  position: sticky;
+  top: var(--nav-height);
+  z-index: 1;
+  margin: 0;
+  padding-block: var(--spacing-md);
+  background: var(--surface-base);
+  font-family: var(--font-family-display);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--text-label-xs-size);
+  line-height: var(--text-label-xs-lh);
+  letter-spacing: var(--text-label-xs-ls);
+  word-spacing: var(--word-spacing-display);
+  text-transform: uppercase;
+  color: var(--text-primary);
+}
+
+.parallelPrototypingCard:first-child .parallelPrototypingCardImg {
+  padding-top: var(--nav-height);
+}
+
+.parallelPrototypingCardImg {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: var(--radius-default);
+}
+
+/* ── section.overview-prototype-1 ──────────────────────────── */
+/* one-off, full-span layout — exploratory pass, not yet a SectionImg variant */
+
+section.overviewPrototype1 {
+  row-gap: var(--spacing-3xl);
+}
+
+.overviewPrototype1Embed {
+  grid-column: 1 / -1;
+}
+
+.overviewPrototype1CardsLeft {
+  grid-column: 1 / 7;
+}
+
+.overviewPrototype1CardsRight {
+  grid-column: 7 / 13;
+}
+
+/* ── section.overview-prototype-2 — live-embed hotspot experience ─────────── */
+
+section.overviewPrototype2 {
+  row-gap: var(--spacing-3xl);
+}
+
+.overviewPrototype2Embed {
+  grid-column: 1 / -1;
+}
+
+/* ── section.final-lifecycle-timeline — live-embed hotspot experience ─────── */
+
+section.finalLifecycleTimeline {
+  row-gap: var(--spacing-3xl);
+}
+
+.finalLifecycleTimelineEmbed {
+  grid-column: 1 / -1;
+}
+
+/* ── section.direction-issue-annotations — live-embed hotspot experience ──── */
+
+section.directionIssueAnnotations {
+  row-gap: var(--spacing-3xl);
+}
+
+.directionIssueAnnotationsEmbed {
+  grid-column: 1 / -1;
+}
+
+/* ── section.experience-issue-annotations — live-embed hotspot experience ── */
+
+section.experienceIssueAnnotations {
+  row-gap: var(--spacing-3xl);
+}
+
+.experienceIssueAnnotationsEmbed {
+  grid-column: 1 / -1;
+}
+
+/* ── section.profile-prototype-1 ───────────────────────────── */
+/* Absorbed section.software-profile-quote (quote is now the left column here).
+   No explicit section height — same as every other hotspot section
+   (section.overviewPrototype1 etc.): the embed's GSAP pin needs real scroll
+   runway (~6000px for 5 hotspots), and forcing a fixed 100vh here fights the
+   grid row's real content height, causing the next section to overlap it.
+   The quote instead sticks in place (top: var(--nav-height)) so it stays
+   visible next to the embed for the whole pinned hotspot sequence, rather
+   than being centered inside what would otherwise be one huge grid row. */
+
+.profilePrototype1Quote {
+  grid-column: 1 / 7;
+  align-self: start;
+  position: sticky;
+  top: var(--nav-height);
+  height: calc(100vh - var(--nav-height));
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--spacing-xl);
 }
 
 .softwareProfileQuoteDetailBlock {
   width: 320px;
 }
 
+.profilePrototype1Embed {
+  grid-column: 7 / 13;
+}
 
 /* ── section.core-attribute-intent ─────────────────────────── */
 
@@ -418,7 +556,7 @@ section.parallelPrototyping {
 
 .coreAttributeIntentTextBlock {
   grid-column: 1 / -1;
-  max-width:   907px;
+  max-width: 907px;
 }
 
 /* ── section.software-profile ───────────────────────────────── */
@@ -428,54 +566,47 @@ section.parallelPrototyping {
 }
 
 .softwareProfileTextBlock {
-  grid-column: 1 / -1;
+  grid-column: 1 / 7;
 }
 
 .softwareProfileDetailBlock {
   grid-column: 1 / 4;
 }
 
-
 /* ── section.lifecycle-timeline ─────────────────────────────── */
 
-.lifecycleTimeline {
-  row-gap: var(--spacing-xl);
+section.lifecycleTimeline {
+  row-gap: 0;
 }
 
-.lifecycleTimelineTextBlock {
+.lifecycleTimelineScene {
   grid-column: 1 / -1;
-  max-width:   907px;
 }
-
-.lifecycleTimelineWrapper {
-  grid-column: 1 / -1;
-  display:     flex;
-  gap:         var(--spacing-xl);
-}
-
-.lifecycleTimelineItem {
-  flex:           1 0 0;
-  min-width:      0;
-  display:        flex;
-  flex-direction: column;
-  gap:            var(--spacing-xl);
-}
-
-.lifecycleTimelineWord {
-  font-family:    var(--font-family-display);
-  font-weight:    var(--font-weight-semibold);
-  font-size:      var(--text-display-metric-size);
-  line-height:    var(--text-display-metric-lh);
-  letter-spacing: var(--text-display-metric-ls);
-  text-transform: uppercase;
-  color:          var(--text-tertiary);
-  margin:         0;
-}
-
 
 /* ── section.generating-events ──────────────────────────────── */
 
-.generatingEvents {
+section.generatingEvents {
+  position: relative;
+  background: var(--surface-section-inverse);
+  row-gap: var(--spacing-5xl);
+}
+
+.generatingEventsMotionSvg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: visible;
+}
+
+/* Subgrid so the label block (6 cols) and detail block (4 cols) can each
+   keep their own span while sharing a tighter 32px gap than the section's
+   own 128px row-gap to the image/step row below. */
+.generatingEventsHeader {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: subgrid;
   row-gap: var(--spacing-xl);
 }
 
@@ -487,15 +618,71 @@ section.parallelPrototyping {
   grid-column: 1 / 4;
 }
 
-
-/* ── section.event-iterations ───────────────────────────────── */
-
-.eventIterationsAfter {
-  display:        flex;
-  flex-direction: column;
-  gap:            var(--spacing-xl);
+.generatingEventsImages {
+  grid-column: 1 / 9;
+  display: flex;
+  gap: var(--spacing-xl);
 }
 
+.generatingEventsSteps {
+  grid-column: 9 / 13;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl);
+}
+
+/* Left-inset to align with the step titles (badge width + badge-to-content
+   gap = 32px + 32px). */
+.generatingEventsStepsIntro {
+  padding-left: var(--spacing-3xl);
+}
+
+.generatingEventsStepList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl);
+}
+
+.generatingEventsStep {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-xl);
+  padding: var(--spacing-md) var(--spacing-md) var(--spacing-md) 0;
+}
+
+.generatingEventsStepBadge {
+  flex-shrink: 0;
+  width: var(--spacing-xl);
+  height: var(--spacing-xl);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--badge-fill);
+  color: var(--badge-text);
+  font-family: var(--font-family-display);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--text-label-md-size);
+  letter-spacing: var(--text-label-md-ls);
+  text-transform: uppercase;
+}
+
+.generatingEventsStepContent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  flex: 1 0 0;
+  min-width: 0;
+}
+
+.generatingEventsStepTitle {
+  font-family: var(--font-family-body);
+  font-weight: var(--font-weight-bold);
+  font-size: var(--text-heading-lg-size);
+  line-height: var(--text-heading-lg-lh);
+  letter-spacing: var(--text-heading-lg-ls);
+  color: var(--text-inverse-primary);
+  margin: 0;
+}
 
 /* ── section.utilization-and-cost ───────────────────────────── */
 
@@ -511,59 +698,137 @@ section.parallelPrototyping {
   grid-column: 1 / 4;
 }
 
-
-/* ── section.unifying-systems ───────────────────────────────── */
-
-section.unifyingSystems {
-  display:        flex;
-  flex-direction: column;
-  gap:            var(--spacing-xl);
-}
-
-
 /* ── section.software-profile-issues ─────────────────────────── */
 
 .softwareProfileIssues > * {
-  grid-column: 1 / -1;
+  grid-column: 1 / 7;
 }
-
 
 /* ── section.software-profile-final ──────────────────────────── */
 
 .softwareProfileFinal > * {
+  grid-column: 1 / 7;
+}
+
+/* ── section.profile-issue-annotations — live-embed hotspot experience ────── */
+
+section.profileIssueAnnotations {
+  row-gap: var(--spacing-3xl);
+}
+
+.profileIssueAnnotationsEmbed {
+  grid-column: 4 / 10;
+}
+
+/* ── section.profile-final-design — live-embed hotspot experience ─────────── */
+
+section.profileFinalDesign {
+  row-gap: var(--spacing-3xl);
+}
+
+.profileFinalDesignEmbed {
+  grid-column: 4 / 10;
+}
+
+/* ── section.unifying-systems ───────────────────────────────── */
+/* Sticky 100vh scroll scene (same mechanism as section.parallelPrototyping):
+   left display block stays centred while the right prototype column
+   scroll-scrubs. */
+
+section.unifyingSystems {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  padding-block: 0;
+}
+
+.unifyingSystemsLeft {
+  grid-column: 1 / 7;
+  align-self: center;
+  display: grid;
+  grid-template-columns: subgrid;
+  align-content: center;
+  row-gap: var(--spacing-xl);
+}
+
+.unifyingSystemsLeft > * {
   grid-column: 1 / -1;
 }
 
-
-/* ── section.unifying-systems ───────────────────────────────── */
-
-.unifyingSystemsTopRow {
-  display:     flex;
-  gap:         var(--spacing-xl);
-  align-items: flex-start;
+.unifyingSystemsDetailBlock {
+  grid-column: 1 / 4;
+  color: var(--text-primary);
 }
 
-.unifyingSystemsEditorialContent {
-  flex:           1 0 0;
-  min-width:      0;
-  display:        flex;
+.unifyingSystemsScroll {
+  grid-column: 8 / -1;
+  height: 100vh;
+  overflow-y: auto;
+  display: flex;
   flex-direction: column;
-  gap:            var(--spacing-xl);
+  gap: var(--spacing-4xl);
 }
 
-.unifyingSystemsProfileCard {
-  flex: 0 0 437px;
+/* FLAG: replicates parallelPrototypingCard's image + sticky-label pattern
+   inline; to be standardised into ImgCard (a bare/sticky variant) or a
+   shared PrototypeCard later — see progress.md Deferred. */
+.unifyingSystemsCard {
+  display: flex;
+  flex-direction: column;
 }
 
+.unifyingSystemsCardLabel {
+  position: sticky;
+  top: var(--nav-height);
+  z-index: 1;
+  margin: 0;
+  padding-block: var(--spacing-md);
+  background: var(--surface-base);
+  font-family: var(--font-family-display);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--text-label-xs-size);
+  line-height: var(--text-label-xs-lh);
+  letter-spacing: var(--text-label-xs-ls);
+  word-spacing: var(--word-spacing-display);
+  text-transform: uppercase;
+  color: var(--text-primary);
+}
+
+.unifyingSystemsCard:first-child .unifyingSystemsCardImg {
+  padding-top: var(--nav-height);
+}
+
+.unifyingSystemsCardImg {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: var(--radius-default);
+}
 
 /* ── section.unifying-systems-prototype ─────────────────────── */
 
-section.unifyingSystemsPrototype {
-  display:        flex;
-  flex-direction: column;
-  gap:            var(--spacing-xl);
+.unifyingSystemsPrototype {
+  row-gap: var(--spacing-5xl);
 }
 
+.unifyingSystemsPrototypeHeader {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: subgrid;
+  row-gap: var(--spacing-xl);
+}
+
+.unifyingSystemsPrototypeLabel {
+  grid-column: 1 / 7;
+}
+
+.unifyingSystemsPrototypeDetailBlock {
+  grid-column: 1 / 4;
+}
+
+.unifyingSystemsPrototypeImgCard {
+  grid-column: 1 / -1;
+}
 
 /* ── section.testing-the-experience ────────────────────────── */
 
@@ -572,10 +837,10 @@ section.unifyingSystemsPrototype {
 }
 
 .testingTheExperienceWrapper {
-  grid-column:    5 / -1;
-  display:        flex;
+  grid-column: 7 / -1;
+  display: flex;
   flex-direction: column;
-  gap:            var(--spacing-xl);
+  gap: var(--spacing-xl);
 }
 
 .testingTheExperienceDetailBlock {
@@ -586,61 +851,73 @@ section.unifyingSystemsPrototype {
   grid-column: 1 / -1;
 }
 
-
 /* ── section.phase-one-clarity ──────────────────────────────── */
 
 .phaseOneClarityTextBlock {
   grid-column: 3 / 11;
 }
 
-
 /* ── section.two-track-validation ───────────────────────────── */
 
 section.twoTrackValidation {
-  display:        flex;
-  flex-direction: column;
-  gap:            var(--spacing-xl);
+  height: 100vh;
+  align-content: center;
+  row-gap: var(--spacing-xl);
+}
+
+.twoTrackValidationLabelBlock {
+  grid-column: 1 / 7;
 }
 
 .twoTrackValidationDetailBlock {
-  width: 352px;
+  grid-column: 1 / 4;
 }
-
 
 /* ── section.cross-functional-sessions ──────────────────────── */
 
 .crossFunctionalSessionsWrapper {
-  grid-column:    7 / -1;
-  display:        flex;
+  grid-column: 7 / -1;
+  display: flex;
   flex-direction: column;
-  gap:            var(--spacing-xl);
+  gap: var(--spacing-xl);
 }
 
 .crossFunctionalSessionsDetailBlock {
   width: 321px;
 }
 
-
 /* ── section.all-software-direction-issues ──────────────────── */
 
-.allSoftwareDirectionIssues > * {
-  grid-column: 1 / -1;
+.allSoftwareDirectionIssues {
+  min-height: 100vh;
+  align-content: center;
 }
 
+.allSoftwareDirectionIssues > * {
+  grid-column: 1 / 7;
+}
 
 /* ── section.all-software-experience-issues ─────────────────── */
 
-.allSoftwareExperienceIssues > * {
-  grid-column: 1 / -1;
+.allSoftwareExperienceIssues {
+  min-height: 100vh;
+  align-content: center;
 }
 
+.allSoftwareExperienceIssues > * {
+  grid-column: 1 / 7;
+}
 
 /* ── section.all-software-final ─────────────────────────────── */
 
-.allSoftwareFinal > * {
-  grid-column: 1 / -1;
+.allSoftwareFinal {
+  min-height: 100vh;
+  align-content: center;
 }
 
+.allSoftwareFinal > * {
+  grid-column: 1 / 7;
+}
 
 /* ── section.all-software-final-design ──────────────────────── */
 
@@ -648,14 +925,19 @@ section.twoTrackValidation {
   grid-column: 1 / -1;
 }
 
+/* ── section.table-anatomy — absorbed section.row-anatomy ────── */
+/* Height-hugging (no min-height) — the embed's own centered pin provides
+   its own runway; the section just wraps the label + embed at their
+   natural content height. */
 
-/* ── section.table-anatomy ───────────────────────────────────── */
-
-.tableAnatomy > * {
-  grid-column: 1 / -1;
+.tableAnatomyLabel {
+  grid-column: 1 / 7;
 }
 
-
+.tableAnatomyEmbed {
+  grid-column: 1 / -1;
+  margin-top: var(--spacing-5xl);
+}
 
 /* ── section.tool-tips ───────────────────────────────────────── */
 
@@ -663,13 +945,13 @@ section.twoTrackValidation {
   grid-column: 1 / -1;
 }
 
-
 /* ── section.tool-tips-final-design ─────────────────────────── */
 
-.toolTipsFinalDesign > * {
+.toolTipsFinalDesignImages {
   grid-column: 1 / -1;
+  display: flex;
+  gap: var(--spacing-xl);
 }
-
 
 /* ── section.design-system-refinements ──────────────────────── */
 
@@ -685,14 +967,11 @@ section.twoTrackValidation {
   grid-column: 1 / 4;
 }
 
-
-
 /* ── section.custimizable-columns ───────────────────────────── */
 
 .custimizableColumns > * {
   grid-column: 1 / 9;
 }
-
 
 /* ── section.custimizable-columns-final ─────────────────────── */
 
@@ -700,13 +979,11 @@ section.twoTrackValidation {
   grid-column: 1 / -1;
 }
 
-
 /* ── section.Drag-and-Drop-Reordering ───────────────────────── */
 
 .dragAndDropReordering > * {
   grid-column: 1 / 9;
 }
-
 
 /* ── section.Drag-and-Drop-final ────────────────────────────── */
 
@@ -714,21 +991,28 @@ section.twoTrackValidation {
   grid-column: 1 / -1;
 }
 
-
 /* ── section.scope-tradeoffs ── */
 
 .scopeTradeoffsTextBlock {
   grid-column: 1 / -1;
-  max-width:   939px;
+  max-width: 939px;
 }
-
 
 /* ── section.inactive-license-distribution ── */
 
 .inactiveLicenseDistribution > * {
-  grid-column: 1 / -1;
+  grid-column: 1 / 7;
 }
 
+/* ── section.distribution-overview — live-embed hotspot experience ────────── */
+
+section.inactiveLicenseDistributionEmbed {
+  row-gap: var(--spacing-3xl);
+}
+
+.inactiveLicenseDistributionEmbedInner {
+  grid-column: 4 / 10;
+}
 
 /* ── section.overview-revisit ── */
 
@@ -744,13 +1028,11 @@ section.twoTrackValidation {
   grid-column: 1 / 4;
 }
 
-
 /* ── section.overview-final ── */
 
 .overviewFinal > * {
-  grid-column: 3 / 11;
+  grid-column: 1 / -1;
 }
-
 
 /* ── section.completion ── */
 
@@ -758,13 +1040,11 @@ section.twoTrackValidation {
   grid-column: 1 / -1;
 }
 
-
 /* ── section.final-design ── */
 
 .finalAllSoftwareDesign > * {
-  grid-column: 3 / 11;
+  grid-column: 1 / -1;
 }
-
 
 /* ── section.impact ── */
 
@@ -780,34 +1060,32 @@ section.twoTrackValidation {
   grid-column: 1 / 4;
 }
 
-
 /* ── section.goal-connections ── */
 
 .goalConnections {
-  display:        flex;
+  display: flex;
   flex-direction: column;
 }
 
 .goalConnectionsConnectorRow {
   display: flex;
-  gap:     var(--spacing-xl);
-  height:  var(--spacing-3xl);
+  gap: var(--spacing-xl);
+  height: var(--spacing-3xl);
 }
 
 .goalConnectionsConnector {
-  flex:            1 0 0;
-  display:         flex;
+  flex: 1 0 0;
+  display: flex;
   justify-content: center;
 }
 
 .goalConnectionsConnector::after {
-  content:     '';
-  display:     block;
-  width:       0;
-  height:      100%;
+  content: "";
+  display: block;
+  width: 0;
+  height: 100%;
   border-left: 0.5px dashed var(--text-primary);
 }
-
 
 /* ── section.reflection ── */
 
@@ -818,7 +1096,6 @@ section.twoTrackValidation {
 .reflection > * {
   grid-column: 1 / -1;
 }
-
 
 /* ── section.next-steps ── */
 

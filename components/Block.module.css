@@ -12,3 +12,4 @@
 .primary   { color: var(--text-primary); }
 .secondary { color: var(--text-secondary); }
 .tertiary  { color: var(--text-tertiary); }
+.inverse   { color: var(--text-inverse-primary); }

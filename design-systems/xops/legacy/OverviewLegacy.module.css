@@ -1,0 +1,172 @@
+/*
+ * Legacy Overview (v1) — one-off screen-specific styles only.
+ * Reuses existing --xops-* tokens throughout; never introduces new token values.
+ * Colocated in legacy/ deliberately so it never resolves against the main
+ * design-systems/xops/components tree (see .claude/projects/xops/DECISIONS.md 024).
+ */
+
+.tableOutline {
+  border: var(--xops-border-width-1) solid var(--xops-border-divider);
+  border-radius: var(--xops-radius-12);
+  overflow: hidden;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--xops-spacing-16);
+  height: 100%;
+  background-color: var(--xops-white);
+  border: var(--xops-border-width-1) solid var(--xops-border-divider);
+  border-radius: var(--xops-radius-12);
+  padding: var(--xops-spacing-16);
+}
+
+.sectionTitle {
+  margin: 0;
+  font-family: var(--xops-font-family);
+  font-weight: var(--xops-font-weight-medium);
+  font-size: var(--xops-typography-subheading-16-font-size);
+  line-height: var(--xops-typography-subheading-16-line-height);
+  color: var(--xops-text-primary);
+}
+
+.filterBar {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--xops-spacing-16);
+}
+
+.filterField {
+  display: flex;
+  flex-direction: column;
+  gap: var(--xops-spacing-8);
+}
+
+.filterDivider {
+  width: var(--xops-border-width-1);
+  height: var(--xops-control-height-medium);
+  background-color: var(--xops-border-divider);
+}
+
+.filterDropdown {
+  display: block;
+  width: 124px;
+}
+
+.filterDropdown > button {
+  width: 100%;
+  justify-content: space-between;
+}
+
+.filterLabel {
+  font-family: var(--xops-font-family);
+  font-weight: var(--xops-font-weight-medium);
+  font-size: var(--xops-typography-body-14-font-size);
+  line-height: var(--xops-typography-body-14-line-height);
+  color: var(--xops-text-secondary);
+}
+
+.licenseBlocksGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--xops-spacing-24);
+}
+
+.licenseBlock {
+  display: flex;
+  flex-direction: column;
+  gap: var(--xops-spacing-8);
+}
+
+.licenseBlockHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.licenseBlockLabel {
+  font-family: var(--xops-font-family);
+  font-weight: var(--xops-font-weight-medium);
+  font-size: var(--xops-typography-body-14-font-size);
+  line-height: var(--xops-typography-body-14-line-height);
+  color: var(--xops-text-primary);
+}
+
+/* .panel's own flex gap already contributes 16px between siblings — this adds only
+   the remaining 8px so the total gap above this label is exactly 24px. */
+.spendVendorLabel {
+  margin-top: var(--xops-spacing-8);
+}
+
+.licenseBlockValue {
+  font-family: var(--xops-font-family);
+  font-weight: var(--xops-font-weight-medium);
+  font-size: var(--xops-typography-body-14-font-size);
+  line-height: var(--xops-typography-body-14-line-height);
+  color: var(--xops-text-primary);
+}
+
+.expiringBanner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--xops-spacing-8) var(--xops-spacing-12);
+  border: var(--xops-border-width-1) solid var(--xops-status-danger-solid);
+  border-radius: var(--xops-radius-6);
+  color: var(--xops-status-danger-text);
+  font-family: var(--xops-font-family);
+  font-size: var(--xops-typography-body-14-font-size);
+  line-height: var(--xops-typography-body-14-line-height);
+}
+
+.toolbarRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.toolbarLeftGroup {
+  display: flex;
+  align-items: center;
+  gap: var(--xops-spacing-8);
+}
+
+.searchBox {
+  display: flex;
+  align-items: center;
+  gap: var(--xops-spacing-8);
+  width: 240px;
+  padding: var(--xops-spacing-6) var(--xops-spacing-12);
+  border: var(--xops-border-width-1) solid var(--xops-border-divider);
+  border-radius: var(--xops-radius-6);
+}
+
+.searchPlaceholder {
+  font-family: var(--xops-font-family);
+  font-size: var(--xops-typography-body-14-font-size);
+  line-height: var(--xops-typography-body-14-line-height);
+  color: var(--xops-text-disabled);
+}
+
+.viewAlertsBadge {
+  font-family: var(--xops-font-family);
+  font-weight: var(--xops-font-weight-regular);
+  font-size: var(--xops-typography-button-label-font-size);
+  line-height: var(--xops-typography-button-label-line-height);
+  color: var(--xops-text-secondary);
+}
+
+.softwareCell {
+  display: flex;
+  align-items: center;
+  gap: var(--xops-spacing-8);
+  min-width: 0;
+}
+
+.softwareCellName {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}

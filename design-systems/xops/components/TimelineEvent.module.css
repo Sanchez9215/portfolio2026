@@ -1,0 +1,94 @@
+.event {
+  display: flex;
+  align-items: center;
+  gap: var(--xops-spacing-12);
+  width: 100%;
+  position: relative;
+}
+
+/* Snapped to control-height-medium (32px) — closest existing token to the Figma's 34px chip */
+.dateChip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--xops-spacing-2);
+  flex-shrink: 0;
+  width: var(--xops-control-height-medium);
+  height: var(--xops-control-height-medium);
+  background-color: var(--xops-surface-stat);
+  border-radius: var(--xops-radius-4);
+  z-index: 1;
+}
+
+.dateMonth {
+  font-family: var(--xops-font-family);
+  font-weight: var(--xops-font-weight-medium);
+  /* Snapped to body-12 — closest token to the Figma's 10px month label */
+  font-size: var(--xops-typography-body-12-font-size);
+  line-height: 1;
+  color: var(--xops-text-secondary);
+  text-align: center;
+}
+
+.dateDay {
+  font-family: var(--xops-font-family);
+  font-weight: var(--xops-font-weight-regular);
+  font-size: var(--xops-typography-body-14-font-size);
+  line-height: 1;
+  color: var(--xops-text-primary);
+}
+
+.body {
+  display: flex;
+  align-items: center;
+  gap: var(--xops-spacing-12);
+  flex: 1;
+  min-width: 0;
+}
+
+/* Snapped to control-height-small (24px) — closest existing token to the Figma's 24px marker */
+.marker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: var(--xops-control-height-small);
+  height: var(--xops-control-height-small);
+  border-radius: var(--xops-radius-full);
+  z-index: 1;
+}
+
+.markerIcon {
+  width: var(--xops-icon-size-16);
+  height: var(--xops-icon-size-16);
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.title {
+  font-family: var(--xops-font-family);
+  font-weight: var(--xops-font-weight-medium);
+  font-size: var(--xops-typography-body-14-font-size);
+  line-height: var(--xops-typography-body-14-line-height);
+  color: var(--xops-text-primary);
+}
+
+.description {
+  font-family: var(--xops-font-family);
+  font-weight: var(--xops-font-weight-regular);
+  font-size: var(--xops-typography-body-12-font-size);
+  line-height: var(--xops-typography-body-12-line-height);
+  color: var(--xops-text-secondary);
+}
+
+.infoIcon {
+  width: var(--xops-icon-size-16);
+  height: var(--xops-icon-size-16);
+  flex-shrink: 0;
+}

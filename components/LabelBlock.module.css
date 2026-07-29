@@ -18,20 +18,27 @@
 
 .statement {
   font-family:    var(--font-family-body);
-  font-weight:    var(--font-weight-bold);
+  font-weight:    var(--font-weight-semibold);
   font-size:      var(--text-body-display-size);
   line-height:    var(--text-body-display-lh);
   letter-spacing: var(--text-body-display-ls);
   color:          var(--text-body-display-statement);
   margin:         0;
+  text-wrap:      balance;
 }
 
 .support {
   font-family:    var(--font-family-body);
-  font-weight:    var(--font-weight-bold);
+  font-weight:    var(--font-weight-semibold);
   font-size:      var(--text-body-display-size);
   line-height:    var(--text-body-display-lh);
   letter-spacing: var(--text-body-display-ls);
   color:          var(--text-body-display-support);
   margin:         0;
+  text-wrap:      balance;
+}
+
+.inverse .statement,
+.inverse .support {
+  color: var(--text-inverse-primary);
 }

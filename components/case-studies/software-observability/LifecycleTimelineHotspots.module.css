@@ -1,0 +1,16 @@
+/* ============================================================
+   LifecycleTimelineHotspots — unlike the other prototype embeds
+   (Software Profile, All Software), this one is a contained,
+   horizontally-centered card rather than a full-bleed width.
+   ============================================================ */
+
+.centerRow {
+  display:         flex;
+  justify-content: center;
+  width:           100%;
+}
+
+.embedWrapper {
+  position: relative;
+  width:    580px;
+}

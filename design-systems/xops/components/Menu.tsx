@@ -1,4 +1,4 @@
-import React from "react";
+import React, { CSSProperties } from "react";
 import styles from "./Menu.module.css";
 
 export type MenuOption<T extends string = string> = {
@@ -12,6 +12,8 @@ export type MenuProps<T extends string = string> = {
   onSelect: (value: T) => void;
   ariaLabel: string;
   className?: string;
+  /** Caps panel height with scroll when a consumer has many options. Additive; omit for the default unbounded panel. */
+  maxHeight?: number;
 };
 
 export function Menu<T extends string = string>({
@@ -20,12 +22,18 @@ export function Menu<T extends string = string>({
   onSelect,
   ariaLabel,
   className,
+  maxHeight,
 }: MenuProps<T>) {
+  const style: CSSProperties | undefined = maxHeight
+    ? { maxHeight, overflowY: "auto" }
+    : undefined;
+
   return (
     <ul
       className={[styles.panel, className].filter(Boolean).join(" ")}
       role="listbox"
       aria-label={ariaLabel}
+      style={style}
     >
       {options.map((option) => (
         <li key={option.value} role="presentation">

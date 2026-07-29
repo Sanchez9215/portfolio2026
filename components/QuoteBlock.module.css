@@ -1,13 +1,37 @@
 .quoteBlock {
   display: flex;
-  gap: var(--spacing-xl);
-  align-items: stretch;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--spacing-md);
   border-radius: var(--radius-lg);
   width: 100%;
 }
 
+.quoteRow {
+  display: flex;
+  /* Default gap; a local context can widen this if it also widens
+     quoteContent (e.g. to reach a specific text-wrap:balance row count),
+     so quoteEmphasis keeps reasonable breathing room. */
+  gap: var(--quote-row-gap, var(--spacing-xl));
+  align-items: stretch;
+  width: 100%;
+}
+
+.attribution {
+  font-family: var(--font-family-body);
+  font-weight: var(--font-weight-regular);
+  font-size: var(--text-body-sm-size);
+  line-height: var(--text-body-sm-lh);
+  letter-spacing: var(--text-body-sm-ls);
+  color: var(--text-tertiary);
+  text-align: left;
+}
+
 .quoteContent {
-  flex: 0 0 60%;
+  /* 60% by default; a local context can override this to rebalance the
+     quoteContent/quoteEmphasis split (quoteEmphasis's flex:1 always fills
+     whatever's left, so only this one value needs a hook). */
+  flex: 0 0 var(--quote-content-basis, 60%);
   display: flex;
   flex-direction: column;
   gap: var(--spacing-xl);
@@ -18,21 +42,26 @@
   display: block;
   width: 48px;
   height: 32px;
+  /* quote.svg is a flat #FBFCFF fill loaded via <img>, so its color can't be
+     read/set through `color`/`fill` from outside — a local context can set
+     this filter to recolor it (brightness(0) maps any solid fill to black). */
+  filter: var(--quote-mark-filter, none);
 }
 
 .bodyDisplay {
   font-family: var(--font-family-body);
-  font-weight: var(--font-weight-bold);
+  font-weight: var(--font-weight-semibold);
   font-size: var(--text-body-display-size);
   line-height: var(--text-body-display-lh);
   letter-spacing: var(--text-body-display-ls);
   color: var(--text-secondary);
+  text-wrap: balance;
 }
 
 .quoteEmphasis {
   flex: 1;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   padding-top: var(--spacing-3xl);
 }
 
@@ -47,7 +76,7 @@
 }
 
 @media (max-width: 393px) {
-  .quoteBlock {
+  .quoteRow {
     flex-direction: column;
   }
 

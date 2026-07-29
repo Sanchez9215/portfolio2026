@@ -6,11 +6,11 @@
    ============================================================ */
 
 .container {
-  position:   relative;
-  width:      100%;
-  height:     100%;
-  min-height: 300px;
-  overflow:   visible;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  /* min-height: 300px; */
+  overflow: visible;
 }
 
 .container svg {
@@ -19,40 +19,42 @@
 
 .container svg {
   display: block;
-  width:   100%;
-  height:  100%;
+  width: 100%;
+  height: 100%;
 }
 
 .spoke {
-  stroke:           var(--text-primary);
-  stroke-width:     0.5;
+  stroke: var(--text-primary);
+  stroke-width: 0.5;
   stroke-dasharray: 4 4;
-  stroke-linecap:   round;
-  fill:             none;
+  stroke-linecap: round;
+  fill: none;
 }
 
 .hubText {
-  font-family:    var(--font-family-display);
-  font-weight:    var(--font-weight-semibold);
-  font-size:      var(--text-label-md-size);
-  letter-spacing: var(--text-label-md-ls);
+  font-family: var(--font-family-display);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--text-label-xl-size);
+  line-height: var(--text-label-xl-lh);
+  letter-spacing: var(--text-label-xl-ls);
   text-transform: uppercase;
-  fill:           var(--text-secondary);
-  text-anchor:    middle;
+  word-spacing: var(--word-spacing-display);
+  fill: var(--text-primary);
+  text-anchor: middle;
 }
 
 .leafText {
-  font-family:    var(--font-family-body);
-  font-weight:    var(--font-weight-regular);
-  font-size:      var(--text-body-xs-size);
-  line-height:    var(--text-body-xs-lh);
-  fill:           var(--text-primary);
+  font-family: var(--font-family-body);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--text-body-lg-size);
+  line-height: var(--text-body-lg-lh);
+  fill: var(--text-primary);
 }
 
 .intermediateText {
-  font-family:    var(--font-family-body);
-  font-weight:    var(--font-weight-regular);
-  font-size:      var(--text-body-xs-size);
-  line-height:    var(--text-body-xs-lh);
-  fill:           var(--text-secondary);
+  font-family: var(--font-family-body);
+  font-weight: var(--font-weight-regular);
+  font-size: var(--text-body-xs-size);
+  line-height: var(--text-body-xs-lh);
+  fill: var(--text-secondary);
 }

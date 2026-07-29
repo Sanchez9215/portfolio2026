@@ -1,0 +1,124 @@
+/* ============================================================
+   HotspotOverlay — spotlight mask + tooltip card for the
+   scroll-driven Overview Prototype 01 hotspot sequence.
+   Positioned via measured DOM rects (see HotspotOverlay.tsx),
+   not fixed coordinates, so it tracks the live embed at any scale.
+   ============================================================ */
+
+.overlay {
+  position:       absolute;
+  inset:          0;
+  overflow:       hidden;
+  pointer-events: none;
+  opacity:        0;
+  transition:     opacity 250ms ease;
+  z-index:        10;
+}
+
+.overlay.visible {
+  opacity: 1;
+}
+
+/* ── spotlight mask ───────────────────────────────────────── */
+/* One dark fill with a rounded-rect hole cut per cutout via SVG <mask> —
+   supports any number of independent cutouts without their masks
+   compounding on top of each other. No CSS transition on geometry — the
+   holes are smoothed frame-by-frame in HotspotOverlay.tsx (a GSAP-driven
+   lerp toward the live target rect), so a CSS transition here would
+   fight that smoothing rather than help it. */
+
+.spotlightMask {
+  position: absolute;
+  inset:    0;
+  width:    100%;
+  height:   100%;
+}
+
+/* ── tooltip card ─────────────────────────────────────────── */
+
+/* Positioned wrapper — stacks the assumption card and (when present) the
+   insight card as one unit, gap matching the cards' own internal spacing. */
+.tooltipStack {
+  position:       absolute;
+  display:        flex;
+  flex-direction: column;
+  gap:            var(--spacing-sm);
+}
+
+.tooltipCard {
+  width:         280px;
+  /* 12px has no matching --spacing-* primitive (scale jumps 8 → 16) —
+     hardcoded until the spacing scale migration in progress.md lands. */
+  padding:       12px;
+  background:    var(--color-yellow-500);
+  border-radius: var(--radius-default);
+  display:       flex;
+  flex-direction: column;
+  gap:           var(--spacing-sm);
+  opacity:       0;
+  transition:    opacity 650ms ease;
+}
+
+.tooltipCard.settled {
+  opacity: 1;
+}
+
+/* Scoped override for the two "Issues Identified" hotspot experiences only
+   (AllSoftwareDirectionIssuesHotspots, AllSoftwareExperienceIssuesHotspots) —
+   confirmed FF7878 in place of the standard --color-yellow-500. */
+.tooltipCard.issue {
+  background: #ff7878;
+}
+
+/* The card's sharp (unrounded) corner points back at the anchor — one of
+   these four is applied per placement, see sharpCornerClass in HotspotOverlay.tsx. */
+.corner-top-left     { border-top-left-radius: 0; }
+.corner-top-right    { border-top-right-radius: 0; }
+.corner-bottom-right { border-bottom-right-radius: 0; }
+.corner-bottom-left  { border-bottom-left-radius: 0; }
+
+/* Insight card — stacked directly below the assumption card, same base
+   shape but surface-base background (dark) with secondary text so it
+   never reads as the same "pointing at the anchor" shape the assumption
+   card's sharp corner implies, and stays fully rounded on every corner. */
+.insightCard {
+  background:    var(--surface-base);
+  border-radius: var(--radius-default);
+}
+
+.insightCard .tooltipLabel,
+.insightCard .tooltipText {
+  color: var(--text-secondary);
+}
+
+.tooltipTitle {
+  font-family:    var(--font-family-display);
+  font-weight:    var(--font-weight-semibold);
+  font-size:      var(--text-label-xs-size);
+  line-height:    var(--text-label-xs-lh);
+  letter-spacing: var(--text-label-xs-ls);
+  text-transform: uppercase;
+  color:          var(--color-grey-900);
+}
+
+.tooltipBody {
+  display:        flex;
+  flex-direction: column;
+}
+
+.tooltipLabel {
+  font-family: var(--font-family-body);
+  font-weight: var(--font-weight-bold);
+  font-size:   var(--text-body-sm-size);
+  line-height: var(--text-body-sm-lh);
+  color:       var(--color-grey-900);
+}
+
+.tooltipText {
+  font-family: var(--font-family-body);
+  font-weight: var(--font-weight-semibold);
+  font-size:   var(--text-body-sm-size);
+  line-height: var(--text-body-sm-lh);
+  color:       var(--color-grey-900);
+  margin:      0;
+}

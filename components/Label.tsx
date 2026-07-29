@@ -1,17 +1,25 @@
+import { forwardRef } from 'react'
 import styles from './Label.module.css'
 
 export type LabelSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl'
+export type LabelColor = 'default' | 'inverse'
 
 interface LabelProps {
   size: LabelSize
+  color?: LabelColor
   children: string
   className?: string
 }
 
-export default function Label({ size, children, className }: LabelProps) {
+const Label = forwardRef<HTMLSpanElement, LabelProps>(function Label(
+  { size, color = 'default', children, className },
+  ref
+) {
   return (
-    <span className={`${styles.label} ${styles[size]}${className ? ` ${className}` : ''}`}>
+    <span ref={ref} className={`${styles.label} ${styles[size]} ${styles[color]}${className ? ` ${className}` : ''}`}>
       {children}
     </span>
   )
-}
+})
+
+export default Label

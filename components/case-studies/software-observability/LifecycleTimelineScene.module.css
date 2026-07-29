@@ -1,0 +1,52 @@
+/* ============================================================
+   LifecycleTimelineScene — pinned label intro → What/When/Why/Who
+   word-by-word reveal, section.lifecycle-timeline, Software
+   Observability case study
+   ============================================================ */
+
+/* Scroll-track only. Height is set in JS to calc(100vh + RUNWAY) — one
+   viewport for the sticky .stage + the word-reveal runway. Same mechanism
+   as FrameworkScene/DataDictionaryScene: the stage sticks for exactly
+   that distance, then releases and scrolls away with no pin-spacer desync. */
+.scene {
+  position: relative;
+}
+
+.stage {
+  position:       sticky;
+  top:            0;
+  height:         100vh;
+  display:        flex;
+  flex-direction: column;
+  justify-content: center;
+  padding-top:    var(--nav-height);
+  gap:            var(--spacing-3xl);
+}
+
+.textBlock {
+  max-width: 907px;
+}
+
+.wordsWrapper {
+  display: flex;
+  gap:     var(--spacing-xl);
+}
+
+.item {
+  flex:           1 0 0;
+  min-width:      0;
+  display:        flex;
+  flex-direction: column;
+  gap:            var(--spacing-xl);
+}
+
+.word {
+  font-family:    var(--font-family-display);
+  font-weight:    var(--font-weight-semibold);
+  font-size:      var(--text-display-metric-size);
+  line-height:    var(--text-display-metric-lh);
+  letter-spacing: var(--text-display-metric-ls);
+  text-transform: uppercase;
+  color:          var(--text-tertiary);
+  margin:         0;
+}

@@ -1,16 +1,18 @@
 import styles from './Title.module.css'
 
 export type TitleSize = 'xs' | 'sm' | 'md' | 'lg'
+export type TitleColor = 'default' | 'inverse'
 
 interface TitleProps {
   size: TitleSize
+  color?: TitleColor
   children: string
   className?: string
 }
 
-export default function Title({ size, children, className }: TitleProps) {
+export default function Title({ size, color = 'default', children, className }: TitleProps) {
   return (
-    <p className={`${styles.title} ${styles[size]}${className ? ` ${className}` : ''}`}>
+    <p className={`${styles.title} ${styles[size]} ${styles[color]}${className ? ` ${className}` : ''}`}>
       {children}
     </p>
   )

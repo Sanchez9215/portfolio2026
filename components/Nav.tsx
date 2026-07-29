@@ -73,6 +73,14 @@ export default function Nav() {
     collapsedHeight.current = navRef.current.offsetHeight
     gsap.set(navRef.current, { height: collapsedHeight.current })
 
+    // Publish the *measured* collapsed height to --nav-height so every consumer
+    // (main padding, sticky offsets like the prototype labels, JS readers) lines
+    // up exactly with the real nav instead of the static token estimate.
+    document.documentElement.style.setProperty(
+      "--nav-height",
+      `${collapsedHeight.current}px`,
+    )
+
     // Ensure wrapper starts with no margin (defensive — CSS sets height:0,
     // but GSAP needs marginTop at 0 for accurate close resets).
     gsap.set(menuListRef.current, { marginTop: 0 })
@@ -213,14 +221,17 @@ export default function Nav() {
         </a>
 
         {/* Button — outline (menu) ↔ ghost (close), toggled by nav state */}
-        <Button
-          variant={isOpen ? 'ghost' : 'outline'}
-          size="md"
-          onClick={toggleNav}
-          aria-label={isOpen ? 'Close navigation' : 'Open navigation'}
-        >
-          {isOpen ? 'Close' : 'Menu'}
-        </Button>
+        {/* Temporarily hidden — menu button not ready for launch */}
+        {false && (
+          <Button
+            variant={isOpen ? 'ghost' : 'outline'}
+            size="md"
+            onClick={toggleNav}
+            aria-label={isOpen ? 'Close navigation' : 'Open navigation'}
+          >
+            {isOpen ? 'Close' : 'Menu'}
+          </Button>
+        )}
       </div>
 
       {/* ── Menu list (hidden when closed) ──────────────────── */}

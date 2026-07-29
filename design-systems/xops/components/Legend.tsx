@@ -9,6 +9,7 @@ export type LegendItem = {
   meta?: string;
   color: string;
   tooltip?: Omit<TooltipProps, "children" | "className">;
+  hotspotId?: string;
 };
 
 export type LegendProps = {
@@ -20,7 +21,7 @@ export function Legend({ items, className }: LegendProps) {
   return (
     <div className={[styles.legend, className].filter(Boolean).join(" ")}>
       {items.map((item) => (
-        <div className={styles.row} key={item.label}>
+        <div className={styles.row} key={item.label} data-hotspot={item.hotspotId}>
           <div className={styles.labelGroup}>
             <span className={styles.swatch} style={{ backgroundColor: item.color }} />
             <p className={styles.label}>{item.label}</p>

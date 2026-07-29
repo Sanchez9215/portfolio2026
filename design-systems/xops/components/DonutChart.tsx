@@ -24,6 +24,12 @@ const DEFAULT_STROKE_WIDTH = 24;
 // outer edge, tinted with the segment's own color. Values confirmed with the user.
 const HOVER_HALO_WIDTH = 8;
 const HOVER_HALO_TINT = 0.35;
+// Each segment is its own stroked circle; butting two exactly at their shared boundary
+// leaves a sub-pixel anti-aliasing seam (a hairline notch where the background shows
+// through). Drawing each segment's dash slightly past its exact end closes that seam —
+// the next segment (or, at the ring's closing seam, the first segment) paints over the
+// overlap since it's drawn later, so nothing visible actually grows.
+const SEAM_OVERLAP = 1;
 
 export function DonutChart({
   segments,
@@ -59,15 +65,17 @@ export function DonutChart({
         <g transform={`rotate(-90 ${size / 2} ${size / 2})`}>
         {segments.map((segment, index) => {
           const fraction = total > 0 ? segment.value / total : 0;
-          const dash = fraction * circumference;
-          const dashArray = `${dash} ${circumference - dash}`;
+          const exactDash = fraction * circumference;
+          const dash = exactDash + SEAM_OVERLAP;
+          const dashArray = `${dash} ${Math.max(circumference - dash, 0)}`;
           const offset = -cumulative;
-          cumulative += dash;
+          cumulative += exactDash;
 
-          const haloDash = fraction * haloCircumference;
-          const haloDashArray = `${haloDash} ${haloCircumference - haloDash}`;
+          const exactHaloDash = fraction * haloCircumference;
+          const haloDash = exactHaloDash + SEAM_OVERLAP;
+          const haloDashArray = `${haloDash} ${Math.max(haloCircumference - haloDash, 0)}`;
           const haloOffset = -haloCumulative;
-          haloCumulative += haloDash;
+          haloCumulative += exactHaloDash;
 
           return (
             <React.Fragment key={index}>

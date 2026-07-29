@@ -1,6 +1,6 @@
-import ImgCard from '@/components/ImgCard'
 import Block from '@/components/Block'
 import LabelBlock from '@/components/LabelBlock'
+import SoftwareExperienceEmbed from './SoftwareExperienceEmbed'
 import styles from './SectionIntroduction.module.css'
 
 export default function SectionIntroduction() {
@@ -8,9 +8,9 @@ export default function SectionIntroduction() {
     <section className={`cs-grid ${styles.introduction}`}>
 
       <div className={styles.heroImage}>
-        <ImgCard aspectRatio="16/9">
-          <div className={styles.imagePlaceholder} />
-        </ImgCard>
+        <div className={styles.heroEmbed}>
+          <SoftwareExperienceEmbed />
+        </div>
       </div>
 
       <div className={styles.projectOverview}>
@@ -39,6 +39,11 @@ export default function SectionIntroduction() {
             size="xs"
             label="Role"
             body="Lead Product Designer"
+          />
+          <LabelBlock
+            size="xs"
+            label="Timeline"
+            body="Q2 2025"
           />
         </div>
       </div>

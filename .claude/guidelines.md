@@ -27,6 +27,9 @@ After updating the build-state doc (or any other doc) following a build, always 
 
 ## Process
 
+**Ask before acting; never build on an assumption.**
+When any part of a task is unspecified — intent, scope, the real source of a value or structure, the expected outcome — stop and ask *before* doing the work, not after. Never fill a gap with a plausible guess and build on it. A wrong assumption means the work is discarded and redone, which **wastes tokens — the expensive path on this plan — and time, far more than asking ever would.** This is the default operating mode for every task, not a per-situation rule. Surface the assumptions you'd otherwise make silently as questions, up front. The concrete failures that generated this rule (inventing pixel dimensions; reconstructing a screen's nav/structure from a remembered "generic" version instead of its real components) were all the same root act: executing on a guess rather than asking.
+
 **Never remove a Resume Context entry unless the user explicitly confirms it is complete.**
 Resume Context entries track outstanding work. Removing one because a build session finished is incorrect — only remove it when the specific pending task (e.g., a missing asset) has been resolved.
 
@@ -41,6 +44,9 @@ Additive tasks touch only what is needed. Do not audit or refactor unrelated cod
 
 **Never deviate from an established convention without a documented design reason.**
 If a shared property (naming, layout position, component variant) already has an established pattern, default to it. Only deviate when the design explicitly requires something different.
+
+**When a user's correction conflicts with an already-established, documented convention, flag the conflict and confirm scope before applying it — don't silently strip the standing default.**
+Pinned-scroll scenes in this codebase have a standing default: the sticky stage offsets by `--nav-height` so pinned content never renders under the fixed nav (`TheProblemPinnedScene`, `FrameworkScene`, and this same component earlier in the session). Told "pin to top means very top, regardless of a scene," the nav-height offset was removed outright — treating the instruction as an override of the standing convention rather than checking whether it applied to a different element (e.g. the table's own top-left anchor point vs. the stage's nav clearance). This produced content pinned under the nav bar and required a second correction to reverse. When new guidance appears to contradict an existing, working convention, say so and confirm which element/scope it targets before changing the default.
 
 **Never place new work in a position that matches a narrative or logical fit instead of actual append order.**
 New work (a new page section, a new item in a build-order list) is appended work — place it at the true end of the existing structure, matching where it will actually land, not where it would "logically" sit in the story. Any doc that tracks build order (e.g. a completed-work list) must mirror the real, current position of what it describes — it is not append-only independent of that reality. If something is ever inserted mid-structure, its doc entry moves to match, not stay wherever it was last appended.
@@ -76,6 +82,9 @@ The system in place is the system to build within. Only override its core struct
 **Never use `!important` to force a layout override.**
 Win specificity with a more specific, element-qualified selector instead.
 
+**Never invent a pixel dimension — every size derives from a real source.**
+This applies to abstract/schematic shapes (loading skeletons, wireframe blocks, diagrams) just as much as real UI — "it's only a placeholder" is not an exemption. **Widths** come from the parent container: `width:100%` to fill, or a `%`/flex-ratio for a partial look — never an eyeballed pixel width. **Heights** come from the real thing the shape stands in for: typography **line-height tokens** for anything representing text (a body-14 element is its 20px line-height, not a 10px sliver), and `control-height` / `bar-height` / `logo-tile-size` / `legend-swatch-size` tokens for controls and chart marks. This mistake was made twice in one build — skinny sub-container widths, then sub-line-height bar heights — each time by reaching for a magic number instead of the real dimensional source. If no token fits the thing being represented, ask rather than guess a number.
+
 ---
 
 ## Token Resolution
@@ -87,6 +96,11 @@ Match the full property combination — e.g. font-family + weight + size + line-
 When building new component CSS, explicitly check that base properties (e.g. font-family) are set from the project's own token file rather than assuming a parent or global style will supply the right value. A missing explicit declaration can silently pull in the wrong design system's styling.
 
 ---
+
+## Design Source Ingestion
+
+**Never pull a rendered/raster screenshot without asking first and saying why — structured data is the default source.**
+The layer tree (metadata: names, sizes, positions), the design context (real vector geometry, colors, copy), the variable defs, AND the text styles are all available as structured data — read those first and build from them. That includes typography: font family, weight, size, line-height, and letter-spacing come off the node, so resolve type tiers from the node's real style, never guess or leave a placeholder. A rendered/raster screenshot (or downloading a PNG) is occasionally worth it for a purely visual judgment the structured data can't express — but it costs tokens, so ask the user before doing it and state the specific reason the vector/metadata can't answer the question. Don't take one silently as the default way to "see" a design.
 
 ## Component Usage
 
