@@ -229,6 +229,42 @@ export function ownersForSku(sku: string): { primary: string; secondary: string 
   return { primary, secondary };
 }
 
+// Known reseller email domains; "Direct" (no reseller, purchased straight from publisher)
+// falls back to a slugified version of the publisher name.
+const RESELLER_DOMAINS: Record<string, string> = {
+  CDW: "cdw.com",
+  "SHI International": "shi.com",
+  "Insight Enterprises": "insight.com",
+  Zones: "zones.com",
+  Connection: "connection.com",
+  SoftwareOne: "softwareone.com",
+};
+
+const VENDOR_CONTACT_ROLES = ["Account Manager", "Customer Success Manager", "Renewal Specialist"];
+
+function slugifyDomain(name: string): string {
+  return name.toLowerCase().replace(/[^a-z0-9]+/g, "") + ".com";
+}
+
+// Deterministic vendor/account contact for a product's contract — no vendor-contact
+// source table exists yet, so this is derived from the SKU the same way ownersForSku()
+// derives internal owners: same product → same contact every run.
+export function vendorContactForSku(
+  sku: string,
+  reseller: string,
+  publisher: string,
+): { name: string; role: string; email: string } {
+  const rng = createRng(hashString(sku + "|vendor"));
+  const first = rng.pick(FIRST_NAMES);
+  const last = rng.pick(LAST_NAMES);
+  const domain = reseller === "Direct" ? slugifyDomain(publisher) : RESELLER_DOMAINS[reseller] ?? slugifyDomain(reseller);
+  return {
+    name: `${first} ${last}`,
+    role: rng.pick(VENDOR_CONTACT_ROLES),
+    email: `${first.toLowerCase()}.${last.toLowerCase()}@${domain}`,
+  };
+}
+
 // Assignment reach as a fraction of the relevant population (affinity depts if set, else org).
 const REACH: Record<ProductCatalogEntry["adoption"], [number, number]> = {
   universal: [0.8, 0.98],

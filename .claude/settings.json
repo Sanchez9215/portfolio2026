@@ -58,7 +58,10 @@
       "WebFetch(domain:developer.salesforce.com)",
       "Bash(python3 -c \"import json; json.load\\(open\\('design-system/tokens.json'\\)\\)\")",
       "Bash(curl -sL -o eye-node.png \"https://www.figma.com/api/mcp/asset/4f055df6-0c98-4e2c-805c-3344b192123e\")",
-      "Bash(npx eslint *)"
+      "Bash(npx eslint *)",
+      "Bash(npx tsx *)",
+      "Bash(grep -n \"metaText\\\\|metaItem\\\\|metaIcon\\\\|metaRow\\\\|a {\\\\|^a,\\\\|:link\\\\|color\" /Users/edgarsanchez/Portfolio/design-systems/xops/components/SoftwareProfile.module.css)",
+      "Bash(npx --yes tsx -e ' *)"
     ],
     "additionalDirectories": [
       "/Users/edgarsanchez/Portfolio/stories",

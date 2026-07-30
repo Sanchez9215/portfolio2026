@@ -1,7 +1,7 @@
 /**
  * Button — global button component
  *
- * Four variants: primary | secondary | outline | ghost
+ * Five variants: primary | secondary | outline | ghost | accent
  * Built from Figma node 284:230 (Claude-Code file).
  * Tokens: action.* (design-system/tokens.json)
  *
@@ -13,11 +13,16 @@
  *   secondary — dark bg, dark border, white text    → white bg on hover
  *   outline   — dark bg, yellow border, yellow text → yellow bg on hover
  *   ghost     — no bg/border, grey text             → yellow text on hover
+ *   accent    — blue-500 bg, grey-50 text            → darkens to blue-600 on hover
+ *
+ * TODO (roadmap): this component is due a full rework — accent was added as a
+ * scoped, minimal addition (software-experience-embed's Layer Inspect CTA),
+ * not a broader pass over the whole component.
  */
 
 import styles from './Button.module.css'
 
-export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost'
+export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'accent'
 export type ButtonSize    = 'lg' | 'md'
 
 interface ButtonProps {
@@ -36,6 +41,8 @@ interface ButtonProps {
   type?: 'button' | 'submit' | 'reset'
   className?: string
   'aria-label'?: string
+  /** Optional trailing icon, rendered after the label with an 8px gap. */
+  icon?: React.ReactNode
 }
 
 export default function Button({
@@ -47,14 +54,22 @@ export default function Button({
   type = 'button',
   className = '',
   'aria-label': ariaLabel,
+  icon,
 }: ButtonProps) {
   // 'lg' is the .btn baseline — no extra class needed; 'md' adds the override class.
   const cls = [styles.btn, styles[variant], size === 'md' ? styles.md : null, className].filter(Boolean).join(' ')
 
+  const content = (
+    <>
+      <span className={styles.label}>{children}</span>
+      {icon && <span className={styles.icon}>{icon}</span>}
+    </>
+  )
+
   if (href) {
     return (
       <a href={href} className={cls} aria-label={ariaLabel}>
-        <span className={styles.label}>{children}</span>
+        {content}
       </a>
     )
   }
@@ -66,7 +81,7 @@ export default function Button({
       className={cls}
       aria-label={ariaLabel}
     >
-      <span className={styles.label}>{children}</span>
+      {content}
     </button>
   )
 }

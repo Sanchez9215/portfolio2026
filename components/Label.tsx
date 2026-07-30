@@ -2,7 +2,7 @@ import { forwardRef } from 'react'
 import styles from './Label.module.css'
 
 export type LabelSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl'
-export type LabelColor = 'default' | 'inverse'
+export type LabelColor = 'default' | 'inverse' | 'secondary' | 'tertiary'
 
 interface LabelProps {
   size: LabelSize

@@ -10,7 +10,7 @@
 
 | # | Beat | Action | Current section(s) | 🔍 Needs you | Status |
 |---|------|--------|---------------------|---------------|--------|
-| 1 | Intro | keep copy, swap hero visual | `SectionIntroduction` | ~~real impact figure~~ (kept, no hard number available), ~~timeline dates~~ (Q2 2025) | ✅ content done, hero visual deferred |
+| 1 | Intro | keep copy, swap hero visual | `SectionIntroduction` | ~~real impact figure~~ (kept, no hard number available), ~~timeline dates~~ (Q2 2025) | 🔶 content done; hero visual now a real entrance animation + scripted ghost-cursor walkthrough (`software-experience-embed`, `ghost-cursor`) — see progress.md and "Layer Inspect" below. Timing not yet tuned |
 | 2 | Brief | unchanged | `section.brief` | — | ✅ verified unchanged |
 | 3 | The Problem | unchanged | `section.the-problem` | — | ✅ verified unchanged |
 | 4 | User voice | unchanged copy | `section.user-quote` | ~~quote attribution~~ (added: sentiment, not a real single source) | ✅ |
@@ -29,7 +29,7 @@
 | 18 | Profile Prototype 1 | cut "Product Identity/logos" card | `section.profile-prototype-1` | — | 🔶 superseded — live hotspot experience built (`SoftwareProfileLegacyHotspots`), all 5 cards kept as hotspots instead of cutting Product Identity; absorbs `section.software-profile-quote`; blind pass, see progress.md |
 | 19 | Lifecycle Timeline + Generating Events | keep all, rewrite one display line | `section.lifecycle-timeline`, `section.generating-events`, `section.event-iterations`, `section.final-lifecycle-timeline` | — | 🔶 `lifecycle-timeline` rebuilt as a pinned word-reveal scene (`LifecycleTimelineScene`); other 3 sections + the display-line rewrite still open, see progress.md |
 | 20 | Unifying Systems | merge with Setting a Blueprint, compress method clause | `section.unifying-systems`, `section.unifying-systems-prototype` | — | ⬜ |
-| 21 | Testing the Experience | copy unchanged | `section.testing-the-experience` | — | 🔶 superseded — live connected embed (`LegacyExperienceEmbed`) + scripted ghost-cursor autoplay (`GhostCursor`) replace the static image plan; see progress.md |
+| 21 | Testing the Experience | copy unchanged | `section.testing-the-experience` | — | 🔶 live connected embed (`LegacyExperienceEmbed`) replaces the static image plan, fully interactive, no ghost-cursor here — the ghost-cursor walkthrough actually lives on beat 1's hero embed instead (prior status here was stale, corrected in progress.md) |
 | 22 | Validation | merge Two Track Validation + cross-functional sessions, cut résumé line | `section.two-track-validation`, `section.cross-functional-sessions`, `section.phase-one-clarity` | — | ⬜ |
 | 23 | All Software: Issues → System Debt → Final | restructure — merge issue/fix cards into before/after pairs | `section.all-software-direction-issues`, `section.direction-issue-annotations`, `section.all-software-experience-issues`, `section.experience-issue-annotations`, `section.design-system-refinements`, `section.refinement-annotations`, `section.all-software-final`, `section.all-software-final-design` | — | ⬜ |
 | 24 | Table Anatomy | cut Vendor/Category cards, fold Tooltips in as trust card | `section.table-anatomy`, `section.row-anatomy`, `section.tool-tips`, `section.tool-tips-final-design` | — | ⬜ |
@@ -59,6 +59,18 @@ Two mechanism extensions beyond the original single-target/single-beat design:
 **Mechanism history:** tried wheel-jacked stepping (capturing `wheel` events, blocking native scroll, one gesture = one step) to guarantee a single scroll gesture never skips past a hotspot — reverted after repeated breakage (pin not engaging, page scroll getting stuck, animations killed mid-flight) traced to GSAP `pin:true`'s async `onEnter`/`onLeave` racing against manual `preventDefault()`. Currently on the scroll-scrubbed `ScrollTrigger` (`scrub` + `snap`) approach in `hooks/useScrollHotspotSequence.ts`: pin holds for a fixed scroll distance per slot (1200px), each grows (15%) → holds → shrinks (15%) with no gap, overlapping directly into the next. Known accepted trade-off: a fast/momentum scroll can still carry through more than one hotspot in a single gesture — not solved, deliberately deprioritized after the wheel-jack rebuild proved worse than the problem it fixed.
 
 **Known gap — touch support:** not started. Needs its own pass.
+
+## Layer Inspect (hero embed mechanic, beat 1)
+
+**Why this exists:** the case study's audience needs proof of systems thinking and technical building ability, not just product design — a mechanic that lets a visitor "peel back the layers" of a real screen doubles as that proof. Rather than building XOPS's two separate deferred ideas — a code-reveal toggle and a static "plugs into real systems" architecture diagram — as two disconnected features, both are absorbed into one unified interaction: **XOPS `PLAN.md` items #6 (code-reveal toggle) and #11a (config-as-YAML + plugs-into-real-systems visual) are superseded by this and no longer separately planned there.**
+
+**Flow:**
+1. The hero embed (`software-experience-embed`) loads on Overview and auto-navigates itself (scripted `ghost-cursor`) to Software Profile — **built this session**, see progress.md.
+2. Once there, the visitor is offered a choice: use the prototype normally, or enter Layer Inspect — **not built yet**. Wording/UI for this choice still open.
+3. Layer Inspect fades out everything except the selected screen and drops into a stacked-card view (hand-sketched reference: numbered cards fanned behind the front/rendered view) the visitor can step through: **Design System** (component + token boundaries) → **Data** (which source table/join computed this number — ties into `xops/PLAN.md` #11's source-tagged model) → **Systems** (which real-world upstream system this would come from in production — absorbs #11a) → **Code** (the literal source — absorbs #6).
+4. **First-pass scope: Software Profile only.** The screen-selector step doesn't offer All Software yet — that's future work once the pattern is proven on one screen.
+
+**Not yet built:** the two-button choice UI, the stacked-layer view itself for any layer, and the All Software variant. Ghost-cursor auto-navigation (step 1) is the only piece built so far.
 
 ## Visual storytelling (separate track, build priority order)
 

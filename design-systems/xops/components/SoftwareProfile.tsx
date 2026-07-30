@@ -59,7 +59,8 @@ export type SoftwareProfileProps = {
   name: string;
   fullName: string;
   vendor: string;
-  owner: string;
+  vendorContactName: string;
+  vendorContactEmail: string;
   description: string;
   renewalDate: string;
   renewalLabel: string;
@@ -107,7 +108,8 @@ export function SoftwareProfile({
   name,
   fullName,
   vendor,
-  owner,
+  vendorContactName,
+  vendorContactEmail,
   description,
   renewalDate,
   renewalLabel,
@@ -182,7 +184,9 @@ export function SoftwareProfile({
                 <span className={styles.metaText}>Vendor: {vendor}</span>
                 <span className={styles.metaItem}>
                   <Icon name="id_card" color="var(--xops-text-secondary)" className={styles.metaIcon} />
-                  <span className={styles.metaText}>{owner}</span>
+                  <a href={`mailto:${vendorContactEmail}`} className={styles.contactLink}>
+                    {vendorContactName}
+                  </a>
                 </span>
               </div>
             </div>
@@ -199,7 +203,8 @@ export function SoftwareProfile({
             />
           </div>
         </div>
-        <p className={styles.description}>{description}</p>
+        {/* Hidden until all 40 authored descriptions are in */}
+        {/* <p className={styles.description}>{description}</p> */}
       </div>
       <div className={styles.content}>
         <div data-hotspot="opportunity-summary">

@@ -240,6 +240,12 @@
   --action-ghost-text:               var(--text-tertiary);
   --action-ghost-text-hover:         var(--color-yellow-500);
 
+  --action-accent-bg:                var(--color-blue-500);
+  --action-accent-bg-hover:          var(--color-blue-600);
+  --action-accent-border:            var(--color-blue-500);
+  --action-accent-border-hover:      var(--color-blue-600);
+  --action-accent-text:              var(--color-grey-50);
+
   /* ----------------------------------------------------------
      SEMANTIC — Text
      ---------------------------------------------------------- */

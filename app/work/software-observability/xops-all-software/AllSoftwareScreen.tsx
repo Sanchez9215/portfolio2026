@@ -191,6 +191,15 @@ export const softwareColumns: Column<ProductSummary>[] = [
   { key: "reseller", label: "Vendor", width: "auto", sortable: true },
   { key: "category", label: "Category", width: "auto", sortable: true },
   {
+    key: "opportunity",
+    label: "Opportunity",
+    width: "auto",
+    align: "right",
+    sortable: true,
+    tooltip: opportunityTooltip,
+    render: (row) => (row.seatBased ? formatCurrency(row.opportunity) : EM_DASH),
+  },
+  {
     key: "utilization",
     label: "Utilization",
     width: "auto",
@@ -202,15 +211,6 @@ export const softwareColumns: Column<ProductSummary>[] = [
       ) : (
         EM_DASH
       ),
-  },
-  {
-    key: "opportunity",
-    label: "Opportunity",
-    width: "auto",
-    align: "right",
-    sortable: true,
-    tooltip: opportunityTooltip,
-    render: (row) => (row.seatBased ? formatCurrency(row.opportunity) : EM_DASH),
   },
   {
     key: "renewalDate",
@@ -260,11 +260,20 @@ export function AllSoftwareScreen({
   onNavigate?: (screen: SoftwareSubKey) => void;
 }) {
   const ds = useMemo(() => getDataset(), []);
-  const summaries = useMemo(() => productSummaries(ds), [ds]);
+  // Default view: ranked by Opportunity (dollars recoverable), descending — the
+  // standard SAM triage order. Non-seat-based rows (opportunity is not meaningful,
+  // rendered "—") sort after all seat-based rows rather than by their raw number.
+  const summaries = useMemo(() => {
+    return [...productSummaries(ds)].sort((a, b) => {
+      if (a.seatBased !== b.seatBased) return a.seatBased ? -1 : 1;
+      if (!a.seatBased) return 0;
+      return b.opportunity - a.opportunity;
+    });
+  }, [ds]);
 
   const [region, setRegion] = useState("global");
-  const [sortKey, setSortKey] = useState<string | undefined>(undefined);
-  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+  const [sortKey, setSortKey] = useState<string | undefined>("opportunity");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
   const [selectedRowId, setSelectedRowId] = useState<string | undefined>(undefined);
   const [profileOpen, setProfileOpen] = useState(false);
   const [page, setPage] = useState(1);
@@ -496,8 +505,9 @@ export function AllSoftwareScreen({
             name={selectedRow.name}
             fullName={selectedRow.publisher}
             vendor={selectedRow.reseller}
-            owner="—"
-            description="No description available yet."
+            vendorContactName={selectedRow.vendorContactName}
+            vendorContactEmail={selectedRow.vendorContactEmail}
+            description={selectedRow.description ?? "No description available yet."}
             renewalDate={formatDate(selectedRow.renewalDate)}
             renewalLabel={formatRenewalDuration(selectedRow.renewalDays)}
             renewalStatus={renewalStatus(selectedRow.renewalDays)}

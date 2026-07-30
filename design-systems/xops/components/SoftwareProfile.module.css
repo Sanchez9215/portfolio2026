@@ -259,3 +259,17 @@
   color: var(--xops-text-secondary);
   white-space: nowrap;
 }
+
+.contactLink {
+  font-family: var(--xops-font-family);
+  font-weight: var(--xops-font-weight-regular);
+  font-size: var(--xops-typography-body-12-font-size);
+  line-height: var(--xops-typography-body-12-line-height);
+  color: var(--xops-brand-primary);
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+.contactLink:hover {
+  text-decoration: underline;
+}

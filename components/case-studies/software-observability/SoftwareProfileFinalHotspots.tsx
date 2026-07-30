@@ -181,7 +181,8 @@ export default function SoftwareProfileFinalHotspots({
                 name={row.name}
                 fullName={row.publisher}
                 vendor={row.reseller}
-                owner="—"
+                vendorContactName={row.vendorContactName}
+                vendorContactEmail={row.vendorContactEmail}
                 description="No description available yet."
                 renewalDate={formatDate(row.renewalDate)}
                 renewalLabel={formatRenewalDuration(row.renewalDays)}

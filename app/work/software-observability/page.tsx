@@ -1,3 +1,5 @@
+import dynamic from "next/dynamic";
+import LazyMount from "@/components/LazyMount";
 import Nav from "@/components/Nav";
 import Section from "@/components/Section";
 import LabelBlock from "@/components/LabelBlock";
@@ -9,17 +11,8 @@ import TheProblemPinnedScene from "@/components/case-studies/software-observabil
 import QuoteBlock from "@/components/QuoteBlock";
 import ContentHub from "@/components/ContentHub";
 import ImgCard from "@/components/ImgCard";
-import OverviewPrototypeHotspots from "@/components/case-studies/software-observability/OverviewPrototypeHotspots";
-import OverviewPrototype2Hotspots from "@/components/case-studies/software-observability/OverviewPrototype2Hotspots";
 import GapsIdentifiedHexScene from "@/components/case-studies/software-observability/GapsIdentifiedHexScene";
-import AllSoftwareLegacyHotspots from "@/components/case-studies/software-observability/AllSoftwareLegacyHotspots";
-import AllSoftwareDirectionIssuesHotspots from "@/components/case-studies/software-observability/AllSoftwareDirectionIssuesHotspots";
-import AllSoftwareExperienceIssuesHotspots from "@/components/case-studies/software-observability/AllSoftwareExperienceIssuesHotspots";
-import SoftwareProfileLegacyHotspots from "@/components/case-studies/software-observability/SoftwareProfileLegacyHotspots";
 import SoftwareProfileIssuesHotspots from "@/components/case-studies/software-observability/SoftwareProfileIssuesHotspots";
-import SoftwareProfileFinalHotspots from "@/components/case-studies/software-observability/SoftwareProfileFinalHotspots";
-import InactiveLicenseDistributionHotspots from "@/components/case-studies/software-observability/InactiveLicenseDistributionHotspots";
-import LifecycleTimelineHotspots from "@/components/case-studies/software-observability/LifecycleTimelineHotspots";
 import InsightsGoalsContent from "@/components/case-studies/software-observability/InsightsGoalsContent";
 import CardRow from "@/components/CardRow";
 import CardColumn from "@/components/CardColumn";
@@ -32,13 +25,28 @@ import FrameworkScene from "@/components/case-studies/software-observability/Fra
 import DataScrollController from "@/components/case-studies/software-observability/DataScrollController";
 import DataIntroText from "@/components/case-studies/software-observability/DataIntroText";
 import LifecycleTimelineScene from "@/components/case-studies/software-observability/LifecycleTimelineScene";
-import LegacyExperienceEmbed from "@/components/case-studies/software-observability/LegacyExperienceEmbed";
-import FinalAllSoftwareEmbed from "@/components/case-studies/software-observability/FinalAllSoftwareEmbed";
-import OverviewSpendLifecycleEmbed from "@/components/case-studies/software-observability/OverviewSpendLifecycleEmbed";
-import RowAnatomyHotspots from "@/components/case-studies/software-observability/RowAnatomyHotspots";
+import InactiveLicenseDistributionHotspots from "@/components/case-studies/software-observability/InactiveLicenseDistributionHotspots";
 import GeneratingEventsContent from "@/components/case-studies/software-observability/GeneratingEventsContent";
 import ToolTipsImages from "@/components/case-studies/software-observability/ToolTipsImages";
 import styles from "./software-observability.module.css";
+
+// Dynamically imported: these pull in the full XOPS design system + generated
+// dataset (design-systems/xops/**). Splitting them into their own chunks keeps
+// that weight out of the initial bundle the hero embed (SectionIntroduction)
+// has to load behind. SSR stays on (default) so case-study content still
+// renders in the initial HTML.
+const OverviewPrototypeHotspots = dynamic(() => import("@/components/case-studies/software-observability/OverviewPrototypeHotspots"));
+const OverviewPrototype2Hotspots = dynamic(() => import("@/components/case-studies/software-observability/OverviewPrototype2Hotspots"));
+const AllSoftwareLegacyHotspots = dynamic(() => import("@/components/case-studies/software-observability/AllSoftwareLegacyHotspots"));
+const AllSoftwareDirectionIssuesHotspots = dynamic(() => import("@/components/case-studies/software-observability/AllSoftwareDirectionIssuesHotspots"));
+const AllSoftwareExperienceIssuesHotspots = dynamic(() => import("@/components/case-studies/software-observability/AllSoftwareExperienceIssuesHotspots"));
+const SoftwareProfileLegacyHotspots = dynamic(() => import("@/components/case-studies/software-observability/SoftwareProfileLegacyHotspots"));
+const SoftwareProfileFinalHotspots = dynamic(() => import("@/components/case-studies/software-observability/SoftwareProfileFinalHotspots"));
+const LifecycleTimelineHotspots = dynamic(() => import("@/components/case-studies/software-observability/LifecycleTimelineHotspots"));
+const LegacyExperienceEmbed = dynamic(() => import("@/components/case-studies/software-observability/LegacyExperienceEmbed"));
+const FinalAllSoftwareEmbed = dynamic(() => import("@/components/case-studies/software-observability/FinalAllSoftwareEmbed"));
+const OverviewSpendLifecycleEmbed = dynamic(() => import("@/components/case-studies/software-observability/OverviewSpendLifecycleEmbed"));
+const RowAnatomyHotspots = dynamic(() => import("@/components/case-studies/software-observability/RowAnatomyHotspots"));
 
 export default function SoftwareObservabilityPage() {
   return (
@@ -276,7 +284,9 @@ export default function SoftwareObservabilityPage() {
             see OverviewPrototypeHotspots.tsx for the POC (3 of 8 hotspots). */}
         <Section className={styles.overviewPrototype1}>
           <div className={styles.overviewPrototype1Embed}>
-            <OverviewPrototypeHotspots />
+            <LazyMount>
+              <OverviewPrototypeHotspots />
+            </LazyMount>
           </div>
         </Section>
 
@@ -286,7 +296,9 @@ export default function SoftwareObservabilityPage() {
             progress.md / PLAN.md beat 14. */}
         <Section className={styles.overviewPrototype2}>
           <div className={styles.overviewPrototype2Embed}>
-            <OverviewPrototype2Hotspots />
+            <LazyMount>
+              <OverviewPrototype2Hotspots />
+            </LazyMount>
           </div>
         </Section>
 
@@ -322,7 +334,9 @@ export default function SoftwareObservabilityPage() {
             system is applied here — see AllSoftwareLegacyHotspots.tsx. */}
         <Section className={styles.overviewPrototype1}>
           <div className={styles.overviewPrototype1Embed}>
-            <AllSoftwareLegacyHotspots />
+            <LazyMount>
+              <AllSoftwareLegacyHotspots />
+            </LazyMount>
           </div>
         </Section>
 
@@ -387,7 +401,9 @@ export default function SoftwareObservabilityPage() {
             experience — see LifecycleTimelineHotspots.tsx. */}
         <Section className={styles.finalLifecycleTimeline}>
           <div className={styles.finalLifecycleTimelineEmbed}>
-            <LifecycleTimelineHotspots />
+            <LazyMount>
+              <LifecycleTimelineHotspots />
+            </LazyMount>
           </div>
         </Section>
 
@@ -506,7 +522,9 @@ export default function SoftwareObservabilityPage() {
             caption="Full Prototype"
             aspectRatio="16/9"
           >
-            <LegacyExperienceEmbed />
+            <LazyMount>
+              <LegacyExperienceEmbed />
+            </LazyMount>
           </ImgCard>
         </Section>
 
@@ -564,7 +582,9 @@ export default function SoftwareObservabilityPage() {
             system is applied here — see AllSoftwareDirectionIssuesHotspots.tsx. */}
         <Section className={styles.directionIssueAnnotations}>
           <div className={styles.directionIssueAnnotationsEmbed}>
-            <AllSoftwareDirectionIssuesHotspots />
+            <LazyMount>
+              <AllSoftwareDirectionIssuesHotspots />
+            </LazyMount>
           </div>
         </Section>
 
@@ -581,7 +601,9 @@ export default function SoftwareObservabilityPage() {
             system is applied here — see AllSoftwareExperienceIssuesHotspots.tsx. */}
         <Section className={styles.experienceIssueAnnotations}>
           <div className={styles.experienceIssueAnnotationsEmbed}>
-            <AllSoftwareExperienceIssuesHotspots />
+            <LazyMount>
+              <AllSoftwareExperienceIssuesHotspots />
+            </LazyMount>
           </div>
         </Section>
 
@@ -601,7 +623,9 @@ export default function SoftwareObservabilityPage() {
             caption="Final All Software View"
             height="100vh"
           >
-            <FinalAllSoftwareEmbed />
+            <LazyMount>
+              <FinalAllSoftwareEmbed />
+            </LazyMount>
           </ImgCard>
         </Section>
 
@@ -615,7 +639,9 @@ export default function SoftwareObservabilityPage() {
             body="All elements were redesigned to communicate status and urgency at a glance."
           />
           <div className={styles.tableAnatomyEmbed}>
-            <RowAnatomyHotspots />
+            <LazyMount>
+              <RowAnatomyHotspots />
+            </LazyMount>
           </div>
         </Section>
 
@@ -715,7 +741,9 @@ export default function SoftwareObservabilityPage() {
             system is applied here — see SoftwareProfileIssuesHotspots.tsx. */}
         <Section className={styles.profileIssueAnnotations}>
           <div className={styles.profileIssueAnnotationsEmbed}>
-            <SoftwareProfileIssuesHotspots />
+            <LazyMount>
+              <SoftwareProfileIssuesHotspots />
+            </LazyMount>
           </div>
         </Section>
 
@@ -733,7 +761,9 @@ export default function SoftwareObservabilityPage() {
             experience — see SoftwareProfileFinalHotspots.tsx. */}
         <Section className={styles.profileFinalDesign}>
           <div className={styles.profileFinalDesignEmbed}>
-            <SoftwareProfileFinalHotspots />
+            <LazyMount>
+              <SoftwareProfileFinalHotspots />
+            </LazyMount>
           </div>
         </Section>
 
@@ -822,7 +852,9 @@ export default function SoftwareObservabilityPage() {
             see InactiveLicenseDistributionHotspots.tsx. */}
         <Section className={styles.inactiveLicenseDistributionEmbed}>
           <div className={styles.inactiveLicenseDistributionEmbedInner}>
-            <InactiveLicenseDistributionHotspots />
+            <LazyMount>
+              <InactiveLicenseDistributionHotspots />
+            </LazyMount>
           </div>
         </Section>
 
@@ -843,7 +875,9 @@ export default function SoftwareObservabilityPage() {
         {/* ── section.overview-final ── */}
         <Section className={styles.overviewFinal}>
           <ImgCard variant="card" caption="Final Overview Page" height="100vh">
-            <OverviewSpendLifecycleEmbed />
+            <LazyMount>
+              <OverviewSpendLifecycleEmbed />
+            </LazyMount>
           </ImgCard>
         </Section>
 
@@ -859,7 +893,9 @@ export default function SoftwareObservabilityPage() {
             caption="Final All Software View"
             height="100vh"
           >
-            <FinalAllSoftwareEmbed />
+            <LazyMount>
+              <FinalAllSoftwareEmbed />
+            </LazyMount>
           </ImgCard>
         </Section>
 

@@ -14,7 +14,7 @@ import type {
   LicenseModel,
 } from "./types";
 import { PRODUCT_CATALOG, logoFor } from "./catalog";
-import { AS_OF, ownersForSku } from "./generate";
+import { AS_OF, ownersForSku, vendorContactForSku } from "./generate";
 
 const DAY_MS = 86_400_000;
 const ACTIVE_WINDOW_DAYS = 90;
@@ -36,6 +36,7 @@ interface Index {
   assignmentsBySku: Map<string, PublisherAssignmentRow[]>;
   activityByKey: Map<string, string | null>; // `${email}|${sku}` → lastActivityAt
   editionBySku: Map<string, string>;
+  descriptionBySku: Map<string, string>;
   deptName: Map<string, string>;
   ccName: Map<string, string>;
 }
@@ -65,13 +66,25 @@ function getIndex(ds: Dataset): Index {
   const editionBySku = new Map<string, string>();
   for (const c of PRODUCT_CATALOG) editionBySku.set(c.sku, c.edition);
 
+  const descriptionBySku = new Map<string, string>();
+  for (const c of PRODUCT_CATALOG) if (c.description) descriptionBySku.set(c.sku, c.description);
+
   const deptName = new Map<string, string>();
   for (const d of ds.config.departments) deptName.set(d.departmentId, d.departmentName);
 
   const ccName = new Map<string, string>();
   for (const c of ds.config.costCenters) ccName.set(c.code, c.name);
 
-  const index: Index = { hrByEmail, procBySku, assignmentsBySku, activityByKey, editionBySku, deptName, ccName };
+  const index: Index = {
+    hrByEmail,
+    procBySku,
+    assignmentsBySku,
+    activityByKey,
+    editionBySku,
+    descriptionBySku,
+    deptName,
+    ccName,
+  };
   _indexCache.set(ds, index);
   return index;
 }
@@ -91,10 +104,16 @@ export type ProductSummary = {
   licenseModel: LicenseModel;
   seatBased: boolean; // false for consumption (usage-billed) → seat metrics don't apply, render "—"
   edition: string;
+  description: string | null; // authored copy; null for products not yet in the curated subset
   reseller: string;
   // ownership — deterministic synthetic pair keyed off SKU (no owner source table yet)
   primaryOwner: string;
   secondaryOwner: string;
+  // vendor/account contact — deterministic synthetic, tagged procurement (no contact
+  // source table yet), one per contract (keyed off sku)
+  vendorContactName: string;
+  vendorContactRole: string;
+  vendorContactEmail: string;
   // counts (all joined/derived, never stored)
   purchased: number;
   assigned: number;
@@ -147,6 +166,7 @@ function summarizeProduct(ds: Dataset, proc: ProcurementRow): ProductSummary {
   const inactiveWaste = inactive * unitCost;
   const unassignedWaste = unassigned * unitCost;
   const owners = ownersForSku(proc.productSku);
+  const vendorContact = vendorContactForSku(proc.productSku, proc.supplierName, proc.publisher);
 
   return {
     sku: proc.productSku,
@@ -157,9 +177,13 @@ function summarizeProduct(ds: Dataset, proc: ProcurementRow): ProductSummary {
     licenseModel: proc.licenseModel,
     seatBased: proc.licenseModel === "enterprise" || proc.licenseModel === "perpetual",
     edition: idx.editionBySku.get(proc.productSku) ?? "",
+    description: idx.descriptionBySku.get(proc.productSku) ?? null,
     reseller: proc.supplierName,
     primaryOwner: owners.primary,
     secondaryOwner: owners.secondary,
+    vendorContactName: vendorContact.name,
+    vendorContactRole: vendorContact.role,
+    vendorContactEmail: vendorContact.email,
     purchased: proc.quantity,
     assigned,
     unassigned,

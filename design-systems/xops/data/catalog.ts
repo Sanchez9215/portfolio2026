@@ -78,22 +78,22 @@ export function logoFor(publisher: string): string | null {
 
 export const PRODUCT_CATALOG: ProductCatalogEntry[] = [
   // ---- Microsoft ----
-  { sku: "MSFT-M365-E3", name: "Microsoft 365 E3", publisher: "Microsoft", category: "Collaboration Suite", licenseModel: "enterprise", adoption: "universal", edition: "E3", priceMin: 360, priceMax: 432 },
-  { sku: "MSFT-M365-E5", name: "Microsoft 365 E5", publisher: "Microsoft", category: "Collaboration Suite", licenseModel: "enterprise", adoption: "broad", edition: "E5", priceMin: 540, priceMax: 660 },
+  { sku: "MSFT-M365-E3", name: "Microsoft 365 E3", publisher: "Microsoft", category: "Collaboration Suite", licenseModel: "enterprise", adoption: "universal", edition: "E3", priceMin: 360, priceMax: 432, description: "Enterprise productivity suite featuring core Office apps, cloud storage, security, and compliance tools." },
+  { sku: "MSFT-M365-E5", name: "Microsoft 365 E5", publisher: "Microsoft", category: "Collaboration Suite", licenseModel: "enterprise", adoption: "broad", edition: "E5", priceMin: 540, priceMax: 660, description: "Enterprise productivity suite with advanced security, compliance, voice, and analytical capabilities." },
   { sku: "MSFT-TEAMS-PHONE", name: "Teams Phone", publisher: "Microsoft", category: "Communication", licenseModel: "enterprise", adoption: "broad", edition: "Standard", priceMin: 72, priceMax: 96 },
   { sku: "MSFT-VISIO-P2", name: "Visio Plan 2", publisher: "Microsoft", category: "Productivity", licenseModel: "enterprise", adoption: "departmental", edition: "Plan 2", priceMin: 180, priceMax: 180, affinity: ["it", "ops", "eng"] },
   { sku: "MSFT-POWERBI-PRO", name: "Power BI Pro", publisher: "Microsoft", category: "BI & Analytics", licenseModel: "enterprise", adoption: "broad", edition: "Pro", priceMin: 120, priceMax: 120, affinity: ["data", "finance", "ops"] },
   { sku: "MSFT-D365-SALES", name: "Dynamics 365 Sales", publisher: "Microsoft", category: "CRM", licenseModel: "enterprise", adoption: "departmental", edition: "Enterprise", priceMin: 780, priceMax: 1140, affinity: ["sales"] },
-  { sku: "MSFT-AZDEVOPS", name: "Azure DevOps", publisher: "Microsoft", category: "DevOps", licenseModel: "enterprise", adoption: "departmental", edition: "Basic + Test", priceMin: 72, priceMax: 624, affinity: ["eng", "product"] },
+  { sku: "MSFT-AZDEVOPS", name: "Azure DevOps", publisher: "Microsoft", category: "DevOps", licenseModel: "enterprise", adoption: "departmental", edition: "Basic + Test", priceMin: 72, priceMax: 624, affinity: ["eng", "product"], description: "Developer suite providing CI/CD pipelines, Git code repositories, Agile project planning, and testing tools." },
 
   // ---- Adobe ----
   { sku: "ADBE-CC-ALL", name: "Adobe Creative Cloud", publisher: "Adobe", category: "Design", licenseModel: "enterprise", adoption: "departmental", edition: "All Apps", priceMin: 600, priceMax: 840, affinity: ["design", "marketing"] },
-  { sku: "ADBE-ACROBAT-PRO", name: "Adobe Acrobat Pro", publisher: "Adobe", category: "Productivity", licenseModel: "enterprise", adoption: "broad", edition: "Pro", priceMin: 180, priceMax: 240 },
+  { sku: "ADBE-ACROBAT-PRO", name: "Adobe Acrobat Pro", publisher: "Adobe", category: "Productivity", licenseModel: "enterprise", adoption: "broad", edition: "Pro", priceMin: 180, priceMax: 240, description: "Comprehensive PDF editor for creating, modifying, signing, converting, and securing digital documents." },
   { sku: "ADBE-AEM", name: "Adobe Experience Manager", publisher: "Adobe", category: "Marketing", licenseModel: "enterprise", adoption: "niche", edition: "Sites", priceMin: 1200, priceMax: 2400, affinity: ["marketing"] },
 
   // ---- Salesforce ----
   { sku: "CRM-SALES-CLOUD", name: "Salesforce Sales Cloud", publisher: "Salesforce", category: "CRM", licenseModel: "enterprise", adoption: "departmental", edition: "Enterprise", priceMin: 1500, priceMax: 2160, affinity: ["sales"] },
-  { sku: "CRM-SERVICE-CLOUD", name: "Salesforce Service Cloud", publisher: "Salesforce", category: "Customer Service", licenseModel: "enterprise", adoption: "departmental", edition: "Enterprise", priceMin: 1500, priceMax: 2160, affinity: ["support", "cs"] },
+  { sku: "CRM-SERVICE-CLOUD", name: "Salesforce Service Cloud", publisher: "Salesforce", category: "Customer Service", licenseModel: "enterprise", adoption: "departmental", edition: "Enterprise", priceMin: 1500, priceMax: 2160, affinity: ["support", "cs"], description: "Customer service CRM platform for managing support tickets, customer cases, and service operations." },
   { sku: "CRM-MKTG-CLOUD", name: "Salesforce Marketing Cloud", publisher: "Salesforce", category: "Marketing", licenseModel: "enterprise", adoption: "niche", edition: "Pro", priceMin: 1200, priceMax: 3600, affinity: ["marketing"] },
 
   // ---- SAP ----
@@ -102,12 +102,12 @@ export const PRODUCT_CATALOG: ProductCatalogEntry[] = [
   { sku: "SAP-CONCUR", name: "SAP Concur", publisher: "SAP", category: "Expense Management", licenseModel: "enterprise", adoption: "broad", edition: "Professional", priceMin: 96, priceMax: 156 },
 
   // ---- Oracle ----
-  { sku: "ORCL-DB-ULA", name: "Oracle Database ULA", publisher: "Oracle", category: "Database", licenseModel: "enterprise", adoption: "niche", edition: "Enterprise", priceMin: 2400, priceMax: 6000, affinity: ["eng", "data", "it"] },
+  { sku: "ORCL-DB-ULA", name: "Oracle Database ULA", publisher: "Oracle", category: "Database", licenseModel: "enterprise", adoption: "niche", edition: "Enterprise", priceMin: 2400, priceMax: 6000, affinity: ["eng", "data", "it"], description: "Unlimited deployment license for high-performance enterprise relational database infrastructure." },
   { sku: "ORCL-FUSION-ERP", name: "Oracle Fusion ERP", publisher: "Oracle", category: "ERP", licenseModel: "enterprise", adoption: "departmental", edition: "Cloud", priceMin: 1800, priceMax: 3000, affinity: ["finance", "ops"] },
   { sku: "ORCL-NETSUITE", name: "Oracle NetSuite", publisher: "Oracle", category: "ERP", licenseModel: "enterprise", adoption: "departmental", edition: "Enterprise", priceMin: 1200, priceMax: 1800, affinity: ["finance"] },
 
   // ---- ServiceNow ----
-  { sku: "NOW-ITSM", name: "ServiceNow ITSM", publisher: "ServiceNow", category: "ITSM", licenseModel: "enterprise", adoption: "broad", edition: "Professional", priceMin: 1200, priceMax: 1800, affinity: ["it", "eng", "ops"] },
+  { sku: "NOW-ITSM", name: "ServiceNow ITSM", publisher: "ServiceNow", category: "ITSM", licenseModel: "enterprise", adoption: "broad", edition: "Professional", priceMin: 1200, priceMax: 1800, affinity: ["it", "eng", "ops"], description: "IT service management platform for automating IT workflows, incident management, and service requests." },
   { sku: "NOW-HRSD", name: "ServiceNow HR Service Delivery", publisher: "ServiceNow", category: "HRIS", licenseModel: "enterprise", adoption: "departmental", edition: "Standard", priceMin: 900, priceMax: 1200, affinity: ["hr"] },
   { sku: "NOW-SECOPS", name: "ServiceNow Security Operations", publisher: "ServiceNow", category: "Security & Compliance", licenseModel: "enterprise", adoption: "niche", edition: "Standard", priceMin: 1500, priceMax: 2400, affinity: ["security"] },
 
@@ -122,7 +122,7 @@ export const PRODUCT_CATALOG: ProductCatalogEntry[] = [
   { sku: "WDAY-ADAPTIVE", name: "Workday Adaptive Planning", publisher: "Workday", category: "Finance & Accounting", licenseModel: "enterprise", adoption: "niche", edition: "Enterprise", priceMin: 600, priceMax: 900, affinity: ["finance"] },
 
   // ---- Cisco ----
-  { sku: "CSCO-WEBEX", name: "Cisco Webex", publisher: "Cisco", category: "Communication", licenseModel: "enterprise", adoption: "broad", edition: "Enterprise", priceMin: 120, priceMax: 180 },
+  { sku: "CSCO-WEBEX", name: "Cisco Webex", publisher: "Cisco", category: "Communication", licenseModel: "enterprise", adoption: "broad", edition: "Enterprise", priceMin: 120, priceMax: 180, description: "Enterprise video conferencing, cloud calling, team messaging, and virtual event hosting software." },
   { sku: "CSCO-FIREWALL", name: "Cisco Secure Firewall", publisher: "Cisco", category: "Network Security", licenseModel: "enterprise", adoption: "niche", edition: "Threat Defense", priceMin: 480, priceMax: 960, affinity: ["security", "it"] },
   { sku: "CSCO-UMBRELLA", name: "Cisco Umbrella", publisher: "Cisco", category: "Network Security", licenseModel: "enterprise", adoption: "broad", edition: "SIG Essentials", priceMin: 36, priceMax: 72, affinity: ["security"] },
   { sku: "CSCO-MERAKI", name: "Cisco Meraki", publisher: "Cisco", category: "Network Management", licenseModel: "enterprise", adoption: "departmental", edition: "Enterprise", priceMin: 150, priceMax: 300, affinity: ["it"] },
@@ -143,7 +143,7 @@ export const PRODUCT_CATALOG: ProductCatalogEntry[] = [
 
   // ---- Splunk ----
   { sku: "SPLK-ES", name: "Splunk Enterprise Security", publisher: "Splunk", category: "Security & Compliance", licenseModel: "enterprise", adoption: "niche", edition: "Cloud", priceMin: 1800, priceMax: 3600, affinity: ["security"] },
-  { sku: "SPLK-OBS", name: "Splunk Observability Cloud", publisher: "Splunk", category: "Observability", licenseModel: "enterprise", adoption: "departmental", edition: "Enterprise", priceMin: 900, priceMax: 1500, affinity: ["eng", "it"] },
+  { sku: "SPLK-OBS", name: "Splunk Observability Cloud", publisher: "Splunk", category: "Observability", licenseModel: "enterprise", adoption: "departmental", edition: "Enterprise", priceMin: 900, priceMax: 1500, affinity: ["eng", "it"], description: "Full-stack cloud monitoring platform for real-time application performance, metrics, and log analysis." },
 
   // ---- GitHub ----
   { sku: "GH-ENT", name: "GitHub Enterprise Cloud", publisher: "GitHub", category: "DevOps", licenseModel: "enterprise", adoption: "departmental", edition: "Enterprise", priceMin: 231, priceMax: 231, affinity: ["eng", "product"] },
@@ -151,7 +151,7 @@ export const PRODUCT_CATALOG: ProductCatalogEntry[] = [
   { sku: "GH-COPILOT", name: "GitHub Copilot", publisher: "GitHub", category: "DevOps", licenseModel: "enterprise", adoption: "departmental", edition: "Business", priceMin: 228, priceMax: 468, affinity: ["eng"] },
 
   // ---- DocuSign ----
-  { sku: "DOCU-ESIGN", name: "Docusign eSignature", publisher: "DocuSign", category: "Contract Management", licenseModel: "enterprise", adoption: "broad", edition: "Business Pro", priceMin: 108, priceMax: 180 },
+  { sku: "DOCU-ESIGN", name: "Docusign eSignature", publisher: "DocuSign", category: "Contract Management", licenseModel: "enterprise", adoption: "broad", edition: "Business Pro", priceMin: 108, priceMax: 180, description: "Cloud platform for securely sending, signing, routing, and managing electronic signatures and agreements." },
   { sku: "DOCU-CLM", name: "Docusign CLM", publisher: "DocuSign", category: "Contract Management", licenseModel: "enterprise", adoption: "niche", edition: "CLM", priceMin: 600, priceMax: 960, affinity: ["legal", "procurement"] },
 
   // ---- Zendesk ----
@@ -159,15 +159,15 @@ export const PRODUCT_CATALOG: ProductCatalogEntry[] = [
   { sku: "ZEN-SELL", name: "Zendesk Sell", publisher: "Zendesk", category: "CRM", licenseModel: "enterprise", adoption: "niche", edition: "Growth", priceMin: 588, priceMax: 1140, affinity: ["sales"] },
 
   // ---- HashiCorp ----
-  { sku: "HASHI-VAULT", name: "HashiCorp Vault", publisher: "HashiCorp", category: "Security & Compliance", licenseModel: "enterprise", adoption: "niche", edition: "Enterprise", priceMin: 1200, priceMax: 2400, affinity: ["eng", "security", "it"] },
-  { sku: "HASHI-TF", name: "HashiCorp Terraform", publisher: "HashiCorp", category: "DevOps", licenseModel: "enterprise", adoption: "departmental", edition: "Plus", priceMin: 240, priceMax: 720, affinity: ["eng", "it"] },
+  { sku: "HASHI-VAULT", name: "HashiCorp Vault", publisher: "HashiCorp", category: "Security & Compliance", licenseModel: "enterprise", adoption: "niche", edition: "Enterprise", priceMin: 1200, priceMax: 2400, affinity: ["eng", "security", "it"], description: "Secrets management and data protection tool for securing API keys, passwords, and encryption keys." },
+  { sku: "HASHI-TF", name: "HashiCorp Terraform", publisher: "HashiCorp", category: "DevOps", licenseModel: "enterprise", adoption: "departmental", edition: "Plus", priceMin: 240, priceMax: 720, affinity: ["eng", "it"], description: "Infrastructure-as-code tool for automating multi-cloud resource provisioning and management." },
   { sku: "HASHI-CONSUL", name: "HashiCorp Consul", publisher: "HashiCorp", category: "Networking", licenseModel: "open-source", adoption: "niche", edition: "Enterprise", priceMin: 0, priceMax: 600, affinity: ["eng"] },
 
   // ---- Slack / Tableau / Zoom (independent brands) ----
   { sku: "SLACK-EG", name: "Slack Enterprise Grid", publisher: "Slack", category: "Collaboration", licenseModel: "enterprise", adoption: "universal", edition: "Enterprise Grid", priceMin: 150, priceMax: 225 },
   { sku: "TBL-CREATOR", name: "Tableau Creator", publisher: "Tableau", category: "BI & Analytics", licenseModel: "enterprise", adoption: "departmental", edition: "Creator", priceMin: 840, priceMax: 900, affinity: ["data", "finance"] },
   { sku: "TBL-EXPLORER", name: "Tableau Explorer", publisher: "Tableau", category: "BI & Analytics", licenseModel: "enterprise", adoption: "broad", edition: "Explorer", priceMin: 420, priceMax: 504, affinity: ["data", "ops", "finance"] },
-  { sku: "ZOOM-ONE", name: "Zoom One Enterprise", publisher: "Zoom", category: "Communication", licenseModel: "enterprise", adoption: "universal", edition: "Enterprise", priceMin: 180, priceMax: 264 },
+  { sku: "ZOOM-ONE", name: "Zoom One Enterprise", publisher: "Zoom", category: "Communication", licenseModel: "enterprise", adoption: "universal", edition: "Enterprise", priceMin: 180, priceMax: 264, description: "Unified communications platform featuring video conferencing, cloud phone system, chat, and whiteboards." },
   { sku: "ZOOM-PHONE", name: "Zoom Phone", publisher: "Zoom", category: "Communication", licenseModel: "enterprise", adoption: "broad", edition: "Pro", priceMin: 120, priceMax: 180 },
   { sku: "ZOOM-CC", name: "Zoom Contact Center", publisher: "Zoom", category: "Customer Service", licenseModel: "enterprise", adoption: "niche", edition: "Elite", priceMin: 780, priceMax: 1320, affinity: ["support"] },
 
@@ -181,13 +181,13 @@ export const PRODUCT_CATALOG: ProductCatalogEntry[] = [
   { sku: "DBX-BIZ", name: "Dropbox Business", publisher: "Dropbox", category: "Cloud Storage", licenseModel: "enterprise", adoption: "departmental", edition: "Advanced", priceMin: 180, priceMax: 300 },
 
   // ---- Autodesk (perpetual + subscription) ----
-  { sku: "ADSK-AEC", name: "Autodesk AEC Collection", publisher: "Autodesk", category: "CAD & Design", licenseModel: "enterprise", adoption: "niche", edition: "Collection", priceMin: 2800, priceMax: 3600, affinity: ["eng", "design"] },
-  { sku: "ADSK-AUTOCAD", name: "Autodesk AutoCAD", publisher: "Autodesk", category: "CAD & Design", licenseModel: "perpetual", adoption: "niche", edition: "2025", priceMin: 1900, priceMax: 2400, affinity: ["eng", "design"] },
+  { sku: "ADSK-AEC", name: "Autodesk AEC Collection", publisher: "Autodesk", category: "CAD & Design", licenseModel: "enterprise", adoption: "niche", edition: "Collection", priceMin: 2800, priceMax: 3600, affinity: ["eng", "design"], description: "Integrated BIM and CAD software set for building design, civil infrastructure, and construction engineering." },
+  { sku: "ADSK-AUTOCAD", name: "Autodesk AutoCAD", publisher: "Autodesk", category: "CAD & Design", licenseModel: "perpetual", adoption: "niche", edition: "2025", priceMin: 1900, priceMax: 2400, affinity: ["eng", "design"], description: "Computer-aided design (CAD) software for precision 2D drafting, 3D modeling, and architectural drawing." },
   { sku: "ADSK-FUSION", name: "Autodesk Fusion 360", publisher: "Autodesk", category: "CAD & Design", licenseModel: "enterprise", adoption: "niche", edition: "Team", priceMin: 680, priceMax: 820, affinity: ["eng"] },
 
   // ---- Unity / Citrix ----
-  { sku: "UNITY-PRO", name: "Unity Pro", publisher: "Unity", category: "Development", licenseModel: "enterprise", adoption: "niche", edition: "Pro", priceMin: 2040, priceMax: 2040, affinity: ["eng", "product"] },
-  { sku: "UNITY-IND", name: "Unity Industry", publisher: "Unity", category: "Development", licenseModel: "enterprise", adoption: "niche", edition: "Industry", priceMin: 4500, priceMax: 4500, affinity: ["eng"] },
+  { sku: "UNITY-PRO", name: "Unity Pro", publisher: "Unity", category: "Development", licenseModel: "enterprise", adoption: "niche", edition: "Pro", priceMin: 2040, priceMax: 2040, affinity: ["eng", "product"], description: "Professional real-time 2D and 3D engine for game development, interactive visual simulation, and design." },
+  { sku: "UNITY-IND", name: "Unity Industry", publisher: "Unity", category: "Development", licenseModel: "enterprise", adoption: "niche", edition: "Industry", priceMin: 4500, priceMax: 4500, affinity: ["eng"], description: "Real-time 3D creation platform tailored for enterprise industrial applications, digital twins, and AR/VR." },
   { sku: "CTX-VAD", name: "Citrix Virtual Apps", publisher: "Citrix", category: "Virtualization", licenseModel: "enterprise", adoption: "departmental", edition: "Premium", priceMin: 300, priceMax: 420, affinity: ["it"] },
   { sku: "CTX-DAAS", name: "Citrix DaaS", publisher: "Citrix", category: "Virtualization", licenseModel: "enterprise", adoption: "departmental", edition: "Advanced Plus", priceMin: 240, priceMax: 360, affinity: ["it"] },
 
@@ -206,7 +206,7 @@ export const PRODUCT_CATALOG: ProductCatalogEntry[] = [
   { sku: "NLOK-360", name: "NortonLifeLock 360 Business", publisher: "NortonLifeLock", category: "Endpoint Security", licenseModel: "enterprise", adoption: "departmental", edition: "Business", priceMin: 48, priceMax: 90 },
 
   // ---- Red Hat ----
-  { sku: "RH-OPENSHIFT", name: "Red Hat OpenShift", publisher: "Red Hat", category: "DevOps", licenseModel: "enterprise", adoption: "niche", edition: "Platform Plus", priceMin: 1200, priceMax: 2400, affinity: ["eng", "it"] },
+  { sku: "RH-OPENSHIFT", name: "Red Hat OpenShift", publisher: "Red Hat", category: "DevOps", licenseModel: "enterprise", adoption: "niche", edition: "Platform Plus", priceMin: 1200, priceMax: 2400, affinity: ["eng", "it"], description: "Enterprise Kubernetes application platform for building, deploying, and scaling containerized workloads." },
   { sku: "RH-RHEL", name: "Red Hat Enterprise Linux", publisher: "Red Hat", category: "Operating Systems", licenseModel: "enterprise", adoption: "departmental", edition: "Server", priceMin: 349, priceMax: 799, affinity: ["eng", "it"] },
   { sku: "RH-ANSIBLE", name: "Red Hat Ansible Automation", publisher: "Red Hat", category: "DevOps", licenseModel: "enterprise", adoption: "niche", edition: "Platform", priceMin: 600, priceMax: 1400, affinity: ["it", "eng"] },
 
@@ -218,7 +218,7 @@ export const PRODUCT_CATALOG: ProductCatalogEntry[] = [
   { sku: "DELL-BOOMI", name: "Dell Boomi", publisher: "Dell", category: "Integration", licenseModel: "enterprise", adoption: "niche", edition: "Enterprise", priceMin: 600, priceMax: 1200, affinity: ["it", "eng"] },
 
   // ---- Google ----
-  { sku: "GOOG-WORKSPACE", name: "Google Workspace Enterprise", publisher: "Google", category: "Collaboration Suite", licenseModel: "enterprise", adoption: "broad", edition: "Enterprise Plus", priceMin: 276, priceMax: 360 },
+  { sku: "GOOG-WORKSPACE", name: "Google Workspace Enterprise", publisher: "Google", category: "Collaboration Suite", licenseModel: "enterprise", adoption: "broad", edition: "Enterprise Plus", priceMin: 276, priceMax: 360, description: "Cloud collaboration suite providing Gmail, Drive, Docs, Meet, and enterprise security controls." },
   { sku: "GOOG-CLOUD", name: "Google Cloud Platform", publisher: "Google", category: "Cloud Infrastructure", licenseModel: "consumption", adoption: "departmental", edition: "Enterprise", priceMin: 600, priceMax: 3600, affinity: ["eng", "data", "it"] },
   { sku: "GOOG-CHROME-ENT", name: "Chrome Enterprise", publisher: "Google", category: "Endpoint Management", licenseModel: "enterprise", adoption: "broad", edition: "Upgrade", priceMin: 48, priceMax: 72, affinity: ["it"] },
 
@@ -229,7 +229,7 @@ export const PRODUCT_CATALOG: ProductCatalogEntry[] = [
   { sku: "MONGO-ATLAS", name: "MongoDB Atlas", publisher: "MongoDB", category: "Database", licenseModel: "consumption", adoption: "niche", edition: "Dedicated", priceMin: 600, priceMax: 3000, affinity: ["eng"] },
   { sku: "NOTION-ENT", name: "Notion Enterprise", publisher: "Notion", category: "Collaboration", licenseModel: "enterprise", adoption: "broad", edition: "Enterprise", priceMin: 180, priceMax: 240, affinity: ["product", "design", "marketing"] },
   { sku: "ASANA-ENT", name: "Asana Enterprise", publisher: "Asana", category: "Work Management", licenseModel: "enterprise", adoption: "departmental", edition: "Enterprise", priceMin: 300, priceMax: 480, affinity: ["marketing", "ops", "product"] },
-  { sku: "BOX-ENT", name: "Box Enterprise", publisher: "Box", category: "Cloud Storage", licenseModel: "enterprise", adoption: "departmental", edition: "Enterprise Plus", priceMin: 240, priceMax: 420 },
+  { sku: "BOX-ENT", name: "Box Enterprise", publisher: "Box", category: "Cloud Storage", licenseModel: "enterprise", adoption: "departmental", edition: "Enterprise Plus", priceMin: 240, priceMax: 420, description: "Secure cloud content management platform for enterprise file sharing, collaboration, and governance." },
   { sku: "MIRO-ENT", name: "Miro Enterprise", publisher: "Miro", category: "Collaboration", licenseModel: "enterprise", adoption: "departmental", edition: "Enterprise", priceMin: 96, priceMax: 192, affinity: ["product", "design", "eng"] },
   { sku: "HUB-MKTG", name: "HubSpot Marketing Hub", publisher: "HubSpot", category: "Marketing", licenseModel: "enterprise", adoption: "niche", edition: "Enterprise", priceMin: 600, priceMax: 1800, affinity: ["marketing"] },
   { sku: "PANW-PRISMA", name: "Palo Alto Prisma Access", publisher: "Palo Alto Networks", category: "Network Security", licenseModel: "enterprise", adoption: "broad", edition: "Enterprise", priceMin: 72, priceMax: 144, affinity: ["security", "it"] },

@@ -21,6 +21,7 @@ type SizedProps = {
   body?: string;
   support?: never;
   inverse?: boolean;
+  labelColor?: "secondary" | "tertiary";
   className?: string;
 };
 
@@ -176,12 +177,16 @@ export default function LabelBlock(props: LabelBlockProps) {
     );
   }
 
-  const { size, inverse = false } = props;
+  const { size, inverse = false, labelColor } = props;
   return (
     <div
       className={`${styles.labelBlock} ${styles[size]}${className ? ` ${className}` : ""}`}
     >
-      {label && <Label size={size} color={inverse ? "inverse" : "default"}>{label}</Label>}
+      {label && (
+        <Label size={size} color={inverse ? "inverse" : (labelColor ?? "default")}>
+          {label}
+        </Label>
+      )}
       {body && (
         <Block size={size} color={inverse ? "inverse" : "tertiary"}>
           {body}

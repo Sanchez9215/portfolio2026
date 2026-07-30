@@ -7,7 +7,7 @@
 /* section.introduction — grid container */
 .introduction {
   padding-block: var(--spacing-3xl) var(--spacing-5xl);
-  row-gap:       var(--spacing-3xl);
+  row-gap: var(--spacing-5xl);
 }
 
 /* full-width hero wrapper */
@@ -17,63 +17,127 @@
 
 /* plain 16/9 box (same footprint the ImgCard held); centers the live embed */
 .heroEmbed {
-  width:           100%;
-  aspect-ratio:    16 / 9;
-  display:         flex;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  display: flex;
   justify-content: center;
+  /* entrance-animation hidden state — GSAP fades/translates this to visible on mount */
+  opacity: 0;
+  transform: translateY(24px);
 }
 
-/* live software experience — 80% width, full window height, scrolls internally */
+/* live software experience — 80% width, full window height, scrolls internally.
+   Radius/clip live on SoftwareExperienceEmbed's own .wrapper instead — this
+   rule only sizes it. */
 .heroEmbed > * {
-  width:  80%;
+  width: 80%;
   height: 100%;
 }
 
-/* div.project-overview — cols 1–6, subgrid inherits 6 tracks from section */
+/* div.project-overview — cols 1–5 */
 .projectOverview {
-  grid-column:           1 / 7;
-  display:               grid;
-  grid-template-columns: subgrid;
-  row-gap:               var(--spacing-2xl);
+  grid-column: 1 / 6;
 }
 
-/* div.intro — spans all 6 inherited tracks */
+/* div.intro — title + description */
 .intro {
-  grid-column:    1 / -1;
-  display:        flex;
+  display: flex;
   flex-direction: column;
-  gap:            var(--spacing-md);
+  gap: var(--spacing-md);
 }
 
 /* h1 — display-lg, Clash Display semibold, uppercase */
 .title {
-  font-family:    var(--font-family-display);
-  font-weight:    var(--font-weight-semibold);
-  font-size:      var(--text-display-lg-size);
-  line-height:    var(--text-display-lg-lh);
+  font-family: var(--font-family-display);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--text-display-lg-size);
+  line-height: var(--text-display-lg-lh);
   letter-spacing: var(--text-display-lg-ls);
-  word-spacing:   var(--word-spacing-display);
+  word-spacing: var(--word-spacing-display);
   text-transform: uppercase;
-  color:          var(--text-primary);
+  color: var(--text-primary);
 }
 
-/* div.project-meta — subgrid across all 6 inherited tracks */
+/* each title line — entrance-animation target, staggered in */
+.titleRow {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(24px);
+}
+
+/* description Block — entrance-animation hidden state */
+.description {
+  opacity: 0;
+  transform: translateY(24px);
+}
+
+/* div.project-impact — cols 6–12; meta row stacked above impact cards */
+.projectImpact {
+  grid-column: 6 / 13;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl);
+}
+
+/* div.project-meta — Company / Role / Timeline, divider below */
 .projectMeta {
-  grid-column: 1 / -1;
-  display:     flex;
-  gap:         var(--spacing-xl);
-  text-align:  left;
+  display: flex;
+  gap: var(--spacing-xl);
+  padding-bottom: var(--spacing-md);
+  border-bottom: 1px solid var(--surface-card-border);
+  /* entrance-animation hidden state — the border lives on this container
+     itself, not just its children, so it needs its own hidden state or it
+     renders immediately while its content fades in separately */
+  opacity: 0;
 }
 
-/* each TextBlock fills an equal share of the row */
 .projectMeta > * {
   flex: 1;
+  /* entrance-animation hidden state */
+  opacity: 0;
+  transform: translateY(24px);
 }
 
-/* div.project-impact — cols 8–12 */
-.projectImpact {
-  grid-column:    8 / 13;
-  display:        flex;
+/* div.impact-cards — Platform Expansion / Millions Reclaimed / Revenue */
+.impactCards {
+  display: flex;
+  gap: var(--spacing-xl);
+}
+
+.impactCards > * {
+  flex: 1;
+  /* entrance-animation hidden state */
+  opacity: 0;
+  transform: translateY(24px);
+}
+
+.impactItem {
+  display: flex;
   flex-direction: column;
-  gap:            var(--spacing-xl);
+  gap: var(--spacing-sm);
+}
+
+.impactHeading {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+/* "0 → 1" pill badge */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border-radius: var(--radius-pill);
+  background: var(--surface-card);
+  color: var(--badge-text);
+  font-family: var(--font-family-body);
+  font-weight: var(--font-weight-bold);
+  font-size: var(--text-label-xs-size);
+  line-height: var(--text-label-xs-lh);
+  letter-spacing: var(--text-label-xs-ls);
+  padding-inline: var(--spacing-sm);
+  padding-block: var(--spacing-xs);
+  white-space: nowrap;
 }

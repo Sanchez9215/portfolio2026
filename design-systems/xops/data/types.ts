@@ -63,6 +63,7 @@ export interface ProductCatalogEntry {
   priceMin: number; // annual cost per seat (USD), low end of the band
   priceMax: number; // annual cost per seat (USD), high end of the band
   affinity?: string[]; // departmentIds this product concentrates in; omitted = spread broadly
+  description?: string; // authored, one-sentence product blurb; only populated for a curated subset
 }
 
 // ---------------------------------------------------------------------------
