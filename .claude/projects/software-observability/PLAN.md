@@ -65,12 +65,12 @@ Two mechanism extensions beyond the original single-target/single-beat design:
 **Why this exists:** the case study's audience needs proof of systems thinking and technical building ability, not just product design — a mechanic that lets a visitor "peel back the layers" of a real screen doubles as that proof. Rather than building XOPS's two separate deferred ideas — a code-reveal toggle and a static "plugs into real systems" architecture diagram — as two disconnected features, both are absorbed into one unified interaction: **XOPS `PLAN.md` items #6 (code-reveal toggle) and #11a (config-as-YAML + plugs-into-real-systems visual) are superseded by this and no longer separately planned there.**
 
 **Flow:**
-1. The hero embed (`software-experience-embed`) loads on Overview and auto-navigates itself (scripted `ghost-cursor`) to Software Profile — **built this session**, see progress.md.
-2. Once there, the visitor is offered a choice: use the prototype normally, or enter Layer Inspect — **not built yet**. Wording/UI for this choice still open.
+1. The hero embed (`software-experience-embed`) loads on Overview and auto-navigates itself (scripted `ghost-cursor`) to Software Profile — **built this session (prior session)**, see progress.md.
+2. Once there, the visitor is offered a choice: use the prototype normally, or enter Layer Inspect — **built this session**, reworked from the original "two-button choice UI" idea into a cursor-and-message-bubble reveal instead (see `software-experience-embed` in `built-components.md` for the full mechanism): cursor parks bottom-left and wiggles, embed dims, 5 message bubbles (exact Figma copy, node `2:2` "Portfolio Cleaning" file) mount progressively bottom-up, ending in a "See how it's built" button. Clicking anywhere on the embed = explore normally (real unlock); clicking the button = enter Layer Inspect (currently a console-log stub, step 3 below not built). Not yet visually confirmed end-to-end — several correction rounds happened but nothing's final.
 3. Layer Inspect fades out everything except the selected screen and drops into a stacked-card view (hand-sketched reference: numbered cards fanned behind the front/rendered view) the visitor can step through: **Design System** (component + token boundaries) → **Data** (which source table/join computed this number — ties into `xops/PLAN.md` #11's source-tagged model) → **Systems** (which real-world upstream system this would come from in production — absorbs #11a) → **Code** (the literal source — absorbs #6).
 4. **First-pass scope: Software Profile only.** The screen-selector step doesn't offer All Software yet — that's future work once the pattern is proven on one screen.
 
-**Not yet built:** the two-button choice UI, the stacked-layer view itself for any layer, and the All Software variant. Ghost-cursor auto-navigation (step 1) is the only piece built so far.
+**Not yet built:** the stacked-layer view itself for any layer, and the All Software variant. The reveal sequence (step 2) and ghost-cursor auto-navigation (step 1) are both built, unverified in-browser.
 
 ## Visual storytelling (separate track, build priority order)
 
