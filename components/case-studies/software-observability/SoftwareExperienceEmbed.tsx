@@ -13,10 +13,12 @@ import { AllSoftwareScreen } from "@/app/work/software-observability/xops-all-so
 import type { SoftwareSubKey } from "@/design-systems/xops/components/Sidebar";
 import styles from "./SoftwareExperienceEmbed.module.css";
 
-gsap.registerPlugin(ScrollTrigger, CustomEase, CustomWiggle);
-// Attention-getting shake for the cursor once it parks bottom-left — a small
-// number of oscillations, easing out so it settles rather than snapping.
-CustomWiggle.create("cursorWiggle", { wiggles: 6, type: "easeOut" });
+if (typeof window !== "undefined") {
+  gsap.registerPlugin(ScrollTrigger, CustomEase, CustomWiggle);
+  // Attention-getting shake for the cursor once it parks bottom-left — a small
+  // number of oscillations, easing out so it settles rather than snapping.
+  CustomWiggle.create("cursorWiggle", { wiggles: 6, type: "easeOut" });
+}
 
 const NATIVE_WIDTH = 1440;
 const TARGET_SKU_LABEL = "Adobe Acrobat Pro";

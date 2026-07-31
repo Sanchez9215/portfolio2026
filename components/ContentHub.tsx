@@ -122,7 +122,7 @@ export default function ContentHub({ title, nodes }: Props) {
           'link',
           forceLink<SimNode, SimLink>(links as SimLink[])
             .id(d => d.id)
-            .distance((l: any) => (l.source as SimNode)?.isHub ? hubRadius : 52)
+            .distance((l: SimLink) => (l.source as SimNode)?.isHub ? hubRadius : 52)
             .strength(1),
         )
         .force('charge', forceManyBody<SimNode>().strength(-220))
@@ -138,7 +138,7 @@ export default function ContentHub({ title, nodes }: Props) {
 
       // Build parent map and group fixed-angle children per parent
       const parentOf = new Map<string, SimNode>()
-      for (const lnk of links as any[]) {
+      for (const lnk of links as SimLink[]) {
         const src = typeof lnk.source === 'object' ? lnk.source as SimNode : byId.get(lnk.source as string)
         const tgt = typeof lnk.target === 'object' ? lnk.target as SimNode : byId.get(lnk.target as string)
         if (src && tgt) parentOf.set(tgt.id, src)
@@ -185,7 +185,7 @@ export default function ContentHub({ title, nodes }: Props) {
       // Draw the labels + spokes at the current node positions. Returned map
       // (node id → label element) lets us measure the real label boxes so the
       // fit below can guarantee nothing clips.
-      function paint(): Map<string, SVGElement> {
+      function paint(svg: SVGSVGElement): Map<string, SVGElement> {
         while (svg.firstChild) svg.removeChild(svg.firstChild)
         svg.setAttribute('width', String(W))
         svg.setAttribute('height', String(H))
@@ -244,9 +244,9 @@ export default function ContentHub({ title, nodes }: Props) {
         const spokeGroup = el('g') as SVGGElement
         svg.insertBefore(spokeGroup, labelGroup)
 
-        for (const lnk of links as any[]) {
-          const srcId = typeof lnk.source === 'object' ? lnk.source.id : lnk.source
-          const tgtId = typeof lnk.target === 'object' ? lnk.target.id : lnk.target
+        for (const lnk of links as SimLink[]) {
+          const srcId = typeof lnk.source === 'object' ? (lnk.source as SimNode).id : lnk.source as string
+          const tgtId = typeof lnk.target === 'object' ? (lnk.target as SimNode).id : lnk.target as string
           const srcEl = els.get(srcId)
           const tgtEl = els.get(tgtId)
           if (!srcEl || !tgtEl) continue
@@ -284,7 +284,7 @@ export default function ContentHub({ title, nodes }: Props) {
       // guarantees no label clips at the (scroll-clipped) container bounds.
       // sx≠sy so it still fills wider than tall on the 2:1 box.
       const INSET = 32
-      const nodeEls = paint()
+      const nodeEls = paint(svg)
 
       let sx = Infinity; let sy = Infinity
       for (const node of simNodes) {
@@ -311,7 +311,7 @@ export default function ContentHub({ title, nodes }: Props) {
           n.x = cx + ((n.x ?? cx) - cx) * sx
           n.y = cy + ((n.y ?? cy) - cy) * sy
         })
-        paint()
+        paint(svg)
       }
     }
 
