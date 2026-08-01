@@ -1,19 +1,15 @@
 /* ============================================================
    Button — global button component
-   Four variants: primary, secondary, outline, ghost
-   Figma node 284:230 (Claude-Code file)
+   Variants: primary, secondary, outline (deferred), link (deferred)
+   Figma node 228:7718 ("Button Set", Portfolio Cleaning file)
+   Structure mirrors design-systems/xops/components/Button.module.css
 
    Layout:
      button / a.btn
-       span.label  ← typography
+       span.iconBadge  ← optional
+       span.label      ← typography
 
-   Variants:
-     primary  — yellow bg, yellow border, dark text → inverts on hover
-     secondary — dark bg, dark border, white text → white bg on hover
-     outline  — dark bg, yellow border, yellow text → yellow bg on hover
-     ghost    — no bg/border, grey text → yellow text on hover
-
-   Tokens: action.* (design-system/tokens.json)
+   Tokens: --button-*, --state-* (styles/globals.css)
    ============================================================ */
 
 /* ── Base — layout, shared across all variants ────────────── */
@@ -22,27 +18,22 @@
   display:         inline-flex;
   align-items:     center;
   justify-content: center;
-  gap:             var(--spacing-sm);
-  /* Transparent border placeholder keeps layout stable (no shift on variant swap) */
-  border:          var(--border-button) solid transparent;
-  border-radius:   var(--radius-default);
-  /* lg (default) — --spacing-md (16px) top/bottom · --spacing-xl (32px) left/right */
-  padding:         var(--spacing-md) var(--spacing-xl);
+  gap:              var(--button-gap);
+  height:          var(--button-height);
+  padding-inline:  var(--button-padding-x);
+  border-radius:   var(--button-radius);
+  border:          var(--button-border-width) solid transparent;
   background:      transparent;
   cursor:          pointer;
   text-decoration: none;
   transition:
-    background-color 200ms ease,
-    color            200ms ease,
-    border-color     200ms ease;
+    background-color 150ms ease,
+    border-color      150ms ease;
 }
 
-/* ── Size modifier ────────────────────────────────────────── */
-
-/* md — --spacing-sm (8px) top/bottom · --spacing-lg (24px) left/right */
-/* Overrides the lg default above; used in Nav only for now.  */
-.md {
-  padding: var(--spacing-sm) var(--spacing-lg);
+/* Icon variants inset the start padding so the icon badge sits flush */
+.hasIcon {
+  padding-inline-start: var(--button-icon-inset);
 }
 
 /* ── Label ────────────────────────────────────────────────── */
@@ -59,80 +50,74 @@
   white-space:    nowrap;
 }
 
+/* ── Icon badge ───────────────────────────────────────────── */
+
+.iconBadge {
+  display:         inline-flex;
+  align-items:     center;
+  justify-content: center;
+  height:          100%;
+  padding:         var(--button-icon-padding);
+  border-radius:   var(--button-icon-radius);
+  flex-shrink:     0;
+}
+
+.iconBadge > :global(svg),
+.iconBadge > :global(img) {
+  width:  var(--button-icon-size);
+  height: var(--button-icon-size);
+}
+
 /* ── Primary ──────────────────────────────────────────────── */
 
 .primary {
-  background-color: var(--action-primary-bg);
-  border-color:     var(--action-primary-border);
-  color:            var(--action-primary-text);
+  background-color: var(--button-bg-primary);
+  border-color:     var(--button-border-primary);
+  color:            var(--button-text-on-primary);
+}
+
+.primary .iconBadge {
+  background-color: var(--button-icon-bg-primary);
 }
 
 .primary:hover {
-  background-color: var(--action-primary-bg-hover);
-  border-color:     var(--action-primary-border-hover);
-  color:            var(--action-primary-text-hover);
+  background-color: var(--state-hover-on-brand);
+  border-color:     var(--state-hover-on-brand);
+}
+
+.primary:active {
+  background-color: var(--state-active-on-brand);
+  border-color:     var(--state-active-on-brand);
 }
 
 /* ── Secondary ────────────────────────────────────────────── */
 
 .secondary {
-  background-color: var(--action-secondary-bg);
-  border-color:     var(--action-secondary-border);
-  color:            var(--action-secondary-text);
+  background-color: var(--button-bg-secondary);
+  border-color:     var(--button-border-secondary);
+  color:            var(--button-text-on-secondary);
+}
+
+.secondary .iconBadge {
+  background-color: var(--button-icon-bg-secondary);
 }
 
 .secondary:hover {
-  background-color: var(--action-secondary-bg-hover);
-  border-color:     var(--action-secondary-border-hover);
-  color:            var(--action-secondary-text-hover);
+  background-color: var(--state-hover-on-surface);
+  border-color:     var(--state-hover-on-surface);
 }
 
-/* ── Outline ──────────────────────────────────────────────── */
+.secondary:active {
+  background-color: var(--state-active-on-surface);
+  border-color:     var(--state-active-on-surface);
+}
+
+/* ── Outline — deferred, no Figma-sourced colors yet (TODO) ─── */
 
 .outline {
-  background-color: var(--action-outline-bg);
-  border-color:     var(--action-outline-border);
-  color:            var(--action-outline-text);
 }
 
-.outline:hover {
-  background-color: var(--action-outline-bg-hover);
-  border-color:     var(--action-outline-border-hover);
-  color:            var(--action-outline-text-hover);
-}
+/* ── Link — deferred, no Figma-sourced colors yet (TODO) ─────── */
 
-/* ── Ghost ────────────────────────────────────────────────── */
-
-.ghost {
-  background-color: transparent;
-  border-color:     transparent;
-  color:            var(--action-ghost-text);
-}
-
-.ghost:hover {
-  color: var(--action-ghost-text-hover);
-}
-
-/* ── Accent ───────────────────────────────────────────────── */
-
-.accent {
-  background-color: var(--action-accent-bg);
-  border-color:     var(--action-accent-border);
-  color:            var(--action-accent-text);
-}
-
-.accent:hover {
-  background-color: var(--action-accent-bg-hover);
-  border-color:      var(--action-accent-border-hover);
-}
-
-/* ── Icon slot ────────────────────────────────────────────── */
-
-.icon {
-  display:       inline-flex;
-  align-items:   center;
-  justify-content: center;
-  width:         var(--icon-md);
-  height:        var(--icon-md);
-  flex-shrink:   0;
+.link {
 }

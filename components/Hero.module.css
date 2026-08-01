@@ -1,0 +1,61 @@
+/* ============================================================
+   Hero — home page hero section
+   Figma node 214:7415 ("Section", Portfolio Cleaning file)
+   ============================================================ */
+
+.section {
+  display:         flex;
+  flex-direction:  column;
+  justify-content: flex-end;
+  min-height:      100vh;
+  padding-inline:  var(--spacing-xl);
+  padding-block:   var(--spacing-5xl);
+  background:      var(--surface-section-inverse);
+}
+
+.content {
+  display:        flex;
+  flex-direction: column;
+  align-items:    flex-start;
+  gap:            var(--spacing-3xl);
+}
+
+.topGroup {
+  display:        flex;
+  flex-direction: column;
+  align-items:    flex-start;
+  gap:            var(--spacing-md);
+}
+
+.labelRow {
+  display:     flex;
+  align-items: center;
+  gap:         var(--spacing-md);
+}
+
+.icon {
+  display:       inline-flex;
+  align-items:   center;
+  justify-content: center;
+  width:         var(--icon-lg);
+  height:        var(--icon-lg);
+  flex-shrink:   0;
+}
+
+.headlineGroup {
+  display:        flex;
+  flex-direction: column;
+  align-items:    flex-start;
+  gap:            var(--spacing-xl);
+}
+
+/* Line breaks are explicitly authored in Hero.tsx's headline string (\n) */
+.headline {
+  white-space: pre-line;
+}
+
+.buttonRow {
+  display:     flex;
+  align-items: center;
+  gap:         var(--spacing-xl);
+}

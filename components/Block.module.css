@@ -8,6 +8,7 @@
 .sm { font-size: var(--text-body-sm-size); line-height: var(--text-body-sm-lh); letter-spacing: var(--text-body-sm-ls); }
 .md { font-size: var(--text-body-md-size); line-height: var(--text-body-md-lh); letter-spacing: var(--text-body-md-ls); }
 .lg { font-size: var(--text-body-lg-size); line-height: var(--text-body-lg-lh); letter-spacing: var(--text-body-lg-ls); }
+.size2xl { font-size: var(--text-body-2xl-size); line-height: var(--text-body-2xl-lh); letter-spacing: var(--text-body-2xl-ls); }
 
 .primary   { color: var(--text-primary); }
 .secondary { color: var(--text-secondary); }

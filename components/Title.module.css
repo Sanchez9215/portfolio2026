@@ -12,3 +12,4 @@
 .sm { font-size: var(--text-title-sm-size); line-height: var(--text-title-sm-lh); letter-spacing: var(--text-title-sm-ls); }
 .md { font-size: var(--text-title-md-size); line-height: var(--text-title-md-lh); letter-spacing: var(--text-title-md-ls); }
 .lg { font-size: var(--text-title-lg-size); line-height: var(--text-title-lg-lh); letter-spacing: var(--text-title-lg-ls); }
+.xl { font-size: var(--text-title-xl-size); line-height: var(--text-title-xl-lh); letter-spacing: var(--text-title-xl-ls); }

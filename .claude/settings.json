@@ -61,7 +61,10 @@
       "Bash(npx eslint *)",
       "Bash(npx tsx *)",
       "Bash(grep -n \"metaText\\\\|metaItem\\\\|metaIcon\\\\|metaRow\\\\|a {\\\\|^a,\\\\|:link\\\\|color\" /Users/edgarsanchez/Portfolio/design-systems/xops/components/SoftwareProfile.module.css)",
-      "Bash(npx --yes tsx -e ' *)"
+      "Bash(npx --yes tsx -e ' *)",
+      "Bash(echo \"exit: $?\")",
+      "Bash(grep -v \".md$\")",
+      "mcp__claude_ai_Figma__download_assets"
     ],
     "additionalDirectories": [
       "/Users/edgarsanchez/Portfolio/stories",

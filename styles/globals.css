@@ -160,6 +160,8 @@
      ---------------------------------------------------------- */
 
   --border-radius-none: 0;
+  --border-radius-xs:   4px;
+  --border-radius-sm:   12px;
   --border-radius-md:   16px;
   --border-radius-lg:   32px;
   --border-radius-xl:   48px;
@@ -170,9 +172,18 @@
      ---------------------------------------------------------- */
 
   --border-width-none: 0;
+  --border-width-xs:   2px;
   --border-width-sm:   1px;
   --border-width-md:   4px;
   --border-width-lg:   8px;
+
+  /* ----------------------------------------------------------
+     PRIMITIVES — Control height
+     Shared height scale for interactive controls (Button, etc).
+     Single step for now — small/medium added once sourced.
+     ---------------------------------------------------------- */
+
+  --control-height-large: 64px;
 
   /* ----------------------------------------------------------
      PRIMITIVES — Icon sizes
@@ -213,38 +224,44 @@
   --nav-menu-item-bg-hover:     var(--color-blue-500);
 
   /* ----------------------------------------------------------
-     SEMANTIC — Action
+     SEMANTIC — Button
+     Structure mirrors XOPS's Button token shape (design-systems/xops/tokens.css):
+     shared layout tokens + per-variant bg/border/text, hover/active pulled
+     from a shared --state-* bucket rather than per-variant hover tokens.
+     Variants: primary | secondary | outline | link.
+     outline/link have no Figma source yet — deferred, not styled.
      ---------------------------------------------------------- */
 
-  --action-primary-bg:             var(--color-yellow-500);
-  --action-primary-bg-hover:       var(--color-grey-1100);
-  --action-primary-border:         var(--color-yellow-500);
-  --action-primary-border-hover:   var(--color-yellow-500);
-  --action-primary-text:           var(--color-grey-1100);
-  --action-primary-text-hover:     var(--color-yellow-500);
+  --button-radius:         var(--border-radius-sm);   /* 12px */
+  --button-icon-radius:    var(--border-radius-xs);   /* 4px, icon badge */
+  --button-border-width:   var(--border-width-xs);    /* 2px */
+  --button-height:         var(--control-height-large); /* 64px */
+  --button-padding-x:      var(--spacing-lg);          /* 24px */
+  --button-icon-inset:     var(--spacing-sm);          /* 8px — start padding when an icon badge is present */
+  --button-gap:            var(--spacing-md);          /* 16px, icon-to-label */
+  --button-icon-size:      var(--spacing-xl);          /* 32px */
+  --button-icon-padding:   var(--spacing-sm);          /* 8px, inside the icon badge */
 
-  --action-secondary-bg:             var(--color-grey-1100);
-  --action-secondary-bg-hover:       var(--color-grey-50);
-  --action-secondary-border:         var(--color-grey-1100);
-  --action-secondary-border-hover:   var(--color-grey-1100);
-  --action-secondary-text:           var(--color-grey-300);
-  --action-secondary-text-hover:     var(--color-grey-1100);
+  --button-bg-primary:        var(--color-blue-500);
+  --button-border-primary:    var(--color-blue-500);
+  --button-icon-bg-primary:   var(--color-grey-1100);
+  --button-text-on-primary:   var(--color-grey-1100);
 
-  --action-outline-bg:               var(--color-grey-1100);
-  --action-outline-bg-hover:         var(--color-yellow-500);
-  --action-outline-border:           var(--color-yellow-500);
-  --action-outline-border-hover:     var(--color-yellow-500);
-  --action-outline-text:             var(--color-yellow-500);
-  --action-outline-text-hover:       var(--color-grey-1100);
+  --button-bg-secondary:      var(--color-grey-200);
+  --button-border-secondary:  var(--color-grey-200);
+  --button-icon-bg-secondary: var(--color-grey-1100);
+  --button-text-on-secondary: var(--color-grey-1100);
 
-  --action-ghost-text:               var(--text-tertiary);
-  --action-ghost-text-hover:         var(--color-yellow-500);
+  /* ----------------------------------------------------------
+     SEMANTIC — State
+     Shared hover/active buckets, reused across variants with the
+     same base treatment (mirrors XOPS's on-brand/on-surface split).
+     ---------------------------------------------------------- */
 
-  --action-accent-bg:                var(--color-blue-500);
-  --action-accent-bg-hover:          var(--color-blue-600);
-  --action-accent-border:            var(--color-blue-500);
-  --action-accent-border-hover:      var(--color-blue-600);
-  --action-accent-text:              var(--color-grey-50);
+  --state-hover-on-brand:   var(--color-blue-300);
+  --state-active-on-brand:  var(--color-blue-600);
+  --state-hover-on-surface:  var(--color-grey-50);
+  --state-active-on-surface: var(--color-grey-500);
 
   /* ----------------------------------------------------------
      SEMANTIC — Text
@@ -396,6 +413,11 @@
   /* body — static, no clamp */
   /* body-xl — 24px. Currently used ONLY by the Software Observability
      message-bubble text (TheProblemPinnedScene); not a general body step. */
+  /* body-2xl — hero subline (Hero.tsx), Figma node 214:7415 */
+  --text-body-2xl-size:       32px;
+  --text-body-2xl-lh:         24px;
+  --text-body-2xl-ls:         -0.64px;
+
   --text-body-xl-size:        24px;
   --text-body-xl-lh:          29px;
   --text-body-xl-ls:          0;
@@ -417,6 +439,11 @@
   --text-body-xs-ls:          0;
 
   /* label — static, no clamp */
+  /* label-2xl — hero "PRODUCT BUILDER" label (Hero.tsx), Figma node 214:7415 */
+  --text-label-2xl-size:      32px;
+  --text-label-2xl-lh:        32px;
+  --text-label-2xl-ls:        0;
+
   --text-label-xl-size:       24px;
   --text-label-xl-lh:         30px;
   --text-label-xl-ls:         -0.02em;
@@ -438,6 +465,12 @@
   --text-label-xs-ls:         -0.02em;
 
   /* title — Cabinet Grotesk Bold, static, no clamp */
+  /* title-xl — hero headline (Hero.tsx), Figma node 214:7415. Figma source is
+     Extrabold; no Extrabold woff2 is self-hosted, falls back to Bold (confirmed). */
+  --text-title-xl-size: 96px;
+  --text-title-xl-lh:   112px;
+  --text-title-xl-ls:   -1.92px;
+
   --text-title-lg-size: 18px;
   --text-title-lg-lh:   var(--text-body-lg-lh);
   --text-title-lg-ls:   -0.01em;

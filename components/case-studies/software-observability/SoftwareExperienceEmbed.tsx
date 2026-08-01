@@ -788,7 +788,7 @@ export default function SoftwareExperienceEmbed() {
         {showCta && (
         <div className={styles.ctaWrap}>
           <Button
-            variant="accent"
+            variant="primary"
             onClick={() => {
               console.log(
                 "[layer-inspect] CTA clicked — stacked-layer view not built yet",

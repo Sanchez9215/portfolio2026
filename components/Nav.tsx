@@ -220,12 +220,11 @@ export default function Nav() {
           </div>
         </a>
 
-        {/* Button — outline (menu) ↔ ghost (close), toggled by nav state */}
+        {/* Button — both states mapped to secondary (TODO: revisit once nav menu is rebuilt) */}
         {/* Temporarily hidden — menu button not ready for launch */}
         {false && (
           <Button
-            variant={isOpen ? 'ghost' : 'outline'}
-            size="md"
+            variant="secondary"
             onClick={toggleNav}
             aria-label={isOpen ? 'Close navigation' : 'Open navigation'}
           >

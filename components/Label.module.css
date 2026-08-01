@@ -9,9 +9,11 @@
 .inverse { color: var(--text-inverse-secondary); }
 .secondary { color: var(--text-secondary); }
 .tertiary { color: var(--text-tertiary); }
+.accent { color: var(--text-accent); }
 
 .xs { font-size: var(--text-label-xs-size); line-height: var(--text-label-xs-lh); letter-spacing: var(--text-label-xs-ls); }
 .sm { font-size: var(--text-label-sm-size); line-height: var(--text-label-sm-lh); letter-spacing: var(--text-label-sm-ls); }
 .md { font-size: var(--text-label-md-size); line-height: var(--text-label-md-lh); letter-spacing: var(--text-label-md-ls); }
 .lg { font-size: var(--text-label-lg-size); line-height: var(--text-label-lg-lh); letter-spacing: var(--text-label-lg-ls); }
 .xl { font-size: var(--text-label-xl-size); line-height: var(--text-label-xl-lh); letter-spacing: var(--text-label-xl-ls); }
+.size2xl { font-size: var(--text-label-2xl-size); line-height: var(--text-label-2xl-lh); letter-spacing: var(--text-label-2xl-ls); }
