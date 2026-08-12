@@ -26,8 +26,8 @@ Portfolio website for Edgar Sanchez — senior product designer, 5 years B2B/Ent
 ```
 portfolio/
 ├── .claude/
-│   ├── projects/              # Per-project doc sets — portfolio pages AND non-portfolio projects alike
-│   │   ├── <page-name>/       # portfolio page, e.g. software-observability/ — PLAN.md, progress.md, DECISIONS.md
+│   ├── projects/              # Doc sets — one unified set for the whole portfolio, one per non-portfolio project
+│   │   ├── portfolio/         # ALL portfolio-page work (case studies + Home/Nav/Footer/About) — PLAN.md, progress.md, DECISIONS.md
 │   │   └── <name>/             # non-portfolio project, e.g. xops/ — same 3-file doc-set shape
 │   └── skills/                 # Skill definitions (component-builder, section-builder,
 │                                #   new-portfolio-page, new-nonportfolio)
@@ -52,11 +52,11 @@ portfolio/
 
 ## Project Doc Sets
 
-Every project (a portfolio page, or a separate non-portfolio design system effort) gets a 3-file doc set: **PLAN.md** (roadmap/rationale), **progress.md** (build state), **DECISIONS.md** (the user's decisions and direction — never agent execution process). Scaffold new ones with `/new-portfolio-page` or `/new-nonportfolio` rather than creating by hand.
+The whole portfolio site (every case study, plus Home/Nav/Footer/About) shares **one** doc set: `.claude/projects/portfolio/{PLAN.md, progress.md, DECISIONS.md}`. It was formerly split per-page (a standalone `software-observability/` doc set, a separate `portfolio-shell/` for Home/Nav/Footer/About) — collapsed into one, since it's one site being built by one person, not several independent efforts. Case-study content and shell content live as clearly-labeled top-level sections within the same files rather than duplicating the 3-file structure per page; add new space (a new page's section) as it's actually built, not pre-emptively.
 
-**Doc-set location is the same for every project, portfolio or not:** `.claude/projects/<name>/{PLAN.md, progress.md, DECISIONS.md}` — e.g. `.claude/projects/software-observability/` for a case study, `.claude/projects/xops/` for a non-portfolio design system effort. This is the one place that's structurally identical across both project types; what differs is where the *code* each project produces lives.
+A separate non-portfolio design-system effort (e.g. `xops`) gets its own distinct 3-file doc set: **PLAN.md** (roadmap/rationale), **progress.md** (build state), **DECISIONS.md** (the user's decisions and direction — never agent execution process), at `.claude/projects/<name>/`. Scaffold a new one with `/new-nonportfolio` rather than creating by hand. (`/new-portfolio-page` scaffolds a new page's *section* within the shared `portfolio` doc set instead of a new project directory.)
 
-**Shared across all portfolio-page projects** (case studies, About, Resume, Home additions): `design-system/tokens.json`, `styles/globals.css`, `components/built-components.md`, `components/components.md`, the `component-builder` skill, and — for narrative case studies specifically — the `section-builder` skill. These are global; a component built for one page is registered once and reused by every other page.
+**Shared across all portfolio-page work** (case studies, About, Resume, Home): `design-system/tokens.json`, `styles/globals.css`, `components/built-components.md`, `components/components.md`, the `component-builder` skill, and — for narrative case studies specifically — the `section-builder` skill. These are global; a component built for one page is registered once and reused by every other page. Cross-cutting TODOs on a shared component/token (not specific to one page) belong in `built-components.md` itself, not in `portfolio`'s progress.md.
 
 **Non-portfolio projects** (e.g. `design-systems/xops/`) share nothing with the above — their own tokens, components, and (once needed) a forked `<name>-component-builder` skill live under `design-systems/<name>/`, isolated deliberately so the two systems never resolve against each other. Only the doc set moved to `.claude/projects/<name>/`; the code stays fully separate.
 

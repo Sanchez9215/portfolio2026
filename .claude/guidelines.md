@@ -15,6 +15,13 @@ That means: the project's own build-state doc (e.g. `progress.md`), this file, i
 
 ---
 
+## Documenting Build State
+
+**Never write a build-state doc entry (a `## Built` list item, a "done"/"complete" registry line) for UI work the user hasn't reviewed — code compiling, typechecking, or returning 200 is not "done."**
+This codebase has a standing rule that the agent cannot self-verify UI (see "No self-verify UI" below) — the user is the only one who can confirm a visual/interactive change actually works. Writing it into the build-state doc as built, then closing the session with the "Ready to clear" ritual, presents unreviewed — and potentially broken — work as finished. This happened for real: a new Home section was built, marked as done in `progress.md`'s Built list, and the session was closed out, while the live embed inside it was silently unstyled the whole time (a missing per-route CSS import) — a defect the user caught immediately on looking at it, not the agent. Doc first, review after is backwards.
+**Correct order:** finish the build → tell the user it's ready to look at, in concrete terms (what to check, where) → wait for them to confirm or flag issues → only then write the Built-list entry and close the session. If the user hasn't looked yet, either don't write the doc entry, or write it explicitly flagged as unreviewed (e.g. under a Resume Context / open-items entry, never the plain Built list) and don't run the "Ready to clear" close-out — the session isn't actually done.
+**This applies to build-state docs specifically** (Built lists, registry "done" markers) — Resume Context entries, Deferred/Roadmap items, and PLAN.md decisions are unaffected; those are meant to be written before review, mid-build, per the existing rules elsewhere in this file.
+
 ## Session Handoff
 
 **Resume Context is a mid-session checkpoint, not a session-end summary.**

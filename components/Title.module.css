@@ -7,6 +7,7 @@
 .default { color: var(--text-secondary); }
 .inverse { color: var(--text-inverse-primary); }
 .tertiary { color: var(--text-tertiary); }
+.primary { color: var(--text-primary-strong); }
 
 .xs { font-size: var(--text-title-xs-size); line-height: var(--text-title-xs-lh); letter-spacing: var(--text-title-xs-ls); }
 .sm { font-size: var(--text-title-sm-size); line-height: var(--text-title-sm-lh); letter-spacing: var(--text-title-sm-ls); }

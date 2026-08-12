@@ -46,15 +46,13 @@
   gap: var(--spacing-md);
 }
 
-/* h1 — display-lg, Clash Display semibold, uppercase */
+/* h1 — display-md, Cabinet Grotesk bold, sentence case (Figma node 641:7270) */
 .title {
-  font-family: var(--font-family-display);
-  font-weight: var(--font-weight-semibold);
-  font-size: var(--text-display-lg-size);
-  line-height: var(--text-display-lg-lh);
-  letter-spacing: var(--text-display-lg-ls);
-  word-spacing: var(--word-spacing-display);
-  text-transform: uppercase;
+  font-family: var(--font-family-body);
+  font-weight: var(--font-weight-bold);
+  font-size: var(--text-display-md-size);
+  line-height: var(--text-display-md-lh);
+  letter-spacing: var(--text-display-md-ls);
   color: var(--text-primary);
 }
 

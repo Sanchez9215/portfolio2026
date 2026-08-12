@@ -1,7 +1,7 @@
 import styles from './Title.module.css'
 
 export type TitleSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl'
-export type TitleColor = 'default' | 'inverse' | 'tertiary'
+export type TitleColor = 'default' | 'inverse' | 'tertiary' | 'primary'
 
 interface TitleProps {
   size: TitleSize

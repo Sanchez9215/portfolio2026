@@ -64,11 +64,22 @@
       "Bash(npx --yes tsx -e ' *)",
       "Bash(echo \"exit: $?\")",
       "Bash(grep -v \".md$\")",
-      "mcp__claude_ai_Figma__download_assets"
+      "mcp__claude_ai_Figma__download_assets",
+      "Bash(mkdir -p /Users/edgarsanchez/Portfolio/.claude/projects/portfolio-shell)",
+      "Bash(rm -rf /Users/edgarsanchez/Portfolio/.claude/projects/about && ls /Users/edgarsanchez/Portfolio/.claude/projects/)",
+      "Bash(sed -i '' 's/#FFD53C/#D6E5FE/g' /Users/edgarsanchez/Portfolio/public/icons/happy.svg && cat /Users/edgarsanchez/Portfolio/public/icons/happy.svg)",
+      "Bash(git mv *)",
+      "Bash(git rm *)",
+      "Bash(rm -rf .claude/projects/portfolio-shell && ls .claude/projects/)",
+      "Bash(curl -s -o /tmp/home.html -w \"%{http_code}\\\\n\" http://localhost:3000/)"
     ],
     "additionalDirectories": [
       "/Users/edgarsanchez/Portfolio/stories",
-      "/Users/edgarsanchez/Portfolio/.claude/projects/xops"
+      "/Users/edgarsanchez/Portfolio/.claude/projects/xops",
+      "/Users/edgarsanchez/Portfolio/.claude/projects",
+      "/Users/edgarsanchez/Portfolio/.claude/projects/about",
+      "/Users/edgarsanchez/Portfolio/public/icons",
+      "/Users/edgarsanchez/Portfolio/.claude/projects/portfolio-shell"
     ]
   }
 }

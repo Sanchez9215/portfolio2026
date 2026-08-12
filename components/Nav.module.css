@@ -66,56 +66,12 @@
   width: 100%;
 }
 
-/* ── div.brand ────────────────────────────────────────────── */
+/* ── a.brand ──────────────────────────────────────────────── */
 
 .brand {
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
   text-decoration: none;
-}
-
-/* icon wrapper (logo mark) */
-.logoWrapper {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.logoIcon {
-  display: block;
-  width: var(--icon-xl); /* 48px */
-  height: var(--icon-xl);
-  color: var(--text-tertiary);
-}
-
-/* div.designerDetails */
-.designerDetails {
-  display: flex;
-  flex-direction: column;
-}
-
-/* "Edgar" — Upheaval 24px/20px, uppercase, text-primary */
-.designerName {
-  font-family: var(--font-family-upheaval);
-  font-weight: 400;
-  font-size: 24px;
-  line-height: 20px;
-  text-transform: uppercase;
-  color: var(--text-tertiary);
-  white-space: nowrap;
-}
-
-/* "Sanchez" — Upheaval 24px/20px, uppercase, text-primary */
-.designerTitle {
-  font-family: var(--font-family-upheaval);
-  font-weight: 400;
-  font-size: 24px;
-  line-height: 20px;
-  text-transform: uppercase;
-  color: var(--text-tertiary);
-  white-space: nowrap;
 }
 
 /* ── div.menuListWrapper ──────────────────────────────────── */
@@ -166,29 +122,8 @@
    Mobile overrides (393 px)
    ============================================================ */
 
-@media (max-width: 600px) {
-  .designerDetails {
-    display: none;
-  }
-}
-
 @media (max-width: 393px) {
   .header {
     padding: 0 var(--spacing-md);
-  }
-
-  .logoIcon {
-    width: var(--icon-lg); /* 32px on mobile */
-    height: var(--icon-lg);
-  }
-
-  .designerName {
-    font-size: var(--text-label-sm-size);
-    line-height: var(--text-label-sm-lh);
-  }
-
-  .designerTitle {
-    font-size: var(--text-body-sm-size);
-    line-height: var(--text-body-sm-lh);
   }
 }

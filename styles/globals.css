@@ -161,7 +161,7 @@
 
   --border-radius-none: 0;
   --border-radius-xs:   4px;
-  --border-radius-sm:   12px;
+  --border-radius-sm:   6px;   /* was 12px — updated for the primary+icon slide-button redesign, Figma node 384:8384/384:8373 */
   --border-radius-md:   16px;
   --border-radius-lg:   32px;
   --border-radius-xl:   48px;
@@ -180,10 +180,11 @@
   /* ----------------------------------------------------------
      PRIMITIVES — Control height
      Shared height scale for interactive controls (Button, etc).
-     Single step for now — small/medium added once sourced.
      ---------------------------------------------------------- */
 
-  --control-height-large: 64px;
+  --control-height-l:      32px;
+  --control-height-medium: 48px;
+  --control-height-large:  64px;
 
   /* ----------------------------------------------------------
      PRIMITIVES — Icon sizes
@@ -192,7 +193,7 @@
   --icon-sm:  16px;
   --icon-md:  24px;
   --icon-lg:  32px;
-  --icon-xl:  48px;
+  --icon-xl:  40px;
   --icon-2xl: 64px;
 
   /* ----------------------------------------------------------
@@ -235,7 +236,9 @@
   --button-radius:         var(--border-radius-sm);   /* 12px */
   --button-icon-radius:    var(--border-radius-xs);   /* 4px, icon badge */
   --button-border-width:   var(--border-width-xs);    /* 2px */
-  --button-height:         var(--control-height-large); /* 64px */
+  --button-height:         var(--control-height-medium); /* 48px, default */
+  --button-height-large:   var(--control-height-large);  /* 64px, size="large" */
+  --button-height-l:       var(--control-height-l);      /* 32px, size="l" */
   --button-padding-x:      var(--spacing-lg);          /* 24px */
   --button-icon-inset:     var(--spacing-sm);          /* 8px — start padding when an icon badge is present */
   --button-gap:            var(--spacing-md);          /* 16px, icon-to-label */
@@ -244,13 +247,35 @@
 
   --button-bg-primary:        var(--color-blue-500);
   --button-border-primary:    var(--color-blue-500);
-  --button-icon-bg-primary:   var(--color-grey-1100);
   --button-text-on-primary:   var(--color-grey-1100);
+
+  /* Primary + icon slide-button (e.g. Hero's WORK) — two full faces that
+     swap via a horizontal slide on hover. Figma node 384:8384 (default) /
+     384:8373 (hover). */
+  --button-icon-bg-primary:      var(--color-blue-500);   /* default face's badge bg */
+  --button-field-bg-primary:     var(--color-grey-1000);  /* default face's label-side bg */
+  --button-content-color-primary:       var(--color-grey-500);  /* icon + label color, default face */
+  --button-content-color-primary-hover: var(--color-grey-50);   /* icon + label color, hover face */
 
   --button-bg-secondary:      var(--color-grey-200);
   --button-border-secondary:  var(--color-grey-200);
   --button-icon-bg-secondary: var(--color-grey-1100);
   --button-text-on-secondary: var(--color-grey-1100);
+
+  /* Secondary slide-button — same push mechanic as primary's, flat fill
+     instead of primary's badge/field split. */
+  --button-content-color-secondary:       var(--color-grey-900);  /* label/icon color, default face */
+  --button-content-color-secondary-hover: var(--color-grey-1100); /* label/icon color, hover face */
+
+  /* Secondary + icon slide-button (e.g. Work card's "View Build") — default
+     face gets primary's badge/field split structure, recolored: light badge,
+     dark field. Hover face falls back to secondary's existing flat fill
+     (--state-hover-on-surface / --button-content-color-secondary-hover) —
+     no Figma hover mock to diverge from. Figma node 641:7270. */
+  --button-icon-bg-secondary-badge:       var(--color-grey-300);   /* default face's badge bg */
+  --button-content-color-secondary-badge: var(--color-grey-1000);  /* icon color inside the badge */
+  --button-field-bg-secondary:            var(--color-grey-1000);  /* default face's label-side bg */
+  --button-content-color-secondary-field: var(--color-grey-500);   /* label color, default face */
 
   /* ----------------------------------------------------------
      SEMANTIC — State
@@ -268,6 +293,7 @@
      ---------------------------------------------------------- */
 
   --text-primary:                var(--color-grey-300);
+  --text-primary-strong:         var(--color-grey-50);
   --text-secondary:              var(--color-grey-500);
   --text-tertiary:               var(--color-grey-650);
   --text-subtle:                 var(--color-grey-700);

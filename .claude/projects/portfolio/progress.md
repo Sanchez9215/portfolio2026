@@ -1,6 +1,8 @@
-# Software Observability — Progress
+# Portfolio — Progress
 
-**Intent:** Status board only — what's built, what's not, what's next.
+**Intent:** Status board only — what's built, what's not, what's next, across the whole portfolio site (case studies + Home/Nav/Footer/About). Formerly split across `software-observability` and `portfolio-shell` — merged into one doc set since it's one site, not two. `xops` stays separate (its own isolated design-system effort).
+
+## Software Observability (case study)
 
 **Format rule (hard limit):** the Built sections list is a plain numbered list, `` `section.name` `` only — one line, no inline structure/annotation notes. Anything worth recording about a section belongs in `## Deferred (Roadmap)` (future work) or `## Resume Context` (active mid-build state) instead — never appended to the list entry, since the actual structure is always in the code.
 
@@ -94,12 +96,8 @@ Format: plain numbered list, `` `section.name` `` only — no inline structure/a
 ## Deferred (Roadmap)
 
 - **Prototype card pattern — 1 of 3 resolved** — `section.unifying-systems-prototype` swapped this session to `ImgCard`'s bare `images` row (no longer sticky/scrolling — cards now stack under the label/text block). `section.unifying-systems` and `section.parallel-prototyping` still inline their own copy of the sticky-label/image card CSS — same fold-into-`ImgCard`-or-`PrototypeCard` fix applies whenever those two stop needing the sticky-scroll behavior.
-- **`ImgCard` `card`→`bare` migration** — `bare` is now the default variant; the ~27 pre-existing call sites were pinned to `variant="card"` to avoid a visual regression rather than migrated. Move them to `bare` (or drop the variant entirely) once their look is confirmed to still work without the border/padding.
-- **Body text → 18px semibold** — `section.generating-events`'s Figma source shows all body copy (detail block, steps-intro block, step bodies) at 18px semibold; `Block` only supports regular weight today, so these currently render at regular. Add semibold support to `Block` (or a scoped override) and apply across this section once confirmed.
-- **`Section` layout prop** — give `Section.tsx` a `layout="grid"|"flex"` prop so flex sections never receive `cs-grid` in the first place, instead of winning a specificity fight against it.
 - **Rewrite visual track** (hero image/recording, full-prototype capture, before/after slider, drag-and-drop clip, annotated hotspot row anatomy) — see `PLAN.md`'s "Visual storytelling" section; not gating the content rewrite.
 - **XOPS interactive modularity toggle** — the actual visual proof for the "Designing for Data Uncertainty" beat; lives in `xops/PLAN.md` item 12, depends on the (now built) source-tagged data model.
-- **Spacing scale migration to XOPS's numeric shape** — portfolio's named scale (`--spacing-xs/sm/md/lg/xl/2xl/3xl/4xl/5xl`, 4/8/16/24/32/48/64/96/128) is missing intermediate steps XOPS's numeric scale has (e.g. 12px, `--xops-spacing-12`). Full rename touches ~394 call sites across 32 files (`styles/globals.css`, `design-system/tokens.json`, every component module). `HotspotOverlay.module.css`'s tooltip card padding is hardcoded to 12px in the meantime — see its inline comment.
 
 ---
 
@@ -261,3 +259,52 @@ Previously one combined pinned scene (`PrototypeValidationScene`, phase 1 label 
 **`section.prototype-validation`** (was phase 1) — no longer a custom pinned component; now a plain `<Section>` + `<LabelBlock size="display">` (label="Prototype Validation", same merged statement), full-100vh (`min-height:100vh; align-content:center`, matching `.frameworkAdaptation`'s convention), revealed via `LabelBlock`'s own built-in scroll trigger — no GSAP pin/hold/exit of its own, since it no longer hands off into a table build. Sits between the data-dictionary section and the first hotspot section.
 
 **Next session starts here:** the pre-split table-build scene went through many rounds of user-driven visual correction already, but hasn't had a final confirmed-good pass, and neither has this session's reorder/split — check both sections render and transition cleanly in the new order. Known open items on `DataDictionaryScene`: dynamic row count hasn't been checked at multiple real viewport heights; the mask fade's exact 3-row cutoff is unconfirmed as a "feels right" amount; phase timing/durations (`PHASE2_BUILD_LENGTH=900`, `SHRINK_DURATION=450`, etc.) are first-guess values, not tuned. Touch support not addressed (matches the same open item on the `overview-prototype-1` hotspot system above).
+
+---
+
+## Home / Nav / Footer / About
+
+_Merged in from the former standalone `portfolio-shell` doc set (which had itself absorbed the former standalone `about` project)._
+
+### Home — Built
+- `Hero.tsx` — home page hero, Figma node 214:7415. Nav stays visible; old `HeroWithCanvas`/`HeroSection`/`BounceCanvas` hidden (unused, left as reference), replaced by `Hero` in `app/page.tsx`. See `components/built-components.md`'s `hero` entry for full structure.
+- Global `Button` rebuild (structural, not Home-specific, but done in service of Hero's WORK/CONTACT buttons) — variant: primary\|secondary\|outline\|link, XOPS-mirrored token structure. Primary+icon+labeled buttons (WORK) use a two-face horizontal slide hover (Figma node 384:8384/384:8373). Full detail in `components/built-components.md`'s `button` entry.
+- New shared typography tiers added for Hero: `Label` size `2xl` + `accent` color, `Title` size `xl`, `Block` size `2xl`.
+- Hero's WORK/Contact buttons both `size="large"` (64px height, 40px icon, `text-label-2xl` type tier).
+- Hero subline: "Early-stage startups" static (semibold, `--text-subtle`) + a rotating bold/`--text-inverse-primary` phrase slot (3 phrases, `yPercent` slide loop, GSAP, respects reduced-motion) — supersedes the old "plain regular text, bold emphasis deferred" state.
+
+### Home — Deferred (Roadmap)
+- `CaseStudyCursor.tsx` (global custom cursor on hover, keyed to `[data-case-study-card]`) no longer triggers on Home once `WorkCaseStudyRow` lands (doesn't carry that attribute) — not wired up, not asked for; flagged for a decision, not fixed.
+- Old `CaseStudyCard.tsx`/`CaseStudyCard.module.css` orphaned once `WorkCaseStudyRow` lands (zero consumers) — kept per "don't delete without confirming," fate undecided.
+- `outline`/`link` Button variants — type/class scaffolded, no Figma-sourced colors yet.
+- Button hover-slide active state not yet built.
+- Primary button has no designed focus state — default outline suppressed (`.primary:focus { outline: none }`) as a placeholder until real focus styling is designed.
+
+### Home — Resume Context
+- **`work-case-study-row` — built this session, not yet user-reviewed, do not mark Built until confirmed.** New `WorkCaseStudyRow.tsx`: Home's Work section, first row (software-observability only — DHM/Path Analysis/Session Replay cards dropped, no real pages exist for them). Replaces the old static `CaseStudyCard` markup entirely (superseded, orphaned, not deleted — see `built-components.md`). Figma node 641:7270 supplied layout only; content/copy comes from the real case study via new shared `introContent.ts`; the live `SoftwareExperienceEmbed` (ghost-cursor walkthrough included) replaces Figma's static screenshot. Scroll-triggered entrance mirrors `SectionIntroduction`'s own on-mount choreography. See `built-components.md`'s `work-case-study-row`/`intro-content`/`button` entries for full mechanism. Coupled change: `SectionIntroduction.tsx`'s h1 title font also changed (Cabinet Grotesk bold, sentence case, `--text-display-md` 64px — was Clash Display semibold uppercase `--text-display-lg` 72px); its copy also moved into `introContent.ts`.
+- **Found + fixed same session, still needs a fresh visual pass:** the live embed rendered with zero CSS — `design-systems/xops/tokens.css` (the XOPS component library's own custom-property source) is only imported per-route, in each `/work/software-observability/**` `layout.tsx`; Home's route tree never pulled it in, so every `--xops-*` token the embedded `OverviewScreen`/`AllSoftwareScreen` depend on was undefined. Fixed by importing it directly in `app/page.tsx`. This was caught by the user after the session had already been (prematurely) marked done — see `guidelines.md`'s "Documenting Build State" section, added this session as a direct result.
+- **Next session starts here:** full in-browser visual pass of `WorkCaseStudyRow` — confirm the embed now renders styled, layout/spacing reads correctly, scroll-triggered entrance timing feels right, and the embed's asymmetric top-only radius looks correct. Only move this entry into `## Home — Built` once the user has actually looked and confirmed.
+
+### Nav / Menu
+- `Nav.tsx` — header/logo stays visible; the expand/collapse menu button is currently hidden (`{false && ...}`, "not ready for launch"). Its two states are both mapped to `secondary` variant as a compile-safe placeholder (dead code, not visually relevant until the menu itself is rebuilt).
+- No rebuild started yet.
+
+### Footer
+- Not yet built/started.
+
+### About — Built sections (in page order)
+1. `section.about-hero`
+2. `section.how-i-operate`
+3. `section.principles`
+4. `section.designing-with-ai`
+5. `section.in-their-words`
+6. `section.off-duty`
+7. `section.say-hello`
+
+### About — Deferred (Roadmap)
+_none yet_
+
+### About — Resume Context
+- **new-components-pending-review** — Three components were built new for this page without a Figma source (creative-freedom mandate, flagged for user review): `QuoteMarquee`, `NumberCard`, `SnapshotGallery` — all in `components/about/`, each marked "⚑ NEW COMPONENT (pending review)" in its file header and listed in `components/built-components.md`. User to decide whether to keep/adjust/integrate.
+- **first-version-awaiting-visual-review** — Page built as an establish-first draft per user direction ("build and establish, then I will revise"). Content sourced from Figma nodes 476-1477/1302/1265/1373/1339/1427/1408 (content only; styles deliberately ignored). Quote excerpts were condensed from full LinkedIn recommendations — full originals live in Figma node 476-1477.
+- **About's button usage** — `app/about/page.tsx` uses `Button variant="outline"` (LinkedIn CTA), which has no colors yet (see Home's Deferred above) — renders unstyled until `outline` is built.

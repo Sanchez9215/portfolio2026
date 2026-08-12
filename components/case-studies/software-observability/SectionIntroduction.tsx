@@ -6,6 +6,12 @@ import Block from "@/components/Block";
 import Title from "@/components/Title";
 import TitleBlock from "@/components/TitleBlock";
 import SoftwareExperienceEmbed from "./SoftwareExperienceEmbed";
+import {
+  introTitleLines,
+  introDescription,
+  introMeta,
+  introImpact,
+} from "./introContent";
 import styles from "./SectionIntroduction.module.css";
 
 // Entrance choreography, all landing within ~1s of mount:
@@ -128,60 +134,52 @@ export default function SectionIntroduction() {
       <div className={styles.projectOverview}>
         <div className={styles.intro}>
           <h1 ref={titleRef} className={styles.title}>
-            <span className={styles.titleRow}>Software</span>
-            <br />
-            <span className={styles.titleRow}>Observability</span>
+            {introTitleLines.map((line, i, arr) => (
+              <span key={line}>
+                <span className={styles.titleRow}>{line}</span>
+                {i < arr.length - 1 && <br />}
+              </span>
+            ))}
           </h1>
           <Block size="lg" ref={descriptionRef} className={styles.description}>
-            Real-time visibility into license ownership, spend, and utilization
-            to identify waste and drive cost optimization for the Fortune 500.
+            {introDescription}
           </Block>
         </div>
       </div>
 
       <div className={styles.projectImpact}>
         <div ref={metaRef} className={styles.projectMeta}>
-          <TitleBlock
-            size="xs"
-            titleColor="tertiary"
-            title="Company"
-            body="XOPS is an autonomous IT operations platform for Fortune 500 organizations."
-          />
-          <TitleBlock
-            size="xs"
-            titleColor="tertiary"
-            title="Role"
-            body="Lead Product Designer"
-          />
-          <TitleBlock
-            size="xs"
-            titleColor="tertiary"
-            title="Timeline"
-            body="Q2 2025"
-          />
+          {introMeta.map((item) => (
+            <TitleBlock
+              key={item.label}
+              size="xs"
+              titleColor="tertiary"
+              title={item.label}
+              body={item.body}
+            />
+          ))}
         </div>
         <div ref={impactRef} className={styles.impactCards}>
-          <div className={styles.impactItem}>
-            <div className={styles.impactHeading}>
-              <span className={styles.badge}>0 &rarr; 1</span>
-              <Title size="sm">Platform Expansion</Title>
-            </div>
-            <Block size="sm" color="tertiary">
-              Designed end-to-end software module experience, extending the
-              platform&apos;s lifecycle coverage from employees and devices into
-              software and license intelligence.
-            </Block>
-          </div>
-          <TitleBlock
-            size="sm"
-            title="Millions Reclaimed in License Spend"
-            body="Established foundation for automated software optimization enabling enterprise customers like Broadcom to surface and recover unused software costs at scale."
-          />
-          <TitleBlock
-            size="sm"
-            title="Revenue & Sales Enablement"
-            body="Software Observability became a consistent presence in enterprise sales demos, revealing the depth of XOPS' data model and system of intelligence."
-          />
+          {introImpact.map((item) =>
+            item.badge ? (
+              <div key={item.heading} className={styles.impactItem}>
+                <div className={styles.impactHeading}>
+                  <span className={styles.badge}>{item.badge}</span>
+                  <Title size="sm">{item.heading}</Title>
+                </div>
+                <Block size="sm" color="tertiary">
+                  {item.body}
+                </Block>
+              </div>
+            ) : (
+              <TitleBlock
+                key={item.heading}
+                size="sm"
+                title={item.heading}
+                body={item.body}
+              />
+            ),
+          )}
         </div>
       </div>
 

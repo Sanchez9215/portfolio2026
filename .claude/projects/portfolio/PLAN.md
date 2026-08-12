@@ -1,6 +1,10 @@
-# Software Observability — Rewrite Plan
+# Portfolio — Plan
 
-**Intent:** Roadmap + rationale for the concise rewrite (`ReviewDoc/Rewritten/SW-observability-web.md`) — 32 target beats replacing the current 68-entry section list, in place, on `sw-observability-rewrite`. Status per beat only; content decisions go in `DECISIONS.md` once made (create when the first one lands).
+**Intent:** Roadmap + rationale for the whole portfolio site. Formerly `Software Observability — Rewrite Plan`; merged with the former `portfolio-shell/PLAN.md` since it's one doc set now (see `progress.md`'s intent line for why).
+
+## Software Observability (case study rewrite)
+
+**Roadmap:** the concise rewrite (`ReviewDoc/Rewritten/SW-observability-web.md`) — 32 target beats replacing the current 68-entry section list, in place, on `sw-observability-rewrite`. Status per beat only; content decisions go in `DECISIONS.md` once made (create when the first one lands).
 
 **Source doc:** `ReviewDoc/Rewritten/SW-observability-web.md` — treat as the spec for copy/structure per beat. Current-section mapping below is a starting read; confirm against `page.tsx` when a beat is actually worked.
 
@@ -94,3 +98,19 @@ Active mid-build or about-to-build state. Remove once folded into `progress.md`.
 
 ### Beat 8 (observability-first)
 Framework-adaptation trimmed/de-hedged; observability-first is the `ObservabilityEyes` collage. Sections stay separate, joined by the `FrameworkFunnelSpine` funnel/spine transition motif (built, blind pass — full mechanism + verify checklist in `progress.md` Resume Context).
+
+---
+
+## Home / Nav / Footer / About
+
+_Merged in from the former standalone `portfolio-shell` doc set._
+
+**Scope:**
+- Home page — hero section, work-list/case-study-cards section
+- Nav / menu
+- Footer
+- About page (folded in from the former standalone `about` project — see `progress.md`)
+
+**Approach:** Home is being rebuilt from scratch. Old `HeroWithCanvas`/`HeroSection`/`BounceCanvas` are left in the codebase, unused, as reference rather than deleted. New `Hero.tsx` built from Figma (node 214:7415, "Portfolio Cleaning" file). The old Work-list section (case-study cards) is currently hidden pending the same treatment.
+
+**Shared design-system work done in service of this rebuild** (not shell-specific, but triggered by it): the global `Button` component was fully rebuilt to mirror XOPS's token/variant structure (see `components/built-components.md`'s `button` entry for current state) — this affects every portfolio page that uses `Button`, not just the shell.

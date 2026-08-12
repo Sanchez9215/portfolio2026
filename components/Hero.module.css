@@ -4,49 +4,50 @@
    ============================================================ */
 
 .section {
-  display:         flex;
-  flex-direction:  column;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   justify-content: flex-end;
-  min-height:      100vh;
-  padding-inline:  var(--spacing-xl);
-  padding-block:   var(--spacing-5xl);
-  background:      var(--surface-section-inverse);
+  min-height: 100vh;
+  padding-inline: var(--spacing-xl);
+  padding-block: var(--spacing-5xl);
+  background: var(--surface-base);
 }
 
 .content {
-  display:        flex;
+  display: flex;
   flex-direction: column;
-  align-items:    flex-start;
-  gap:            var(--spacing-3xl);
+  align-items: flex-start;
+  gap: var(--spacing-5xl);
 }
 
 .topGroup {
-  display:        flex;
+  display: flex;
   flex-direction: column;
-  align-items:    flex-start;
-  gap:            var(--spacing-md);
+  align-items: flex-start;
+  gap: var(--spacing-lg);
 }
 
 .labelRow {
-  display:     flex;
+  display: flex;
   align-items: center;
-  gap:         var(--spacing-md);
+  gap: var(--spacing-md);
 }
 
 .icon {
-  display:       inline-flex;
-  align-items:   center;
+  display: inline-flex;
+  align-items: center;
   justify-content: center;
-  width:         var(--icon-lg);
-  height:        var(--icon-lg);
-  flex-shrink:   0;
+  width: var(--icon-lg);
+  height: var(--icon-lg);
+  flex-shrink: 0;
 }
 
 .headlineGroup {
-  display:        flex;
+  display: flex;
   flex-direction: column;
-  align-items:    flex-start;
-  gap:            var(--spacing-xl);
+  align-items: flex-start;
+  gap: var(--spacing-xl);
 }
 
 /* Line breaks are explicitly authored in Hero.tsx's headline string (\n) */
@@ -54,8 +55,47 @@
   white-space: pre-line;
 }
 
+/* Subline mixed-weight emphasis — Block has no inline-weight-mixing support yet,
+   so this is a Hero-scoped span override rather than a Block API change. */
+.sublineMedium {
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-subtle);
+}
+
+/* Rotating phrase slot — a CSS-grid stack (all children share grid-area 1/1)
+   so the container auto-sizes to the widest phrase with no JS measurement.
+   GSAP crossfades autoAlpha/y between them; .sublineActive is the pre-JS/
+   no-JS default so the first phrase renders correctly before hydration.
+   Only the TOP edge is fully clipped (clip-path, not overflow:hidden) — that
+   hides the exiting phrase as it slides out upward. The bottom gets a small
+   8px allowance (not fully unclipped) — text-body-2xl's line-height (24px)
+   is intentionally tighter than its font-size (32px), so descenders (g/y/p)
+   extend 8px past the line box at rest; 8px closes exactly that gap without
+   exposing the incoming phrase's slide-up motion from further below. */
+.sublineSlot {
+  display: inline-grid;
+  clip-path: inset(0 0 -4px 0);
+  height: var(--text-body-2xl-lh);
+}
+
+.sublineEmphasis {
+  grid-row: 1;
+  grid-column: 1;
+  display: block;
+  line-height: var(--text-body-2xl-lh);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-secondary);
+  visibility: hidden;
+  opacity: 0;
+}
+
+.sublineActive {
+  visibility: visible;
+  opacity: 1;
+}
+
 .buttonRow {
-  display:     flex;
+  display: flex;
   align-items: center;
-  gap:         var(--spacing-xl);
+  gap: var(--spacing-xl);
 }

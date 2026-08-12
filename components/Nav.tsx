@@ -4,7 +4,11 @@
  * Sticky full-viewport overlay nav. Fixed at top; expands on open
  * to fill the screen with a rounded card containing four MenuItem links.
  *
- * Built from Figma nodes 273:439 (nav-button) + 274:75 (nav) — Claude-Code file.
+ * Header row rebuilt from Figma node 572:1787 ("Portfolio Cleaning" file) —
+ * plain-text "Edgar Sanchez" wordmark (Label, no logo mark) + a bare-text
+ * "Menu"/"Close" trigger (Button variant="text" size="l"). Expand/collapse
+ * menu-card mechanism below is unchanged, still from the original nodes
+ * 273:439 (nav-button) + 274:75 (nav) — Claude-Code file.
  * Tokens: nav.* + surface.* + motion.* (design-system/tokens.json)
  * Spec:   components/components.md → nav
  *
@@ -25,6 +29,7 @@
 import { useEffect, useRef, useState } from 'react'
 import gsap from 'gsap'
 import Button from './Button'
+import Label from './Label'
 import MenuItem from './MenuItem'
 import styles from './Nav.module.css'
 
@@ -192,45 +197,20 @@ export default function Nav() {
       {/* ── Header (always visible) ─────────────────────────── */}
       <div className={styles.header}>
 
-        {/* a.brand — logo + name + title; links home from any page */}
+        {/* a.brand — return-home button; plain text wordmark, links home from any page */}
         <a href="/" className={styles.brand}>
-          <span className={styles.logoWrapper} aria-hidden="true">
-            <svg
-              width="64"
-              height="64"
-              viewBox="0 0 64 64"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-              className={styles.logoIcon}
-            >
-              <path d="M8 8H56V56H8V8Z" fill="currentColor"/>
-              <path d="M39.9992 20H47.9992V28H39.9992V20Z" fill="#0B0B0D"/>
-              <path d="M48.0008 32.8016H52.0008V40.8016H48.0008V32.8016Z" fill="#0B0B0D"/>
-              <path d="M39.9992 40.7984H47.9992V44.7984H39.9992V40.7984Z" fill="#0B0B0D"/>
-              <path d="M32 40.7984H40V44.7984H32V40.7984Z" fill="#0B0B0D"/>
-              <path d="M24.0008 40.7984H32.0008V44.7984H24.0008V40.7984Z" fill="#0B0B0D"/>
-              <path d="M15.9992 40.7984H23.9992V44.7984H15.9992V40.7984Z" fill="#0B0B0D"/>
-              <path d="M12.0008 32.8016H16.0008V40.8016H12.0008V32.8016Z" fill="#0B0B0D"/>
-              <path d="M15.9992 20H23.9992V28H15.9992V20Z" fill="#0B0B0D"/>
-            </svg>
-          </span>
-          <div className={styles.designerDetails}>
-            <p className={styles.designerName}>Edgar</p>
-            <p className={styles.designerTitle}>Sanchez</p>
-          </div>
+          <Label size="md" color="tertiary">Edgar Sanchez</Label>
         </a>
 
-        {/* Button — both states mapped to secondary (TODO: revisit once nav menu is rebuilt) */}
-        {/* Temporarily hidden — menu button not ready for launch */}
-        {false && (
-          <Button
-            variant="secondary"
-            onClick={toggleNav}
-            aria-label={isOpen ? 'Close navigation' : 'Open navigation'}
-          >
-            {isOpen ? 'Close' : 'Menu'}
-          </Button>
-        )}
+        {/* Menu toggle — bare text trigger, Button's ghost "text" variant */}
+        <Button
+          variant="text"
+          size="l"
+          onClick={toggleNav}
+          aria-label={isOpen ? 'Close navigation' : 'Open navigation'}
+        >
+          {isOpen ? 'Close' : 'Menu'}
+        </Button>
       </div>
 
       {/* ── Menu list (hidden when closed) ──────────────────── */}

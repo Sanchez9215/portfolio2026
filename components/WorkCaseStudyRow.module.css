@@ -1,0 +1,151 @@
+/* ============================================================
+   WorkCaseStudyRow — Home page Work section row
+   Grid: cs-grid (12-col, via Section), left col 1/6, right col 6/13 —
+   same split as the case study's own SectionIntroduction.
+   Figma node 641:7270 supplied layout only (see file header comment).
+   ============================================================ */
+
+/* section.work — full-width row, top divider (Figma: border-t) */
+.work {
+  border-top: var(--border-card) solid var(--surface-card-border);
+}
+
+/* ── Left column (1/6): title + description + CTAs ─────────── */
+
+.left {
+  grid-column: 1 / 4;
+  display: flex;
+  flex-direction: column;
+  justify-content: top;
+  gap: var(--spacing-xl);
+}
+
+.intro {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl);
+}
+
+/* h2 — display-md, Cabinet Grotesk bold, sentence case — same tier as the
+   real case study's own title (SectionIntroduction), reused here. */
+.title {
+  font-family: var(--font-family-body);
+  font-weight: var(--font-weight-bold);
+  font-size: var(--text-display-md-size);
+  line-height: var(--text-display-md-lh);
+  letter-spacing: var(--text-display-md-ls);
+  color: var(--text-primary);
+}
+
+/* each title line — entrance-animation target, staggered in */
+.titleRow {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(24px);
+}
+
+/* description Block — entrance-animation hidden state */
+.description {
+  opacity: 0;
+  transform: translateY(24px);
+}
+
+/* div.ctaRow — Case Study / View Build buttons, full-width, stacked */
+.ctaRow {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+.ctaRow > * {
+  width: 100%;
+  /* entrance-animation hidden state */
+  opacity: 0;
+  transform: translateY(24px);
+}
+
+/* ── Right column (6/13): meta + impact + live embed ──────────
+   Mirrors SectionIntroduction's .projectImpact structure exactly. */
+
+.right {
+  grid-column: 4 / 13;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl);
+}
+
+/* div.meta — Company / Role / Timeline, divider below */
+.meta {
+  display: flex;
+  gap: var(--spacing-xl);
+  padding-bottom: var(--spacing-md);
+  border-bottom: 1px solid var(--surface-card-border);
+  /* entrance-animation hidden state — border lives on this container itself */
+  opacity: 0;
+}
+
+.meta > * {
+  flex: 1;
+  opacity: 0;
+  transform: translateY(24px);
+}
+
+/* div.impact — Platform Expansion / Millions Reclaimed / Revenue */
+.impact {
+  display: flex;
+  gap: var(--spacing-xl);
+}
+
+.impact > * {
+  flex: 1;
+  opacity: 0;
+  transform: translateY(24px);
+}
+
+.impactItem {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.impactHeading {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+/* "0 → 1" pill badge — same treatment as SectionIntroduction's */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border-radius: var(--radius-pill);
+  background: var(--surface-card);
+  color: var(--badge-text);
+  font-family: var(--font-family-body);
+  font-weight: var(--font-weight-bold);
+  font-size: var(--text-label-xs-size);
+  line-height: var(--text-label-xs-lh);
+  letter-spacing: var(--text-label-xs-ls);
+  padding-inline: var(--spacing-sm);
+  padding-block: var(--spacing-xs);
+  white-space: nowrap;
+}
+
+/* div.embedWrap — live SoftwareExperienceEmbed, top corners only (Figma:
+   rounded-tl/tr, flush bottom against the row's own bottom edge) */
+.embedWrap {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: var(--radius-default) var(--radius-default) 0 0;
+  /* entrance-animation hidden state */
+  opacity: 0;
+  transform: translateY(24px);
+}
+
+.embedWrap > * {
+  width: 100%;
+  height: 100%;
+}
