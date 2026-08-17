@@ -733,6 +733,7 @@ export function OverviewScreen({
   forceInactiveTooltip,
   lockTableScroll = false,
   showSecondaryCards = true,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   embedded = false,
 }: {
   onNavigate?: (screen: SoftwareSubKey) => void;
