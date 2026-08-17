@@ -9,6 +9,7 @@ import DataGlossaryTable, {
   glossaryRows,
 } from "@/components/case-studies/software-observability/DataGlossaryTable";
 import styles from "./DataDictionaryScene.module.css";
+import { scheduleScrollTriggerRefresh } from "./scrollTriggerRefresh";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -377,7 +378,7 @@ export default function DataDictionaryScene({
       });
 
       void sceneEl.offsetHeight;
-      ScrollTrigger.refresh();
+      scheduleScrollTriggerRefresh();
 
       const tl = gsap.timeline({
         scrollTrigger: {

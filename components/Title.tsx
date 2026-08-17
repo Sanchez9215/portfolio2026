@@ -6,7 +6,7 @@ export type TitleColor = 'default' | 'inverse' | 'tertiary' | 'primary'
 interface TitleProps {
   size: TitleSize
   color?: TitleColor
-  children: string
+  children: React.ReactNode
   className?: string
 }
 

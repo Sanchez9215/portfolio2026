@@ -7,7 +7,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: center;
   min-height: 100vh;
   padding-inline: var(--spacing-xl);
   padding-block: var(--spacing-5xl);
@@ -28,10 +28,13 @@
   gap: var(--spacing-lg);
 }
 
+/* entrance-animation hidden state — see useTextReveal in Hero.tsx */
 .labelRow {
   display: flex;
   align-items: center;
   gap: var(--spacing-md);
+  opacity: 0;
+  transform: translateY(24px);
 }
 
 .icon {
@@ -50,9 +53,59 @@
   gap: var(--spacing-xl);
 }
 
-/* Line breaks are explicitly authored in Hero.tsx's headline string (\n) */
 .headline {
   white-space: pre-line;
+}
+
+.headlinePrefix {
+  display: inline;
+}
+
+/* .break-systems and .break-for don't exist as breaks upstream (desktop) —
+   off by default, only turned on in the 620px tier below. .break-data (a
+   break before "Systems") is also off by default — desktop merges
+   "Data Systems Designed" onto one line — and only turns on at the 768px
+   tier, where "Enterprise Data" / "Systems Designed" needs a break between
+   them instead. */
+.break-systems,
+.break-for,
+.break-data {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  /* .break-enterprise (Enterprise/Data) is the other original desktop
+     break — hidden here so "Enterprise Data" can merge onto one line.
+     .break-optional (Designed/for) stays on, so "for High Stakes."
+     always holds as its own bottom line at this tier. */
+  .break-enterprise {
+    display: none;
+  }
+
+  /* .break-data (Data/Systems) turns on here — pairs with .break-enterprise
+     above to force "Enterprise Data" / "Systems Designed" / "for High
+     Stakes." as three fixed lines once the "Specializing in " prefix is
+     gone. */
+  .break-data {
+    display: inline;
+  }
+}
+
+/* each headline word — entrance-animation target; grouped by rendered line
+   (useTextReveal's groupByPosition) and staggered in by that line, so it
+   works regardless of how words wrap at any breakpoint */
+.titleWord {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(24px);
+}
+
+/* subline block — entrance-animation hidden state; the rotating-phrase loop
+   inside it only starts once this tween completes (see useTextReveal's
+   onComplete beat in Hero.tsx) */
+.subline {
+  opacity: 0;
+  transform: translateY(24px);
 }
 
 /* Subline mixed-weight emphasis — Block has no inline-weight-mixing support yet,
@@ -78,6 +131,22 @@
   height: var(--text-body-2xl-lh);
 }
 
+/* Toggled at runtime (see Hero.tsx) when .sublineMedium and .sublineSlot
+   have wrapped onto separate lines — adds an explicit gap between them that
+   plain inline wrapping (line-height only) doesn't provide. Same-line
+   spacing is untouched; this only applies once stacked.
+   No --spacing-* token equals 12px (scale: 8 / 16) — trying 12px as a
+   Hero-only value while dialing this in; revisit against the scale. */
+.sublineWrapped {
+  margin-top: 12px;
+}
+
+/* Toggled alongside .sublineWrapped (see Hero.tsx) — adds "..." after
+   "Startups" only once it's on its own line, separate from the phrase. */
+.sublineMediumWrapped::after {
+  content: "...";
+}
+
 .sublineEmphasis {
   grid-row: 1;
   grid-column: 1;
@@ -98,4 +167,123 @@
   display: flex;
   align-items: center;
   gap: var(--spacing-xl);
+}
+
+/* ============================================================
+   Laptop and below (≤ 1280px)
+   Hero-only type tokens (label-2xl / body-2xl / title-xl) step down.
+   Scoped to .section so nothing outside Hero is affected.
+   ============================================================ */
+
+@media (max-width: 1280px) {
+  .section {
+    --text-title-xl-size:  80px;
+    --text-title-xl-lh:    93px;
+    --text-title-xl-ls:    -1.6px;
+  }
+}
+
+/* ============================================================
+   ≤ 908px
+   Title-xl steps down early — the wrap between 908 and 768 was landing
+   oddly at the 80px (1280-tier) size, so this tier drops it to the same
+   72px the 768 tier below uses, just starting sooner.
+   ============================================================ */
+
+@media (max-width: 908px) {
+  .section {
+    --text-title-xl-size:  72px;
+    --text-title-xl-lh:    84px;
+    --text-title-xl-ls:    -1.44px;
+  }
+
+  .headlinePrefix {
+    display: none;
+  }
+}
+
+/* ============================================================
+   Tablet and below (≤ 768px)
+   Hero-only type tokens step down further.
+   ============================================================ */
+
+@media (max-width: 768px) {
+  .section {
+    --text-label-2xl-size: 24px;
+    --text-label-2xl-lh:   24px;
+
+    --text-body-2xl-size:  24px;
+    --text-body-2xl-lh:    18px;
+    --text-body-2xl-ls:    -0.48px;
+  }
+
+  .icon {
+    width: var(--icon-md);
+    height: var(--icon-md);
+  }
+
+  .labelRow {
+    gap: var(--spacing-sm);
+  }
+
+  /* .content/.topGroup/.headlineGroup normally shrink-wrap (their flex-
+     container ancestors use align-items: flex-start/center, never stretch),
+     so the headline's wrap width isn't guaranteed to equal the full Hero
+     content width. Stretching this chain removes that ambiguity — scoped to
+     this breakpoint only, so desktop's centered shrink-wrapped block (and
+     its hard-coded <br> line breaks) are unaffected. */
+  .content,
+  .topGroup,
+  .headlineGroup,
+  .headline {
+    align-self: stretch;
+    width: 100%;
+  }
+}
+
+/* ============================================================
+   ~620px and below
+   Explicit 4-line layout: Enterprise / Data Systems / Designed for /
+   High Stakes. — re-forces the Enterprise break (hidden at the 768
+   tier above) and turns on new breaks after Systems and after for.
+   .break-optional (Designed/for) stays hidden — that pair stays merged.
+   ============================================================ */
+
+@media (max-width: 620px) {
+  .break-enterprise,
+  .break-systems,
+  .break-for {
+    display: inline;
+  }
+
+  /* Re-hidden here — the 768 tier above no longer hides this (it now stays
+     forced there so "for High Stakes." holds as its own bottom line), but
+     at this tier "Designed for" needs to merge instead. */
+  .break-optional {
+    display: none;
+  }
+
+  /* Re-hidden here — the 768 tier above turns this on to split "Enterprise
+     Data" from "Systems Designed," but at this tier "Data Systems" needs to
+     merge back onto one line (Enterprise / Data Systems / Designed for /
+     High Stakes.). */
+  .break-data {
+    display: none;
+  }
+}
+
+/* ============================================================
+   480px and below
+   ============================================================ */
+
+@media (max-width: 480px) {
+  .section {
+    --text-title-xl-size: 56px;
+    --text-title-xl-lh:   66px;
+    --text-title-xl-ls:   -1.12px;
+  }
+
+  /* label-2xl, body-2xl, and .icon are no longer overridden at this tier —
+     they now inherit the 768px tier's values (24/24/0, 24/18/-0.48,
+     icon-md) all the way down. */
 }

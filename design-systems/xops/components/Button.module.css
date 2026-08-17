@@ -17,7 +17,8 @@
 
 .button:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 var(--xops-state-focus-ring-width) var(--xops-state-focus-ring);
+  box-shadow: 0 0 0 var(--xops-state-focus-ring-width)
+    var(--xops-state-focus-ring);
 }
 
 .button:disabled {

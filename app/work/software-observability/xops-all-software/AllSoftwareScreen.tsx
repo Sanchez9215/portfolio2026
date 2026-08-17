@@ -256,8 +256,16 @@ const regionOptions: FilterTabOption[] = [
 // separate from the route default export so Next's PageProps type-gen stays clean.
 export function AllSoftwareScreen({
   onNavigate,
+  embedded = false,
 }: {
   onNavigate?: (screen: SoftwareSubKey) => void;
+  /** True when rendered inside SoftwareExperienceEmbed's scaled LiveEmbed canvas —
+   *  content sizes naturally (minHeight) so LiveEmbed's own scroll wrapper handles
+   *  scrolling, same as OverviewScreen already does. False (default, the standalone
+   *  route) keeps the real fixed-viewport shell with Table scrolling internally —
+   *  height:100vh there doesn't respect an ancestor's scale transform, which is what
+   *  caused the embed's height/radius jump when this screen mounted. */
+  embedded?: boolean;
 }) {
   const ds = useMemo(() => getDataset(), []);
   // Default view: ranked by Opportunity (dollars recoverable), descending — the
@@ -357,7 +365,7 @@ export function AllSoftwareScreen({
     <div
       style={{
         display: "flex",
-        height: "100vh",
+        ...(embedded ? { minHeight: "100vh" } : { height: "100vh" }),
         overflow: "hidden",
         backgroundColor: "var(--xops-grey-50)",
       }}
@@ -381,6 +389,7 @@ export function AllSoftwareScreen({
             minHeight: 0,
             gap: "var(--xops-spacing-24)",
             padding: "var(--xops-grid-margin)",
+            paddingBottom: "var(--xops-spacing-8)",
             backgroundColor: "var(--xops-surface-page)",
           }}
         >
@@ -414,46 +423,33 @@ export function AllSoftwareScreen({
           </div>
           <Grid style={{ flex: 1, minHeight: 0, gridAutoRows: "1fr" }}>
             <GridItem colSpan={12} style={{ display: "flex", flexDirection: "column", minHeight: 0 }}>
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  minHeight: 0,
-                  backgroundColor: "var(--xops-white)",
-                  border: "var(--xops-border-width-1) solid var(--xops-border-divider)",
-                  borderRadius: "var(--xops-radius-12)",
+              <Table
+                columns={softwareColumns}
+                data={pagedRows}
+                rowKey={(row) => row.sku}
+                sortKey={sortKey}
+                sortDirection={sortDirection}
+                onSortChange={handleSortChange}
+                selectedRowKey={selectedRowId}
+                onRowClick={(row) => {
+                  setSelectedRowId(row.sku);
+                  setProfileOpen(true);
+                  setPanelView("profile");
                 }}
-              >
-                <Table
-                  chrome={false}
-                  scrollFade={false}
-                  columns={softwareColumns}
-                  data={pagedRows}
-                  rowKey={(row) => row.sku}
-                  sortKey={sortKey}
-                  sortDirection={sortDirection}
-                  onSortChange={handleSortChange}
-                  selectedRowKey={selectedRowId}
-                  onRowClick={(row) => {
-                    setSelectedRowId(row.sku);
-                    setProfileOpen(true);
-                    setPanelView("profile");
-                  }}
-                  pagination={
-                    <Pagination
-                      page={page}
-                      pageSize={pageSize}
-                      pageSizeOptions={[10, 20, 50]}
-                      totalItems={summaries.length}
-                      onPageChange={setPage}
-                      onPageSizeChange={(size) => {
-                        setPageSize(size);
-                        setPage(1);
-                      }}
-                    />
-                  }
-                />
-              </div>
+                pagination={
+                  <Pagination
+                    page={page}
+                    pageSize={pageSize}
+                    pageSizeOptions={[10, 20, 50]}
+                    totalItems={summaries.length}
+                    onPageChange={setPage}
+                    onPageSizeChange={(size) => {
+                      setPageSize(size);
+                      setPage(1);
+                    }}
+                  />
+                }
+              />
             </GridItem>
           </Grid>
         </main>
@@ -464,6 +460,7 @@ export function AllSoftwareScreen({
           setProfileOpen(false);
           setPanelView("profile");
         }}
+        contentKey={panelView}
       >
         {selectedRow && panelView === "inactive-employees" && employeeBreakdownContext && (
           <EmployeeBreakdownView

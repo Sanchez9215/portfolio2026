@@ -10,6 +10,7 @@ import MetricCard from "@/components/MetricCard";
 import QuoteBlock from "@/components/QuoteBlock";
 import labelBlockStyles from "@/components/LabelBlock.module.css";
 import styles from "./TheProblemPinnedScene.module.css";
+import { scheduleScrollTriggerRefresh } from "./scrollTriggerRefresh";
 
 gsap.registerPlugin(ScrollTrigger, SplitText);
 
@@ -332,7 +333,7 @@ export default function TheProblemPinnedScene({
       // force a synchronous layout read so ScrollTrigger measures the
       // settled result.
       void sceneEl.offsetHeight;
-      ScrollTrigger.refresh();
+      scheduleScrollTriggerRefresh();
 
       gsap.to(split.lines, {
         opacity: 1,

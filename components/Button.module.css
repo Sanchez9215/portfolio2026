@@ -1,13 +1,18 @@
 /* ============================================================
    Button — global button component
-   Variants: primary, secondary, outline (deferred), link (deferred)
-   Figma node 228:7718 ("Button Set", Portfolio Cleaning file)
-   Structure mirrors design-systems/xops/components/Button.module.css
+   Variants: primary, secondary, text, outline (deferred), link (deferred)
+   Figma node 228:7718 ("Button Set") + 789:912 ("button set", 4-size scale)
+   — "Portfolio Cleaning" file.
 
    Layout:
      button / a.btn
-       span.iconBadge  ← optional
+       span.iconBadge  ← optional (outline/link only — primary/secondary/
+                          text always render via the two-face slide below)
        span.label      ← typography
+
+   Sizes: large(64) / medium(48) / m(40) / small(32), each redefining the
+   shared --button-height/-icon-size/-padding-x vars so every consumer
+   (badge width, label padding, etc.) stays in sync automatically.
 
    Tokens: --button-*, --state-* (styles/globals.css)
    ============================================================ */
@@ -15,22 +20,22 @@
 /* ── Base — layout, shared across all variants ────────────── */
 
 .btn {
-  display:         inline-flex;
-  align-items:     center;
+  display: inline-flex;
+  align-items: center;
   justify-content: center;
-  position:        relative;
-  overflow:        hidden;
-  gap:              var(--button-gap);
-  height:          var(--button-height);
-  padding-inline:  var(--button-padding-x);
-  border-radius:   var(--button-radius);
-  border:          var(--button-border-width) solid transparent;
-  background:      transparent;
-  cursor:          pointer;
+  position: relative;
+  overflow: hidden;
+  gap: var(--button-gap);
+  height: var(--button-height);
+  padding-inline: var(--button-padding-x);
+  border-radius: var(--button-radius);
+  border: var(--button-border-width) solid transparent;
+  background: transparent;
+  cursor: pointer;
   text-decoration: none;
   transition:
     background-color 150ms ease,
-    border-color      150ms ease;
+    border-color 150ms ease;
 }
 
 /* Icon variants inset the start padding so the icon badge sits flush */
@@ -41,82 +46,92 @@
 /* size="large" — redefines the shared vars themselves so every consumer
    (.btn's height, .faceBadge's width, icon badges) stays in sync automatically. */
 .large {
-  --button-height:    var(--button-height-large);
+  --button-height: var(--button-height-large);
   --button-icon-size: var(--icon-xl);
 }
 
 .large .label {
-  font-size:      var(--text-label-2xl-size);
-  line-height:    var(--text-label-2xl-lh);
+  font-size: var(--text-label-2xl-size);
+  line-height: var(--text-label-2xl-lh);
   letter-spacing: var(--text-label-2xl-ls);
 }
 
-/* size="l" — compact size, e.g. Nav's MENU trigger */
-.l {
-  --button-height:     var(--button-height-l);
-  --button-padding-x:  var(--spacing-md);
+/* size="medium" — default height, but its own label padding-x per the
+   button-set Figma reference (789:912), distinct from large's. */
+.medium {
+  --button-padding-x: var(--button-padding-x-medium);
 }
 
-.l .label {
-  font-size:      var(--text-label-lg-size);
-  line-height:    var(--text-label-lg-lh);
+/* size="m" — 40px, between medium and small, from the button-set
+   Figma reference (789:912). */
+.m {
+  --button-height: var(--button-height-m);
+  --button-icon-size: var(--button-icon-size-m);
+  --button-padding-x: var(--spacing-md);
+}
+
+.m .label {
+  font-size: var(--text-label-lg-size);
+  line-height: var(--text-label-lg-lh);
   letter-spacing: var(--text-label-lg-ls);
+}
+
+/* size="small" — compact size, e.g. Nav's MENU trigger */
+.small {
+  --button-height: var(--button-height-small);
+  --button-padding-x: var(--button-padding-x-small);
+  --button-icon-size: var(--button-icon-size-small);
+  --button-icon-padding: var(--button-icon-padding-small);
+}
+
+.small .label {
+  font-size: var(--text-label-sm-size);
+  line-height: var(--text-label-sm-lh);
+  letter-spacing: var(--text-label-sm-ls);
 }
 
 /* ── Label ────────────────────────────────────────────────── */
 
 /* label-xl: Clash Display semibold, uppercase (Figma: typography/label-xl) */
 .label {
-  font-family:    var(--font-family-display);
-  font-weight:    var(--font-weight-semibold);
-  font-size:      var(--text-label-xl-size);
-  line-height:    var(--text-label-xl-lh);
+  font-family: var(--font-family-display);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--text-label-xl-size);
+  line-height: var(--text-label-xl-lh);
   letter-spacing: var(--text-label-xl-ls);
-  word-spacing:   var(--word-spacing-display);
+  word-spacing: var(--word-spacing-display);
   text-transform: uppercase;
-  white-space:    nowrap;
+  white-space: nowrap;
 }
 
 /* ── Icon badge ───────────────────────────────────────────── */
 
 .iconBadge {
-  display:         inline-flex;
-  align-items:     center;
+  display: inline-flex;
+  align-items: center;
   justify-content: center;
-  padding:         var(--button-icon-padding);
-  border-radius:   var(--button-icon-radius);
-  flex-shrink:     0;
+  padding: var(--button-icon-padding);
+  border-radius: var(--button-icon-radius);
+  flex-shrink: 0;
 }
 
 .iconBadge > :global(svg),
 .iconBadge > :global(img) {
-  width:  var(--button-icon-size);
+  width: var(--button-icon-size);
   height: var(--button-icon-size);
 }
 
 /* ── Primary ──────────────────────────────────────────────── */
+/* Every primary button always uses the two-face slide hover (see below) —
+   .primary's own background/color are never seen directly, but they sit
+   directly beneath the two sliding face layers and must match the faces'
+   own blue — otherwise a sub-pixel gap in the GSAP slide transform exposes
+   a hairline of the page background through the seam. */
 
 .primary {
   background-color: var(--button-bg-primary);
-  border:           none;
-  color:            var(--button-text-on-primary);
-}
-
-/* Only reached by primary+iconOnly (no label) — slide-hover primary+icon
-   buttons use .defaultFace/.hoverFace instead, see below. */
-.primary .iconBadge {
-  background-color: var(--button-icon-bg-primary);
-  color:            var(--button-content-color-primary);
-}
-
-.primary:hover {
-  background-color: var(--state-hover-on-brand);
-  border-color:     var(--state-hover-on-brand);
-}
-
-.primary:active {
-  background-color: var(--state-active-on-brand);
-  border-color:     var(--state-active-on-brand);
+  border: none;
+  color: var(--button-text-on-primary);
 }
 
 /* No focus treatment designed yet — suppress the default browser ring
@@ -125,19 +140,19 @@
   outline: none;
 }
 
-/* Primary + icon + label buttons (e.g. Hero's WORK): the two-face slide
-   owns the hover visual entirely — cancel the plain CSS hover/border and
-   the base gap/padding (faces manage their own internal layout). */
+/* The two-face slide owns the hover visual entirely — cancel the plain
+   CSS hover/border and the base gap/padding (faces manage their own
+   internal layout). */
 .hasSlideHover.primary {
-  gap:            0;
+  gap: 0;
   padding-inline: 0;
-  border-width:   0;
-  border-color:   transparent;
+  border-width: 0;
+  border-color: transparent;
 }
 
 .hasSlideHover.primary:hover {
   background-color: var(--button-bg-primary);
-  border-color:     transparent;
+  border-color: transparent;
 }
 
 /* ── Two-face slide (primary + icon + label only) ─────────────
@@ -153,46 +168,52 @@
 
 .defaultFace,
 .hoverFace {
-  display:      flex;
-  align-items:  stretch;
-  width:        100%;
-  height:       100%;
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  height: 100%;
 }
 
 .hoverFace {
-  position:         absolute;
-  inset:            0;
-  justify-content:  center;
-  gap:              0;
+  position: absolute;
+  inset: -1px;
+  justify-content: center;
+  gap: 0;
   background-color: var(--button-bg-primary);
 }
 
 .faceBadge {
-  display:         inline-flex;
-  align-items:     center;
+  display: inline-flex;
+  align-items: center;
   justify-content: center;
-  flex-shrink:     0;
-  width:           var(--button-height);
-  color:           var(--button-content-color-primary);
+  flex-shrink: 0;
+  width: var(--button-height);
+  color: var(--button-content-color-primary);
 }
 
 .defaultFace .faceBadge {
   background-color: var(--button-icon-bg-primary);
+  /* Bleeds the badge's own blue 1px into the field's dark background —
+     purely visual, doesn't affect layout/width. Without it, the transform
+     slide on .defaultFace can rasterize a sub-pixel seam right at this
+     badge/field color boundary (bright blue against near-black), visible
+     as a hairline during hover. */
+  box-shadow: 1px 0 0 0 var(--button-icon-bg-primary);
 }
 
 .faceBadge > :global(svg),
 .faceBadge > :global(img) {
-  width:  var(--button-icon-size);
+  width: var(--button-icon-size);
   height: var(--button-icon-size);
 }
 
 .faceField {
-  display:         flex;
-  align-items:     center;
-  justify-content: center;
-  flex:            1;
-  padding-inline:  var(--button-padding-x);
-  color:           var(--button-content-color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: left;
+  flex: 1;
+  padding-inline: var(--button-padding-x);
+  color: var(--button-content-color-primary);
 }
 
 .defaultFace .faceField {
@@ -202,49 +223,62 @@
 /* Hover face: badge + field pack as one content-sized centered group,
    no gap between icon and label (default face keeps the fixed-track look). */
 .hoverFace .faceField {
-  flex:           none;
+  flex: none;
   padding-inline: 0;
-  color:          var(--button-content-color-primary-hover);
+  color: var(--button-content-color-primary-hover);
 }
 
 .hoverFace .faceBadge {
   color: var(--button-content-color-primary-hover);
 }
 
+/* ── Primary, no icon: flat centered slide (e.g. About's "Contact Me") ──
+   Same push mechanic as above, but no badge/field split since there's no
+   icon to swap sides with — just a centered label carried across two
+   differently-colored faces. */
+
+.primaryFlatDefaultFace,
+.primaryFlatHoverFace {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding-inline: var(--button-padding-x);
+  background-color: var(--button-bg-primary);
+  color: var(--button-content-color-primary);
+}
+
+.primaryFlatHoverFace {
+  position: absolute;
+  inset: 0;
+  background-color: var(--button-bg-primary-flat-hover);
+  color: var(--button-content-color-primary-flat-hover);
+}
+
 /* ── Secondary ────────────────────────────────────────────── */
+/* Every secondary button always uses the two-face slide hover (see below) —
+   .secondary's own background sits directly beneath the two sliding face
+   layers (same hairline-gap reasoning as .primary above). */
 
 .secondary {
   background-color: var(--button-bg-secondary);
-  border-color:     var(--button-border-secondary);
-  color:            var(--button-text-on-secondary);
-}
-
-.secondary .iconBadge {
-  background-color: var(--button-icon-bg-secondary);
-}
-
-.secondary:hover {
-  background-color: var(--state-hover-on-surface);
-  border-color:     var(--state-hover-on-surface);
-}
-
-.secondary:active {
-  background-color: var(--state-active-on-surface);
-  border-color:     var(--state-active-on-surface);
+  border-color: var(--button-border-secondary);
+  color: var(--button-text-on-secondary);
 }
 
 /* Secondary slide-hover owns the hover visual entirely — cancel the plain
    CSS hover/border and the base gap/padding (faces manage their own). */
 .hasSlideHover.secondary {
-  gap:            0;
+  gap: 0;
   padding-inline: 0;
-  border-width:   0;
-  border-color:   transparent;
+  border-width: 0;
+  border-color: transparent;
 }
 
 .hasSlideHover.secondary:hover {
   background-color: var(--button-bg-secondary);
-  border-color:     transparent;
+  border-color: transparent;
 }
 
 /* ── Two-face slide (secondary) ──────────────────────────────
@@ -256,15 +290,15 @@
 
 .secondaryDefaultFace,
 .secondaryHoverFace {
-  display:          flex;
-  align-items:      center;
-  justify-content:  center;
-  gap:              var(--button-gap);
-  height:           100%;
-  width:            100%;
-  padding-inline:   var(--button-padding-x);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--button-gap);
+  height: 100%;
+  width: 100%;
+  padding-inline: var(--button-padding-x);
   background-color: var(--button-bg-secondary);
-  color:            var(--button-content-color-secondary);
+  color: var(--button-content-color-secondary);
 }
 
 .secondaryDefaultFace .iconBadge {
@@ -272,14 +306,16 @@
 }
 
 .secondaryHoverFace {
-  position:         absolute;
-  inset:            0;
+  position: absolute;
+  inset: 0;
+  gap: 0;
   background-color: var(--state-hover-on-surface);
-  color:            var(--button-content-color-secondary-hover);
+  color: var(--button-content-color-secondary-hover);
 }
 
 .secondaryHoverFace .iconBadge {
-  background-color: var(--button-icon-bg-secondary);
+  width: var(--button-height);
+  background-color: transparent;
 }
 
 /* ── Secondary + icon: badge/field split default face ────────
@@ -292,28 +328,145 @@
    which share the same specificity and would otherwise take precedence. */
 .defaultFace .faceBadgeSecondary {
   background-color: var(--button-icon-bg-secondary-badge);
-  color:            var(--button-content-color-secondary-badge);
+  color: var(--button-content-color-secondary-badge);
+  /* Same sub-pixel seam fix as .defaultFace .faceBadge above — bleeds the
+     badge's own color 1px into the field's dark background. */
+  box-shadow: 1px 0 0 0 var(--button-icon-bg-secondary-badge);
 }
 
 .defaultFace .faceFieldSecondary {
   background-color: var(--button-field-bg-secondary);
-  color:            var(--button-content-color-secondary-field);
+  color: var(--button-content-color-secondary-field);
 }
 
-/* ── Text — ghost/bare-text variant (e.g. Nav's MENU trigger) ── */
+/* ── Text — ghost/bare-text variant (e.g. Nav's MENU trigger) ──
+   Always uses the two-face slide hover, same as primary/secondary — its
+   own background sits directly beneath the two sliding face layers (same
+   hairline-gap reasoning as .primary above). */
 
 .text {
+  background-color: var(--surface-base);
+  border-color: transparent;
+}
+
+.hasSlideHover.text {
+  gap: 0;
+  padding-inline: 0;
+  border-width: 0;
+  border-color: transparent;
+}
+
+.hasSlideHover.text:hover {
+  background-color: var(--surface-base);
+  border-color: transparent;
+}
+
+.textDefaultFace,
+.textHoverFace {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding-inline: var(--button-padding-x);
+  background-color: var(--surface-base);
+  color: var(--text-tertiary);
+}
+
+.textHoverFace {
+  position: absolute;
+  inset: 0;
+  background-color: var(--button-bg-text-hover);
+  color: var(--text-secondary);
+}
+
+/* ── Menu — Nav's menu items ──────────────────────────────────
+   Always uses the two-face slide hover, same push mechanic as every other
+   slide variant. Unlike primary/secondary, default and hover faces have
+   different shapes: default is flat/label-only (like primaryFlatDefaultFace);
+   hover is a centered label+icon pair with a small gap (reuses .iconBadge,
+   not primary's fixed-width .faceBadge/.faceField track — this hover face
+   has no separated badge/field slots, just two items centered together).
+   Fills its wrapper's full height/width (flex-grown by Nav.module.css's
+   .menuItemWrapper) instead of a fixed --button-height, and drops the
+   border-radius every other variant gets — flat, full-bleed list item. */
+
+.menu {
   background-color: transparent;
-  border-color:     transparent;
-  color:            var(--text-tertiary);
+  border: none;
+  color: var(--button-content-color-menu);
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
 }
 
-.text:hover {
-  background-color: var(--state-hover-on-surface);
+.menu:focus {
+  outline: none;
 }
 
-.text:active {
-  background-color: var(--state-active-on-surface);
+.hasSlideHover.menu {
+  gap: 0;
+  padding-inline: 0;
+  border-width: 0;
+  border-color: transparent;
+}
+
+.hasSlideHover.menu:hover {
+  background-color: transparent;
+  border-color: transparent;
+}
+
+.menuDefaultFace,
+.menuHoverFace {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.menuDefaultFace {
+  background-color: transparent;
+  color: var(--button-content-color-menu);
+}
+
+.menuHoverFace {
+  position: absolute;
+  inset: 0;
+  gap: var(--spacing-sm);
+  background-color: var(--button-bg-menu-hover);
+  color: var(--button-content-color-menu-hover);
+}
+
+/* ── Ghost — icon-only variant (e.g. live-embed banner's expand/collapse) ──
+   No two-face slide hover (a plain background-color transition is enough
+   for a single small icon) and no .iconBadge wrapper — the icon itself is
+   the sized element, padded directly by the button. Figma node 800:992
+   ("Portfolio Cleaning" file). */
+
+.ghost {
+  height:  auto;
+  width:   auto;
+  padding: var(--spacing-sm);
+  border:  none;
+  background-color: var(--surface-banner);
+  color:   var(--text-dark-display);
+}
+
+.ghost:hover {
+  background-color: var(--button-bg-text-hover);
+  color: var(--button-content-color-ghost-hover);
+}
+
+.ghostIcon {
+  display: flex;
+  width:   12.5px;
+  height:  12.5px;
+}
+
+.ghostIcon > :global(svg) {
+  width:  100%;
+  height: 100%;
 }
 
 /* ── Outline — deferred, no Figma-sourced colors yet (TODO) ─── */

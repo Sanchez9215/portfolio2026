@@ -141,6 +141,7 @@ export default function OverviewPrototypeHotspots() {
             nativeWidth={1440}
             viewportHeight={viewportHeight ?? undefined}
             panTargetIds={panTargetIds}
+            disableCanvasTransition
           >
             <OverviewLegacy forceAlertsOpen={forceAlertsOpen} alertsBoundsRef={embedWrapperRef} showLogos={false} />
           </LiveEmbed>

@@ -5,6 +5,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Label from "@/components/Label";
 import styles from "./FrameworkScene.module.css";
+import { scheduleScrollTriggerRefresh } from "./scrollTriggerRefresh";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -428,7 +429,7 @@ export default function FrameworkScene({ className }: { className?: string }) {
       // force a synchronous layout read so ScrollTrigger measures the
       // settled result (same pattern as TheProblemPinnedScene).
       void sceneEl.offsetHeight;
-      ScrollTrigger.refresh();
+      scheduleScrollTriggerRefresh();
 
       // ONE pinned timeline for everything. Timing is off the actual
       // <Section> (padding-aware) but the pinned element is .scene itself —

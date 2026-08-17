@@ -733,8 +733,13 @@ export function OverviewScreen({
   forceInactiveTooltip,
   lockTableScroll = false,
   showSecondaryCards = true,
+  embedded = false,
 }: {
   onNavigate?: (screen: SoftwareSubKey) => void;
+  /** True when rendered inside SoftwareExperienceEmbed. Accepted for signature parity
+   *  with AllSoftwareScreen's identical prop — Overview already sizes itself with
+   *  minHeight in both contexts, so this doesn't change its behavior today. */
+  embedded?: boolean;
   /** Suppress publisher logos in software cells (case study Prototype 02 embed). */
   showLogos?: boolean;
   /** Render utilization as plain-text % instead of a status Tag (Prototype 02 embed). */
@@ -935,6 +940,7 @@ export function OverviewScreen({
             flexDirection: "column",
             gap: "var(--xops-spacing-24)",
             padding: "var(--xops-grid-margin)",
+            paddingBottom: "var(--xops-spacing-8)",
             backgroundColor: "var(--xops-surface-page)",
           }}
         >

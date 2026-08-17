@@ -6,6 +6,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { SplitText } from "gsap/SplitText";
 import Block from "@/components/Block";
 import styles from "@/app/work/software-observability/software-observability.module.css";
+import { scheduleScrollTriggerRefresh } from "./scrollTriggerRefresh";
 
 gsap.registerPlugin(ScrollTrigger, SplitText);
 
@@ -48,7 +49,7 @@ export default function DataIntroText() {
       gsap.set(blockSplit.words, { color: startColor });
 
       void headingEl.offsetHeight;
-      ScrollTrigger.refresh();
+      scheduleScrollTriggerRefresh();
 
       const tl = gsap.timeline({
         scrollTrigger: {

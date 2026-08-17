@@ -164,8 +164,8 @@ export default function SectionIntroduction() {
             item.badge ? (
               <div key={item.heading} className={styles.impactItem}>
                 <div className={styles.impactHeading}>
-                  <span className={styles.badge}>{item.badge}</span>
                   <Title size="sm">{item.heading}</Title>
+                  <span className={styles.badge}>{item.badge}</span>
                 </div>
                 <Block size="sm" color="tertiary">
                   {item.body}
@@ -185,7 +185,7 @@ export default function SectionIntroduction() {
 
       <div className={styles.heroImage}>
         <div ref={heroEmbedRef} className={styles.heroEmbed}>
-          <SoftwareExperienceEmbed />
+          <SoftwareExperienceEmbed enableExpandedView />
         </div>
       </div>
     </section>

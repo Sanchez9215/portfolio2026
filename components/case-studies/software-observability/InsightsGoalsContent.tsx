@@ -10,6 +10,7 @@ import Label from "@/components/Label";
 import TitleBlock from "@/components/TitleBlock";
 import Block from "@/components/Block";
 import styles from "@/app/work/software-observability/software-observability.module.css";
+import { scheduleScrollTriggerRefresh } from "./scrollTriggerRefresh";
 
 gsap.registerPlugin(ScrollTrigger, MorphSVGPlugin);
 
@@ -125,7 +126,7 @@ export default function InsightsGoalsContent() {
       gsap.set(titleEl, { opacity: 0, y: 16 });
       gsap.set(expertEls, { opacity: 0, y: 16 });
 
-      ScrollTrigger.refresh();
+      scheduleScrollTriggerRefresh();
 
       const tl = gsap.timeline({
         scrollTrigger: {
@@ -306,7 +307,7 @@ export default function InsightsGoalsContent() {
         });
       });
 
-      ScrollTrigger.refresh();
+      scheduleScrollTriggerRefresh();
 
       // Phase 1 — funnel morphs from flat to its full shape over the first
       // 25% of the section's entry.

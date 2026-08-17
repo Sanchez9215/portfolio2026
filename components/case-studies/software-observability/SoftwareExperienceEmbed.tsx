@@ -1,39 +1,25 @@
 "use client";
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { CustomEase } from "gsap/CustomEase";
-import { CustomWiggle } from "gsap/CustomWiggle";
 import LiveEmbed from "@/components/LiveEmbed";
 import GhostCursor from "./GhostCursor";
-import Button from "@/components/Button";
+import EmbedBanner from "./EmbedBanner";
 import { OverviewScreen } from "@/app/work/software-observability/xops-overview/OverviewScreen";
 import { AllSoftwareScreen } from "@/app/work/software-observability/xops-all-software/AllSoftwareScreen";
 import type { SoftwareSubKey } from "@/design-systems/xops/components/Sidebar";
 import styles from "./SoftwareExperienceEmbed.module.css";
 
 if (typeof window !== "undefined") {
-  gsap.registerPlugin(ScrollTrigger, CustomEase, CustomWiggle);
-  // Attention-getting shake for the cursor once it parks bottom-left — a small
-  // number of oscillations, easing out so it settles rather than snapping.
-  CustomWiggle.create("cursorWiggle", { wiggles: 6, type: "easeOut" });
+  gsap.registerPlugin(ScrollTrigger, CustomEase);
 }
 
 const NATIVE_WIDTH = 1440;
 const TARGET_SKU_LABEL = "Adobe Acrobat Pro";
 const CURSOR_SIZE = 64;
-const CURSOR_REST_INSET = 32;
-
-// Layer Inspect reveal copy — exact text from Figma node 2:2 (Portfolio
-// Cleaning file), each line its own bubble in the stack.
-const REVEAL_MESSAGES = [
-  "This is a real end-to-end build.",
-  "With a real design system.",
-  "Real components, logic,",
-  "& simulated data to mirror an actual deployment.",
-  "Click anywhere to explore or...",
-];
 
 // Live-tweak surface for the ghost-cursor scripted sequence — edit and save
 // to see changes via Fast Refresh. "Ms" suffix = milliseconds (waitUntil/
@@ -43,6 +29,7 @@ const TIMING = {
   // roughly land after the hero embed settles, not derived from it.
   cursorFadeInMarkMs: 2500,
   cursorFadeInDuration: 0.3,
+  cursorFadeOutDuration: 0.3,
   sequenceStartMarkMs: 3500,
 
   // Phase 1 — Overview: scroll to Lifecycle table, scroll back, click "All Software".
@@ -65,15 +52,17 @@ const TIMING = {
   holdAtDistributionMs: 500,
   scrollPanelUpDuration: 1,
 
-  // Phase 4 — Layer Inspect reveal: cursor parks bottom-left, wiggles, embed
-  // dims, bubbles + CTA fade up in sequence. First-pass values, not tuned.
-  parkCursorDuration: 0.6,
-  wiggleOutDuration: 0.5,
-  wiggleSettleDuration: 0.2,
-  embedDimDuration: 0.4,
-  bubbleFadeDuration: 0.4,
-  bubbleStagger: 0.35,
-  bubblePushDuration: 0.3,
+  // Expanded-view banner + take-over (enableExpandedView only) — first-pass
+  // values, not yet tuned. Sequence: bannerStartDelayMs (from entranceReady)
+  // → slide up over bannerEnterDuration → hold bannerHoldMs → slide out over
+  // bannerExitDuration.
+  bannerStartDelayMs: 0,
+  bannerEnterDuration: 0.3,
+  bannerHoldMs: 2550,
+  bannerExitDuration: 0.3,
+  takeOverGlideDuration: 0.6,
+  expandDuration: 0.6,
+  collapseDuration: 0.6,
 };
 
 function wait(ms: number) {
@@ -259,136 +248,494 @@ function waitForImages(wrapper: HTMLElement): Promise<void> {
   });
 }
 
-export default function SoftwareExperienceEmbed() {
+interface SoftwareExperienceEmbedProps {
+  /** Gates the ghost-cursor walkthrough's start (t0 for its own internal
+   *  timing marks, e.g. TIMING.cursorFadeInMarkMs) behind an external
+   *  entrance animation finishing first — e.g. WorkCaseStudyRow's own
+   *  embedWrap fade-in on Home. Defaults to true (start immediately on
+   *  mount) so SectionIntroduction's usage — tuned to its own entrance,
+   *  see the Phase 1 effect's comments — is unaffected. */
+  entranceReady?: boolean;
+  /** Overrides TIMING.cursorFadeInMarkMs (delay, from entranceReady flipping
+   *  true, before the cursor starts fading in) for this usage only — e.g.
+   *  WorkCaseStudyRow tunes its own value independent of SectionIntroduction.
+   *  Defaults to TIMING.cursorFadeInMarkMs. */
+  cursorFadeInMarkMs?: number;
+  /** Overrides TIMING.cursorFadeInDuration (how long the fade itself takes)
+   *  for this usage only. Defaults to TIMING.cursorFadeInDuration. */
+  cursorFadeInDuration?: number;
+  /** Overrides TIMING.sequenceStartMarkMs (delay, from entranceReady flipping
+   *  true, before the scripted walkthrough itself starts moving/clicking —
+   *  separate from the cursor's own fade-in mark) for this usage only.
+   *  Defaults to TIMING.sequenceStartMarkMs. */
+  sequenceStartMarkMs?: number;
+  /** Turns on the bottom-left EmbedBanner + click-anywhere-to-take-over +
+   *  expand-to-full-screen behavior. Home's WorkCaseStudyRow only, for now —
+   *  defaults false so SectionIntroduction's case-study-page usage is
+   *  completely unaffected. */
+  enableExpandedView?: boolean;
+}
+
+export default function SoftwareExperienceEmbed({
+  entranceReady = true,
+  cursorFadeInMarkMs = TIMING.cursorFadeInMarkMs,
+  cursorFadeInDuration = TIMING.cursorFadeInDuration,
+  sequenceStartMarkMs = TIMING.sequenceStartMarkMs,
+  enableExpandedView = false,
+}: SoftwareExperienceEmbedProps = {}) {
   const [screen, setScreen] = useState<SoftwareSubKey>("overview");
   const [locked, setLocked] = useState(true);
+  const [expanded, setExpanded] = useState(false);
+  // Drives LiveEmbed's disableScaling (true responsive-layout mode) — set
+  // true the instant expand() starts (same moment as `expanded`), but false
+  // the instant collapse() *starts* rather than in its onComplete like
+  // `expanded`/`expandedRef` are. Deliberately decoupled from `expanded`:
+  // that state also re-arms the position-sync loop (see the effect below,
+  // gated on `expanded`), which must NOT re-arm until the collapse tween has
+  // actually finished (arming early fights the tween — see that effect's own
+  // comment). If this flipped back to scaled-canvas mode only at collapse's
+  // end (i.e. shared `expanded`), the whole shrink animation would play in
+  // real-responsive-layout mode and snap to the scaled-canvas layout in one
+  // frame right as it settled — a visible glitch. Flipping it at collapse's
+  // start instead means the shrink plays out entirely in scaled-canvas mode
+  // (which LiveEmbed already re-scales live every frame via ResizeObserver,
+  // same mechanism `disableCanvasTransition` exists to keep glitch-free for),
+  // so it's one continuous scale-down with no mode swap at the end.
+  const [trueSizeMode, setTrueSizeMode] = useState(false);
+  // True only while expand()/collapse()'s GSAP tween is actually running —
+  // see LiveEmbed's disableCanvasTransition prop.
+  const [canvasTransitionDisabled, setCanvasTransitionDisabled] =
+    useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const cursorRef = useRef<HTMLDivElement>(null);
+  const bannerRef = useRef<HTMLDivElement>(null);
   const cursorPos = useRef({ x: 0, y: 0 });
   const runPhaseTwo = useRef(false);
-  const stackRef = useRef<HTMLDivElement>(null);
-  const prevRectsRef = useRef<[HTMLElement, DOMRect][] | null>(null);
-  const [visibleBubbles, setVisibleBubbles] = useState(0);
-  const [showCta, setShowCta] = useState(false);
-  const walkthroughDoneRef = useRef(false);
-  const scrollReachedRef = useRef(false);
-  const phase4StartedRef = useRef(false);
-  const canUnlockRef = useRef(false);
+  const containerScaleRef = useRef(1);
+  // Shared across both walkthrough-phase effects so an external interrupt
+  // (takeOver, below) can cancel whichever phase is currently running —
+  // each phase's async run() checks this on every await, same as its own
+  // local `cancelled` flag.
+  const takenOverRef = useRef(false);
+  const activeTweensRef = useRef<gsap.core.Tween[]>([]);
+  const expandedRef = useRef(false);
+  const bannerTimelineRef = useRef<gsap.core.Timeline | null>(null);
+  const expandTweenRef = useRef<gsap.core.Tween | null>(null);
+  // In-flow stand-in for .wrapper's normal grid position (enableExpandedView
+  // only) — .wrapper itself gets portaled to document.body so it can escape
+  // .embedWrap's overflow:hidden, which clips a position:fixed descendant's
+  // paint regardless of the transform/containing-block issue (a separate,
+  // additional constraint) — same reason AlertsPanel/SidePanel/Tooltip all
+  // portal to document.body elsewhere in this codebase.
+  const placeholderRef = useRef<HTMLDivElement>(null);
+  const syncRafRef = useRef<number | null>(null);
+  // Starts false on both server AND client's first render (matches
+  // Tooltip.tsx's proven-safe portal convention elsewhere in this codebase)
+  // — flips true in an effect below, one render later. That means every
+  // other effect that reads wrapperRef/bannerRef/cursorRef.current directly
+  // and only runs once (empty deps, or [enableExpandedView] which never
+  // changes) must ALSO depend on canPortal and re-check it, or it'll see
+  // null on that first run and never get a second chance — a ref becoming
+  // non-null later doesn't by itself retrigger an effect. Look for
+  // `canPortal` in each such effect's guard/deps below.
+  const [canPortal, setCanPortal] = useState(false);
+  useEffect(() => {
+    if (!enableExpandedView) return;
+    console.log("[embed-expand] canPortal flipping true");
+    setCanPortal(true);
+  }, [enableExpandedView]);
 
-  // Fires Phase 4 (cursor park + wiggle + bubble/CTA reveal) once both gates
-  // are true — the scripted walkthrough finishing and the visitor having
-  // scrolled the embed's top edge under the nav — whichever lands second.
-  function tryStartPhase4() {
-    if (phase4StartedRef.current) return;
-    if (!walkthroughDoneRef.current || !scrollReachedRef.current) return;
-    phase4StartedRef.current = true;
-    runPhase4();
-  }
+  // Hides the cursor immediately on mount, independent of entranceReady —
+  // the Phase 1 effect below waits on that gate before running at all, so
+  // without this the cursor sat visible at its raw CSS position (top:0;
+  // left:0, see GhostCursor.module.css) for the whole gated wait, only
+  // hidden once Phase 1 finally ran. useLayoutEffect (not useEffect) so this
+  // resolves before first paint — no flash.
+  useLayoutEffect(() => {
+    if (enableExpandedView && !canPortal) return; // content (and cursor) not portaled yet
+    const cursor = cursorRef.current;
+    if (!cursor) return;
+    gsap.set(cursor, { opacity: 0 });
+  }, [enableExpandedView, canPortal]);
 
-  // Captures each already-mounted bubble's current on-screen top position
-  // right before adding a new one — the paired useLayoutEffect below diffs
-  // old vs. new top and glides purely on Y (no Flip: matching size/scale as
-  // well as position read as the bubbles "shuffling" rather than a clean
-  // push-up, since each bubble's own box never actually changes size).
-  function captureStackRects() {
-    const stack = stackRef.current;
-    if (!stack) return;
-    prevRectsRef.current = Array.from(stack.children).map((el) => [
-      el as HTMLElement,
-      (el as HTMLElement).getBoundingClientRect(),
-    ]);
-  }
+  // Hides the banner immediately on mount (enableExpandedView only) — same
+  // "parent owns position via forwarded ref, hide before first paint"
+  // convention as the cursor above.
+  useLayoutEffect(() => {
+    if (!enableExpandedView || !canPortal) return;
+    const banner = bannerRef.current;
+    if (!banner) return;
+    gsap.set(banner, { yPercent: 100 });
+  }, [enableExpandedView, canPortal]);
 
-  function runPhase4() {
+  // Hides the portaled .wrapper itself before first paint (enableExpandedView
+  // only) — once portaled to document.body it's a completely separate DOM
+  // node from .embedWrap, so it no longer inherits .embedWrap's own opacity
+  // fade-in (opacity doesn't cascade through a portal); without this it
+  // rendered instantly at full opacity the moment it mounted, ahead of
+  // WorkCaseStudyRow's entrance animation. The sync loop below takes over
+  // once running, mirroring .embedWrap's live opacity every frame.
+  useLayoutEffect(() => {
+    if (!enableExpandedView || !canPortal) return;
+    const wrapper = wrapperRef.current;
+    if (!wrapper) return;
+    gsap.set(wrapper, { opacity: 0 });
+  }, [enableExpandedView, canPortal]);
+
+  // Keeps the portaled .wrapper's fixed position glued to the in-flow
+  // placeholder's real rect every frame — this is what makes the expand
+  // feature work at all despite .embedWrap's overflow:hidden (see
+  // placeholderRef's comment above). Paused while expanded (collapse()'s
+  // tween re-arms it in its onComplete, once the box is genuinely back at
+  // rest — arming it any earlier would fight the collapse tween, since this
+  // loop's gsap.set would keep snapping the box back to the placeholder's
+  // rect every frame instead of letting it ease there smoothly).
+  useEffect(() => {
+    if (!enableExpandedView || !canPortal || expanded) return;
+    const wrapper = wrapperRef.current;
+    const placeholder = placeholderRef.current;
+    if (!wrapper || !placeholder) return;
+    console.log("[embed-expand] sync loop starting", {
+      placeholderRect: placeholder.getBoundingClientRect(),
+      wrapperParent: wrapper.parentElement,
+    });
+
+    function sync() {
+      const rect = placeholder!.getBoundingClientRect();
+      // Mirrors .embedWrap's (placeholder's direct parent) live computed
+      // opacity onto the portaled wrapper every frame — the only thing
+      // position-tracking above doesn't already cover, since opacity
+      // doesn't cascade through a portal the way it would to a normal
+      // descendant. Falls back to "1" (no ancestor, or opacity not set).
+      const ancestorOpacity = placeholder!.parentElement
+        ? getComputedStyle(placeholder!.parentElement).opacity
+        : "1";
+      gsap.set(wrapper, {
+        position: "fixed",
+        left: 0,
+        top: 0,
+        x: rect.left,
+        y: rect.top,
+        width: rect.width,
+        height: rect.height,
+        opacity: ancestorOpacity,
+        // Explicit low z-index even in the normal (non-expanded) synced
+        // state — portaled to document.body and appended last, so with
+        // z-index left at "auto" it could paint above content it shouldn't
+        // near other stacked/fixed elements. Well below Nav's --z-nav (100).
+        zIndex: 1,
+      });
+      syncRafRef.current = requestAnimationFrame(sync);
+    }
+    syncRafRef.current = requestAnimationFrame(sync);
+
+    return () => {
+      if (syncRafRef.current) cancelAnimationFrame(syncRafRef.current);
+    };
+  }, [enableExpandedView, canPortal, expanded]);
+
+  // Keeps the ghost cursor's rendered size in step with the embed's own
+  // scale-down. GhostCursor is a sibling of LiveEmbed (not inside its scaled
+  // .canvas — see GhostCursor.tsx), so its size never shrinks with the
+  // prototype on its own; CURSOR_SIZE is defined at native (1440px) scale.
+  // Mirrors LiveEmbed's own ResizeObserver-driven scale calc. clickBounce()
+  // below reads containerScaleRef rather than tweening scale to an absolute
+  // 0.85/1 — GSAP's scale is a single shared transform property, so an
+  // absolute tween there would silently wipe out this container-relative
+  // value once it completes.
+  useEffect(() => {
+    if (enableExpandedView && !canPortal) return; // content not portaled yet
     const wrapper = wrapperRef.current;
     const cursor = cursorRef.current;
     if (!wrapper || !cursor) return;
-    const { canvasEl } = getScrollEls(wrapper);
 
-    const restX = CURSOR_REST_INSET + CURSOR_SIZE / 2;
-    const restY = wrapper.clientHeight - CURSOR_REST_INSET - CURSOR_SIZE / 2;
+    const updateScale = () => {
+      const width = wrapper.getBoundingClientRect().width;
+      if (!width) return;
+      containerScaleRef.current = width / NATIVE_WIDTH;
+      gsap.set(cursor, { scale: containerScaleRef.current });
+    };
 
-    const tl = gsap.timeline();
-    tl.add(moveCursorTo(restX, restY, TIMING.parkCursorDuration));
-    tl.to(cursor, {
-      rotation: 12,
-      duration: TIMING.wiggleOutDuration,
-      ease: "cursorWiggle",
-    });
-    tl.to(cursor, {
-      rotation: 0,
-      duration: TIMING.wiggleSettleDuration,
-      ease: "power1.out",
-    });
-    tl.addLabel("reveal");
-    if (canvasEl) {
-      tl.to(
-        canvasEl,
-        { opacity: 0.75, duration: TIMING.embedDimDuration },
-        "reveal",
-      );
+    updateScale();
+    const observer = new ResizeObserver(updateScale);
+    observer.observe(wrapper);
+    return () => observer.disconnect();
+  }, [enableExpandedView, canPortal]);
+
+  // Fades the small embed cursor out and releases the interaction lock once
+  // the scripted walkthrough itself finishes — no park/wiggle/bubble reveal
+  // anymore (that attention-getting handoff moved to a separate, larger
+  // page-level cursor owned by WorkCaseStudyRow).
+  function finishWalkthrough() {
+    const cursor = cursorRef.current;
+    if (cursor) {
+      gsap.to(cursor, {
+        opacity: 0,
+        duration: TIMING.cursorFadeOutDuration,
+        ease: "power1.out",
+      });
     }
-    REVEAL_MESSAGES.forEach((_, i) => {
-      tl.call(
-        () => {
-          captureStackRects();
-          setVisibleBubbles(i + 1);
-        },
-        [],
-        i === 0 ? "reveal" : `+=${TIMING.bubbleStagger}`,
-      );
-    });
-    tl.call(
-      () => {
-        captureStackRects();
-        setShowCta(true);
-      },
-      [],
-      `+=${TIMING.bubbleStagger}`,
-    );
-    tl.call(() => {
-      canUnlockRef.current = true;
-    });
+    setLocked(false);
   }
 
-  // Runs after each bubble/CTA-added render: for every previously-mounted
-  // bubble, diffs its captured top against its new (pushed-up) top and
-  // glides purely on Y — no scale/width interpolation, so it reads as a
-  // clean push-up rather than the elements re-sizing/shuffling. The newest
-  // bubble (not in the captured list) gets its own separate fade/slide-in.
-  useLayoutEffect(() => {
-    const prevRects = prevRectsRef.current;
-    prevRectsRef.current = null;
-    if (!prevRects) return;
+  // Interrupts the scripted walkthrough (enableExpandedView only — see
+  // .lockOverlay's onClick and expand() below, which also calls this).
+  // Cancels whichever phase effect is currently running (both check
+  // takenOverRef on every await), kills any tweens they had in flight, glides
+  // the cursor off past the wrapper's top-right corner (clipped out of view
+  // by .wrapper's own overflow:hidden — no separate fade needed, it just
+  // exits the visible box), and unlocks real interaction immediately rather
+  // than waiting for the glide to finish.
+  function takeOver() {
+    if (takenOverRef.current || !locked) return;
+    takenOverRef.current = true;
+    activeTweensRef.current.forEach((t) => t.kill());
+    activeTweensRef.current = [];
 
-    prevRects.forEach(([el, oldRect]) => {
-      const newRect = el.getBoundingClientRect();
-      const deltaY = oldRect.top - newRect.top;
-      if (deltaY === 0) return;
-      gsap.killTweensOf(el);
-      gsap.fromTo(
-        el,
-        { y: deltaY },
-        { y: 0, duration: TIMING.bubblePushDuration, ease: "power2.out" },
-      );
+    const cursor = cursorRef.current;
+    const wrapper = wrapperRef.current;
+    if (cursor && wrapper) {
+      gsap.to(cursor, {
+        x: wrapper.clientWidth + CURSOR_SIZE,
+        y: -CURSOR_SIZE,
+        duration: TIMING.takeOverGlideDuration,
+        ease: "power2.in",
+      });
+    }
+    setLocked(false);
+  }
+
+  // Expands the embed to fill the viewport — real width/height growth (not
+  // transform:scale, same reasoning as TheProblemPinnedScene: scale would
+  // distort the live app's real DOM content), but position moves via x/y
+  // transform aliases rather than left/top so only width/height touch layout
+  // (gsap-performance guidance). Body scroll locks for the duration so the
+  // captured restRect stays valid for collapse() without re-measuring.
+  function expand() {
+    const wrapper = wrapperRef.current;
+    if (!wrapper || expandedRef.current) return;
+    takeOver(); // expanding is itself a form of taking over, per direction
+
+    // Stop the sync loop immediately (imperative, not just via the effect's
+    // `expanded` dependency) so it can't fight this tween on the frame
+    // between calling setExpanded(true) and React actually re-running effects.
+    if (syncRafRef.current) cancelAnimationFrame(syncRafRef.current);
+
+    const rect = wrapper.getBoundingClientRect();
+
+    expandTweenRef.current?.kill();
+    gsap.set(wrapper, {
+      position: "fixed",
+      left: 0,
+      top: 0,
+      x: rect.left,
+      y: rect.top,
+      width: rect.width,
+      height: rect.height,
+      zIndex: 9999, // matches CaseStudyCursor's established "above everything, including nav" value
+      willChange: "transform, width, height",
+    });
+    if (bannerTimelineRef.current) bannerTimelineRef.current.kill();
+    const banner = bannerRef.current;
+    setCanvasTransitionDisabled(true);
+
+    expandTweenRef.current = gsap.to(wrapper, {
+      x: 0,
+      y: 0,
+      width: window.innerWidth,
+      height: window.innerHeight,
+      borderRadius: 0,
+      duration: TIMING.expandDuration,
+      ease: "power3.inOut",
+      onComplete: () => {
+        gsap.set(wrapper, { willChange: "auto" });
+        setCanvasTransitionDisabled(false);
+        // Banner comes up only once the box has genuinely finished growing
+        // to full width/height — not concurrently, which read as the
+        // banner arriving before the screen had actually finished resizing.
+        if (banner) {
+          gsap.to(banner, {
+            yPercent: 0,
+            duration: TIMING.bannerEnterDuration,
+            ease: "power3.out",
+          });
+        }
+      },
     });
 
-    const stack = stackRef.current;
-    const newest = stack?.lastElementChild as HTMLElement | null | undefined;
-    if (newest) {
-      gsap.fromTo(
-        newest,
-        { opacity: 0, y: 16 },
-        {
-          opacity: 1,
-          y: 0,
-          duration: TIMING.bubbleFadeDuration,
-          ease: "power2.out",
-        },
-      );
+    document.body.style.overflow = "hidden";
+    expandedRef.current = true;
+    setExpanded(true);
+    setTrueSizeMode(true);
+  }
+
+  // Reverses expand() back to the placeholder's current resting rect
+  // (re-measured fresh, not the stale restRectRef — more robust against e.g.
+  // a window resize while expanded), then clears the inline fixed-position
+  // styles and re-arms the sync loop.
+  function collapse() {
+    const wrapper = wrapperRef.current;
+    const placeholder = placeholderRef.current;
+    if (!wrapper || !expandedRef.current || !placeholder) return;
+
+    // Switch back to scaled-canvas mode right now, before the shrink tween
+    // even starts — see trueSizeMode's own comment above for why this can't
+    // wait for the tween's onComplete the way expandedRef/setExpanded do.
+    setTrueSizeMode(false);
+
+    const rest = placeholder.getBoundingClientRect();
+    const restBorderRadius = getComputedStyle(document.documentElement)
+      .getPropertyValue("--border-radius-sm")
+      .trim();
+
+    gsap.set(wrapper, { willChange: "transform, width, height" });
+    expandTweenRef.current?.kill();
+    setCanvasTransitionDisabled(true);
+    expandTweenRef.current = gsap.to(wrapper, {
+      x: rest.left,
+      y: rest.top,
+      width: rest.width,
+      height: rest.height,
+      borderRadius: restBorderRadius || 0,
+      duration: TIMING.collapseDuration,
+      ease: "power3.inOut",
+      onComplete: () => {
+        // Re-glue explicitly to freshly-measured placeholder coordinates —
+        // same property set the sync loop's own sync() writes every frame —
+        // instead of clearProps. clearProps strips positioning entirely,
+        // and the sync loop that would normally re-glue it only re-arms once
+        // `expanded` flips false and React re-runs the gated effect, which
+        // is at least one render + effect cycle later than this synchronous
+        // callback. In that gap the portaled wrapper had no position at all
+        // and fell back to wherever the browser default-flowed it — a real
+        // jump-then-jump-back, not a rendering artifact. Landing on the
+        // sync loop's own values up front means its first real frame, once
+        // it re-arms, computes the same rect and is a no-op.
+        const finalRect = placeholder.getBoundingClientRect();
+        gsap.set(wrapper, {
+          position: "fixed",
+          left: 0,
+          top: 0,
+          x: finalRect.left,
+          y: finalRect.top,
+          width: finalRect.width,
+          height: finalRect.height,
+          zIndex: 1,
+          borderRadius: restBorderRadius || 0,
+          willChange: "auto",
+        });
+        setCanvasTransitionDisabled(false);
+        // Only now re-arm the sync loop (via the `expanded` dependency
+        // below) — any earlier and it would fight this very tween.
+        expandedRef.current = false;
+        setExpanded(false);
+      },
+    });
+
+    const banner = bannerRef.current;
+    if (banner) {
+      gsap.to(banner, {
+        yPercent: 100,
+        duration: TIMING.bannerExitDuration,
+        ease: "power3.in",
+      });
     }
+
+    document.body.style.overflow = "";
+  }
+
+  function handleBannerToggle() {
+    if (expandedRef.current) collapse();
+    else expand();
+  }
+
+  // Banner enter → hold → exit, once, right when the embed's own entrance
+  // settles (entranceReady flipping true — see WorkCaseStudyRow). One
+  // timeline with labels (gsap-timeline guidance) instead of chained
+  // delays; killed/overridden by expand()'s own persistent-show tween if the
+  // visitor expands before the auto-hide would've fired.
+  useEffect(() => {
+    if (!enableExpandedView || !entranceReady) return;
+    const banner = bannerRef.current;
+    if (!banner) return;
+
+    const tl = gsap.timeline();
+    tl.addLabel("enter", TIMING.bannerStartDelayMs / 1000)
+      .to(
+        banner,
+        {
+          yPercent: 0,
+          duration: TIMING.bannerEnterDuration,
+          ease: "power3.out",
+        },
+        "enter",
+      )
+      .addLabel("exit", `+=${TIMING.bannerHoldMs / 1000}`)
+      .to(
+        banner,
+        {
+          yPercent: 100,
+          duration: TIMING.bannerExitDuration,
+          ease: "power3.in",
+        },
+        "exit",
+      );
+    bannerTimelineRef.current = tl;
+
+    return () => {
+      tl.kill();
+    };
+  }, [enableExpandedView, entranceReady]);
+
+  // Escape collapses full screen — standard convention for a viewport-filling
+  // overlay (enableExpandedView only).
+  useEffect(() => {
+    if (!enableExpandedView) return;
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape" && expandedRef.current) collapse();
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [visibleBubbles, showCta]);
+  }, [enableExpandedView]);
+
+  // Hovering the embed also reveals the banner (video-player-control-bar
+  // convention), independent of the auto-show-once-on-settle timeline above —
+  // pauses that timeline so the two don't fight, and does nothing while
+  // already expanded (banner is persistently shown there regardless).
+  useEffect(() => {
+    if (!enableExpandedView || !canPortal) return;
+    const wrapper = wrapperRef.current;
+    const banner = bannerRef.current;
+    if (!wrapper || !banner) return;
+
+    function onEnter() {
+      console.log("[embed-expand] hover enter fired");
+      if (expandedRef.current) return;
+      bannerTimelineRef.current?.pause();
+      gsap.to(banner, {
+        yPercent: 0,
+        duration: TIMING.bannerEnterDuration,
+        ease: "power3.out",
+      });
+    }
+    function onLeave() {
+      console.log("[embed-expand] hover leave fired");
+      if (expandedRef.current) return;
+      gsap.to(banner, {
+        yPercent: 100,
+        duration: TIMING.bannerExitDuration,
+        ease: "power3.in",
+      });
+    }
+    console.log("[embed-expand] hover listeners attached", { wrapper, banner });
+    wrapper.addEventListener("mouseenter", onEnter);
+    wrapper.addEventListener("mouseleave", onLeave);
+    return () => {
+      wrapper.removeEventListener("mouseenter", onEnter);
+      wrapper.removeEventListener("mouseleave", onLeave);
+    };
+  }, [enableExpandedView, canPortal]);
 
   // Glides the cursor to a wrapper-relative point, tilting slightly toward
   // the direction of travel (subtle, not a full face-the-direction rotation —
@@ -407,15 +754,16 @@ export default function SoftwareExperienceEmbed() {
   function clickBounce() {
     const cursor = cursorRef.current;
     if (!cursor) return gsap.timeline();
+    const base = containerScaleRef.current;
     return gsap
       .timeline()
       .to(cursor, {
-        scale: 0.85,
+        scale: base * 0.85,
         duration: TIMING.clickBounceDownDuration,
         ease: "power2.out",
       })
       .to(cursor, {
-        scale: 1,
+        scale: base,
         duration: TIMING.clickBounceUpDuration,
         ease: "power2.out",
       });
@@ -437,12 +785,11 @@ export default function SoftwareExperienceEmbed() {
   useEffect(() => {
     const wrapper = wrapperRef.current;
     const cursor = cursorRef.current;
-    if (!wrapper || !cursor) return;
+    if (!wrapper || !cursor || !entranceReady) return;
 
     let cancelled = false;
-    const active: gsap.core.Tween[] = [];
     const track = (t: gsap.core.Tween) => {
-      active.push(t);
+      activeTweensRef.current.push(t);
       return t;
     };
 
@@ -467,18 +814,18 @@ export default function SoftwareExperienceEmbed() {
       // SectionIntroduction's own entrance animation is still playing (the
       // hero embed itself is still fading in), so none of this is visible.
       if (document.fonts?.ready) await document.fonts.ready.catch(() => {});
-      if (cancelled) return;
+      if (cancelled || takenOverRef.current) return;
       log("fonts ready");
       await waitForEmbedReady(wrapper!);
-      if (cancelled) return;
+      if (cancelled || takenOverRef.current) return;
       log("embed canvas visible");
       await waitForImages(wrapper!);
-      if (cancelled) return;
+      if (cancelled || takenOverRef.current) return;
       log("images loaded");
       await nextFrame();
-      if (cancelled) return;
+      if (cancelled || takenOverRef.current) return;
       await nextFrame();
-      if (cancelled) return;
+      if (cancelled || takenOverRef.current) return;
 
       const { scrollEl, canvasEl } = getScrollEls(wrapper!);
       const lifecycleEl = wrapper!.querySelector<HTMLElement>(
@@ -492,27 +839,29 @@ export default function SoftwareExperienceEmbed() {
       const scrollDownTo = Math.min(targetTop - 96, maxScroll);
 
       await primeScroll(scrollEl, scrollDownTo);
-      if (cancelled) return;
+      if (cancelled || takenOverRef.current) return;
       log("prime scroll done");
 
       // Fade the cursor in at its resting position — timing mark is its own
-      // tweakable number (TIMING.cursorFadeInMarkMs), not derived from
-      // SectionIntroduction's entrance.
-      await waitUntil(t0, TIMING.cursorFadeInMarkMs);
-      if (cancelled) return;
+      // tweakable number (cursorFadeInMarkMs, defaults to
+      // TIMING.cursorFadeInMarkMs), not derived from SectionIntroduction's
+      // entrance.
+      await waitUntil(t0, cursorFadeInMarkMs);
+      if (cancelled || takenOverRef.current) return;
       log("cursor fade-in start");
       await gsap
         .to(cursor, {
           opacity: 1,
-          duration: TIMING.cursorFadeInDuration,
+          duration: cursorFadeInDuration,
           ease: "power1.out",
         })
         .then();
-      if (cancelled) return;
+      if (cancelled || takenOverRef.current) return;
 
-      // Scripted sequence starts at its own tweakable mark.
-      await waitUntil(t0, TIMING.sequenceStartMarkMs);
-      if (cancelled) return;
+      // Scripted sequence starts at its own tweakable mark (defaults to
+      // TIMING.sequenceStartMarkMs).
+      await waitUntil(t0, sequenceStartMarkMs);
+      if (cancelled || takenOverRef.current) return;
       log("scripted sequence start");
 
       await Promise.all([
@@ -529,10 +878,10 @@ export default function SoftwareExperienceEmbed() {
           TIMING.scrollToLifecycleDuration,
         ).then(),
       ]);
-      if (cancelled) return;
+      if (cancelled || takenOverRef.current) return;
 
       await wait(TIMING.holdAtLifecycleMs);
-      if (cancelled) return;
+      if (cancelled || takenOverRef.current) return;
 
       await Promise.all([
         track(
@@ -548,7 +897,7 @@ export default function SoftwareExperienceEmbed() {
           TIMING.scrollBackUpDuration,
         ).then(),
       ]);
-      if (cancelled) return;
+      if (cancelled || takenOverRef.current) return;
 
       const navButton = wrapper!.querySelector<HTMLElement>(
         '[data-hotspot="nav-all-software"]',
@@ -560,10 +909,10 @@ export default function SoftwareExperienceEmbed() {
       const navY = navRect.top + navRect.height / 2 - wrapperRect.top;
 
       await moveCursorTo(navX, navY, TIMING.moveToNavDuration).then();
-      if (cancelled) return;
+      if (cancelled || takenOverRef.current) return;
 
       await clickBounce().then();
-      if (cancelled) return;
+      if (cancelled || takenOverRef.current) return;
 
       dispatchClick(navButton);
       runPhaseTwo.current = true;
@@ -574,10 +923,15 @@ export default function SoftwareExperienceEmbed() {
 
     return () => {
       cancelled = true;
-      active.forEach((t) => t.kill());
+      activeTweensRef.current.forEach((t) => t.kill());
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [
+    entranceReady,
+    cursorFadeInMarkMs,
+    cursorFadeInDuration,
+    sequenceStartMarkMs,
+  ]);
 
   // Phase 2: once All Software has mounted, move the cursor to the Adobe
   // Acrobat Pro row (no embed scroll — it's on page 1, already in view) and
@@ -594,15 +948,14 @@ export default function SoftwareExperienceEmbed() {
     if (!wrapper || !cursor) return;
 
     let cancelled = false;
-    const active: gsap.core.Tween[] = [];
     const track = (t: gsap.core.Tween) => {
-      active.push(t);
+      activeTweensRef.current.push(t);
       return t;
     };
 
     async function run() {
       await wait(TIMING.phase2StartDelayMs);
-      if (cancelled) return;
+      if (cancelled || takenOverRef.current) return;
 
       const row = findRowByText(wrapper!, TARGET_SKU_LABEL);
       if (!row) return;
@@ -613,13 +966,13 @@ export default function SoftwareExperienceEmbed() {
       const rowY = rowRect.top + rowRect.height / 2 - wrapperRect.top;
 
       await moveCursorTo(rowX, rowY, TIMING.moveToRowDuration).then();
-      if (cancelled) return;
+      if (cancelled || takenOverRef.current) return;
 
       await wait(TIMING.holdBeforeRowClickMs);
-      if (cancelled) return;
+      if (cancelled || takenOverRef.current) return;
 
       await clickBounce().then();
-      if (cancelled) return;
+      if (cancelled || takenOverRef.current) return;
 
       dispatchClick(row);
 
@@ -629,7 +982,7 @@ export default function SoftwareExperienceEmbed() {
           '[data-hotspot="opportunity-breakdown"]',
         ),
       );
-      if (cancelled || !opportunityBreakdown) return;
+      if (cancelled || takenOverRef.current || !opportunityBreakdown) return;
 
       const inactiveWasteStat = opportunityBreakdown.children[0] as
         | HTMLElement
@@ -652,10 +1005,10 @@ export default function SoftwareExperienceEmbed() {
         wrapper!.getBoundingClientRect(),
       );
       await moveCursorTo(point.x, point.y, TIMING.hoverMoveDuration).then();
-      if (cancelled) return;
+      if (cancelled || takenOverRef.current) return;
       dispatchHover(inactiveWasteStat);
       await wait(TIMING.hoverHoldMs);
-      if (cancelled) return;
+      if (cancelled || takenOverRef.current) return;
       dispatchUnhover(inactiveWasteStat);
 
       // Hover Utilization Rate.
@@ -664,10 +1017,10 @@ export default function SoftwareExperienceEmbed() {
         wrapper!.getBoundingClientRect(),
       );
       await moveCursorTo(point.x, point.y, TIMING.hoverMoveDuration).then();
-      if (cancelled) return;
+      if (cancelled || takenOverRef.current) return;
       dispatchHover(utilizationRateStat);
       await wait(TIMING.hoverHoldMs);
-      if (cancelled) return;
+      if (cancelled || takenOverRef.current) return;
       dispatchUnhover(utilizationRateStat);
 
       // Scroll the panel itself (not the outer embed) down to the
@@ -700,10 +1053,10 @@ export default function SoftwareExperienceEmbed() {
           TIMING.scrollPanelDownDuration,
         ).then(),
       ]);
-      if (cancelled) return;
+      if (cancelled || takenOverRef.current) return;
 
       await wait(TIMING.holdAtDistributionMs);
-      if (cancelled) return;
+      if (cancelled || takenOverRef.current) return;
 
       await track(
         gsap.to(panelScrollEl, {
@@ -712,125 +1065,72 @@ export default function SoftwareExperienceEmbed() {
           ease: "power2.inOut",
         }),
       ).then();
-      if (cancelled) return;
+      if (cancelled || takenOverRef.current) return;
 
-      // Walkthrough is done — hand off to Phase 4 (cursor parks bottom-left,
-      // wiggles, bubbles reveal). Stays locked until the visitor clicks.
-      walkthroughDoneRef.current = true;
-      tryStartPhase4();
+      // Walkthrough is done — fade the cursor out and unlock the embed.
+      finishWalkthrough();
     }
 
     run();
 
     return () => {
       cancelled = true;
-      active.forEach((t) => t.kill());
+      activeTweensRef.current.forEach((t) => t.kill());
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [screen]);
 
-  // Phase 4's other gate: fires once the embed's top edge actually scrolls
-  // under the nav (no pin — tried without one first per this session's
-  // direction). Independent of walkthrough completion; tryStartPhase4()
-  // only proceeds once both gates are true.
-  useEffect(() => {
-    const wrapper = wrapperRef.current;
-    if (!wrapper) return;
-
-    const navHeight =
-      document.querySelector("nav")?.getBoundingClientRect().height ?? 0;
-
-    const trigger = ScrollTrigger.create({
-      trigger: wrapper,
-      start: `top top+=${navHeight}`,
-      onEnter: () => {
-        scrollReachedRef.current = true;
-        tryStartPhase4();
-      },
-    });
-
-    return () => trigger.kill();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  return (
+  const content = (
     <div ref={wrapperRef} className={styles.wrapper}>
-      <LiveEmbed nativeWidth={NATIVE_WIDTH} scroll>
-        {/* AllSoftwareScreen always mounts XOPS's SidePanel (even closed, just
-            slid off-screen), whose overlay is position:fixed — LiveEmbed's
-            .canvas transform makes it the containing block, but the ancestor
-            .wrapper's overflow:hidden 2+ levels up doesn't reliably clip it
-            across browsers. This wrapper is the direct parent instead, scoped
-            to this one embed — not a LiveEmbed/SidePanel change. */}
-        <div className={styles.screenClip}>
-          {screen === "overview" ? (
-            <OverviewScreen onNavigate={setScreen} showSecondaryCards={false} />
-          ) : (
-            <AllSoftwareScreen onNavigate={setScreen} />
-          )}
-        </div>
+      <LiveEmbed
+        nativeWidth={NATIVE_WIDTH}
+        scroll
+        disableCanvasTransition={canvasTransitionDisabled}
+        disableScaling={enableExpandedView && trueSizeMode}
+      >
+        {screen === "overview" ? (
+          <OverviewScreen
+            onNavigate={setScreen}
+            showSecondaryCards={false}
+            embedded
+          />
+        ) : (
+          <AllSoftwareScreen onNavigate={setScreen} embedded />
+        )}
       </LiveEmbed>
       {locked && (
         <div
-          className={styles.lockOverlay}
+          className={
+            enableExpandedView
+              ? `${styles.lockOverlay} ${styles.lockOverlayClickable}`
+              : styles.lockOverlay
+          }
           aria-hidden="true"
-          onClick={() => {
-            if (canUnlockRef.current) setLocked(false);
-          }}
+          onClick={enableExpandedView ? takeOver : undefined}
         />
       )}
-      <div ref={stackRef} className={styles.bubbleStack}>
-        {REVEAL_MESSAGES.slice(0, visibleBubbles).map((text) => (
-          <div key={text} className={styles.bubble}>
-            <p className={styles.bubbleText}>{text}</p>
-          </div>
-        ))}
-        {showCta && (
-        <div className={styles.ctaWrap}>
-          <Button
-            variant="primary"
-            onClick={() => {
-              console.log(
-                "[layer-inspect] CTA clicked — stacked-layer view not built yet",
-              );
-            }}
-            icon={
-              // Inlined from /icons/go-arrow.svg (was <img src>) — same
-              // convention as MenuItem's go-arrow, currentColor resolves
-              // from the button's own text color.
-              <svg
-                viewBox="0 0 48 48"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                aria-hidden="true"
-                style={{ width: "100%", height: "100%" }}
-              >
-                <mask
-                  id="cta-go-arrow-mask"
-                  style={{ maskType: "alpha" }}
-                  maskUnits="userSpaceOnUse"
-                  x="0"
-                  y="0"
-                  width="48"
-                  height="48"
-                >
-                  <rect width="48" height="48" fill="#D9D9D9" />
-                </mask>
-                <g mask="url(#cta-go-arrow-mask)">
-                  <path
-                    d="M13.0825 36.9326L9.34996 33.2001L27.9 14.6501H11.6325V9.3501H36.9325V34.6501H31.6325V18.3826L13.0825 36.9326Z"
-                    fill="currentColor"
-                  />
-                </g>
-              </svg>
-            }
-          >
-            See how it&apos;s built
-          </Button>
-        </div>
-        )}
-      </div>
       <GhostCursor ref={cursorRef} size={CURSOR_SIZE} />
+      {enableExpandedView && (
+        <EmbedBanner
+          ref={bannerRef}
+          expanded={expanded}
+          onToggle={handleBannerToggle}
+        />
+      )}
     </div>
+  );
+
+  if (!enableExpandedView) return content;
+
+  // Placeholder reserves .embedWrap's normal in-flow space (sized 100%/100%
+  // by WorkCaseStudyRow.module.css's `.embedWrap > *` rule, same as .wrapper
+  // itself used to be) — the real, interactive .wrapper is portaled to
+  // document.body so it can go truly fixed/full-viewport without being
+  // clipped by .embedWrap's overflow:hidden (see placeholderRef's comment).
+  return (
+    <>
+      <div ref={placeholderRef} />
+      {canPortal && createPortal(content, document.body)}
+    </>
   );
 }

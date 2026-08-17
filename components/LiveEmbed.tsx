@@ -18,6 +18,21 @@ interface LiveEmbedProps {
    *  transform-based `panTargetIds` pan. For a live, interactive embed the user
    *  scrolls through themselves — pair with a height-bounded parent. */
   scroll?: boolean;
+  /** Suppresses .canvas's own CSS transition on transform — for callers driving
+   *  the container's width/height via their own tween (e.g. SoftwareExperienceEmbed's
+   *  expand/collapse), where the canvas's independent 500ms ease would otherwise
+   *  keep chasing a moving scale target and read as staggered against the
+   *  smoothly-tweening box. Off by default so plain resize (e.g. window resize)
+   *  keeps its smoothing. */
+  disableCanvasTransition?: boolean;
+  /** `scroll` mode only. Drops the fixed-nativeWidth-then-scale-down technique
+   *  entirely — children render at the container's real, natural width with no
+   *  transform, so the app's own responsive CSS breakpoints respond to the
+   *  actual viewport width instead of a uniformly scaled 1440px layout. For a
+   *  caller that expands its container to real viewport size (e.g.
+   *  SoftwareExperienceEmbed's full-screen expand) and wants the true design
+   *  system at true size — not an enlarged/shrunk proportional copy of it. */
+  disableScaling?: boolean;
 }
 
 // Renders children at a fixed reference width, then scales the whole canvas
@@ -30,7 +45,7 @@ interface LiveEmbedProps {
 // pinned to that fixed height instead, and the canvas pans vertically inside
 // it (via `panTargetIds`) so content taller than one viewport can still be
 // brought into view without the container itself growing.
-export default function LiveEmbed({ children, nativeWidth, className, viewportHeight, panTargetIds, scroll }: LiveEmbedProps) {
+export default function LiveEmbed({ children, nativeWidth, className, viewportHeight, panTargetIds, scroll, disableCanvasTransition, disableScaling }: LiveEmbedProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState<number | null>(null);
@@ -112,17 +127,40 @@ export default function LiveEmbed({ children, nativeWidth, className, viewportHe
   // the scaled canvas natively. A sizer holds the *scaled* height so the native
   // scrollbar tracks the visible content, not the unscaled 1440-wide canvas box.
   if (scroll) {
+    // Same DOM nodes in both modes — only inline styles toggle between them
+    // (position/width/transform on .canvas, height on .sizer). Branching to
+    // two differently-shaped JSX trees here previously made React unmount +
+    // remount everything under {children} (the actual live app instance —
+    // OverviewScreen/AllSoftwareScreen) on every disableScaling flip, which
+    // read as a flash/glitch (real component-state loss + fresh mount, not
+    // an asset-loading delay). Keeping one stable tree and only changing
+    // style values lets React patch it in place instead.
     return (
       <div ref={containerRef} className={`${styles.scrollContainer} ${className ?? ""}`}>
-        <div className={styles.sizer} style={{ height: autoHeight ?? undefined }}>
+        <div
+          className={styles.sizer}
+          style={disableScaling ? undefined : { height: autoHeight ?? undefined }}
+        >
           <div
             ref={canvasRef}
             className={styles.canvas}
-            style={{
-              width: nativeWidth,
-              transform: scale ? `scale(${scale})` : undefined,
-              visibility: scale ? "visible" : "hidden",
-            }}
+            style={
+              disableScaling
+                ? // transition: "none" is load-bearing here — .canvas's own
+                  // CSS class has `transition: transform 500ms ease`. Without
+                  // overriding it, flipping this transform from the scaled
+                  // branch's matrix(...) to "none" gets smoothly animated by
+                  // that class rule instead of applying instantly, which
+                  // looked exactly like the content lagging behind the box's
+                  // own (GSAP-driven, un-eased-by-CSS) width growth.
+                  { position: "static", width: "100%", transform: "none", transition: "none" }
+                : {
+                    width: nativeWidth,
+                    transform: scale ? `scale(${scale})` : undefined,
+                    visibility: scale ? "visible" : "hidden",
+                    transition: disableCanvasTransition ? "none" : undefined,
+                  }
+            }
           >
             {children}
           </div>
@@ -146,6 +184,7 @@ export default function LiveEmbed({ children, nativeWidth, className, viewportHe
           width: nativeWidth,
           transform: scale ? `translateY(${-panPx}px) scale(${scale})` : undefined,
           visibility: scale ? "visible" : "hidden",
+          transition: disableCanvasTransition ? "none" : undefined,
         }}
       >
         {children}

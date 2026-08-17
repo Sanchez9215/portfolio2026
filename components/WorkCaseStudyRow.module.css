@@ -7,17 +7,45 @@
 
 /* section.work — full-width row, top divider (Figma: border-t) */
 .work {
+  position: relative;
   border-top: var(--border-card) solid var(--surface-card-border);
+  padding-bottom: var(--spacing-xl);
+}
+
+/* Large page-level ghost cursor (desktop-only, see the ≤900px override
+   below) — positioned/animated relative to .work itself via GSAP, not
+   scoped to the embed like SoftwareExperienceEmbed's own internal cursor. */
+.pointerCursor {
+  z-index: 1;
+}
+
+/* Message-bubble stack, revealed one bubble at a time once .pointerCursor
+   lands. Anchored by `bottom` (not `top`) so the browser recomputes its top
+   upward as the container's own height grows with each addition — that's
+   what makes earlier bubbles read as pushed up (see WorkCaseStudyRow.tsx's
+   captureBubbleRects + bubbleMeasureRef). justify-content: flex-end matches
+   the anchor's intent (no visible effect on its own, height is intrinsic).
+   Positioned via GSAP (left/bottom, relative to the cursor's own center
+   point); each bubble's mount-in fade/push is GSAP-only (conditionally
+   rendered, not CSS-hidden), same desktop-only scope as the cursor itself. */
+.bubbleStack {
+  position: absolute;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: var(--spacing-sm);
 }
 
 /* ── Left column (1/6): title + description + CTAs ─────────── */
 
 .left {
-  grid-column: 1 / 4;
+  grid-column: 1 / 5;
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  justify-content: top;
-  gap: var(--spacing-xl);
+  justify-content: start;
+  gap: var(--spacing-3xl);
 }
 
 .intro {
@@ -68,7 +96,10 @@
    Mirrors SectionIntroduction's .projectImpact structure exactly. */
 
 .right {
-  grid-column: 4 / 13;
+  grid-column: 5 / 13;
+  min-width: 0;
+  min-height: 0;
+  padding-left: var(--spacing-xl);
   display: flex;
   flex-direction: column;
   gap: var(--spacing-xl);
@@ -84,8 +115,12 @@
   opacity: 0;
 }
 
+/* min-width: 0 overrides the flex default (min-width: auto), which otherwise
+   lets each item's intrinsic content width push .right past its grid track
+   as the row narrows (reported break point: ~1200px). */
 .meta > * {
   flex: 1;
+  min-width: 0;
   opacity: 0;
   transform: translateY(24px);
 }
@@ -98,6 +133,7 @@
 
 .impact > * {
   flex: 1;
+  min-width: 0;
   opacity: 0;
   transform: translateY(24px);
 }
@@ -137,9 +173,9 @@
    rounded-tl/tr, flush bottom against the row's own bottom edge) */
 .embedWrap {
   width: 100%;
-  aspect-ratio: 16 / 9;
+  aspect-ratio: 16 / 10;
   overflow: hidden;
-  border-radius: var(--radius-default) var(--radius-default) 0 0;
+  border-radius: var(--border-radius-sm) var(--border-radius-sm) 0 0;
   /* entrance-animation hidden state */
   opacity: 0;
   transform: translateY(24px);
@@ -148,4 +184,251 @@
 .embedWrap > * {
   width: 100%;
   height: 100%;
+}
+
+/* ============================================================
+   ≤ 1200px
+   Deviates from the shared 1280 tier — Work's title (display-md,
+   shared with SectionIntroduction) starts crowding the narrower .left
+   column before Hero's 1280 tier would trigger. Scoped to .work so the
+   shared --text-display-md token elsewhere (e.g. SectionIntroduction)
+   is unaffected.
+   ============================================================ */
+
+@media (max-width: 1200px) {
+  .work {
+    --text-display-md-size: 56px;
+    --text-display-md-lh: 62px;
+    --text-display-md-ls: -0.02em;
+  }
+}
+
+/* ============================================================
+   ≤ 1080px
+   Title steps to display-sm's values, description steps to body-md's
+   values — both exact matches to existing tiers, just reused at a
+   smaller viewport. Scoped to .work only.
+   ============================================================ */
+
+@media (max-width: 1080px) {
+  .work {
+    --text-display-md-size: 48px;
+    --text-display-md-lh: 53px;
+    --text-display-md-ls: -0.02em;
+
+    --text-body-lg-size: 16px;
+    --text-body-lg-lh: 22px;
+    --text-body-lg-ls: 0;
+
+    --text-title-sm-size: 12px;
+    --text-title-sm-lh: 16px;
+    --text-title-sm-ls: -0.01em;
+
+    --text-body-sm-size: 12px;
+    --text-body-sm-lh: 16px;
+    --text-body-sm-ls: 0;
+  }
+}
+
+/* ============================================================
+   ≤ 900px
+   Left/right columns stack full-width instead of splitting the grid.
+   Deviates from the shared 768 tablet tier — deliberately earlier for
+   Work's own content (see prior conversation: chosen by checking Work's
+   two-column layout directly, not carried over from Hero/the device
+   scale). .work switches height:100vh → min-height:100vh here since the
+   stacked content is taller than one viewport.
+   ============================================================ */
+
+@media (max-width: 900px) {
+  .work {
+    height: auto;
+    min-height: 100vh;
+    row-gap: var(--spacing-3xl);
+  }
+
+  /* Large ghost cursor is a desktop-only flourish — off at the stacked tier. */
+  .pointerCursor {
+    display: none;
+  }
+
+  /* Bubble stack rides with the cursor — same desktop-only scope. */
+  .bubbleStack {
+    display: none;
+  }
+
+  /* Unwraps .left/.right so their children become direct grid items of
+     .work — lets each block be reordered independently (title/description
+     → meta → button → impact → embed) without touching the JSX. Their own
+     container-level gap/padding no longer apply once unwrapped; .work's
+     row-gap is zeroed and each block's own margin-top carries its specific
+     gap instead, since the gaps between blocks aren't uniform. */
+  .work {
+    row-gap: 0;
+  }
+
+  .left,
+  .right {
+    display: contents;
+  }
+
+  .intro {
+    grid-column: 1 / 8;
+    order: 1;
+    gap: var(--spacing-md);
+  }
+
+  /* Shares the row with .intro (title/description) instead of stacking
+     below it — converts from a horizontal row (Company/Role/Timeline
+     side by side) to a vertical column, stretched to match .intro's
+     height (default grid row behavior). */
+  .meta {
+    grid-column: 9 / 13;
+    order: 1;
+    flex-direction: column;
+    gap: var(--spacing-md);
+    border-bottom: none;
+  }
+
+  .meta > * {
+    flex: none;
+  }
+
+  /* Element-qualified for specificity — wins over TitleBlock's own
+     shared .titleBlock gap (also a single class) without !important. */
+  .meta > div {
+    gap: var(--spacing-xs);
+  }
+
+  /* Matches .intro's own width (1/8) down to the 620px tier, where .intro
+     widens to full-bleed (1/13) and .ctaRow follows it back — see below. */
+  .ctaRow {
+    grid-column: 1 / 8;
+    order: 2;
+    margin-top: var(--spacing-xl);
+  }
+
+  .impact {
+    grid-column: 1 / 13;
+    order: 4;
+    margin-top: var(--spacing-3xl);
+  }
+
+  .embedWrap {
+    grid-column: 1 / 13;
+    order: 5;
+    margin-top: var(--spacing-xl);
+  }
+}
+
+/* ============================================================
+   ≤ 620px
+   Impact items (Platform Expansion / Millions Reclaimed / Revenue)
+   stack into a column instead of a row.
+   ============================================================ */
+
+@media (max-width: 620px) {
+  .work {
+    column-gap: var(--spacing-md);
+
+    /* Reverts the 1080px tier's step-down back to title-sm/body-sm's
+       original 14px values, scoped the same way (.work) so it only
+       affects what that override touched (impact's heading + body). */
+    --text-title-sm-size: 14px;
+    --text-title-sm-lh: 20px;
+    --text-title-sm-ls: -0.01em;
+
+    --text-body-sm-size: 14px;
+    --text-body-sm-lh: 20px;
+    --text-body-sm-ls: 0;
+
+    /* Meta's size="xs" text also steps up to 14px, matching title-sm/
+       body-sm's values above. */
+    --text-title-xs-size: 14px;
+    --text-title-xs-lh: 20px;
+    --text-title-xs-ls: -0.01em;
+
+    --text-body-xs-size: 14px;
+    --text-body-xs-lh: 20px;
+    --text-body-xs-ls: 0;
+  }
+
+  .intro {
+    grid-column: 1 / 13;
+  }
+
+  /* Follows .intro back to full-bleed at this tier (matched the narrower
+     1/8 width above, from the 900px tier down to here). */
+  .ctaRow {
+    grid-column: 1 / 13;
+  }
+
+  .impact {
+    flex-direction: column;
+    order: 5;
+    margin-top: var(--spacing-xl);
+  }
+
+  /* Same fix as .meta above — flex:1 (base CSS) would equal-height-stretch
+     items of different content length in column mode, showing as an
+     uneven gap below the shorter ones. */
+  .impact > * {
+    flex: none;
+  }
+
+  /* Moves ahead of .impact — button → embed → meta → impact. */
+  .embedWrap {
+    order: 3;
+  }
+
+  /* No longer shares .intro's row — becomes its own full-width row,
+     back to a horizontal layout, directly above .impact. */
+  .meta {
+    grid-column: 1 / 13;
+    order: 4;
+    flex-direction: row;
+    margin-top: var(--spacing-3xl);
+    padding-bottom: var(--spacing-xl);
+    border-bottom: 1px solid var(--surface-card-border);
+  }
+
+  .meta > * {
+    flex: 1;
+  }
+
+  /* Company / Role / Timeline split via matching flex-grow ratios
+     (4.5:3:3). */
+  .meta > *:nth-child(1) {
+    flex: 4.5;
+  }
+
+  .meta > *:nth-child(2),
+  .meta > *:nth-child(3) {
+    flex: 3;
+  }
+}
+
+/* ============================================================
+   ≤ 480px
+   ============================================================ */
+
+@media (max-width: 480px) {
+  .companyRest {
+    display: none;
+  }
+
+  .meta {
+    flex-wrap: wrap;
+    gap: var(--spacing-3xl);
+  }
+
+  .meta > * {
+    flex: none;
+  }
+
+  /* Cancels the 620px tier's 4.5:3:3 split — same nth-child specificity,
+     later in the file, so this wins back to even. */
+  .meta > *:nth-child(1) {
+    flex: none;
+  }
 }

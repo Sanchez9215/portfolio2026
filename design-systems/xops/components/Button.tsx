@@ -26,7 +26,16 @@ type ButtonIconOnlyProps = ButtonBaseProps & {
 export type ButtonProps = ButtonWithLabelProps | ButtonIconOnlyProps;
 
 export default function Button(props: ButtonProps) {
-  const { variant = "secondary", size = "medium", icon, className, ...rest } = props;
+  const {
+    variant = "secondary",
+    size = "medium",
+    icon,
+    className,
+    // Stripped from rest so it doesn't get spread onto the native <button>.
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    iconOnly,
+    ...rest
+  } = props;
   const sizeClass = size !== "medium" ? styles[size] : undefined;
 
   if (props.iconOnly) {

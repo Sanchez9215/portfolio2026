@@ -6,6 +6,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import LabelBlock from "@/components/LabelBlock";
 import Block from "@/components/Block";
 import styles from "./LifecycleTimelineScene.module.css";
+import { scheduleScrollTriggerRefresh } from "./scrollTriggerRefresh";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -65,7 +66,7 @@ export default function LifecycleTimelineScene({
       gsap.set(whoDescEl, { opacity: 0, y: 12 });
 
       void sceneEl.offsetHeight;
-      ScrollTrigger.refresh();
+      scheduleScrollTriggerRefresh();
 
       const tl = gsap.timeline({
         scrollTrigger: {

@@ -11,6 +11,7 @@ import { softwareColumns } from "@/app/work/software-observability/xops-all-soft
 import { getDataset } from "@/design-systems/xops/data/generate";
 import { productSummaries } from "@/design-systems/xops/data/metrics";
 import { useScrollHotspotSequence } from "@/hooks/useScrollHotspotSequence";
+import { scheduleScrollTriggerRefresh } from "./scrollTriggerRefresh";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -105,7 +106,7 @@ export default function RowAnatomyHotspots() {
     // catches that final height, instead of the pin point silently drifting the
     // first time GSAP recalculates on its own (visible as a jump mid-scroll).
     const raf = requestAnimationFrame(() => {
-      requestAnimationFrame(() => ScrollTrigger.refresh());
+      requestAnimationFrame(() => scheduleScrollTriggerRefresh());
     });
 
     return () => {

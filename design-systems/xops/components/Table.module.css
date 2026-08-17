@@ -8,7 +8,8 @@
 
 .wrapper {
   background-color: var(--xops-white);
-  border-radius: var(--xops-radius-12) var(--xops-radius-12) 0 0;
+  border-radius: var(--xops-radius-12);
+  overflow: hidden;
 }
 
 .bare {

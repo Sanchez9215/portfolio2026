@@ -116,3 +116,6 @@ The layer tree (metadata: names, sizes, positions), the design context (real vec
 
 **Never derive a component's internal structure from a design source's sub-layer/node tree.**
 Only the top-level named reference is authoritative. Look up the real prop API in the codebase. If how content maps to props is unclear, ask before building.
+
+**Never treat "no Figma source for this variant" as license to build it as a structural one-off — ask whether it should match an existing sibling variant's mechanic.**
+When adding a new variant/state/size to an already-established component, a missing design mock for that specific piece is not a green light to invent its structure from scratch. Ask explicitly: should this be the **same** structural mechanic as the closest existing sibling (e.g. a new hover state should reuse the fixed-width centered-badge slot another variant's hover state already uses), or only **similar**, with named differences? This happened for real: Button's secondary+icon hover face had no Figma mock, so it was dropped into the existing flat label-only hover shell using a generic flex-gap layout instead of mirroring primary's fixed-width badge slot — producing mismatched icon-to-label spacing (12px vs 24px) and a leftover dark icon-badge background, both silent until the user caught them well after the fact.

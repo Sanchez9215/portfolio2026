@@ -3,10 +3,11 @@
    Figma node 274:75 (Claude-Code file).
 
    Layout:
-     nav (fixed, full-width, overflow-hidden)
-       div.header  (brand left, NavButton right — always visible)
-       div.menu-list (flex:1 card, clips to 0 when collapsed)
-         menuItemWrapper × 4 (each holds one MenuItem)
+     nav (fixed, full-width, overflow-hidden, flex column)
+       div.header       (brand left, NavButton right — always visible)
+       menuItemWrapper × 4 (direct nav children, each flex:1 — evenly
+         split the full expanded height; clipped out of view when
+         collapsed by nav's own locked height + overflow:hidden)
 
    Height is managed entirely by GSAP:
      Collapsed → header-only height (captured on mount)
@@ -32,21 +33,16 @@
   padding: var(--spacing-md) var(--spacing-nav-padding);
 
   /*
-   * No gap here — gap between header and menu card is managed by GSAP as
-   * marginTop on .menuListWrapper. At 0 when collapsed, 16px (--spacing-md)
-   * the instant the card starts revealing on open. This keeps collapsed height
-   * flush to: top-pad + header + bottom-pad (no phantom gap space).
-   *
-   * Collapsed height — GSAP reads offsetHeight on mount and locks it as an
-   * explicit px value so it can interpolate during expand/collapse.
+   * Default/fallback collapsed height — without this, .nav has no height of
+   * its own before the mount effect below runs, so its flex children (the
+   * padded, full-height menu items) are free to dictate the container's own
+   * intrinsic size and the closed nav renders full of visible menu content
+   * on first paint. GSAP overwrites this with an inline height (the real
+   * measured offsetHeight) on mount and interpolates from there.
    */
+  height: var(--nav-height);
 
   transition: background-color 200ms ease;
-}
-
-/* Hover only when collapsed */
-.nav:not(.open):hover {
-  background-color: var(--surface-card);
 }
 
 /* Expanded state — hold surface-card for the full overlay */
@@ -60,8 +56,6 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  /* Additional horizontal padding inside the nav content area */
-  padding: 0 var(--spacing-xl);
   flex-shrink: 0;
   width: 100%;
 }
@@ -74,48 +68,59 @@
   text-decoration: none;
 }
 
-/* ── div.menuListWrapper ──────────────────────────────────── */
+/* ── Menu toggle triggers — desktop text vs. mobile icon ─────
+   Only one is ever visible: .desktopTrigger ≥786px, .mobileTrigger <786px.
+   Both stay mounted at all times (mobileTrigger's morph animation runs
+   regardless of which is visible, kept simple rather than gating on the
+   breakpoint in JS). */
 
-/*
- * Pure height container — no background, no padding, no border-radius.
- * overflow:hidden ensures height:0 fully clips the inner card (including
- * its padding and border). GSAP animates this from 0 → auto on open and
- * resets to 0 on close. margin-top is also GSAP-managed: 0 when collapsed,
- * var(--spacing-md) set instantly at the moment Step 2 begins — so the gap
- * appears without animating, flush with the card reveal.
- */
-.menuListWrapper {
-  overflow: hidden;
-  height: 0; /* initial state — GSAP overrides during open/close */
+.mobileTrigger {
+  display: none;
 }
 
-/* ── div.menu-list ────────────────────────────────────────── */
+@media (max-width: 785px) {
+  .desktopTrigger {
+    display: none;
+  }
 
-/*
- * Styled card inside the wrapper. Height is fully determined by content —
- * the wrapper handles the clip/reveal animation. No flex sizing needed
- * since this element is no longer a direct child of the nav flex column.
- */
-.menuList {
-  background-color: var(--surface-card);
-  border: var(--border-card) var(--border-style-default)
-    var(--surface-card-border);
-  border-radius: var(--radius-lg);
-  padding: var(--spacing-xl);
-
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
+  .mobileTrigger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-sm);
+    border: none;
+    background-color: transparent;
+    color: var(--text-tertiary);
+    cursor: pointer;
+  }
 }
 
 /* ── menuItemWrapper ──────────────────────────────────────── */
 
 /*
- * Wraps each MenuItem. Starts at opacity-0 so GSAP can animate it in
- * during the entrance sequence (border appears first, then label slides up).
+ * Direct child of .nav's flex column. flex:1 makes the 4 items evenly
+ * split whatever vertical space remains below the header once nav is
+ * expanded — flex-basis:0 so their content size doesn't skew the split.
+ * Starts at opacity-0 so GSAP can animate it in during the entrance
+ * sequence (border appears first, then label slides up). See MenuItem.tsx's
+ * .menu-item, which stretches to fill this wrapper's full allotted height.
  */
 .menuItemWrapper {
+  flex: 1 1 0;
+  /* Overrides the flex item's default auto min-size (which floors it at
+     its own content's min height) — without this, the wrapper can't
+     actually shrink to 0 when nav's own height is unconstrained (e.g.
+     the very first paint, before the mount effect locks nav to its
+     collapsed height), so the closed nav rendered full-height on load. */
+  min-height: 0;
+  padding: var(--spacing-xl);
   opacity: 0;
+}
+
+/* Static gap between header and the first item — replaces the old
+   GSAP-managed marginTop on the removed card wrapper. */
+.menuItemWrapper:first-of-type {
+  margin-top: var(--spacing-md);
 }
 
 /* ============================================================

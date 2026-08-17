@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { scheduleScrollTriggerRefresh } from "./scrollTriggerRefresh";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -151,7 +152,7 @@ export default function DataScrollController({
       // The track just grew the page height — refresh so any ScrollTriggers
       // created earlier (e.g. a LabelBlock reveal inside this section) recompute
       // against the new layout.
-      ScrollTrigger.refresh();
+      scheduleScrollTriggerRefresh();
 
       const onResize = () => sizeTrack();
       window.addEventListener("resize", onResize);

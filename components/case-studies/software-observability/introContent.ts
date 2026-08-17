@@ -24,11 +24,11 @@ export const introDescription =
 export const introMeta: IntroMetaItem[] = [
   {
     label: "Company",
-    body: "XOPS is an autonomous IT operations platform for Fortune 500 organizations.",
+    body: "XOPS enables autonomous IT operations for Fortune 500 organizations.",
   },
   {
     label: "Role",
-    body: "Lead Product Designer",
+    body: "Lead Designer",
   },
   {
     label: "Timeline",
@@ -40,14 +40,14 @@ export const introImpact: IntroImpactItem[] = [
   {
     badge: "0 → 1",
     heading: "Platform Expansion",
-    body: "Designed end-to-end software module experience, extending the platform's lifecycle coverage from employees and devices into software and license intelligence.",
+    body: "Designed end-to-end software module experience, extending the platform's coverage from employees and devices into software.",
   },
   {
-    heading: "Millions Reclaimed in License Spend",
-    body: "Established foundation for automated software optimization enabling enterprise customers like Broadcom to surface and recover unused software costs at scale.",
+    heading: "Millions Reclaimed",
+    body: "Established foundation for automated software optimization enabling customers like Broadcom to surface and recover waste at scale.",
   },
   {
-    heading: "Revenue & Sales Enablement",
-    body: "Software Observability became a consistent presence in enterprise sales demos, revealing the depth of XOPS' data model and system of intelligence.",
+    heading: "Revenue & Sales Driver",
+    body: "Software Observability became a consistent presence in enterprise sales demos, revealing the depth of XOPS' system of intelligence.",
   },
 ];

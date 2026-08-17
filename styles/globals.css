@@ -106,6 +106,7 @@
   --color-blue-200:  #9FD2FF;
   --color-blue-300:  #6FBCFF;
   --color-blue-400:  #3FA5FF;
+  --color-blue-450:  #279AFF;
   --color-blue-500:  #0F8FFF;
   --color-blue-600:  #0C72CC;
   --color-blue-700:  #095699;
@@ -162,6 +163,7 @@
   --border-radius-none: 0;
   --border-radius-xs:   4px;
   --border-radius-sm:   6px;   /* was 12px — updated for the primary+icon slide-button redesign, Figma node 384:8384/384:8373 */
+  --border-radius-sm-md: 12px; /* sits between sm/md — the primary+icon redesign above moved sm off of 12px, this is a distinct step */
   --border-radius-md:   16px;
   --border-radius-lg:   32px;
   --border-radius-xl:   48px;
@@ -205,6 +207,7 @@
   --surface-card-border:       var(--color-grey-900);
   --surface-card-border-hover: var(--color-yellow-500);
   --surface-section-inverse:   var(--color-grey-500);
+  --surface-banner:            var(--color-yellow-500);
 
   /* ----------------------------------------------------------
      SEMANTIC — Badge
@@ -236,14 +239,20 @@
   --button-radius:         var(--border-radius-sm);   /* 12px */
   --button-icon-radius:    var(--border-radius-xs);   /* 4px, icon badge */
   --button-border-width:   var(--border-width-xs);    /* 2px */
-  --button-height:         var(--control-height-medium); /* 48px, default */
+  --button-height:         var(--control-height-medium); /* 48px, default, size="medium" */
   --button-height-large:   var(--control-height-large);  /* 64px, size="large" */
-  --button-height-l:       var(--control-height-l);      /* 32px, size="l" */
-  --button-padding-x:      var(--spacing-lg);          /* 24px */
+  --button-height-m:       40px;                       /* size="m" */
+  --button-height-small:   var(--control-height-l);      /* 32px, size="small" */
+  --button-padding-x:      var(--spacing-lg);          /* 24px, size="large" */
+  --button-padding-x-medium: 18px;                     /* size="medium" */
+  --button-padding-x-small:  12px;                     /* size="small" */
   --button-icon-inset:     var(--spacing-sm);          /* 8px — start padding when an icon badge is present */
   --button-gap:            var(--spacing-md);          /* 16px, icon-to-label */
-  --button-icon-size:      var(--spacing-xl);          /* 32px */
+  --button-icon-size:      var(--spacing-xl);          /* 32px, size="medium" */
+  --button-icon-size-m:       var(--icon-md);          /* 24px, size="m" */
+  --button-icon-size-small:   20px;                    /* size="small" */
   --button-icon-padding:   var(--spacing-sm);          /* 8px, inside the icon badge */
+  --button-icon-padding-small: 6px;                    /* size="small" */
 
   --button-bg-primary:        var(--color-blue-500);
   --button-border-primary:    var(--color-blue-500);
@@ -256,6 +265,12 @@
   --button-field-bg-primary:     var(--color-grey-1000);  /* default face's label-side bg */
   --button-content-color-primary:       var(--color-grey-500);  /* icon + label color, default face */
   --button-content-color-primary-hover: var(--color-grey-50);   /* icon + label color, hover face */
+
+  /* Primary, no icon (e.g. About's "Contact Me") — flat centered slide,
+     reuses --button-bg-primary/--button-content-color-primary for its
+     default face; hover face gets its own lighter pair. */
+  --button-bg-primary-flat-hover:             var(--color-blue-450);
+  --button-content-color-primary-flat-hover:  var(--color-grey-400);
 
   --button-bg-secondary:      var(--color-grey-200);
   --button-border-secondary:  var(--color-grey-200);
@@ -276,6 +291,27 @@
   --button-content-color-secondary-badge: var(--color-grey-1000);  /* icon color inside the badge */
   --button-field-bg-secondary:            var(--color-grey-1000);  /* default face's label-side bg */
   --button-content-color-secondary-field: var(--color-grey-500);   /* label color, default face */
+
+  /* Text variant slide-button (e.g. Nav's MENU trigger) — flat centered
+     slide, same push mechanic as primary/secondary's no-icon case.
+     Default face reuses --surface-base/--text-tertiary; hover face gets
+     its own bg (same value as --surface-card, named separately since this
+     is a button-specific token, not a reference to that surface role) and
+     --text-secondary for the label. */
+  --button-bg-text-hover: var(--color-grey-1000);
+
+  /* Menu variant slide-button (Nav's menu items) — flat label-only default
+     face; hover face swaps in the badge/field split (label + icon), same
+     shape as primary+icon's hover face. Mirrors --nav-menu-item-* (Nav.tsx's
+     prior MenuItem-based implementation), adjust independently as needed. */
+  --button-content-color-menu:       var(--nav-menu-item-text);
+  --button-bg-menu-hover:            var(--nav-menu-item-bg-hover);
+  --button-content-color-menu-hover: var(--color-grey-50);
+
+  /* Ghost variant (icon-only, e.g. live-embed banner's expand/collapse) —
+     icon recolors to yellow-500 on hover; background hover fill is
+     --button-bg-text-hover (reused, see .ghost:hover in Button.module.css). */
+  --button-content-color-ghost-hover: var(--color-yellow-500);
 
   /* ----------------------------------------------------------
      SEMANTIC — State
@@ -351,20 +387,6 @@
 
   --breakpoint-mobile:  393px;
   --breakpoint-desktop: 1440px;
-
-  /* ----------------------------------------------------------
-     SEMANTIC — Motion
-     Source: design-system/tokens.json → Semantic.motion
-     Tweak animation feel here without touching component code.
-     ---------------------------------------------------------- */
-
-  --motion-duration-nav-expand:  700ms;
-  --motion-duration-nav-overlay: 500ms;
-  --motion-duration-nav-items:   500ms;
-  --motion-delay-nav-items:      250ms;
-  --motion-stagger-nav-items:    50ms;
-  --motion-easing-nav-expand:    cubic-bezier(0.4, 0, 0.2, 1);
-  --motion-easing-nav-items:     cubic-bezier(0.4, 0, 0.2, 1);
 
   /* ----------------------------------------------------------
      SEMANTIC — Word spacing
@@ -465,6 +487,14 @@
   --text-body-xs-ls:          0;
 
   /* label — static, no clamp */
+  /* label-3xl — Nav's menu items, size="large" below the 900px breakpoint only
+     (see .menu's media query in Button.module.css). Line-height/letter-spacing
+     follow label-2xl's pattern (ratio ×1.2, ls:0) rather than the tighter
+     -0.02em used below 2xl. */
+  --text-label-3xl-size:      72px;
+  --text-label-3xl-lh:        86px;
+  --text-label-3xl-ls:        0;
+
   /* label-2xl — hero "PRODUCT BUILDER" label (Hero.tsx), Figma node 214:7415 */
   --text-label-2xl-size:      32px;
   --text-label-2xl-lh:        32px;

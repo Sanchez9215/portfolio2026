@@ -118,6 +118,7 @@ const PELLET = {
 
 /* ── firing timing ────────────────────────────────────────────── */
 const ACTIVE_EVERY = 8;
+const HOLD_FIRE_EVERY = 4;
 const TAPER_SHOTS = 5;
 const MOUSE_FIRING_ENABLED = false;
 
@@ -249,6 +250,10 @@ interface BounceCanvasProps {
   heroTopContentRef?: React.RefObject<HTMLDivElement>;
   /** Goal 2 — zone the robot migrates toward as the web grows. Wire to imgZoneRef. */
   attractZoneRef?: React.RefObject<HTMLElement>;
+  /** Max concurrent villains. Defaults to 0 (disabled) to preserve existing Home behavior. */
+  villainMaxCount?: number;
+  /** While true, holding the mouse button down fires aimed shots at the cursor. */
+  holdToFire?: boolean;
 }
 
 /* ══════════════════════════════════════════════════════════════ */
@@ -260,6 +265,8 @@ export default function BounceCanvas({
   activeZoneRef,
   spawnZoneRef,
   heroTopContentRef,
+  villainMaxCount = 0,
+  holdToFire = false,
 }: BounceCanvasProps = {}) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const bgCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -280,6 +287,8 @@ export default function BounceCanvas({
     activeZoneRef,
     spawnZoneRef,
     heroTopContentRef,
+    villainMaxCount,
+    holdToFire,
   });
   zonesRef.current = {
     textZones,
@@ -289,6 +298,8 @@ export default function BounceCanvas({
     activeZoneRef,
     spawnZoneRef,
     heroTopContentRef,
+    villainMaxCount,
+    holdToFire,
   };
 
   useEffect(() => {
@@ -851,7 +862,7 @@ export default function BounceCanvas({
       const spd = VILLAIN.speed;
 
       const usedSlots = new Set(villains.map((v) => v.slotIdx));
-      const slotIdx = ([1] as const).find((i) => !usedSlots.has(i)) ?? 1;
+      const slotIdx = ([0, 1] as const).find((i) => !usedSlots.has(i)) ?? 1;
       const size = VILLAIN.w;
 
       const edge = Math.floor(Math.random() * 4); // 0=left 1=right 2=top 3=bottom
@@ -928,6 +939,8 @@ export default function BounceCanvas({
     let taperLeft = 0;
     let taperFrame = 0;
     let isInActiveZone = false;
+    let mouseDown = false;
+    let holdFireFrame = 0;
 
     const firePellet = (wx: number, wy: number, ndx: number, ndy: number) => {
       const len = Math.hypot(ndx, ndy) || 1;
@@ -1023,60 +1036,70 @@ export default function BounceCanvas({
         gsap.set(svg, { x, y });
       }
 
-      /* — passive / active / taper firing — */
-      if (mode === "passive") {
-        if (now >= nextPhaseAt) {
-          switch (passivePhase) {
-            case "longCooldown":
-              firePassive();
-              passivePhase = "shortPause1";
-              nextPhaseAt = now + PASSIVE.shortDelay;
-              break;
-            case "shortPause1":
-              rapidShotsFired = 0;
-              passivePhase = "rapid";
-              nextPhaseAt = now;
-              break;
-            case "rapid":
-              firePassive();
-              rapidShotsFired++;
-              if (rapidShotsFired >= PASSIVE.rapidCount) {
-                passivePhase = "shortPause2";
-                nextPhaseAt = now + PASSIVE.shortDelay;
-              } else nextPhaseAt = now + PASSIVE.rapidInterval;
-              break;
-            case "shortPause2":
-              firePassive();
-              passivePhase = "longCooldown";
-              nextPhaseAt = now + PASSIVE.longCooldown;
-              break;
-          }
-        }
-      } else if (mode === "active") {
-        if (MOUSE_FIRING_ENABLED) {
-          if (++activeFrame >= ACTIVE_EVERY) {
-            activeFrame = 0;
-            fireMouse(mouseX, mouseY);
-          }
-        } else {
-          mode = "passive";
-          passivePhase = "longCooldown";
-          nextPhaseAt = now + 800;
+      /* — hold-to-fire: while mouse is down, fire aimed shots at cursor — */
+      if (zonesRef.current.holdToFire && mouseDown) {
+        if (++holdFireFrame >= HOLD_FIRE_EVERY) {
+          holdFireFrame = 0;
+          fireMouse(mouseX, mouseY);
         }
       } else {
-        if (
-          MOUSE_FIRING_ENABLED &&
-          taperLeft > 0 &&
-          ++taperFrame >= ACTIVE_EVERY
-        ) {
-          taperFrame = 0;
-          fireMouse(mouseX, mouseY);
-          taperLeft--;
-        }
-        if (taperLeft <= 0 || !MOUSE_FIRING_ENABLED) {
-          mode = "passive";
-          passivePhase = "longCooldown";
-          nextPhaseAt = now + 800;
+        holdFireFrame = 0;
+
+        /* — passive / active / taper firing — */
+        if (mode === "passive") {
+          if (now >= nextPhaseAt) {
+            switch (passivePhase) {
+              case "longCooldown":
+                firePassive();
+                passivePhase = "shortPause1";
+                nextPhaseAt = now + PASSIVE.shortDelay;
+                break;
+              case "shortPause1":
+                rapidShotsFired = 0;
+                passivePhase = "rapid";
+                nextPhaseAt = now;
+                break;
+              case "rapid":
+                firePassive();
+                rapidShotsFired++;
+                if (rapidShotsFired >= PASSIVE.rapidCount) {
+                  passivePhase = "shortPause2";
+                  nextPhaseAt = now + PASSIVE.shortDelay;
+                } else nextPhaseAt = now + PASSIVE.rapidInterval;
+                break;
+              case "shortPause2":
+                firePassive();
+                passivePhase = "longCooldown";
+                nextPhaseAt = now + PASSIVE.longCooldown;
+                break;
+            }
+          }
+        } else if (mode === "active") {
+          if (MOUSE_FIRING_ENABLED) {
+            if (++activeFrame >= ACTIVE_EVERY) {
+              activeFrame = 0;
+              fireMouse(mouseX, mouseY);
+            }
+          } else {
+            mode = "passive";
+            passivePhase = "longCooldown";
+            nextPhaseAt = now + 800;
+          }
+        } else {
+          if (
+            MOUSE_FIRING_ENABLED &&
+            taperLeft > 0 &&
+            ++taperFrame >= ACTIVE_EVERY
+          ) {
+            taperFrame = 0;
+            fireMouse(mouseX, mouseY);
+            taperLeft--;
+          }
+          if (taperLeft <= 0 || !MOUSE_FIRING_ENABLED) {
+            mode = "passive";
+            passivePhase = "longCooldown";
+            nextPhaseAt = now + 800;
+          }
         }
       }
 
@@ -1207,7 +1230,10 @@ export default function BounceCanvas({
       /* — villains: spawn, move, off-screen death, robot contact, cluster contact — */
       {
         const activeVillains = villains.filter((v) => !v.dead).length;
-        if (now >= nextVillainSpawnAt && activeVillains < VILLAIN.maxCount) {
+        if (
+          now >= nextVillainSpawnAt &&
+          activeVillains < zonesRef.current.villainMaxCount
+        ) {
           spawnVillain();
           nextVillainSpawnAt = now + VILLAIN.spawnDelay;
         }
@@ -1614,6 +1640,7 @@ export default function BounceCanvas({
     };
 
     const onNodeDown = (e: MouseEvent) => {
+      if (e.target !== svg) mouseDown = true;
       if (e.target === svg) return;
       const mx = e.clientX,
         my = e.clientY;
@@ -1632,6 +1659,7 @@ export default function BounceCanvas({
     };
 
     const onNodeUp = () => {
+      mouseDown = false;
       if (draggingNode) {
         simulation.alphaTarget(SIM.alphaIdleTarget);
         draggingNode.fx = null;

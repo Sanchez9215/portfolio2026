@@ -1,0 +1,37 @@
+/* Bottom banner, live embed (Home only) — always spans the full width of
+   its container (the embed's own box, whatever size that currently is:
+   the small normal-state container, or the full viewport once expanded),
+   icon+text left-aligned within it, 8px padding, top corners rounded.
+   Position/visibility fully owned by the parent's GSAP (yPercent) — no
+   CSS transform default here, same "parent owns it via the forwarded ref"
+   convention as GhostCursor (see its useLayoutEffect gsap.set hide). */
+.banner {
+  position:      absolute;
+  left:          0;
+  right:         0;
+  bottom:        0;
+  z-index:       6; /* above .lockOverlay (5), below GhostCursor (10) */
+  display:       flex;
+  align-items:   center;
+  gap:           var(--spacing-md);
+  width:         auto;
+  padding:       var(--spacing-sm);
+  border-radius: var(--border-radius-sm) var(--border-radius-sm) 0 0;
+  background-color: var(--surface-banner);
+}
+
+/* Full-screen only — square corners (matches the expanded embed box's own
+   border-radius:0). Width/positioning already handled by .banner itself. */
+.expanded {
+  border-radius: 0;
+}
+
+.copy {
+  font-family:    var(--font-family-body);
+  font-weight:    var(--font-weight-regular);
+  font-size:      var(--text-body-sm-size);
+  line-height:    var(--text-body-sm-lh);
+  letter-spacing: var(--text-body-sm-ls);
+  color:          var(--text-dark-display);
+  white-space:    nowrap;
+}

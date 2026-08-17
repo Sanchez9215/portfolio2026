@@ -2,26 +2,31 @@
  * Button — global button component
  *
  * Variants: primary | secondary | outline | link | text
- * Structure mirrors XOPS's Button (design-systems/xops/components/Button.tsx) —
- * discriminated icon/iconOnly union, shared --state-* hover/active buckets.
- * Built from Figma node 228:7718 ("Button Set", Portfolio Cleaning file).
  * Tokens: --button-*, --state-* (styles/globals.css)
  *
  * outline/link variants have no Figma source yet — the type/class exist,
  * but no color tokens are defined for them (TODO, see built-components.md).
  * text variant (bare/ghost, e.g. Nav's MENU trigger) built from Figma node
  * 572:1787 ("Portfolio Cleaning" file).
- * size: medium (default, --control-height-medium 48px) | large (--control-height-large 64px)
- * | l (--control-height-l 32px, label-lg text tier — e.g. Nav's MENU trigger).
+ * size: large (--control-height-large 64px) | medium (default, --control-height-medium
+ * 48px) | m (40px) | small (--control-height-l 32px, e.g. Nav's MENU trigger).
+ * Full 4-size scale + per-size icon/label/padding values sourced from the
+ * button-set Figma node (789:912, "Portfolio Cleaning" file).
  *
- * Primary + icon + labeled buttons (e.g. Hero's WORK) render as two full,
- * absolutely-stacked "faces" instead of a single static layout — the
- * default face (badge left, dark label field right) and the hover face
- * (solid blue, label left / icon right, layout fully reversed) — that slide
- * horizontally on hover: default face exits right, hover face enters from
- * the left, both moving together (a "push"). Reverses smoothly on mouse
- * leave via the same timeline played backwards.
- * Figma: 384:8384 (default) / 384:8373 (hover), "Portfolio Cleaning" file.
+ * Every variant (primary, secondary, text) always renders as two full,
+ * absolutely-stacked "faces" that slide horizontally on hover: default face
+ * exits right, hover face enters from the left, both moving together (a
+ * "push"). Reverses smoothly on mouse leave via the same timeline played
+ * backwards. outline/link fall back to a single static layout (no Figma
+ * hover source yet).
+ *
+ * Primary + icon + labeled buttons (e.g. Hero's WORK) split each face into
+ * a badge (icon) + field (label) — default face: badge left, dark label
+ * field right; hover face: solid blue, label left / icon right, layout
+ * fully reversed. Figma: 384:8384 (default) / 384:8373 (hover), "Portfolio
+ * Cleaning" file. Primary buttons with no icon (e.g. About's "Contact Me")
+ * use a flat centered face instead — no badge/field split, just a
+ * differently-colored label carried across both faces.
  *
  * Secondary label-only buttons (e.g. Hero's Contact) use the same two-face
  * push mechanic with a flat fill — the fill/label color just carries across
@@ -30,6 +35,10 @@
  * structure but recolored (light badge, dark field) per Figma node 641:7270
  * ("Portfolio Cleaning" file); the hover face falls back to secondary's
  * existing flat fill (no Figma hover mock to diverge from).
+ *
+ * Text buttons (e.g. Nav's MENU trigger) use the same flat centered face
+ * as primary/secondary's no-icon case — no Figma hover source, colors
+ * chosen to match the variant's existing default/hover text tiers.
  */
 
 "use client";
@@ -38,8 +47,15 @@ import { ButtonHTMLAttributes, ReactNode, useEffect, useRef } from "react";
 import gsap from "gsap";
 import styles from "./Button.module.css";
 
-export type ButtonVariant = "primary" | "secondary" | "outline" | "link" | "text";
-export type ButtonSize = "medium" | "large" | "l";
+export type ButtonVariant =
+  | "primary"
+  | "secondary"
+  | "outline"
+  | "link"
+  | "text"
+  | "menu"
+  | "ghost";
+export type ButtonSize = "large" | "medium" | "m" | "small";
 
 type ButtonBaseProps = Omit<
   ButtonHTMLAttributes<HTMLButtonElement>,
@@ -51,26 +67,24 @@ type ButtonBaseProps = Omit<
   href?: string;
 };
 
-type ButtonWithLabelProps = ButtonBaseProps & {
-  iconOnly?: false;
+export type ButtonProps = ButtonBaseProps & {
   icon?: ReactNode;
-  children: ReactNode;
+  /** Optional for variant="ghost" (icon-only, no visible label) — pass
+   *  aria-label instead for its accessible name. Required for every other
+   *  variant. */
+  children?: ReactNode;
 };
 
-type ButtonIconOnlyProps = ButtonBaseProps & {
-  iconOnly: true;
-  icon: ReactNode;
-  "aria-label": string;
-  children?: never;
-};
-
-export type ButtonProps = ButtonWithLabelProps | ButtonIconOnlyProps;
-
-// TIMING is a live-tweak surface for the primary+icon slide hover only —
-// edit and save to see changes via Fast Refresh.
+// TIMING is a live-tweak surface for the slide hover only — edit and save
+// to see changes via Fast Refresh. Desktop (mouse) and touch get separate
+// durations: touch's press/release addition this session reused desktop's
+// value, which read as a change to desktop's own hover speed — desktop is
+// restored to its original 0.185s, touch keeps the 0.08s it shipped with.
 const TIMING = {
   slideDuration: 0.185,
   slideEase: "power2.inOut",
+  touchSlideDuration: 0.08,
+  touchSlideEase: "power2.inOut",
 };
 
 export default function Button(props: ButtonProps) {
@@ -84,8 +98,10 @@ export default function Button(props: ButtonProps) {
   } = props;
 
   const hasSlideHover =
-    (variant === "primary" && !!icon && !props.iconOnly) ||
-    (variant === "secondary" && !props.iconOnly);
+    variant === "primary" ||
+    variant === "secondary" ||
+    variant === "text" ||
+    variant === "menu";
 
   const btnRef = useRef<HTMLAnchorElement | HTMLButtonElement | null>(null);
   const defaultFaceRef = useRef<HTMLSpanElement>(null);
@@ -108,14 +124,29 @@ export default function Button(props: ButtonProps) {
       tl.to(defaultFaceEl, { xPercent: 100 }, 0);
       tl.to(hoverFaceEl, { xPercent: 0 }, 0);
 
-      const onEnter = () => tl.play();
-      const onLeave = () => tl.reverse();
-      btnEl.addEventListener("mouseenter", onEnter);
-      btnEl.addEventListener("mouseleave", onLeave);
+      // tl.duration(x) rescales the whole timeline (via timeScale) to run
+      // in exactly x seconds, so mouse and touch can share one timeline/
+      // tween-set but still play at their own independent speeds.
+      const onMouseEnter = () => tl.duration(TIMING.slideDuration).play();
+      const onMouseLeave = () => tl.duration(TIMING.slideDuration).reverse();
+      btnEl.addEventListener("mouseenter", onMouseEnter);
+      btnEl.addEventListener("mouseleave", onMouseLeave);
+      // Touch has no hover state — mirror it with press/release so the
+      // slide is still visible on mobile. touchcancel covers an interrupted
+      // touch (scroll takeover, OS gesture, finger dragged off the button)
+      // so the hover face can't get stuck in its pressed state.
+      const onTouchStart = () => tl.duration(TIMING.touchSlideDuration).play();
+      const onTouchEnd = () => tl.duration(TIMING.touchSlideDuration).reverse();
+      btnEl.addEventListener("touchstart", onTouchStart, { passive: true });
+      btnEl.addEventListener("touchend", onTouchEnd);
+      btnEl.addEventListener("touchcancel", onTouchEnd);
 
       return () => {
-        btnEl.removeEventListener("mouseenter", onEnter);
-        btnEl.removeEventListener("mouseleave", onLeave);
+        btnEl.removeEventListener("mouseenter", onMouseEnter);
+        btnEl.removeEventListener("mouseleave", onMouseLeave);
+        btnEl.removeEventListener("touchstart", onTouchStart);
+        btnEl.removeEventListener("touchend", onTouchEnd);
+        btnEl.removeEventListener("touchcancel", onTouchEnd);
       };
     }, btnEl);
 
@@ -125,42 +156,21 @@ export default function Button(props: ButtonProps) {
   const cls = [
     styles.btn,
     styles[variant],
-    size !== "medium" ? styles[size] : null,
-    icon && !hasSlideHover ? styles.hasIcon : null,
+    styles[size],
+    icon && !hasSlideHover && variant !== "ghost" ? styles.hasIcon : null,
     hasSlideHover ? styles.hasSlideHover : null,
     className,
   ]
     .filter(Boolean)
     .join(" ");
 
-  if (props.iconOnly) {
-    const { "aria-label": ariaLabel, ...buttonRest } = rest as Omit<
-      ButtonIconOnlyProps,
-      "variant" | "icon" | "href" | "className" | "iconOnly"
-    >;
-    return (
-      <button
-        type="button"
-        className={cls}
-        aria-label={ariaLabel}
-        {...buttonRest}
-      >
-        {icon && (
-          <span className={styles.iconBadge} aria-hidden="true">
-            {icon}
-          </span>
-        )}
-      </button>
-    );
-  }
-
   const { children, ...buttonRest } = rest as Omit<
-    ButtonWithLabelProps,
-    "variant" | "icon" | "href" | "className" | "iconOnly"
+    ButtonProps,
+    "variant" | "icon" | "href" | "className"
   >;
 
   const content =
-    hasSlideHover && variant === "primary" ? (
+    hasSlideHover && variant === "primary" && icon ? (
       <>
         <span ref={defaultFaceRef} className={styles.defaultFace}>
           <span className={styles.faceBadge} aria-hidden="true">
@@ -179,6 +189,19 @@ export default function Button(props: ButtonProps) {
             <span className={styles.label}>{children}</span>
           </span>
           <span className={styles.faceBadge}>{icon}</span>
+        </span>
+      </>
+    ) : hasSlideHover && variant === "primary" ? (
+      <>
+        <span ref={defaultFaceRef} className={styles.primaryFlatDefaultFace}>
+          <span className={styles.label}>{children}</span>
+        </span>
+        <span
+          ref={hoverFaceRef}
+          className={styles.primaryFlatHoverFace}
+          aria-hidden="true"
+        >
+          <span className={styles.label}>{children}</span>
         </span>
       </>
     ) : hasSlideHover && variant === "secondary" && icon ? (
@@ -216,6 +239,37 @@ export default function Button(props: ButtonProps) {
           <span className={styles.label}>{children}</span>
         </span>
       </>
+    ) : hasSlideHover && variant === "text" ? (
+      <>
+        <span ref={defaultFaceRef} className={styles.textDefaultFace}>
+          <span className={styles.label}>{children}</span>
+        </span>
+        <span
+          ref={hoverFaceRef}
+          className={styles.textHoverFace}
+          aria-hidden="true"
+        >
+          <span className={styles.label}>{children}</span>
+        </span>
+      </>
+    ) : hasSlideHover && variant === "menu" ? (
+      <>
+        <span ref={defaultFaceRef} className={styles.menuDefaultFace}>
+          <span className={styles.label}>{children}</span>
+        </span>
+        <span
+          ref={hoverFaceRef}
+          className={styles.menuHoverFace}
+          aria-hidden="true"
+        >
+          <span className={styles.label}>{children}</span>
+          <span className={styles.iconBadge}>{icon}</span>
+        </span>
+      </>
+    ) : variant === "ghost" ? (
+      <span className={styles.ghostIcon} aria-hidden="true">
+        {icon}
+      </span>
     ) : (
       <>
         {icon && (

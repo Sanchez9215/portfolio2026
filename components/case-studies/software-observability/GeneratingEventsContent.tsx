@@ -8,6 +8,7 @@ import LabelBlock from "@/components/LabelBlock";
 import Block from "@/components/Block";
 import ImgCard from "@/components/ImgCard";
 import styles from "@/app/work/software-observability/software-observability.module.css";
+import { scheduleScrollTriggerRefresh } from "./scrollTriggerRefresh";
 
 gsap.registerPlugin(ScrollTrigger, MorphSVGPlugin);
 
@@ -172,7 +173,7 @@ export default function GeneratingEventsContent() {
       });
       gsap.set(stepEls, { opacity: 0, y: 16 });
 
-      ScrollTrigger.refresh();
+      scheduleScrollTriggerRefresh();
 
       // Phase 1 — funnel morphs from flat to its full shape over the
       // section's first 25% of viewport entry.

@@ -9,6 +9,11 @@
   width:         100%;
   aspect-ratio:  16 / 10;
   overflow:      hidden;
+  /* Makes this box the containing block for position:fixed descendants (e.g.
+     SidePanel's overlay) so they stay confined and scaled within the embed
+     instead of bleeding out to the real viewport — same fix already applied
+     in SoftwareExperienceEmbed.module.css; see SidePanel.tsx's comment. */
+  contain:       layout;
 }
 
 .canvas {

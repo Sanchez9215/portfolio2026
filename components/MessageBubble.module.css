@@ -1,0 +1,20 @@
+/* div.bubble — Figma node 796:930. Sharp bottom-left corner (points at the
+   anchor, e.g. the ghost cursor); the other three corners share the new
+   --border-radius-sm-md step (12px — between the existing sm/md primitives,
+   see globals.css). */
+.bubble {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  background: var(--surface-card);
+  color: var(--text-secondary);
+  font-family: var(--font-family-body);
+  font-weight: var(--font-weight-regular);
+  font-size: var(--text-body-sm-size);
+  line-height: var(--text-body-sm-lh);
+  letter-spacing: var(--text-body-sm-ls);
+  padding-inline: var(--spacing-md);
+  padding-block: var(--spacing-sm);
+  border-radius: var(--border-radius-sm-md) var(--border-radius-sm-md)
+    var(--border-radius-sm-md) 0;
+}

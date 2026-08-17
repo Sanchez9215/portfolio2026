@@ -11,7 +11,7 @@ import TheProblemPinnedScene from "@/components/case-studies/software-observabil
 import QuoteBlock from "@/components/QuoteBlock";
 import ContentHub from "@/components/ContentHub";
 import ImgCard from "@/components/ImgCard";
-import GapsIdentifiedHexScene from "@/components/case-studies/software-observability/GapsIdentifiedHexScene";
+// import GapsIdentifiedHexScene from "@/components/case-studies/software-observability/GapsIdentifiedHexScene";
 import SoftwareProfileIssuesHotspots from "@/components/case-studies/software-observability/SoftwareProfileIssuesHotspots";
 import InsightsGoalsContent from "@/components/case-studies/software-observability/InsightsGoalsContent";
 import CardRow from "@/components/CardRow";
@@ -302,9 +302,10 @@ export default function SoftwareObservabilityPage() {
           </div>
         </Section>
 
-        <Section className={styles.gapsIdentified}>
+        {/* Gaps Identified section hidden per user request. */}
+        {/* <Section className={styles.gapsIdentified}>
           <GapsIdentifiedHexScene className={styles.gapsIdentifiedScene} />
-        </Section>
+        </Section> */}
 
         <Section className={styles.allSoftwareView}>
           <LabelBlock

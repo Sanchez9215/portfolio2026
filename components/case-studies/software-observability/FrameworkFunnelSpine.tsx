@@ -5,6 +5,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { MorphSVGPlugin } from "gsap/MorphSVGPlugin";
 import styles from "@/app/work/software-observability/software-observability.module.css";
+import { scheduleScrollTriggerRefresh } from "./scrollTriggerRefresh";
 
 gsap.registerPlugin(ScrollTrigger, MorphSVGPlugin);
 
@@ -106,7 +107,7 @@ export default function FrameworkFunnelSpine() {
         attr: { x1: m.centerX, x2: m.centerX, y1: spineStartY, y2: spineStartY },
       });
 
-      ScrollTrigger.refresh();
+      scheduleScrollTriggerRefresh();
 
       // Top funnel morphs flat → shape over the first 25% of the Framework
       // section's entry.

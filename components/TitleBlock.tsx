@@ -8,7 +8,7 @@ interface TitleBlockProps {
   /** 'xl' is Title-only (Hero's standalone headline) — not part of TitleBlock's shared Title+Block scale */
   size: Exclude<TitleSize, 'xl'>
   title: string
-  body?: string
+  body?: React.ReactNode
   inverse?: boolean
   titleColor?: 'tertiary'
   className?: string
