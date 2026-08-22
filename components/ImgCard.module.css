@@ -93,6 +93,14 @@
   flex-direction: column;
   gap:            var(--spacing-sm);
   width:          100%;
+  position:       sticky;
+  top:            var(--nav-height);
+  /* Above AnnotationConnectorHotspot's .overlay (z-index: 10) so hotspot
+     tooltips stack under this header, not over it — otherwise they'd render
+     on top of the opaque background below, making it look see-through. */
+  z-index:        20;
+  background:     var(--surface-base);
+  padding-block:  var(--spacing-md);
 }
 
 .embedHeaderRow {
@@ -130,5 +138,5 @@
 }
 
 .progressSegmentFilled {
-  background: var(--text-primary);
+  background: var(--text-accent);
 }

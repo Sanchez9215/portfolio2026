@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import ImgCard from "@/components/ImgCard";
@@ -8,7 +8,6 @@ import LiveEmbed from "@/components/LiveEmbed";
 import HotspotOverlay, { Hotspot } from "@/components/HotspotOverlay";
 // import HoverRevealOverlay from "@/components/HoverRevealOverlay"; — disabled for now,
 // trying the AnnotationConnectorHotspot style instead (see below).
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import AnnotationConnectorHotspot, {
   AnnotationHotspotData,
 } from "./AnnotationConnectorHotspot";
@@ -251,7 +250,8 @@ const TOP_NON_COMPLIANT_ANNOTATION_HOTSPOT: AnnotationHotspotData = {
 // All hotspots visible at once, except stage-level-alerting (its own
 // connector/tooltip targets the alert modal, hidden for now — the alert
 // button's own cutout stays visible via ALERT_BUTTON_ANNOTATION_HOTSPOT) —
-// data untouched, just not rendered.
+// data untouched, kept for reference (superseded by the card-by-card player,
+// which walks REAL_ANNOTATION_HOTSPOTS one at a time instead).
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const ANNOTATION_HOTSPOTS: AnnotationHotspotData[] = [
   ...REAL_ANNOTATION_HOTSPOTS.filter((h) => h.targetId !== "alert-modal"),
@@ -283,7 +283,7 @@ export default function OverviewPrototypeHotspots({
     !disableHotspots && activeIndex !== null ? HOTSPOTS[activeIndex] : null;
 
   // Pre-walkthrough countdown (embed variant only) — starts once the fade-in
-  // ScrollTrigger below fires (not on mount), ticks 8 → 0 once, then holds at
+  // ScrollTrigger below fires (not on mount), ticks 5 → 0 once, then holds at
   // 0 until the card-by-card advance logic (not built yet) takes over. No
   // segments are filled during the countdown itself.
   const [countdown, setCountdown] = useState<number | null>(null);
@@ -292,6 +292,41 @@ export default function OverviewPrototypeHotspots({
     const timer = setTimeout(() => setCountdown((c) => (c ?? 0) - 1), 1000);
     return () => clearTimeout(timer);
   }, [disableHotspots, countdown]);
+
+  // Card-by-card reveal (embed variant only) — starts once the countdown
+  // above hits 0. -1 = not started yet (countdown still running or hasn't
+  // fired). Holds at the last real index once the sequence finishes (no
+  // Prototype 1 → 2 handoff built yet).
+  const [cardStep, setCardStep] = useState(-1);
+  useEffect(() => {
+    if (disableHotspots && countdown === 0 && cardStep === -1) {
+      setCardStep(0);
+    }
+  }, [disableHotspots, countdown, cardStep]);
+
+  // Per-card duration: 4s floor + 300ms/word in the card's body (~200wpm),
+  // so a short card still gets a readable minimum and a longer one gets
+  // proportionally more time. Advances automatically; holds forever on the
+  // last card (no timer scheduled past the final index).
+  useEffect(() => {
+    if (!disableHotspots || cardStep < 0 || cardStep >= HOTSPOTS.length - 1) {
+      return;
+    }
+    const body = HOTSPOTS[cardStep].body;
+    const wordCount = body.trim().split(/\s+/).filter(Boolean).length;
+    const duration = Math.max(4000, wordCount * 300);
+    const timer = setTimeout(() => setCardStep((s) => s + 1), duration);
+    return () => clearTimeout(timer);
+  }, [disableHotspots, cardStep]);
+
+  // Single-item array so AnnotationConnectorHotspot's existing all-at-once
+  // rendering shows just the current card's spotlight + tooltip — no changes
+  // needed to that component itself. Memoized so its measurement effect only
+  // re-runs when the active card actually changes.
+  const activeCardHotspots = useMemo(
+    () => (cardStep >= 0 ? [REAL_ANNOTATION_HOTSPOTS[cardStep]] : []),
+    [cardStep],
+  );
 
   // Fade-in + countdown start, gated on scroll: fires once the "Prototype
   // Validation" display text's bottom edge passes the viewport's top edge
@@ -322,7 +357,7 @@ export default function OverviewPrototypeHotspots({
               duration: 1,
               ease: "power2.out",
             });
-            setCountdown(8);
+            setCountdown(5);
           },
         });
       });
@@ -332,7 +367,7 @@ export default function OverviewPrototypeHotspots({
           trigger: labelBlock,
           start: "bottom top",
           once: true,
-          onEnter: () => setCountdown(8),
+          onEnter: () => setCountdown(5),
         });
       });
     });
@@ -383,7 +418,16 @@ export default function OverviewPrototypeHotspots({
       : active;
   // Modal is forced open from beat 1 onward, left under the button's own click
   // control outside this hotspot entirely.
-  const forceAlertsOpen = isAlerting ? subBeatIndex >= 1 : undefined;
+  const scrollForceAlertsOpen = isAlerting ? subBeatIndex >= 1 : undefined;
+  // Card-by-card player: single tooltip, but the card itself opens the modal
+  // (per user request — no separate highlight-then-modal split like the old
+  // scroll sequence) — open for exactly the stage-level-alerting card, closed
+  // otherwise.
+  const cardForceAlertsOpen =
+    disableHotspots && HOTSPOTS[cardStep]?.id === "stage-level-alerting";
+  const forceAlertsOpen = disableHotspots
+    ? cardForceAlertsOpen
+    : scrollForceAlertsOpen;
   // Pan stays on the active hotspot's own targets across all its sub-beats
   // (e.g. alerting keeps centered on the button/rows through modal open+close),
   // not just while the overlay itself is showing.
@@ -399,6 +443,7 @@ export default function OverviewPrototypeHotspots({
         caption="Overview Prototype 01"
         allowOverflow={disableHotspots}
         progressSteps={disableHotspots ? HOTSPOTS.length : undefined}
+        activeStep={disableHotspots ? cardStep : undefined}
         countdownSeconds={disableHotspots ? countdown : undefined}
       >
         <div ref={embedWrapperRef} style={{ position: "relative" }}>
@@ -427,16 +472,14 @@ export default function OverviewPrototypeHotspots({
               nativeWidth={1440}
             />
           )}
-          {/* AnnotationConnectorHotspot (tooltips + shared spotlight overlay)
-              hidden for now per user request — data/props untouched, not
-              rendered. */}
-          {/* {disableHotspots && (
+          {disableHotspots && activeCardHotspots.length > 0 && (
             <AnnotationConnectorHotspot
+              key={cardStep}
               containerRef={embedWrapperRef}
               nativeWidth={1440}
-              hotspots={ANNOTATION_HOTSPOTS}
+              hotspots={activeCardHotspots}
             />
-          )} */}
+          )}
         </div>
       </ImgCard>
     </div>
