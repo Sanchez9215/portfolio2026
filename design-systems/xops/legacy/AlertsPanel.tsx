@@ -14,14 +14,34 @@ export type AlertItem = {
   cta: string;
   /** Product names this alert calls out — drives the main table's row tint for the active stage. */
   relatedSoftware?: string[];
+  /** Product names to bold within `description` — separate from `relatedSoftware` since a
+   *  description can reference a product (e.g. a duplicate-tool comparison) that isn't the
+   *  row being tinted. */
+  descriptionHighlights?: string[];
 };
+
+// Bolds every occurrence of each `highlights` string found in `text`.
+function renderHighlightedDescription(text: string, highlights: string[] | undefined, styles: Record<string, string>) {
+  if (!highlights || highlights.length === 0) return text;
+  const pattern = highlights.map((name) => name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|");
+  const parts = text.split(new RegExp(`(${pattern})`, "g"));
+  return parts.map((part, index) =>
+    highlights.includes(part) ? (
+      <span className={styles.cardDescriptionHighlight} key={index}>
+        {part}
+      </span>
+    ) : (
+      part
+    )
+  );
+}
 
 export type AlertsPanelProps = {
   open: boolean;
   onClose: () => void;
   stageLabel: string;
   alerts: AlertItem[];
-  /** Element the backdrop matches exactly (top/bottom) instead of the full viewport —
+  /** The element this panel portals into and fills (position: absolute; inset: 0) —
    *  e.g. the live-embed's img wrapper. The panel itself insets 32px inside that via CSS. */
   boundsRef?: React.RefObject<HTMLElement>;
   /** Whether the backdrop dims the area behind it — default true. Set false when a
@@ -36,11 +56,6 @@ export type AlertsPanelProps = {
 const FADE_MS = 250;
 
 export function AlertsPanel({ open, onClose, stageLabel, alerts, boundsRef, dimmed = true }: AlertsPanelProps) {
-  // Portal-safe mount check — createPortal needs document.body, which doesn't
-  // exist during SSR.
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
-
   // Lags `open` by the fade duration on close so the panel crossfades out
   // instead of unmounting the instant `open` goes false (which previously made
   // it vanish abruptly, e.g. right as a pinned hotspot section released).
@@ -63,38 +78,27 @@ export function AlertsPanel({ open, onClose, stageLabel, alerts, boundsRef, dimm
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [open, onClose]);
 
-  // Measures the bounds element live rather than once — window resize (or the
-  // pinned frame's own height recalculating) can shift it while the modal is open.
-  const [bounds, setBounds] = useState<{ top: number; bottom: number } | null>(null);
-  useEffect(() => {
-    const el = boundsRef?.current;
-    // Deliberately don't clear bounds when `open` goes false — keep the last
-    // measured region so the backdrop doesn't jump to full-viewport size while
-    // it's fading out.
-    if (!open || !el) return;
-    const measure = () => {
-      const rect = el.getBoundingClientRect();
-      setBounds({ top: rect.top, bottom: window.innerHeight - rect.bottom });
-    };
-    measure();
-    window.addEventListener("resize", measure);
-    return () => window.removeEventListener("resize", measure);
-  }, [open, boundsRef]);
+  // Portal-safe mount check — boundsRef.current doesn't exist until after the
+  // bounds element itself has mounted.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
-  if (!rendered || !mounted) return null;
+  if (!rendered || !mounted || !boundsRef?.current) return null;
 
-  // Portaled to document.body — this panel's `position: fixed` backdrop needs to
-  // be relative to the real viewport, but it's rendered inside LiveEmbed's scaled/
-  // panned canvas, and any transformed ancestor becomes the containing block for
-  // fixed descendants (per spec), confining it to the canvas's own box instead.
+  // Portaled into boundsRef's own element (not document.body) with `position:
+  // absolute` (not `fixed`) — this element (the live-embed's img wrapper) is
+  // never itself transformed, only LiveEmbed's inner scaled/panned canvas is,
+  // so an absolute child here needs no JS-measured bounds at all: it's normal
+  // document flow, scrolling with the page exactly like everything else on it.
+  // (A `position: fixed` + document.body portal was tried first, matching the
+  // real viewport instead — but that requires re-measuring the bounds element's
+  // position on every scroll event, which always lags a frame behind the
+  // browser's own scroll compositing and reads as a visible jiggle/hunt.)
   return createPortal(
     <div
       className={`${styles.backdrop} ${open ? styles.backdropVisible : ""}`}
       onClick={onClose}
-      style={{
-        ...(bounds ? { top: bounds.top, bottom: bounds.bottom } : undefined),
-        ...(dimmed ? undefined : { backgroundColor: "transparent" }),
-      }}
+      style={dimmed ? undefined : { backgroundColor: "transparent" }}
     >
       <div
         className={styles.panel}
@@ -105,7 +109,7 @@ export function AlertsPanel({ open, onClose, stageLabel, alerts, boundsRef, dimm
       >
         <div className={styles.header}>
           <div className={styles.headerLeft}>
-            <h3 className={styles.title}>Alerts</h3>
+            <h3 className={styles.title}>{stageLabel} Alerts</h3>
             <span className={styles.countBadge}>{alerts.length}</span>
           </div>
           <button type="button" className={styles.closeButton} onClick={onClose} aria-label="Close alerts">
@@ -115,13 +119,13 @@ export function AlertsPanel({ open, onClose, stageLabel, alerts, boundsRef, dimm
         <div className={styles.list}>
           {alerts.map((alert, index) => (
             <div className={styles.card} key={index}>
-              <span className={styles.cardIcon}>
-                <Icon name="warning" color="var(--xops-status-danger-solid)" />
-              </span>
+              <Icon name="warning" color="var(--xops-status-danger-solid)" className={styles.cardIcon} />
               <div className={styles.cardContent}>
                 <div className={styles.cardText}>
                   <p className={styles.cardTitle}>{alert.title}</p>
-                  <p className={styles.cardDescription}>{alert.description}</p>
+                  <p className={styles.cardDescription}>
+                    {renderHighlightedDescription(alert.description, alert.descriptionHighlights, styles)}
+                  </p>
                 </div>
                 <Button variant="secondary" className={styles.cardCta}>
                   {alert.cta}
@@ -132,7 +136,7 @@ export function AlertsPanel({ open, onClose, stageLabel, alerts, boundsRef, dimm
         </div>
       </div>
     </div>,
-    document.body
+    boundsRef.current
   );
 }
 

@@ -66,9 +66,9 @@ export default function LifecycleTimelineHotspots() {
   // useScrollHotspotSequence).
   return (
     <div ref={pinRef} className={styles.centerRow}>
-      <ImgCard variant="card" caption="Lifecycle Timeline">
+      <ImgCard caption="Lifecycle Timeline">
         <div ref={embedWrapperRef} className={styles.embedWrapper}>
-          <LiveEmbed nativeWidth={580}>
+          <LiveEmbed nativeWidth={580} disableCanvasTransition>
             {/* LifecycleTimeline is normally a Lifecycle-tab body inside SoftwareProfileLegacy's
                 SidePanel — this reproduces that panel's visual chrome around it, same technique
                 as SoftwareProfileLegacyHotspots. */}
@@ -89,6 +89,7 @@ export default function LifecycleTimelineHotspots() {
             containerRef={embedWrapperRef}
             active={active}
             settled={settled}
+            nativeWidth={580}
           />
         </div>
       </ImgCard>

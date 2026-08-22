@@ -130,6 +130,7 @@
 
   /* Primitives — icon size */
   --xops-icon-size-16: 16px;
+  --xops-icon-size-18: 18px;
   --xops-icon-size-20: 20px;
 
   /* Primitives — control height (shared across Button/Dropdown/Input) */
@@ -147,6 +148,7 @@
   --xops-bar-height: 24px;
   --xops-bar-height-18: 18px;
   --xops-bar-height-16: 16px;
+  --xops-bar-height-8: 8px;
 
   /* Primitives — elevation (first value, from Tooltip) */
   --xops-elevation-1: 0px 16px 50px 0px rgba(148, 163, 184, 0.02),
@@ -188,7 +190,7 @@
 
   /* Semantic — surface */
   --xops-surface-table-header: var(--xops-grey-50);
-  --xops-surface-table-row-hover: var(--xops-grey-50);
+  --xops-surface-table-row-hover: var(--xops-grey-100);
   --xops-surface-pagination-bar: rgba(200, 208, 218, 0.25);
   --xops-surface-selected: var(--xops-brand-50);
   --xops-surface-empty-state: var(--xops-grey-50);

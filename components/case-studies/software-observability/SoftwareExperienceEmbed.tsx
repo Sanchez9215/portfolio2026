@@ -783,6 +783,7 @@ export default function SoftwareExperienceEmbed({
   // Phase 1: brief static hold on Overview, scroll down to the Lifecycle
   // Stage table, scroll back up, then click the Sidebar's "All Software" item.
   useEffect(() => {
+    if (enableExpandedView && !canPortal) return; // content not portaled yet
     const wrapper = wrapperRef.current;
     const cursor = cursorRef.current;
     if (!wrapper || !cursor || !entranceReady) return;
@@ -931,6 +932,8 @@ export default function SoftwareExperienceEmbed({
     cursorFadeInMarkMs,
     cursorFadeInDuration,
     sequenceStartMarkMs,
+    enableExpandedView,
+    canPortal,
   ]);
 
   // Phase 2: once All Software has mounted, move the cursor to the Adobe
@@ -940,6 +943,7 @@ export default function SoftwareExperienceEmbed({
   // panel itself down to Inactive License Distribution, pause, scroll back
   // up, then unlock.
   useEffect(() => {
+    if (enableExpandedView && !canPortal) return; // content not portaled yet
     if (screen !== "all-software" || !runPhaseTwo.current) return;
     runPhaseTwo.current = false;
 
@@ -1078,7 +1082,7 @@ export default function SoftwareExperienceEmbed({
       activeTweensRef.current.forEach((t) => t.kill());
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [screen]);
+  }, [screen, enableExpandedView, canPortal]);
 
   const content = (
     <div ref={wrapperRef} className={styles.wrapper}>

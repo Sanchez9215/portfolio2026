@@ -19,6 +19,12 @@
   width:         100%;
 }
 
+/* allowOverflow prop — lets content (e.g. a hotspot tooltip) render past this
+   wrapper's own edges instead of being clipped. */
+.imgWrapperOverflowVisible {
+  overflow: visible;
+}
+
 /* div.inner — multi-image variant: row layout */
 .innerMulti {
   flex-direction: row;
@@ -77,4 +83,52 @@
    the original image-then-label order). */
 .bare .labelWrapper {
   order: -1;
+}
+
+/* ── variant="embed" header — caption + countdown row, then a progress-
+   segment track, both above the embed. Replaces the bottom .labelWrapper
+   caption entirely for this variant (see ImgCard.tsx). */
+.embedHeader {
+  display:        flex;
+  flex-direction: column;
+  gap:            var(--spacing-sm);
+  width:          100%;
+}
+
+.embedHeaderRow {
+  display:         flex;
+  align-items:     center;
+  justify-content: space-between;
+  gap:             var(--spacing-md);
+}
+
+.countdown {
+  font-family: var(--font-family-body);
+  font-size:   var(--text-body-sm-size);
+  color:       var(--text-secondary);
+  white-space: nowrap;
+}
+
+.countdownValue {
+  font-size:   var(--text-label-md-size);
+  font-weight: var(--font-weight-bold);
+  color:       var(--text-primary);
+  margin-left: var(--spacing-sm);
+}
+
+.progressTrack {
+  display: flex;
+  gap:     var(--spacing-xs);
+  width:   100%;
+}
+
+.progressSegment {
+  flex:          1;
+  height:        2px;
+  border-radius: var(--border-radius-full);
+  background:    var(--text-tertiary);
+}
+
+.progressSegmentFilled {
+  background: var(--text-primary);
 }

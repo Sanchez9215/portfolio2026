@@ -14,6 +14,7 @@ import type {
   PublisherAssignmentRow,
   IdentityActivityRow,
   OpenSourceRow,
+  DiscoveryRow,
   ProductCatalogEntry,
   LifecycleStage,
   WorkerStatus,
@@ -23,6 +24,11 @@ import { PRODUCT_CATALOG } from "./catalog";
 // Fixed "as of" date so activity windows, renewals, and tenure are all deterministic.
 export const AS_OF = new Date("2026-01-15T00:00:00Z");
 const COMPANY_DOMAIN = "vantageglobal.com";
+
+// Discovery-scan freshness window for compliance (complianceMetrics.ts) — matches the
+// 60-day figure already used elsewhere in the app (Usage card's inactivity threshold),
+// kept as one named constant so both stay in sync if it ever changes.
+export const DISCOVERY_FRESHNESS_DAYS = 60;
 
 // ---------------------------------------------------------------------------
 // Seeded PRNG (mulberry32) + typed helpers
@@ -390,7 +396,10 @@ function contractWindow(rng: Rng, stage: Exclude<LifecycleStage, "evaluation">):
   }
   if (stage === "renewal") {
     effective = addMonths(AS_OF, -rng.int(10, 34));
-    expiration = addDays(AS_OF, rng.int(5, 180));
+    // Most renewal-stage contracts are still ahead of their end date; a subset (~28%)
+    // have already lapsed — expired but still in active use, the real case that drives
+    // compliance's Expired-and-active state (complianceMetrics.ts).
+    expiration = rng.chance(0.42) ? addDays(AS_OF, -rng.int(15, 160)) : addDays(AS_OF, rng.int(5, 180));
   } else {
     // operational
     effective = addMonths(AS_OF, -rng.int(7, 28));
@@ -403,6 +412,7 @@ function contractWindow(rng: Rng, stage: Exclude<LifecycleStage, "evaluation">):
 function buildContractsAndUsage(
   rng: Rng,
   employees: HrRow[],
+  shadowOnlySkus: Set<string>,
 ): {
   procurement: ProcurementRow[];
   evaluation: EvaluationRow[];
@@ -424,6 +434,11 @@ function buildContractsAndUsage(
   let reqSeq = 100;
 
   for (const product of PRODUCT_CATALOG) {
+    // Shadow IT — no procurement, no evaluation request, no admin-console assignment;
+    // IT/procurement has zero record of this title at all. Handled entirely by
+    // buildShadowIt() below instead of the normal pipeline.
+    if (shadowOnlySkus.has(product.sku)) continue;
+
     // Population the product draws from, and its reach into that population.
     const pool =
       product.affinity && product.affinity.length > 0
@@ -497,7 +512,23 @@ function buildContractsAndUsage(
 
     // ----- Seat-based (enterprise / perpetual): contract + assignments + activity -----
     const assignedCount = Math.min(target, pool.length);
-    const quantity = Math.ceil(assignedCount / rng.float(0.8, 0.95)); // purchased ≥ assigned
+
+    // Over-Assigned generator (SaaS only): a subset of SaaS titles simulate self-service
+    // assignment / true-up lag — admins assign ahead of the next purchasing cycle, so
+    // entitled quantity ends up below what's actually assigned. On-prem titles always
+    // keep purchased ≥ assigned; their overage shows up as Over-Deployed installs instead
+    // (buildDiscovery below), never as Over-Assigned. Already-lapsed contracts are
+    // excluded — severity ordering (Expired-and-active > Over-Assigned) would reclassify
+    // them anyway, so applying both here would just be wasted generation, not a real
+    // dual-violation title (that combination is real but rare — not manufactured here).
+    const overAssignRng = createRng(hashString(product.sku + "|overassign"));
+    const overAssigned = product.deliveryModel === "saas" && expiration >= AS_OF && overAssignRng.chance(0.17);
+    // Both branches draw from overAssignRng (never the shared `rng`) so toggling which
+    // titles are over-assigned can never perturb any other product's shared-stream draws
+    // downstream — the instability that made this generator hard to tune independently.
+    const quantity = overAssigned
+      ? Math.max(1, Math.round(assignedCount * overAssignRng.float(0.55, 0.78)))
+      : Math.ceil(assignedCount / overAssignRng.float(0.8, 0.95)); // purchased ≥ assigned
 
     const isPerpetual = product.licenseModel === "perpetual";
     const acquisitionCost = isPerpetual ? quantity * unitPrice : undefined;
@@ -559,6 +590,21 @@ function buildContractsAndUsage(
       } else {
         lastActivityAt = iso(addDays(AS_OF, -rng.int(91, 500)));
       }
+      // Already-lapsed SaaS contracts: guarantee most active users' last login lands
+      // after the contract's own expiration date, not just "fresh" — this is what
+      // actually drives Expired-and-active volume for SaaS (only a handful of contracts
+      // ever lapse, so each needs real weight, not just natural activity-date overlap).
+      // Uses its own hashed RNG (not the shared stream) so it can never perturb which
+      // OTHER products land in which lifecycle stage — that instability is what made this
+      // whole tuning pass chase phantom effects for a while.
+      if (product.deliveryModel === "saas" && expiration < AS_OF && active) {
+        const lapseRng = createRng(hashString(product.sku + "|" + emp.email + "|lapseactivity"));
+        if (lapseRng.chance(0.65)) {
+          const floor = expiration > addDays(AS_OF, -89) ? expiration : addDays(AS_OF, -89);
+          const span = Math.max(1, Math.floor((AS_OF.getTime() - floor.getTime()) / DAY_MS));
+          lastActivityAt = iso(addDays(floor, lapseRng.int(1, span)));
+        }
+      }
       identity.push({
         userEmail: emp.email,
         targetApp: product.sku,
@@ -572,6 +618,190 @@ function buildContractsAndUsage(
   return { procurement, evaluation, openSource, publisher, identity };
 }
 
+// Discovery scan — the "consumed" side of compliance (installed instances), generated
+// independently of assignments so it can legitimately diverge from entitled quantity
+// (real agent inventory never lines up perfectly with license records).
+function buildDiscovery(
+  rng: Rng,
+  procurement: ProcurementRow[],
+  publisher: PublisherAssignmentRow[],
+): DiscoveryRow[] {
+  const discovery: DiscoveryRow[] = [];
+  let deviceSeq = 100000;
+  const nextDeviceId = () => `DEV-${String(deviceSeq++)}`;
+
+  const assignmentsBySku = new Map<string, PublisherAssignmentRow[]>();
+  for (const a of publisher) {
+    let list = assignmentsBySku.get(a.skuPartNumber);
+    if (!list) assignmentsBySku.set(a.skuPartNumber, (list = []));
+    list.push(a);
+  }
+
+  const deliveryModelBySku = new Map(PRODUCT_CATALOG.map((c) => [c.sku, c.deliveryModel]));
+
+  // A scan is "fresh" inside the window, "stale" outside it — both are generated so the
+  // freshness filter in complianceMetrics.ts has real stale rows to exclude, not a no-op.
+  const scanDate = (fresh: boolean) =>
+    iso(
+      fresh
+        ? addDays(AS_OF, -rng.int(0, DISCOVERY_FRESHNESS_DAYS - 5))
+        : addDays(AS_OF, -rng.int(DISCOVERY_FRESHNESS_DAYS + 20, 420)),
+    );
+
+  for (const proc of procurement) {
+    if (proc.quantity <= 0) continue; // consumption products: no seats, nothing to discover
+    // SaaS titles have no separate install layer — assignment IS the provisioning event.
+    // There's nothing for an endpoint agent to discover, so no discovery rows exist at
+    // all (not "Not Assessed" — that's reserved for on-prem titles missing coverage).
+    if (deliveryModelBySku.get(proc.productSku) !== "on-prem") continue;
+
+    // Deterministic per-product install profile, keyed off the SKU (same pattern as
+    // ownersForSku) — same product is over-deployed / uncovered the same way every run.
+    const productRng = createRng(hashString(proc.productSku + "|discovery"));
+
+    // Agent never rolled out to this tool — zero discovery coverage at all. Distinct from
+    // Under-Deployed (some coverage, just less than entitled): this title can't be
+    // assessed for compliance one way or the other (complianceMetrics.ts's "Not Assessed").
+    if (productRng.chance(0.12)) continue;
+
+    const assignments = assignmentsBySku.get(proc.productSku) ?? [];
+    // Scaled to assignment size (not a flat count) so it registers as a real overage
+    // against the product's own purchase headroom, whether the product has 20 seats or
+    // 2,000. Already-lapsed contracts are excluded — severity ordering (Expired-and-
+    // active > Over-Deployed) would reclassify them anyway, so this would just be wasted
+    // generation, not a real dual-violation title.
+    const alreadyLapsed = new Date(proc.contractExpirationDate) < AS_OF;
+    // Capped, not purely population-scaled — a large-population title (thousands of
+    // assignees) would otherwise dominate this bucket on its own.
+    const shadowDeviceCount = !alreadyLapsed && productRng.chance(0.28)
+      ? Math.min(Math.max(3, Math.round(assignments.length * productRng.float(1.9, 3.6))), 550)
+      : 0;
+
+    for (const a of assignments) {
+      const deviceCount = rng.chance(0.12) ? 2 : 1; // some users run the software on 2 devices
+      for (let i = 0; i < deviceCount; i++) {
+        discovery.push({
+          deviceId: nextDeviceId(),
+          assignedUserEmail: a.userPrincipalName,
+          productSku: proc.productSku,
+          installedVersion: `${rng.int(1, 24)}.${rng.int(0, 9)}`,
+          installDate: a.assignedDateTime,
+          lastScanDate: scanDate(rng.chance(0.82)),
+        });
+      }
+    }
+
+    // Unmanaged/shadow installs — software running on devices with no assigned owner on
+    // record. Preserved as its own signal (assignedUserEmail: null) rather than dropped;
+    // pushes a subset of products over their entitled quantity, same as a real fleet.
+    for (let i = 0; i < shadowDeviceCount; i++) {
+      discovery.push({
+        deviceId: nextDeviceId(),
+        assignedUserEmail: null,
+        productSku: proc.productSku,
+        installedVersion: `${productRng.int(1, 24)}.${productRng.int(0, 9)}`,
+        installDate: iso(addDays(AS_OF, -productRng.int(10, 300))),
+        lastScanDate: scanDate(productRng.chance(0.9)),
+      });
+    }
+
+    // Already-lapsed contracts get their own dedicated post-expiration volume — devices
+    // still checking in well after the contract ended. This is what actually drives
+    // Expired-and-active's magnitude; the assignment-based installs above are already
+    // capped by (and mostly predate) the lapse, so they alone under-represent it.
+    if (alreadyLapsed && assignments.length > 0) {
+      // Flat range, not scaled by assignments.length — a large-population title (thousands
+      // of assignees) would otherwise dominate this bucket on its own.
+      const extraCount = Math.min(assignments.length * 8, productRng.int(460, 850));
+      // Scan window: fresh (within the freshness window) AND after the contract's own
+      // expiration date — the two constraints combined, not just "fresh" alone, since a
+      // recently-lapsed contract's freshness window can start before its expiration date.
+      const expirationDate = new Date(proc.contractExpirationDate);
+      const freshFloor = addDays(AS_OF, -(DISCOVERY_FRESHNESS_DAYS - 5));
+      const scanFloor = expirationDate > freshFloor ? expirationDate : freshFloor;
+      const scanSpanDays = Math.max(1, Math.floor((AS_OF.getTime() - scanFloor.getTime()) / DAY_MS));
+      for (let i = 0; i < extraCount; i++) {
+        discovery.push({
+          deviceId: nextDeviceId(),
+          assignedUserEmail: productRng.pick(assignments).userPrincipalName,
+          productSku: proc.productSku,
+          installedVersion: `${productRng.int(1, 24)}.${productRng.int(0, 9)}`,
+          installDate: iso(addDays(expirationDate, productRng.int(5, 40))),
+          lastScanDate: iso(addDays(scanFloor, productRng.int(0, scanSpanDays))),
+        });
+      }
+    }
+  }
+
+  return discovery;
+}
+
+// Shadow IT — software in active use with no procurement/entitlement record at all,
+// regardless of delivery model or lifecycle stage: IT/procurement has zero record of it.
+// shadowOnlySkus never enters buildContractsAndUsage's normal pipeline (no procurement,
+// no evaluation, no admin-console assignment) — this is their only footprint anywhere in
+// the dataset, sourced by whichever signal a real org would actually catch it with:
+//   on-prem — a downloaded/copied installer, caught by endpoint discovery.
+//   saas    — a self-service team/individual signup, caught only via login activity
+//             (the SSO/CASB-style signal), never via `publisher` (official provisioning).
+function buildShadowIt(employees: HrRow[], shadowOnlySkus: Set<string>): { discovery: DiscoveryRow[]; identity: IdentityActivityRow[] } {
+  const discovery: DiscoveryRow[] = [];
+  const identity: IdentityActivityRow[] = [];
+  let deviceSeq = 900000;
+  const nextDeviceId = () => `DEV-${String(deviceSeq++)}`;
+
+  const scanDate = (productRng: Rng, fresh: boolean) =>
+    iso(
+      fresh
+        ? addDays(AS_OF, -productRng.int(0, DISCOVERY_FRESHNESS_DAYS - 5))
+        : addDays(AS_OF, -productRng.int(DISCOVERY_FRESHNESS_DAYS + 20, 420)),
+    );
+
+  for (const product of PRODUCT_CATALOG) {
+    if (!shadowOnlySkus.has(product.sku)) continue;
+    const productRng = createRng(hashString(product.sku + "|shadowit"));
+
+    if (product.deliveryModel === "on-prem") {
+      const count = productRng.int(85, 175);
+      for (let i = 0; i < count; i++) {
+        discovery.push({
+          deviceId: nextDeviceId(),
+          assignedUserEmail: productRng.chance(0.6) ? productRng.pick(employees).email : null,
+          productSku: product.sku,
+          installedVersion: `${productRng.int(1, 24)}.${productRng.int(0, 9)}`,
+          installDate: iso(addDays(AS_OF, -productRng.int(5, 300))),
+          lastScanDate: scanDate(productRng, productRng.chance(0.8)),
+        });
+      }
+    } else {
+      const count = productRng.int(80, 160);
+      for (const emp of productRng.shuffle(employees).slice(0, count)) {
+        identity.push({
+          userEmail: emp.email,
+          targetApp: product.sku,
+          lastEventType: "user.authentication.sso",
+          lastActivityAt: iso(addDays(AS_OF, -productRng.int(1, DISCOVERY_FRESHNESS_DAYS - 5))),
+          outcome: "SUCCESS",
+        });
+      }
+    }
+  }
+
+  return { discovery, identity };
+}
+
+// Deterministic ~10% of seat-based catalog products get zero footprint in the normal
+// pipeline — handled entirely by buildShadowIt instead. Computed once, off the catalog
+// alone, so it can gate buildContractsAndUsage before that function ever runs.
+function computeShadowOnlySkus(): Set<string> {
+  const shadowOnly = new Set<string>();
+  for (const product of PRODUCT_CATALOG) {
+    if (product.licenseModel !== "enterprise" && product.licenseModel !== "perpetual") continue;
+    if (createRng(hashString(product.sku + "|shadowonly")).chance(0.038)) shadowOnly.add(product.sku);
+  }
+  return shadowOnly;
+}
+
 export interface GenerateOptions {
   seed?: number;
   employeeCount?: number;
@@ -582,9 +812,13 @@ export function buildDataset(options: GenerateOptions = {}): Dataset {
   const employeeCount = options.employeeCount ?? 3000;
   const rng = createRng(seed);
 
+  const shadowOnlySkus = computeShadowOnlySkus();
+
   const { config, costCentersByDept } = buildConfig();
   const hr = buildEmployees(rng, employeeCount, costCentersByDept);
-  const { procurement, evaluation, openSource, publisher, identity } = buildContractsAndUsage(rng, hr);
+  const { procurement, evaluation, openSource, publisher, identity } = buildContractsAndUsage(rng, hr, shadowOnlySkus);
+  const discovery = buildDiscovery(rng, procurement, publisher);
+  const shadowIt = buildShadowIt(hr, shadowOnlySkus);
 
   return {
     generatedAt: iso(AS_OF),
@@ -597,7 +831,8 @@ export function buildDataset(options: GenerateOptions = {}): Dataset {
     openSource,
     hr,
     publisher,
-    identity,
+    identity: identity.concat(shadowIt.identity),
+    discovery: discovery.concat(shadowIt.discovery),
   };
 }
 

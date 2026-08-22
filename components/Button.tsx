@@ -242,6 +242,11 @@ export default function Button(props: ButtonProps) {
     ) : hasSlideHover && variant === "text" ? (
       <>
         <span ref={defaultFaceRef} className={styles.textDefaultFace}>
+          {icon && (
+            <span className={styles.iconBadge} aria-hidden="true">
+              {icon}
+            </span>
+          )}
           <span className={styles.label}>{children}</span>
         </span>
         <span
@@ -249,6 +254,7 @@ export default function Button(props: ButtonProps) {
           className={styles.textHoverFace}
           aria-hidden="true"
         >
+          {icon && <span className={styles.iconBadge}>{icon}</span>}
           <span className={styles.label}>{children}</span>
         </span>
       </>

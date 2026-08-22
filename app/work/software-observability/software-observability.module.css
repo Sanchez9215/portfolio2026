@@ -51,7 +51,7 @@ section.research {
 }
 
 .researchContent {
-  grid-column: 4 / -1;
+  grid-column: 4 / 11;
   display: flex;
   flex-direction: column;
   gap: var(--spacing-xl);
@@ -262,6 +262,7 @@ section.data {
 section.observabilityEyes {
   min-height: 100vh;
   padding-block: 0;
+  background: var(--color-blue-500);
 }
 
 /* All collage elements share a single grid row and overlap; vertical position
@@ -272,17 +273,6 @@ section.observabilityEyes {
   grid-row: 1;
   align-self: start;
   z-index: 3;
-}
-
-/* Blue blob: from the col-2 line, bleeding past the right padding to the true
-   viewport edge; full section height. Sits below the overlay so the grey line
-   paints over it. */
-.observabilityEyes > [data-blob] {
-  grid-column: 1 / -1;
-  justify-self: start;
-  width: calc(100% + var(--spacing-xl));
-  height: 100vh;
-  z-index: 1;
 }
 
 /* Eyes. Width comes from the column span; height from the almond aspect-ratio.
@@ -341,17 +331,40 @@ section.dataDictionary {
 }
 
 /* ── section.prototype-validation ────────────────────────────
-   Now a plain full-viewport LabelBlock reveal (its own built-in
-   scroll trigger), leading into the first hotspot experience. */
+   LabelBlock reveal followed by Prototype 1, centered across the middle 8
+   columns (Prototype 2 hidden for now, hugging its own content height —
+   see OverviewPrototypeHotspots.tsx / OverviewPrototype2Hotspots.tsx).
+   Previously two separate sections, then a side-by-side split. */
 
 section.prototypeValidation {
   min-height: 100vh;
   align-content: center;
+  row-gap: var(--spacing-5xl);
+  column-gap: var(--spacing-3xl);
 }
 
 .prototypeValidationTextBlock {
-  grid-column: 1 / -1;
-  max-width: 789px;
+  grid-column: 1 / 9;
+  /* max-width: 789px; */
+}
+
+.prototypeValidationCenter {
+  grid-column: 3 / 11;
+}
+
+/* Initial state for the scroll-triggered fade-in (see OverviewPrototypeHotspots.tsx)
+   — same opacity:0 starting-state convention as SectionIntroduction's .heroEmbed;
+   GSAP animates opacity + y (set inline) once the ScrollTrigger fires. */
+.prototypeEmbedFade {
+  opacity: 0;
+}
+
+/* Rounds Prototype 1's own embed corners (LiveEmbed's .container, which already
+   clips via overflow:hidden) since ImgCard's imgWrapper uses allowOverflow here
+   and no longer clips the embed itself — see AnnotationConnectorHotspot's
+   tooltip-overflow comment in ImgCard.tsx. */
+.prototypeEmbedRounded {
+  border-radius: var(--radius-default);
 }
 
 /* ── section.all-software-view ──────────────────────────────── */
@@ -476,16 +489,6 @@ section.overviewPrototype1 {
 
 .overviewPrototype1CardsRight {
   grid-column: 7 / 13;
-}
-
-/* ── section.overview-prototype-2 — live-embed hotspot experience ─────────── */
-
-section.overviewPrototype2 {
-  row-gap: var(--spacing-3xl);
-}
-
-.overviewPrototype2Embed {
-  grid-column: 1 / -1;
 }
 
 /* ── section.final-lifecycle-timeline — live-embed hotspot experience ─────── */

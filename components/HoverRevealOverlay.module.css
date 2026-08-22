@@ -1,0 +1,32 @@
+/* ============================================================
+   HoverRevealOverlay — duotone backdrop-filter scrim with holes cut
+   at every hotspot element at once, shown on hover. See HoverRevealOverlay.tsx.
+   ============================================================ */
+
+.overlay {
+  position:       absolute;
+  inset:          0;
+  overflow:       hidden;
+  pointer-events: none;
+  opacity:        0;
+  transition:     opacity 350ms ease-out;
+  z-index:        10;
+}
+
+.overlay.visible {
+  opacity: 1;
+}
+
+/* The actual duotone layer — backdrop-filter samples the real content behind it
+   (no duplication needed), mask-image cuts holes at each hotspot so the real,
+   unfiltered content shows through there instead. */
+.duotoneScrim {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  mask-repeat: no-repeat;
+  -webkit-mask-repeat: no-repeat;
+  mask-size: 100% 100%;
+  -webkit-mask-size: 100% 100%;
+}

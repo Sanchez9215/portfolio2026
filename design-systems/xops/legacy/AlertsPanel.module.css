@@ -1,15 +1,15 @@
 /* One-off legacy component — existing --xops-* tokens only, no new values. */
 
 .backdrop {
-  position:   fixed;
+  position:   absolute;
   inset:      0;
   background-color: rgba(17, 20, 24, 0.32);
   z-index:    20;
   display:    flex;
   align-items: center;
   justify-content: center;
-  /* Panel insets 32px from the backdrop's own top/bottom — the backdrop itself
-     matches the bounds element's edges exactly (see AlertsPanel.tsx). */
+  /* Panel insets 32px from the backdrop's own top/bottom — the backdrop fills
+     its portal parent (the bounds element) exactly via inset: 0 above. */
   padding:    32px 0;
   /* Fades in/out rather than mounting/unmounting instantly — the panel is a
      child, so this one opacity also carries its fade (see AlertsPanel.tsx's
@@ -112,6 +112,8 @@
 .cardIcon {
   flex-shrink: 0;
   margin-top: 2px;
+  width: var(--xops-icon-size-18);
+  height: var(--xops-icon-size-18);
 }
 
 .cardContent {
@@ -146,6 +148,11 @@
   font-size: var(--xops-typography-body-14-font-size);
   line-height: var(--xops-typography-body-14-line-height);
   color: var(--xops-text-secondary);
+}
+
+.cardDescriptionHighlight {
+  font-weight: var(--xops-font-weight-medium);
+  color: var(--xops-text-primary);
 }
 
 .cardCta {

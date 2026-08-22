@@ -75,9 +75,9 @@ export default function AllSoftwareExperienceIssuesHotspots() {
 
   return (
     <div ref={pinRef}>
-      <ImgCard variant="card" caption="All Software Prototype — Experience Issues">
+      <ImgCard caption="All Software Prototype — Experience Issues">
         <div ref={embedWrapperRef} style={{ position: "relative" }}>
-          <LiveEmbed nativeWidth={1440} viewportHeight={viewportHeight ?? undefined}>
+          <LiveEmbed nativeWidth={1440} viewportHeight={viewportHeight ?? undefined} disableCanvasTransition>
             <AllSoftwareLegacy disableVerticalScroll disableHorizontalScroll />
           </LiveEmbed>
           <HotspotOverlay
@@ -85,6 +85,7 @@ export default function AllSoftwareExperienceIssuesHotspots() {
             active={active}
             settled={settled}
             tone="issue"
+            nativeWidth={1440}
           />
         </div>
       </ImgCard>

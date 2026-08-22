@@ -52,12 +52,24 @@ export interface OrgConfig {
 // Logo resolves via PUBLISHER_LOGOS (catalog.ts); null → empty-state.
 // ---------------------------------------------------------------------------
 
+// Delivery-model-aware compliance: which check applies depends on how the software is
+// provisioned, not one uniform rule across the catalog.
+//   saas     — assignment IS the provisioning event (M365, Salesforce, Okta, Zoom-style
+//              admin-console tools). No separate "install" exists to discover; the only
+//              possible quantity violation is Over-Assigned (assigned > entitled).
+//   on-prem  — installable/copyable outside any assignment workflow (imaging, shared
+//              drives, self-hosted, downloadable CLIs/agents). Assignment records can be
+//              clean while shadow installs exist; the check is Over-Deployed (discovered
+//              instances > entitled), and requires DiscoveryRow coverage.
+export type DeliveryModel = "saas" | "on-prem";
+
 export interface ProductCatalogEntry {
   sku: string; // join key: procurement.productSku = publisher.skuPartNumber = identity.targetApp
   name: string;
   publisher: string;
   category: string; // ≈ Ariba commodity
   licenseModel: LicenseModel;
+  deliveryModel: DeliveryModel;
   adoption: AdoptionTier; // drives how many employees get assigned
   edition: string; // servicePlanName flavor
   priceMin: number; // annual cost per seat (USD), low end of the band
@@ -171,6 +183,22 @@ export interface IdentityActivityRow {
 }
 
 // ---------------------------------------------------------------------------
+// discovery — SCCM/Intune/Flexera-style agent inventory scan (one row per
+// device×installed product). The "consumed" side of compliance: what's actually
+// installed, independent of what was assigned/entitled. assignedUserEmail is null
+// for unmanaged/shadow devices — installs with no accountable owner on record.
+// ---------------------------------------------------------------------------
+
+export interface DiscoveryRow {
+  deviceId: string;
+  assignedUserEmail: string | null; // join key to hr/publisher; null = unmanaged device
+  productSku: string; // join key to procurement/catalog — absent match = unrecognized software
+  installedVersion: string;
+  installDate: string; // ISO date
+  lastScanDate: string; // ISO date — agent freshness; stale scans are excluded from compliance counts
+}
+
+// ---------------------------------------------------------------------------
 // The assembled dataset — the single object the whole UI reads through the seam.
 // ---------------------------------------------------------------------------
 
@@ -186,4 +214,5 @@ export interface Dataset {
   hr: HrRow[];
   publisher: PublisherAssignmentRow[];
   identity: IdentityActivityRow[];
+  discovery: DiscoveryRow[];
 }

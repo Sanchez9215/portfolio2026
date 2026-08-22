@@ -117,9 +117,9 @@ export default function RowAnatomyHotspots() {
 
   return (
     <div ref={pinRef}>
-      <ImgCard variant="card" caption="All Software Final Design — Row Anatomy">
+      <ImgCard caption="All Software Final Design — Row Anatomy">
         <div ref={embedWrapperRef} style={{ position: "relative" }}>
-          <LiveEmbed nativeWidth={NATIVE_WIDTH}>
+          <LiveEmbed nativeWidth={NATIVE_WIDTH} disableCanvasTransition>
             <Table
               columns={softwareColumns}
               data={rows}
@@ -129,7 +129,7 @@ export default function RowAnatomyHotspots() {
               disableHorizontalScroll
             />
           </LiveEmbed>
-          <HotspotOverlay containerRef={embedWrapperRef} active={active} settled={settled} />
+          <HotspotOverlay containerRef={embedWrapperRef} active={active} settled={settled} nativeWidth={NATIVE_WIDTH} />
         </div>
       </ImgCard>
     </div>

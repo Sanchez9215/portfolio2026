@@ -123,12 +123,13 @@ export default function SoftwareProfileLegacyHotspots({
 
   return (
     <div ref={pinRef}>
-      <ImgCard variant="card" caption={caption}>
+      <ImgCard caption={caption}>
         <div ref={embedWrapperRef} style={{ position: "relative" }}>
           <LiveEmbed
             nativeWidth={580}
             viewportHeight={viewportHeight ?? undefined}
             panTargetIds={panTargetIds}
+            disableCanvasTransition
           >
             {/* SoftwareProfileLegacy is a side-panel body, not a freestanding screen — this
                 reproduces SidePanel.module.css's `.panel` visual chrome (padding/bg/border/
@@ -160,6 +161,7 @@ export default function SoftwareProfileLegacyHotspots({
             active={active}
             settled={settled}
             tone={tone}
+            nativeWidth={580}
           />
         </div>
       </ImgCard>

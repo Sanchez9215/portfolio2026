@@ -9,11 +9,13 @@ export type CardProps = {
   headerValue?: ReactNode;
   children: ReactNode;
   className?: string;
+  /** Sets `data-hotspot` on the outer card element, for hotspot targeting. */
+  hotspotId?: string;
 };
 
-export function Card({ title, titleSize = "subheading-16", headerValue, children, className }: CardProps) {
+export function Card({ title, titleSize = "subheading-16", headerValue, children, className, hotspotId }: CardProps) {
   return (
-    <div className={[styles.card, className].filter(Boolean).join(" ")}>
+    <div className={[styles.card, className].filter(Boolean).join(" ")} data-hotspot={hotspotId}>
       <div className={[styles.header, headerValue && styles.headerDivider].filter(Boolean).join(" ")}>
         <p
           className={[styles.title, titleSize === "body-14" && styles.titleBody14]

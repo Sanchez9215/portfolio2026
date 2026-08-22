@@ -8,6 +8,14 @@
   overflow: hidden;
 }
 
+.height18 {
+  height: var(--xops-bar-height-18);
+}
+
+.height16 {
+  height: var(--xops-bar-height-16);
+}
+
 .segment {
   height: 100%;
   min-width: 0;

@@ -144,6 +144,22 @@
   cursor: pointer;
 }
 
+.chevronButton {
+  border-color: transparent;
+}
+
+.row:hover .chevronButton {
+  background-color: var(--xops-grey-200);
+}
+
+.chevron {
+  color: var(--xops-text-secondary);
+}
+
+.row:hover .chevron {
+  color: var(--xops-brand-500);
+}
+
 .row:has(+ .rowSelected) .bodyCell {
   border-bottom-color: transparent;
 }

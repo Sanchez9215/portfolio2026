@@ -111,9 +111,9 @@ export default function AllSoftwareLegacyHotspots() {
 
   return (
     <div ref={pinRef}>
-      <ImgCard variant="card" caption="All Software Prototype 01">
+      <ImgCard caption="All Software Prototype 01">
         <div ref={embedWrapperRef} style={{ position: "relative" }}>
-          <LiveEmbed nativeWidth={1440} viewportHeight={viewportHeight ?? undefined}>
+          <LiveEmbed nativeWidth={1440} viewportHeight={viewportHeight ?? undefined} disableCanvasTransition>
             <AllSoftwareLegacy
               disableVerticalScroll
               disableHorizontalScroll
@@ -124,6 +124,7 @@ export default function AllSoftwareLegacyHotspots() {
             containerRef={embedWrapperRef}
             active={overlayActive}
             settled={settled}
+            nativeWidth={1440}
           />
         </div>
       </ImgCard>

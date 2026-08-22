@@ -1,0 +1,93 @@
+/* ============================================================
+   AnnotationConnectorHotspot — leader-line annotation style (first pass).
+   Spotlight cutout (no padding) + a single continuous connector path (diagonal +
+   horizontal, one stroke — see AnnotationConnectorHotspot.tsx) that runs from the
+   target's top-right corner, through an elbow, and across the tooltip's own
+   title/content gap — replacing the tooltip-anchored-directly-on-the-cutout style
+   HotspotOverlay uses.
+   ============================================================ */
+
+.overlay {
+  position:       absolute;
+  inset:          0;
+  overflow:       visible;
+  pointer-events: none;
+  z-index:        10;
+}
+
+.spotlightMask {
+  position: absolute;
+  inset:    0;
+  width:    100%;
+  height:   100%;
+}
+
+/* The full connector — diagonal + horizontal run, one path/stroke — inlined so
+   `stroke="currentColor"` resolves from this token instead of the icon file's
+   own hardcoded blue. overflow: visible keeps the stroke's own width from being
+   clipped where the horizontal run sits flush with the svg's top edge. */
+.connector {
+  position: absolute;
+  overflow: visible;
+  color:    var(--annotation-connector-color, #0F8FFF);
+}
+
+.tooltip {
+  position:       absolute;
+  display:        flex;
+  flex-direction: column;
+  /* 16px = the connector's horizontal run sitting 8px below the title and 8px
+     above the Assumption/Insight content — see lineOffsetY in the component. */
+  gap:            var(--spacing-md);
+  width:          200px;
+  /* border-box (not the page's content-box default) so this 200px is the true
+     outer width the connector's horizontal run targets (TOOLTIP_WIDTH in the
+     component) — otherwise any padding here would add on top of it, making
+     the line land short of the card's real edge instead of flush with it. */
+  box-sizing:     border-box;
+  /* 12px both sides per user request — the connector's horizontal run now
+     stops 12px short of the tooltip's true right edge instead of reaching it
+     flush (the previous right:0 behavior). 12px has no matching --spacing-*
+     primitive (scale jumps 8 → 16) — same hardcode HotspotOverlay's
+     .tooltipCard already uses, see its comment. */
+  padding:        12px;
+  border-radius:  var(--radius-default);
+}
+
+.title {
+  font-family:    var(--font-family-body);
+  font-weight:    var(--font-weight-bold);
+  font-size:      var(--text-label-sm-size);
+  line-height:    var(--text-label-sm-lh);
+  letter-spacing: var(--text-label-sm-ls);
+  color:          var(--text-primary-strong);
+}
+
+.sections {
+  display:        flex;
+  flex-direction: column;
+  gap:            var(--spacing-md);
+}
+
+.section {
+  display:        flex;
+  flex-direction: column;
+  gap:            var(--spacing-sm);
+}
+
+.label {
+  font-family: var(--font-family-body);
+  font-weight: var(--font-weight-bold);
+  font-size:   var(--text-body-xs-size);
+  line-height: var(--text-body-xs-lh);
+  color:       var(--text-primary);
+}
+
+.text {
+  font-family: var(--font-family-body);
+  font-weight: var(--font-weight-regular);
+  font-size:   var(--text-body-xs-size);
+  line-height: var(--text-body-xs-lh);
+  color:       var(--text-secondary);
+  margin:      0;
+}

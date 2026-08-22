@@ -17,8 +17,10 @@ export type FilterTabsProps<T extends string = string> = {
   options: FilterTabOption<T>[];
   value: T;
   onChange: (value: T) => void;
-  variant?: "default" | "large" | "underline";
+  variant?: "default" | "large" | "underline" | "vertical";
   size?: "small" | "medium" | "large";
+  /** underline variant only — false gives content-hugging tabs instead of stretching flex:1 to fill the row. Defaults to true (existing behavior). */
+  fullWidth?: boolean;
   ariaLabel: string;
   className?: string;
 };
@@ -29,12 +31,14 @@ export function FilterTabs<T extends string = string>({
   onChange,
   variant = "default",
   size = "medium",
+  fullWidth = true,
   ariaLabel,
   className,
 }: FilterTabsProps<T>) {
   const large = variant === "large";
   const underline = variant === "underline";
-  const sizeClass = !large && !underline && size !== "medium" ? styles[size] : undefined;
+  const vertical = variant === "vertical";
+  const sizeClass = !large && !underline && !vertical && size !== "medium" ? styles[size] : undefined;
 
   return (
     <div
@@ -42,6 +46,8 @@ export function FilterTabs<T extends string = string>({
         styles.group,
         large ? styles.groupLarge : "",
         underline ? styles.groupUnderline : "",
+        underline && !fullWidth ? styles.groupUnderlineHugging : "",
+        vertical ? styles.groupVertical : "",
         className,
       ]
         .filter(Boolean)
@@ -62,12 +68,35 @@ export function FilterTabs<T extends string = string>({
               role="radio"
               aria-checked={selected}
               disabled={option.disabled}
-              className={[styles.tabUnderline, selected ? styles.selected : ""]
+              className={[
+                styles.tabUnderline,
+                !fullWidth ? styles.tabUnderlineHugging : "",
+                selected ? styles.selected : "",
+              ]
                 .filter(Boolean)
                 .join(" ")}
               onClick={() => onChange(option.value)}
             >
               {option.label}
+            </button>
+          );
+        }
+
+        if (vertical) {
+          return (
+            <button
+              key={option.value}
+              type="button"
+              role="radio"
+              aria-checked={selected}
+              disabled={option.disabled}
+              className={[styles.tabVertical, selected ? styles.selected : ""]
+                .filter(Boolean)
+                .join(" ")}
+              onClick={() => onChange(option.value)}
+            >
+              <span>{option.label}</span>
+              {option.stat && <span className={styles.tabStat}>{option.stat}</span>}
             </button>
           );
         }

@@ -100,6 +100,11 @@ const TIMING = {
   itemsFadeOutDuration: 0.15,
 };
 
+// Toggled off for now — both triggers (desktop text, mobile burger/close)
+// hidden while the menu itself is still being worked on. Code kept intact,
+// not deleted, same convention as WorkCaseStudyRow's SHOW_POINTER_CURSOR.
+const SHOW_MENU_TOGGLE = false;
+
 /* ── Helpers ────────────────────────────────────────────────── */
 
 // Finds the visible label span inside a menu item's Button(variant="menu").
@@ -265,31 +270,44 @@ export default function Nav() {
           </Label>
         </a>
 
-        {/* Menu toggle, ≥786px — bare text trigger, Button's "text" variant */}
-        <div className={styles.desktopTrigger}>
-          <Button
-            variant="text"
-            size="small"
-            onClick={toggleNav}
-            aria-label={isOpen ? "Close navigation" : "Open navigation"}
-          >
-            {isOpen ? "Close" : "Menu"}
-          </Button>
-        </div>
+        {SHOW_MENU_TOGGLE && (
+          <>
+            {/* Menu toggle, ≥786px — bare text trigger, Button's "text" variant */}
+            <div className={styles.desktopTrigger}>
+              <Button
+                variant="text"
+                size="small"
+                onClick={toggleNav}
+                aria-label={isOpen ? "Close navigation" : "Open navigation"}
+              >
+                {isOpen ? "Close" : "Menu"}
+              </Button>
+            </div>
 
-        {/* Menu toggle, <786px — icon-only, burger↔close morph (see
-            morphPathRef/handleOpen/handleClose). Bespoke markup, not
-            through Button — this morph behavior is Nav-specific. */}
-        <button
-          type="button"
-          className={styles.mobileTrigger}
-          onClick={toggleNav}
-          aria-label={isOpen ? "Close navigation" : "Open navigation"}
-        >
-          <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">
-            <path ref={morphPathRef} d={BURGER_PATH_D} fill="currentColor" />
-          </svg>
-        </button>
+            {/* Menu toggle, <786px — icon-only, burger↔close morph (see
+                morphPathRef/handleOpen/handleClose). Bespoke markup, not
+                through Button — this morph behavior is Nav-specific. */}
+            <button
+              type="button"
+              className={styles.mobileTrigger}
+              onClick={toggleNav}
+              aria-label={isOpen ? "Close navigation" : "Open navigation"}
+            >
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <path
+                  ref={morphPathRef}
+                  d={BURGER_PATH_D}
+                  fill="currentColor"
+                />
+              </svg>
+            </button>
+          </>
+        )}
       </div>
 
       {/* ── Menu items (hidden when closed) ─────────────────── */}

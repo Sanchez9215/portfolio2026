@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import Sidebar from "../components/Sidebar";
 import GlobalHeader from "../components/GlobalHeader";
 import PageHeader from "../components/PageHeader";
@@ -29,6 +29,7 @@ import {
   EvaluationSummary,
 } from "../data/metrics";
 import { formatCount, formatCurrency, formatPercent } from "../lib/format";
+import { complianceTotals, topNonCompliantTitles, atRiskInstances } from "../data/complianceMetrics";
 import { AlertsPanel, AlertItem } from "./AlertsPanel";
 import type { SoftwareSubKey } from "../components/Sidebar";
 import styles from "./OverviewLegacy.module.css";
@@ -59,22 +60,32 @@ const STAGE_ALERTS: Record<StageValue, AlertItem[]> = {
   ],
   provisioning: [
     {
-      title: "Unassigned Licenses Detected",
-      description: "3 software titles in provisioning have unassigned licenses.",
+      title: "Approval Pending Before Rollout",
+      description: "SAP Concur has 40 licenses ready, but rollout is paused pending a required security review.",
       cta: "View",
-      relatedSoftware: ["SAP Concur", "Tableau Explorer", "Adobe Acrobat Pro"],
+      relatedSoftware: ["SAP Concur"],
+      descriptionHighlights: ["SAP Concur"],
     },
     {
-      title: "New Hire License Demand vs Available Licenses",
-      description: "ServiceNow ITSM provisioning request includes new licenses, but a portion remain unassigned.",
+      title: "Licenses Assigned but Not Activated",
+      description: "ServiceNow ITSM has 65 licenses assigned, but 18 employees haven't logged in yet, 30 days after being given access.",
       cta: "View",
       relatedSoftware: ["ServiceNow ITSM"],
+      descriptionHighlights: ["ServiceNow ITSM"],
     },
     {
-      title: "Software Blocked by IT Dependencies",
-      description: "Power BI Pro deployment is delayed due to missing server configurations.",
+      title: "Assignment Behind Go-Live Date",
+      description: "Dynamics 365 Sales has assigned 24 of 60 purchased licenses, with only 5 days left before target launch date.",
+      cta: "View",
+      relatedSoftware: ["Dynamics 365 Sales"],
+      descriptionHighlights: ["Dynamics 365 Sales"],
+    },
+    {
+      title: "Stalled Past Stage SLA",
+      description: "Power BI Pro has been in Provisioning for 34 days, 14 days past its 20 day target.",
       cta: "View",
       relatedSoftware: ["Power BI Pro"],
+      descriptionHighlights: ["Power BI Pro"],
     },
   ],
   active: [
@@ -189,6 +200,22 @@ export default function OverviewLegacy({ forceAlertsOpen, alertsBoundsRef, showL
   const renewalRows = useMemo(() => lifecycleProducts(ds, "renewal"), [ds]);
   const totals = useMemo(() => orgTotals(ds), [ds]);
   const annualSpend = useMemo(() => totalAnnualSpend(ds), [ds]);
+  const compliance = useMemo(() => complianceTotals(ds), [ds]);
+  const atRisk = useMemo(() => atRiskInstances(ds), [ds]);
+  // Prototype-one taxonomy: 3 buckets, not the detailed 5-state model later prototypes
+  // use (see complianceMetrics.ts's atRiskInstances comment). Generic categorical
+  // ordering — largest slice first, so the donut and legend always match regardless of
+  // which bucket happens to be biggest this run.
+  const complianceSegments = useMemo(
+    () =>
+      [
+        { label: "Compliant", value: compliance.compliantInstances - atRisk, color: "var(--xops-status-success-solid)" },
+        { label: "At Risk", value: atRisk, color: "var(--xops-status-warning-solid)" },
+        { label: "Non-Compliant", value: compliance.nonCompliantInstances, color: "var(--xops-status-danger-solid)" },
+      ].sort((a, b) => b.value - a.value),
+    [compliance, atRisk],
+  );
+  const nonCompliantRows = useMemo(() => topNonCompliantTitles(ds), [ds]);
 
   // B.U Owner — resolved from the catalog's real `affinity` field (the department(s) a
   // product's usage concentrates in), not a modeled per-row field.
@@ -286,6 +313,26 @@ export default function OverviewLegacy({ forceAlertsOpen, alertsBoundsRef, showL
 
   const [stage, setStage] = useState<StageValue>("provisioning");
   const [alertsOpen, setAlertsOpen] = useState(false);
+
+  // Compliance hugs its own content naturally; Top Non-Compliant Software is
+  // capped to Compliance's real rendered height (measured live rather than
+  // guessed) so its taller table doesn't grow the row past Compliance — any
+  // content past that height is clipped, not scrolled. Uses offsetHeight (this
+  // element's own local size), not getBoundingClientRect (post-transform screen
+  // size) — this whole tree renders inside LiveEmbed's scaled canvas, and a
+  // screen-space number fed back in as a CSS height would get scaled down a
+  // second time by that same ancestor transform.
+  const complianceRef = useRef<HTMLDivElement>(null);
+  const [complianceHeight, setComplianceHeight] = useState<number | null>(null);
+  useEffect(() => {
+    const el = complianceRef.current;
+    if (!el) return;
+    const measure = () => setComplianceHeight(el.offsetHeight);
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   const stageOptions: FilterTabOption<StageValue>[] = [
     { value: "procurement", label: "Procurement", stat: formatCount(evaluationRows.length) },
@@ -456,7 +503,7 @@ export default function OverviewLegacy({ forceAlertsOpen, alertsBoundsRef, showL
       label: "Days to Renewal",
       width: "auto",
       align: "right",
-      render: (row) => `${row.renewalDays} days`,
+      render: (row) => (row.renewalDays < 0 ? `${-row.renewalDays} days overdue` : `${row.renewalDays} days`),
     },
   ];
 
@@ -485,8 +532,8 @@ export default function OverviewLegacy({ forceAlertsOpen, alertsBoundsRef, showL
 
           <Grid>
             <GridItem colSpan={12}>
-              <div className={styles.filterBar}>
-                <div className={styles.filterField} data-hotspot="geographic-filtering">
+              <div className={styles.filterBar} data-hotspot="geographic-filtering">
+                <div className={styles.filterField}>
                   <span className={styles.filterLabel}>Region</span>
                   <Dropdown
                     value={region.toLowerCase()}
@@ -540,7 +587,7 @@ export default function OverviewLegacy({ forceAlertsOpen, alertsBoundsRef, showL
 
             {/* Card row 1 — License Overview / Spend / Usage */}
             <GridItem colSpan={4}>
-              <div className={styles.panel}>
+              <div className={styles.panel} data-hotspot="license-overview">
                 <p className={styles.sectionTitle}>License Overview</p>
 
                 <div className={styles.licenseBlocksGroup}>
@@ -617,49 +664,13 @@ export default function OverviewLegacy({ forceAlertsOpen, alertsBoundsRef, showL
             </GridItem>
 
             <GridItem colSpan={4}>
-              <div className={styles.panel}>
-                <p className={styles.sectionTitle}>Spend</p>
-                <div style={{ display: "flex", gap: "var(--xops-spacing-8)" }}>
-                  <Stat label="Total Annual Spend" value={formatCurrency(annualSpend, { compact: true })} />
-                  <Stat label="Est. Renewals (90 Days)" value={formatCurrency(forecastedRenewals90, { compact: true })} />
-                </div>
-                <div className={`${styles.licenseBlockLabel} ${styles.spendVendorLabel}`}>Top Spend By Vendor</div>
-                <div className={styles.tableOutline}>
-                  <Table
-                    chrome={false}
-                    scrollFade={false}
-                    columns={[
-                      { key: "vendor", label: "Vendor", width: "flex" },
-                      {
-                        key: "spend",
-                        label: "Est. Annual Spend",
-                        width: "auto",
-                        align: "right",
-                        render: (row) => formatCurrency(row.spend, { compact: true }),
-                      },
-                      {
-                        key: "pct",
-                        label: "% of Total Spend",
-                        width: "auto",
-                        align: "right",
-                        render: (row) => formatPercent(row.spend, annualSpend),
-                      },
-                    ]}
-                    data={vendorSpend}
-                    rowKey={(row) => row.vendor}
-                  />
-                </div>
-              </div>
-            </GridItem>
-
-            <GridItem colSpan={4}>
-              <Card title="Usage">
+              <Card title="Usage" hotspotId="usage-overview">
                 <div style={{ display: "flex", flexDirection: "column", gap: "var(--xops-spacing-24)" }}>
                   <div style={{ display: "flex", gap: "var(--xops-spacing-8)" }}>
-                    <Stat label="Total Licenses Assigned" value={utilizationCard.assigned} meta={utilizationCard.assignedPct} />
+                    <Stat label="Assigned Licenses" value={utilizationCard.assigned} meta={utilizationCard.assignedPct} hotspotId="assigned-licenses" />
                     <Stat label="Unassigned Licenses" value={utilizationCard.unassigned} meta={utilizationCard.unassignedPct} />
                   </div>
-                  <p className={styles.licenseBlockLabel}>License Utilization</p>
+                  <p className={styles.licenseBlockLabel} data-hotspot="license-utilization">License Utilization</p>
                   <div style={{ display: "flex", justifyContent: "center" }}>
                     <DonutChart
                       segments={[
@@ -710,45 +721,77 @@ export default function OverviewLegacy({ forceAlertsOpen, alertsBoundsRef, showL
               </Card>
             </GridItem>
 
-            {/* Card row 2 — Compliance / Top Non-Compliant Software (both decorative,
-                copied from the real Overview build; pending removal per DECISIONS 033) */}
-            <GridItem colSpan={5}>
-              <div data-hotspot="compliance-granularity">
+            <GridItem colSpan={4}>
+              <div className={styles.panel} data-hotspot="spend-overview">
+                <p className={styles.sectionTitle}>Spend</p>
+                <div style={{ display: "flex", gap: "var(--xops-spacing-8)" }} data-hotspot="spend-stats">
+                  <Stat label="Total Annual Spend" value={formatCurrency(annualSpend, { compact: true })} />
+                  <Stat label="Est. Renewals (90d)" value={formatCurrency(forecastedRenewals90, { compact: true })} />
+                </div>
+                <div className={`${styles.licenseBlockLabel} ${styles.spendVendorLabel}`} data-hotspot="top-spend-vendor">Top 10 Vendors by Spend</div>
+                <div className={styles.tableOutline}>
+                  <Table
+                    chrome={false}
+                    scrollFade={false}
+                    columns={[
+                      { key: "vendor", label: "Vendor", width: "flex" },
+                      {
+                        key: "spend",
+                        label: "Est. Annual Spend",
+                        width: "auto",
+                        align: "right",
+                        render: (row) => formatCurrency(row.spend, { compact: true }),
+                      },
+                      {
+                        key: "pct",
+                        label: "% of Total Spend",
+                        width: "auto",
+                        align: "right",
+                        render: (row) => formatPercent(row.spend, annualSpend),
+                      },
+                    ]}
+                    data={vendorSpend}
+                    rowKey={(row) => row.vendor}
+                  />
+                </div>
+              </div>
+            </GridItem>
+
+            {/* Card row 2 — Compliance / Top Non-Compliant Titles. Driven by
+                complianceMetrics.ts (installed instances vs. entitled seats + contract
+                dates) — see that file's header comment for the two-dimension model and
+                what's explicitly out of scope this round. */}
+            <GridItem colSpan={5} style={{ alignSelf: "start" }}>
+              <div data-hotspot="compliance-granularity" ref={complianceRef}>
               <Card title="Compliance">
                 <div style={{ display: "flex", flexDirection: "column", gap: "var(--xops-spacing-24)" }}>
+                  <Stat
+                    label="Non-Compliant Instances"
+                    value={formatCount(compliance.nonCompliantInstances)}
+                    meta={`across ${compliance.nonCompliantTitles} titles`}
+                  />
                   <div style={{ display: "flex", justifyContent: "center" }}>
                     <DonutChart
-                      segments={[
-                        {
-                          value: 157000,
-                          color: "var(--xops-status-success-solid)",
-                          tooltip: { category: "Compliant", rows: [{ label: "Instances", value: "157,000" }, { label: "% of Total", value: "71.7%" }] },
+                      segments={complianceSegments.map((s) => ({
+                        value: s.value,
+                        color: s.color,
+                        tooltip: {
+                          category: s.label,
+                          rows: [
+                            { label: "Instances", value: formatCount(s.value) },
+                            { label: "% of Total", value: formatPercent(s.value, compliance.totalAssessed) },
+                          ],
                         },
-                        {
-                          value: 18000,
-                          color: "var(--xops-status-warning-solid)",
-                          tooltip: { category: "At Risk", rows: [{ label: "Instances", value: "18,000" }, { label: "% of Total", value: "8.2%" }] },
-                        },
-                        {
-                          value: 21000,
-                          color: "var(--xops-status-danger-solid)",
-                          tooltip: { category: "Non-Compliant", rows: [{ label: "Instances", value: "21,000" }, { label: "% of Total", value: "9.6%" }] },
-                        },
-                        {
-                          value: 23000,
-                          color: "var(--xops-grey-300)",
-                          tooltip: { category: "Unverified/Pending", rows: [{ label: "Instances", value: "23,000" }, { label: "% of Total", value: "10.5%" }] },
-                        },
-                      ]}
+                      }))}
                     />
                   </div>
                   <Legend
-                    items={[
-                      { label: "Compliant", value: "157,000", meta: "71.7%", color: "var(--xops-status-success-solid)" },
-                      { label: "At Risk", value: "18,000", meta: "8.2%", color: "var(--xops-status-warning-solid)" },
-                      { label: "Non-Compliant", value: "21,000", meta: "9.6%", color: "var(--xops-status-danger-solid)" },
-                      { label: "Unverified/Pending", value: "23,000", meta: "10.5%", color: "var(--xops-grey-300)" },
-                    ]}
+                    items={complianceSegments.map((s) => ({
+                      label: s.label,
+                      value: formatCount(s.value, { compact: true }),
+                      meta: formatPercent(s.value, compliance.totalAssessed),
+                      color: s.color,
+                    }))}
                   />
                 </div>
               </Card>
@@ -756,54 +799,42 @@ export default function OverviewLegacy({ forceAlertsOpen, alertsBoundsRef, showL
             </GridItem>
 
             <GridItem colSpan={7}>
-              <Card title="Top Non-Compliant Software">
-                <div className={styles.tableOutline}>
-                  <Table
-                    chrome={false}
-                    scrollFade={false}
-                    columns={[
-                      { key: "software", label: "Software", width: "flex" },
-                      { key: "instances", label: "Instances", width: "auto", align: "right" },
-                      { key: "type", label: "Type of Non-Compliance", width: "auto" },
-                    ]}
-                    data={[
-                      { software: "Adobe CC", instances: "120", type: "Over-deployed Licenses" },
-                      { software: "Visio Pro", instances: "95", type: "Expired Licenses" },
-                      { software: "Zoom Pro", instances: "60", type: "Unauthorized Installations" },
-                      { software: "Lucid Chart", instances: "48", type: "Over-deployed Licenses" },
-                      { software: "Miro", instances: "32", type: "Duplicate Assignments" },
-                    ]}
-                    rowKey={(row) => row.software}
-                  />
-                </div>
-              </Card>
+              <div style={{ height: complianceHeight ?? undefined, overflow: "hidden" }}>
+                <Card title="Top 10 Non-Compliant Software by Instance" hotspotId="top-non-compliant">
+                  <div className={styles.tableOutline}>
+                    <Table
+                      chrome={false}
+                      scrollFade={false}
+                      columns={[
+                        {
+                          key: "software",
+                          label: "Software",
+                          width: "flex",
+                          render: (row) => softwareCell(row.software, row.logo, showLogos),
+                        },
+                        { key: "instances", label: "Instances", width: "auto", align: "right", render: (row) => formatCount(row.instances) },
+                        { key: "type", label: "Type", width: "auto" },
+                      ]}
+                      data={nonCompliantRows}
+                      rowKey={(row) => row.sku}
+                    />
+                  </div>
+                </Card>
+              </div>
             </GridItem>
 
             {/* Stage pills + toolbar + main table */}
             <GridItem colSpan={12}>
-              <div className={styles.panel}>
+              <div className={styles.panel} data-hotspot="lifecycle-stage-scope">
                 <p className={styles.sectionTitle}>Software By Lifecycle Stage</p>
-                <div data-hotspot="lifecycle-stage-terms">
-                  <FilterTabs
-                    options={stageOptions}
-                    value={stage}
-                    onChange={stageChange}
-                    ariaLabel="Filter by lifecycle stage"
-                  />
-                </div>
-
                 <div className={styles.toolbarRow}>
-                  <div className={styles.toolbarLeftGroup}>
-                    <div className={styles.searchBox}>
-                      <Icon name="search" color="var(--xops-text-disabled)" />
-                      <span className={styles.searchPlaceholder}>Search</span>
-                    </div>
-                    <Button
-                      variant="secondary"
-                      icon={<Icon name="Filter" color="var(--xops-text-secondary)" />}
-                    >
-                      Filters
-                    </Button>
+                  <div data-hotspot="lifecycle-stage-terms">
+                    <FilterTabs
+                      options={stageOptions}
+                      value={stage}
+                      onChange={stageChange}
+                      ariaLabel="Filter by lifecycle stage"
+                    />
                   </div>
                   <div data-hotspot="alert-button">
                     <Button

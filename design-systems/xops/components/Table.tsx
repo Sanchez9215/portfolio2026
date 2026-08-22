@@ -1,6 +1,7 @@
 import React, { CSSProperties, ReactNode, useEffect, useRef, useState } from "react";
 import styles from "./Table.module.css";
 import Icon from "./Icon";
+import Button from "./Button";
 import { Tooltip, TooltipProps } from "./Tooltip";
 
 export type ColumnAlign = "left" | "right" | "center";
@@ -55,6 +56,8 @@ export type TableProps<T extends Record<string, unknown>> = {
    *  for a live embed that needs to auto-reveal off-screen columns as a scripted
    *  beat. Omit for normal user-driven scroll. */
   scrollToX?: "start" | "end";
+  /** Trailing arrow_forward_ios cell on every row, signaling the row navigates to a different page (vs. onRowClick alone, which covers in-place actions like row selection or opening a side panel). Requires onRowClick. */
+  showChevron?: boolean;
 };
 
 function colStyle(width: ColumnWidth): CSSProperties {
@@ -80,6 +83,7 @@ export function Table<T extends Record<string, unknown>>({
   disableVerticalScroll = false,
   disableHorizontalScroll = false,
   scrollToX,
+  showChevron = false,
 }: TableProps<T>) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const paginationRef = useRef<HTMLDivElement>(null);
@@ -153,6 +157,7 @@ export function Table<T extends Record<string, unknown>>({
           {columns.map((column) => (
             <col key={column.key} style={colStyle(column.width)} />
           ))}
+          {showChevron && <col style={{ width: 20, whiteSpace: "nowrap" }} />}
         </colgroup>
         <thead>
           <tr>
@@ -214,6 +219,7 @@ export function Table<T extends Record<string, unknown>>({
                 </th>
               );
             })}
+            {showChevron && <th scope="col" className={styles.headerCell} data-width="fixed" />}
           </tr>
         </thead>
         <tbody>
@@ -243,6 +249,18 @@ export function Table<T extends Record<string, unknown>>({
                   {column.render ? column.render(row) : String(row[column.key] ?? "")}
                 </td>
               ))}
+              {showChevron && (
+                <td className={styles.bodyCell} data-align="center" data-width="fixed">
+                  <Button
+                    iconOnly
+                    size="small"
+                    ariaLabel="View details"
+                    icon={<Icon name="chevron_forward" className={styles.chevron} />}
+                    className={styles.chevronButton}
+                    tabIndex={-1}
+                  />
+                </td>
+              )}
             </tr>
           ))}
         </tbody>

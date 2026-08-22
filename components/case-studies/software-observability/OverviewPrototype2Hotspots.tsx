@@ -90,16 +90,27 @@ const HOTSPOTS: Hotspot[] = [
 
 const SUB_BEATS_LIST = HOTSPOTS.map((h) => h.subBeats ?? 1);
 
-export default function OverviewPrototype2Hotspots() {
+interface OverviewPrototype2HotspotsProps {
+  /** Renders the static live embed only, skipping the scroll-pin/hotspot-overlay
+   *  walkthrough entirely — for placements (e.g. side-by-side with Prototype 1)
+   *  that aren't ready for the interactive sequence yet. */
+  disableHotspots?: boolean;
+}
+
+export default function OverviewPrototype2Hotspots({ disableHotspots = false }: OverviewPrototype2HotspotsProps) {
   const pinRef = useRef<HTMLDivElement>(null);
   const embedWrapperRef = useRef<HTMLDivElement>(null);
-  const { activeIndex, settled } = useScrollHotspotSequence(pinRef, SUB_BEATS_LIST);
-  const active = activeIndex !== null ? HOTSPOTS[activeIndex] : null;
+  // Empty beat list makes the hook no-op (no ScrollTrigger/pin created) — see
+  // useScrollHotspotSequence's own early return on slotCount === 0.
+  const { activeIndex, settled } = useScrollHotspotSequence(pinRef, disableHotspots ? [] : SUB_BEATS_LIST);
+  const active = !disableHotspots && activeIndex !== null ? HOTSPOTS[activeIndex] : null;
 
   // Fills the space below the nav, minus ImgCard's own chrome (caption + padding),
-  // measured directly — same approach as the Prototype 01 embed.
+  // measured directly — same approach as the Prototype 01 embed. Not needed
+  // when there's no pin.
   const [viewportHeight, setViewportHeight] = useState<number | null>(null);
   useEffect(() => {
+    if (disableHotspots) return;
     const update = () => {
       const pinEl = pinRef.current;
       const embedWrapper = embedWrapperRef.current;
@@ -111,18 +122,19 @@ export default function OverviewPrototype2Hotspots() {
     update();
     window.addEventListener("resize", update);
     return () => window.removeEventListener("resize", update);
-  }, []);
+  }, [disableHotspots]);
 
   const panTargetIds = active ? active.panTargetIds ?? active.targetIds ?? [active.id] : null;
 
   return (
     <div ref={pinRef}>
-      <ImgCard variant="card" caption="Overview Prototype 02">
+      <ImgCard caption="Overview Prototype 02">
         <div ref={embedWrapperRef} style={{ position: "relative" }}>
           <LiveEmbed
             nativeWidth={1440}
-            viewportHeight={viewportHeight ?? undefined}
-            panTargetIds={panTargetIds}
+            viewportHeight={disableHotspots ? undefined : (viewportHeight ?? undefined)}
+            panTargetIds={disableHotspots ? null : panTargetIds}
+            disableCanvasTransition
           >
             <OverviewScreen
               showLogos={false}
@@ -133,11 +145,14 @@ export default function OverviewPrototype2Hotspots() {
               lockTableScroll
             />
           </LiveEmbed>
-          <HotspotOverlay
-            containerRef={embedWrapperRef}
-            active={active}
-            settled={settled}
-          />
+          {!disableHotspots && (
+            <HotspotOverlay
+              containerRef={embedWrapperRef}
+              active={active}
+              settled={settled}
+              nativeWidth={1440}
+            />
+          )}
         </div>
       </ImgCard>
     </div>

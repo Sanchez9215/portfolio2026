@@ -177,9 +177,9 @@
 
 @media (max-width: 1280px) {
   .section {
-    --text-title-xl-size:  80px;
-    --text-title-xl-lh:    93px;
-    --text-title-xl-ls:    -1.6px;
+    --text-title-xl-size: 80px;
+    --text-title-xl-lh: 93px;
+    --text-title-xl-ls: -1.6px;
   }
 }
 
@@ -192,9 +192,9 @@
 
 @media (max-width: 908px) {
   .section {
-    --text-title-xl-size:  72px;
-    --text-title-xl-lh:    84px;
-    --text-title-xl-ls:    -1.44px;
+    --text-title-xl-size: 72px;
+    --text-title-xl-lh: 84px;
+    --text-title-xl-ls: -1.44px;
   }
 
   .headlinePrefix {
@@ -210,11 +210,11 @@
 @media (max-width: 768px) {
   .section {
     --text-label-2xl-size: 24px;
-    --text-label-2xl-lh:   24px;
+    --text-label-2xl-lh: 24px;
 
-    --text-body-2xl-size:  24px;
-    --text-body-2xl-lh:    18px;
-    --text-body-2xl-ls:    -0.48px;
+    --text-body-2xl-size: 24px;
+    --text-body-2xl-lh: 18px;
+    --text-body-2xl-ls: -0.48px;
   }
 
   .icon {
@@ -224,6 +224,16 @@
 
   .labelRow {
     gap: var(--spacing-sm);
+  }
+
+  /* Entrance animation removed at this breakpoint so titleRow can switch to
+     display:inline for natural word-level wrap (inline-block wraps as an
+     atomic unit, blocking words like "Systems" from joining the line above).
+     Revisit with a mobile-appropriate animation later. */
+  .titleRow {
+    display: inline;
+    opacity: 1 !important;
+    transform: none !important;
   }
 
   /* .content/.topGroup/.headlineGroup normally shrink-wrap (their flex-
@@ -279,8 +289,8 @@
 @media (max-width: 480px) {
   .section {
     --text-title-xl-size: 56px;
-    --text-title-xl-lh:   66px;
-    --text-title-xl-ls:   -1.12px;
+    --text-title-xl-lh: 66px;
+    --text-title-xl-ls: -1.12px;
   }
 
   /* label-2xl, body-2xl, and .icon are no longer overridden at this tier —

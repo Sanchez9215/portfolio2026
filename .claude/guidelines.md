@@ -67,6 +67,12 @@ Prefer a structural boundary over a sibling element as the insertion point.
 **Never verify each component in Storybook/dev-server one at a time while building toward a batch milestone.**
 When several components are being built toward one larger goal (e.g. all the pieces for one screen), defer Storybook/dev-server checks until the whole batch is done, then verify together — not after every individual piece.
 
+**A checklist must present a component match as a neutral comparison, not a pre-baked proposal.**
+When a new piece diverges from an established component (different padding, weight, structure, etc.), the checklist lists what matches / what doesn't / what's close — and stops there. The user decides whether to extend the existing component or build new; the agent doesn't propose the answer and bundle it into a larger "ready to build, confirm to proceed." A divergence presented as an already-decided proposal, folded into a broader checklist the user approves as a whole, is not the same as the user actually being shown a clean fork to choose between — even a blanket "go" doesn't confirm a decision that was never posed as its own question.
+
+**When a user poses an explicit either/or question ("X, or Y?"), answer it — don't silently pick one option and move on.**
+Silently choosing one horn of a stated either/or is a smaller version of the same failure as not asking at all — the user surfaced the ambiguity themselves, and leaving it unanswered forces them to ask again. Any question containing "or" in the user's message needs a direct answer to the alternatives before (or instead of) proceeding.
+
 **Never shorten names.**
 Use the full form derived directly from the source (design-tool layer name, class name, component name). Never abbreviate.
 

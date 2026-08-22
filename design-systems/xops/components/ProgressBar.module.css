@@ -1,0 +1,87 @@
+.wrap {
+  display: flex;
+  align-items: center;
+  gap: var(--xops-spacing-8);
+  width: 100%;
+}
+
+.bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1 0 0%;
+  min-width: 164px;
+}
+
+.height16 {
+  height: var(--xops-bar-height-16);
+}
+
+.height8 {
+  height: var(--xops-bar-height-8);
+}
+
+.valueLabel {
+  flex-shrink: 0;
+  white-space: nowrap;
+  font-family: var(--xops-font-family);
+  font-weight: var(--xops-font-weight-regular);
+  font-size: var(--xops-typography-body-14-font-size);
+  line-height: var(--xops-typography-body-14-line-height);
+  color: var(--xops-text-primary);
+  text-align: right;
+}
+
+.dangerLabel {
+  color: var(--xops-status-danger-solid);
+}
+
+.track {
+  width: 100%;
+  height: 100%;
+  border-radius: var(--xops-radius-6);
+  overflow: hidden;
+}
+
+.fill {
+  height: 100%;
+  border-radius: var(--xops-radius-6);
+}
+
+.markerWrap {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+}
+
+.marker {
+  width: 8px;
+  height: 13px;
+  mask-size: contain;
+  -webkit-mask-size: contain;
+}
+
+.danger .track {
+  background-color: var(--xops-status-danger-tint);
+}
+
+.danger .fill {
+  background-color: var(--xops-status-danger-solid);
+}
+
+.warning .track {
+  background-color: var(--xops-status-warning-tint);
+}
+
+.warning .fill {
+  background-color: var(--xops-status-warning-solid);
+}
+
+.success .track {
+  background-color: var(--xops-status-success-tint);
+}
+
+.success .fill {
+  background-color: var(--xops-status-success-solid);
+}

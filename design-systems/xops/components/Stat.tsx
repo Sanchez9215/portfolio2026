@@ -1,4 +1,4 @@
-import React, { CSSProperties } from "react";
+import React, { CSSProperties, ReactNode } from "react";
 import Icon from "./Icon";
 import { Tag, TagStatus } from "./Tag";
 import { Tooltip, TooltipProps } from "./Tooltip";
@@ -21,8 +21,14 @@ export type StatProps = {
   // for smaller tiles (see MagicSurface's `scale` prop). Defaults to full size.
   magicScale?: number;
   spaceBetween?: boolean;
+  /** Optional leading color swatch before the label — reuses Legend's own swatch size/radius tokens. */
+  legendColor?: string;
+  /** Optional content rendered below the value row — e.g. a ProgressBar + caption. */
+  content?: ReactNode;
   className?: string;
   style?: CSSProperties;
+  /** Sets `data-hotspot` on the outer tile element, for hotspot targeting. */
+  hotspotId?: string;
 };
 
 export function Stat({
@@ -36,12 +42,18 @@ export function Stat({
   surface = "filled",
   magicScale = 1,
   spaceBetween,
+  legendColor,
+  content,
   className,
   style,
+  hotspotId,
 }: StatProps) {
   const body = (
     <>
       <div className={styles.labelRow}>
+        {legendColor && (
+          <span className={styles.legendSwatch} style={{ backgroundColor: legendColor }} />
+        )}
         <p className={styles.label}>{label}</p>
         {tooltip ? (
           <Tooltip {...tooltip}>
@@ -62,6 +74,7 @@ export function Stat({
         {meta && <span className={styles.meta}>{meta}</span>}
         {tag && <Tag status={tag.status}>{tag.label}</Tag>}
       </div>
+      {content}
     </>
   );
 
@@ -76,6 +89,7 @@ export function Stat({
         .filter(Boolean)
         .join(" ")}
       style={style}
+      data-hotspot={hotspotId}
     >
       {surface === "magic" ? (
         <MagicSurface contentClassName={styles.magicInner} scale={magicScale}>

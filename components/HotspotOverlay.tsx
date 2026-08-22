@@ -80,6 +80,12 @@ interface HotspotOverlayProps {
   /** Tooltip card accent — "default" is the standard yellow, "issue" is the FF7878
    *  red used for the "Issues Identified" hotspot experiences. */
   tone?: "default" | "issue";
+  /** The embed's own reference width (same value passed to LiveEmbed's `nativeWidth`)
+   *  — used to derive the embed's live scale (containerWidth / nativeWidth) so the
+   *  spotlight padding and tooltip card can shrink proportionally when the embed
+   *  itself is rendered smaller than its native size, instead of staying a fixed
+   *  screen-pixel size that reads as oversized against a scaled-down screen. */
+  nativeWidth: number;
 }
 
 interface Rect {
@@ -95,34 +101,38 @@ interface Size {
 }
 
 // Raw (unclamped) position per placement, before edge-clamping into the container.
-function rawTooltipPosition(anchor: Rect, tooltip: Size, placement: TooltipPlacement): { top: number; left: number } {
+// `gap` is TOOLTIP_GAP pre-scaled to the embed's own live scale (see `scale` in the
+// component below) so the visual gap shrinks along with a scaled-down embed instead
+// of staying a fixed screen-pixel distance that reads as oversized at small scales.
+function rawTooltipPosition(anchor: Rect, tooltip: Size, placement: TooltipPlacement, gap: number): { top: number; left: number } {
   switch (placement) {
     case "left-top":
-      return { left: anchor.left - TOOLTIP_GAP - tooltip.width, top: anchor.top };
+      return { left: anchor.left - gap - tooltip.width, top: anchor.top };
     case "left-bottom":
-      return { left: anchor.left - TOOLTIP_GAP - tooltip.width, top: anchor.top + anchor.height - tooltip.height };
+      return { left: anchor.left - gap - tooltip.width, top: anchor.top + anchor.height - tooltip.height };
     case "right-top":
-      return { left: anchor.left + anchor.width + TOOLTIP_GAP, top: anchor.top };
+      return { left: anchor.left + anchor.width + gap, top: anchor.top };
     case "right-bottom":
-      return { left: anchor.left + anchor.width + TOOLTIP_GAP, top: anchor.top + anchor.height - tooltip.height };
+      return { left: anchor.left + anchor.width + gap, top: anchor.top + anchor.height - tooltip.height };
     case "below-left":
-      return { left: anchor.left, top: anchor.top + anchor.height + TOOLTIP_GAP };
+      return { left: anchor.left, top: anchor.top + anchor.height + gap };
     case "below-right":
-      return { left: anchor.left + anchor.width - tooltip.width, top: anchor.top + anchor.height + TOOLTIP_GAP };
+      return { left: anchor.left + anchor.width - tooltip.width, top: anchor.top + anchor.height + gap };
     case "above-left":
-      return { left: anchor.left, top: anchor.top - TOOLTIP_GAP - tooltip.height };
+      return { left: anchor.left, top: anchor.top - gap - tooltip.height };
     case "above-right":
-      return { left: anchor.left + anchor.width - tooltip.width, top: anchor.top - TOOLTIP_GAP - tooltip.height };
+      return { left: anchor.left + anchor.width - tooltip.width, top: anchor.top - gap - tooltip.height };
   }
 }
 
 // Clamps the raw placement position into the container so the tooltip never
-// spills past the container's own edges.
-function clampedTooltipPosition(anchor: Rect, tooltip: Size, container: Size, placement: TooltipPlacement) {
-  const { left, top } = rawTooltipPosition(anchor, tooltip, placement);
+// spills past the container's own edges. `margin` is EDGE_MARGIN pre-scaled,
+// same reasoning as `gap` above.
+function clampedTooltipPosition(anchor: Rect, tooltip: Size, container: Size, placement: TooltipPlacement, gap: number, margin: number) {
+  const { left, top } = rawTooltipPosition(anchor, tooltip, placement, gap);
   return {
-    left: Math.min(Math.max(left, EDGE_MARGIN), container.width - tooltip.width - EDGE_MARGIN),
-    top: Math.min(Math.max(top, EDGE_MARGIN), container.height - tooltip.height - EDGE_MARGIN),
+    left: Math.min(Math.max(left, margin), container.width - tooltip.width - margin),
+    top: Math.min(Math.max(top, margin), container.height - tooltip.height - margin),
   };
 }
 
@@ -145,7 +155,9 @@ function sharpCornerClass(placement: TooltipPlacement): string {
   return styles[`corner-${corner[placement]}`];
 }
 
-function boundingRect(elements: HTMLElement[], containerRect: DOMRect): Rect | null {
+// `padding` is RECT_PADDING pre-scaled to the embed's live scale, same
+// reasoning as the tooltip's gap/margin — see the component below.
+function boundingRect(elements: HTMLElement[], containerRect: DOMRect, padding: number): Rect | null {
   if (elements.length === 0) return null;
   let top = Infinity;
   let left = Infinity;
@@ -159,10 +171,10 @@ function boundingRect(elements: HTMLElement[], containerRect: DOMRect): Rect | n
     bottom = Math.max(bottom, r.bottom);
   }
   return {
-    top: top - containerRect.top - RECT_PADDING,
-    left: left - containerRect.left - RECT_PADDING,
-    width: right - left + RECT_PADDING * 2,
-    height: bottom - top + RECT_PADDING * 2,
+    top: top - containerRect.top - padding,
+    left: left - containerRect.left - padding,
+    width: right - left + padding * 2,
+    height: bottom - top + padding * 2,
   };
 }
 
@@ -186,11 +198,15 @@ function lerpRect(from: Rect, to: Rect, t: number): Rect {
 // its cutout rects smoothly chase the real measured target via a per-frame lerp
 // (gsap.ticker + gsap.utils.interpolate), so moving from one hotspot to the next
 // (or panning within one) reads as one continuous glide, not a shrink/regrow.
-export default function HotspotOverlay({ containerRef, active, settled, tone = "default" }: HotspotOverlayProps) {
+export default function HotspotOverlay({ containerRef, active, settled, tone = "default", nativeWidth }: HotspotOverlayProps) {
   const maskId = useId();
   const [displayRects, setDisplayRects] = useState<Rect[]>([]);
   const displayRectsRef = useRef<Rect[]>([]);
   const [containerSize, setContainerSize] = useState<Size | null>(null);
+  // The embed's own live scale (containerWidth / nativeWidth) — mirrors LiveEmbed's
+  // own calc exactly, so the spotlight padding and tooltip shrink in lockstep with
+  // however small the embed itself is currently rendered.
+  const [scale, setScale] = useState(1);
   const tooltipRef = useRef<HTMLDivElement>(null);
   const [tooltipSize, setTooltipSize] = useState<Size | null>(null);
   // Remembers the last non-null hotspot so the overlay has something to render
@@ -220,9 +236,12 @@ export default function HotspotOverlay({ containerRef, active, settled, tone = "
     const measureTargets = (): Rect[] => {
       const containerRect = container.getBoundingClientRect();
       setContainerSize({ width: containerRect.width, height: containerRect.height });
+      const liveScale = containerRect.width / nativeWidth;
+      setScale(liveScale);
+      const padding = RECT_PADDING * liveScale;
       const containerRects = containerSelectors.map((selector) => {
         const matches = Array.from(container.querySelectorAll<HTMLElement>(selector));
-        return boundingRect(matches, containerRect);
+        return boundingRect(matches, containerRect, padding);
       });
       // Portaled content (e.g. createPortal to document.body) isn't a descendant of
       // `container`, so it's resolved from `document` instead — getBoundingClientRect
@@ -230,13 +249,13 @@ export default function HotspotOverlay({ containerRef, active, settled, tone = "
       // so subtracting containerRect still places it correctly in the overlay's space.
       const portalRects = portalSelectors.map((selector) => {
         const matches = Array.from(document.querySelectorAll<HTMLElement>(selector));
-        return boundingRect(matches, containerRect);
+        return boundingRect(matches, containerRect, padding);
       });
       const targets = [...containerRects, ...portalRects].filter((r): r is Rect => r !== null);
 
       if (active.widthFromSelector) {
         const frameEls = Array.from(container.querySelectorAll<HTMLElement>(active.widthFromSelector));
-        const frameRect = boundingRect(frameEls, containerRect);
+        const frameRect = boundingRect(frameEls, containerRect, padding);
         if (frameRect) {
           return targets.map((r) => ({ ...r, left: frameRect.left, width: frameRect.width }));
         }
@@ -275,7 +294,7 @@ export default function HotspotOverlay({ containerRef, active, settled, tone = "
       window.removeEventListener("resize", tick);
       cancelAnimationFrame(frame);
     };
-  }, [containerRef, active]);
+  }, [containerRef, active, nativeWidth]);
 
   // Tooltip's own rendered size — its text can wrap to a different height
   // per hotspot, so the clamp math needs the real size, not an assumed one.
@@ -295,11 +314,17 @@ export default function HotspotOverlay({ containerRef, active, settled, tone = "
   const visible = Boolean(active && displayRects.length > 0);
   const anchorRect = displayRects[0] ?? null;
   const placement = renderedHotspot?.placement ?? "right-top";
+  const gap = TOOLTIP_GAP * scale;
+  const margin = EDGE_MARGIN * scale;
+  // tooltipSize is the card's natural (un-transformed) rendered size — the CSS
+  // `transform: scale()` applied below shrinks it visually without changing its
+  // layout box, so the clamp/placement math needs the scaled footprint instead.
+  const scaledTooltipSize = tooltipSize ? { width: tooltipSize.width * scale, height: tooltipSize.height * scale } : null;
   const tooltipPosition =
-    anchorRect && containerSize && tooltipSize
-      ? clampedTooltipPosition(anchorRect, tooltipSize, containerSize, placement)
+    anchorRect && containerSize && scaledTooltipSize
+      ? clampedTooltipPosition(anchorRect, scaledTooltipSize, containerSize, placement, gap, margin)
       : anchorRect
-        ? { top: anchorRect.top, left: anchorRect.left + anchorRect.width + TOOLTIP_GAP }
+        ? { top: anchorRect.top, left: anchorRect.left + anchorRect.width + gap }
         : null;
 
   return (
@@ -316,7 +341,7 @@ export default function HotspotOverlay({ containerRef, active, settled, tone = "
                 {displayRects.map((r, i) => {
                   const width = Math.max(r.width, 0);
                   const height = Math.max(r.height, 0);
-                  const rx = Math.min(16, width / 2, height / 2);
+                  const rx = Math.min(6, width / 2, height / 2);
                   return <rect key={i} x={r.left} y={r.top} width={width} height={height} rx={rx} fill="black" />;
                 })}
               </mask>
@@ -324,7 +349,19 @@ export default function HotspotOverlay({ containerRef, active, settled, tone = "
             <rect x="0" y="0" width="100%" height="100%" fill="rgba(17, 17, 20, 0.6)" mask={`url(#${maskId})`} />
           </svg>
 
-          <div ref={tooltipRef} className={styles.tooltipStack} style={tooltipPosition ?? undefined}>
+          <div
+            ref={tooltipRef}
+            className={styles.tooltipStack}
+            style={{
+              ...tooltipPosition,
+              // Scales the whole card (text, padding, gaps) down with the embed's own
+              // live scale — origin "top left" keeps the box's already-scaled-aware
+              // top/left position (see scaledTooltipSize above) as the visual anchor
+              // point the shrink happens around, so it lines up with the clamp math.
+              transform: `scale(${scale})`,
+              transformOrigin: "top left",
+            }}
+          >
             <div
               className={`${styles.tooltipCard} ${tone === "issue" ? styles.issue : ""} ${sharpCornerClass(placement)} ${settled ? styles.settled : ""}`}
             >

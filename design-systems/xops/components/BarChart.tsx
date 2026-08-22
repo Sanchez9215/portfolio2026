@@ -6,18 +6,28 @@ export type BarSegment = {
   color: string;
 };
 
+export type BarChartHeight = "default" | "18" | "16";
+
 export type BarChartProps = {
   segments: BarSegment[];
   total?: number;
+  /** Off the shared bar-height scale (24px default / 18px / 16px). Defaults to "default". */
+  height?: BarChartHeight;
   className?: string;
 };
 
-export function BarChart({ segments, total, className }: BarChartProps) {
+const heightClass: Record<BarChartHeight, string | undefined> = {
+  default: undefined,
+  "18": styles.height18,
+  "16": styles.height16,
+};
+
+export function BarChart({ segments, total, height = "default", className }: BarChartProps) {
   const segmentSum = segments.reduce((sum, segment) => sum + segment.value, 0);
   const scale = total ?? segmentSum;
 
   return (
-    <div className={[styles.track, className].filter(Boolean).join(" ")}>
+    <div className={[styles.track, heightClass[height], className].filter(Boolean).join(" ")}>
       {segments.map((segment, index) => (
         <div
           key={index}

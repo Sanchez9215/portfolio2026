@@ -154,12 +154,13 @@ export default function SoftwareProfileFinalHotspots({
 
   return (
     <div ref={pinRef}>
-      <ImgCard variant="card" caption={caption}>
+      <ImgCard caption={caption}>
         <div ref={embedWrapperRef} style={{ position: "relative" }}>
           <LiveEmbed
             nativeWidth={580}
             viewportHeight={viewportHeight ?? undefined}
             panTargetIds={panTargetIds}
+            disableCanvasTransition
           >
             {/* Reproduces SidePanel.module.css's `.panel` visual chrome (padding/bg/border/
                 radius/shadow) around the standalone profile body — same technique as
@@ -224,7 +225,7 @@ export default function SoftwareProfileFinalHotspots({
               />
             </div>
           </LiveEmbed>
-          <HotspotOverlay containerRef={embedWrapperRef} active={active} settled={settled} />
+          <HotspotOverlay containerRef={embedWrapperRef} active={active} settled={settled} nativeWidth={580} />
         </div>
       </ImgCard>
     </div>

@@ -35,18 +35,54 @@ import styles from "./software-observability.module.css";
 // that weight out of the initial bundle the hero embed (SectionIntroduction)
 // has to load behind. SSR stays on (default) so case-study content still
 // renders in the initial HTML.
-const OverviewPrototypeHotspots = dynamic(() => import("@/components/case-studies/software-observability/OverviewPrototypeHotspots"));
-const OverviewPrototype2Hotspots = dynamic(() => import("@/components/case-studies/software-observability/OverviewPrototype2Hotspots"));
-const AllSoftwareLegacyHotspots = dynamic(() => import("@/components/case-studies/software-observability/AllSoftwareLegacyHotspots"));
-const AllSoftwareDirectionIssuesHotspots = dynamic(() => import("@/components/case-studies/software-observability/AllSoftwareDirectionIssuesHotspots"));
-const AllSoftwareExperienceIssuesHotspots = dynamic(() => import("@/components/case-studies/software-observability/AllSoftwareExperienceIssuesHotspots"));
-const SoftwareProfileLegacyHotspots = dynamic(() => import("@/components/case-studies/software-observability/SoftwareProfileLegacyHotspots"));
-const SoftwareProfileFinalHotspots = dynamic(() => import("@/components/case-studies/software-observability/SoftwareProfileFinalHotspots"));
-const LifecycleTimelineHotspots = dynamic(() => import("@/components/case-studies/software-observability/LifecycleTimelineHotspots"));
-const LegacyExperienceEmbed = dynamic(() => import("@/components/case-studies/software-observability/LegacyExperienceEmbed"));
-const FinalAllSoftwareEmbed = dynamic(() => import("@/components/case-studies/software-observability/FinalAllSoftwareEmbed"));
-const OverviewSpendLifecycleEmbed = dynamic(() => import("@/components/case-studies/software-observability/OverviewSpendLifecycleEmbed"));
-const RowAnatomyHotspots = dynamic(() => import("@/components/case-studies/software-observability/RowAnatomyHotspots"));
+const OverviewPrototypeHotspots = dynamic(
+  () =>
+    import("@/components/case-studies/software-observability/OverviewPrototypeHotspots"),
+);
+// const OverviewPrototype2Hotspots = dynamic(
+//   () =>
+//     import("@/components/case-studies/software-observability/OverviewPrototype2Hotspots"),
+// ); — hidden for now, see section.prototype-validation
+const AllSoftwareLegacyHotspots = dynamic(
+  () =>
+    import("@/components/case-studies/software-observability/AllSoftwareLegacyHotspots"),
+);
+const AllSoftwareDirectionIssuesHotspots = dynamic(
+  () =>
+    import("@/components/case-studies/software-observability/AllSoftwareDirectionIssuesHotspots"),
+);
+const AllSoftwareExperienceIssuesHotspots = dynamic(
+  () =>
+    import("@/components/case-studies/software-observability/AllSoftwareExperienceIssuesHotspots"),
+);
+const SoftwareProfileLegacyHotspots = dynamic(
+  () =>
+    import("@/components/case-studies/software-observability/SoftwareProfileLegacyHotspots"),
+);
+const SoftwareProfileFinalHotspots = dynamic(
+  () =>
+    import("@/components/case-studies/software-observability/SoftwareProfileFinalHotspots"),
+);
+const LifecycleTimelineHotspots = dynamic(
+  () =>
+    import("@/components/case-studies/software-observability/LifecycleTimelineHotspots"),
+);
+const LegacyExperienceEmbed = dynamic(
+  () =>
+    import("@/components/case-studies/software-observability/LegacyExperienceEmbed"),
+);
+const FinalAllSoftwareEmbed = dynamic(
+  () =>
+    import("@/components/case-studies/software-observability/FinalAllSoftwareEmbed"),
+);
+const OverviewSpendLifecycleEmbed = dynamic(
+  () =>
+    import("@/components/case-studies/software-observability/OverviewSpendLifecycleEmbed"),
+);
+const RowAnatomyHotspots = dynamic(
+  () =>
+    import("@/components/case-studies/software-observability/RowAnatomyHotspots"),
+);
 
 export default function SoftwareObservabilityPage() {
   return (
@@ -80,8 +116,7 @@ export default function SoftwareObservabilityPage() {
             <LabelBlock
               size="display"
               label="Research"
-              body="Before setting time with experts who had dealt with these pain points firsthand,"
-              support="I used Claude and ChatGPT to ramp up on the problem space."
+              body="Before setting time with experts who had dealt with these pain points, I used Claude and ChatGPT to ramp up on the problem space."
             />
           </div>
         </Section>
@@ -97,8 +132,7 @@ export default function SoftwareObservabilityPage() {
               className={styles.frameworkAdaptationTextBlock}
               size="display"
               label="Framework Adaptation & Data Requirements"
-              body="The experience needed to integrate seamlessly into the platform. I applied our product strategy when integrating a new domain lifecycle."
-              support=""
+              body="To integrate software lifecycle management into the platform, I began by mapping it into our observability framework."
             />
           </Section>
 
@@ -214,8 +248,8 @@ export default function SoftwareObservabilityPage() {
               <LabelBlock
                 size="display"
                 label="Parallel Prototyping"
-                body="I kicked off design with the Overview page. The module's entry point."
-                support="This would establish core metrics, visual language, and data groupings that everything else would inherit."
+                body="I kicked off design with module's entry point: the Overview page.
+                This established the core metrics, visual language, and data groupings that subsequent layers would inherit."
               />
               <Block
                 size="lg"
@@ -269,37 +303,29 @@ export default function SoftwareObservabilityPage() {
               see PLAN.md beat 12 / progress.md. */}
         </Section>
 
+        {/* ── section.prototype-validation ── */}
+        {/* Prototype 1 only for now, centered across the middle 8 columns —
+            Prototype 2 hidden per user request (hotspot walkthrough disabled
+            on Prototype 1 for now — see OverviewPrototypeHotspots.tsx's
+            disableHotspots prop). Previously a separate section.overview-prototypes
+            below this one. */}
         <Section className={styles.prototypeValidation}>
           <LabelBlock
             className={styles.prototypeValidationTextBlock}
             size="display"
             label="Prototype Validation"
-            body="Using the outputs as strategic context, I created a prototype to focus the direction through sessions with leadership and subject matter experts."
+            body="Using the outputs as building blocks, I created a prototype to focus direction through sessions with leadership and subject matter experts."
           />
-        </Section>
-
-        {/* ── section.overview-prototype-1 ── */}
-        {/* Static assumption/finding cards hidden while the hotspot annotation
-            system (PLAN.md "Hotspot Annotation System") is being validated —
-            see OverviewPrototypeHotspots.tsx for the POC (3 of 8 hotspots). */}
-        <Section className={styles.overviewPrototype1}>
-          <div className={styles.overviewPrototype1Embed}>
+          <div className={styles.prototypeValidationCenter}>
             <LazyMount>
-              <OverviewPrototypeHotspots />
+              <OverviewPrototypeHotspots disableHotspots />
             </LazyMount>
           </div>
-        </Section>
-
-        {/* ── section.overview-prototype-2 ── */}
-        {/* Static Decision cards + image hidden while the hotspot annotation
-            system is being validated — see OverviewPrototype2Hotspots.tsx;
-            progress.md / PLAN.md beat 14. */}
-        <Section className={styles.overviewPrototype2}>
-          <div className={styles.overviewPrototype2Embed}>
+          {/* <div className={styles.prototypeValidationRight}>
             <LazyMount>
-              <OverviewPrototype2Hotspots />
+              <OverviewPrototype2Hotspots disableHotspots />
             </LazyMount>
-          </div>
+          </div> */}
         </Section>
 
         {/* Gaps Identified section hidden per user request. */}
@@ -518,7 +544,6 @@ export default function SoftwareObservabilityPage() {
             </Block>
           </div>
           <ImgCard
-            variant="card"
             className={styles.testingTheExperienceImgCard}
             caption="Full Prototype"
             aspectRatio="16/9"
@@ -619,11 +644,7 @@ export default function SoftwareObservabilityPage() {
 
         {/* ── section.all-software-final-design ── */}
         <Section className={styles.allSoftwareFinalDesign}>
-          <ImgCard
-            variant="card"
-            caption="Final All Software View"
-            height="100vh"
-          >
+          <ImgCard caption="Final All Software View" height="100vh">
             <LazyMount>
               <FinalAllSoftwareEmbed />
             </LazyMount>
@@ -692,7 +713,7 @@ export default function SoftwareObservabilityPage() {
 
         {/* ── section.custimizable-columns-final ── */}
         <Section className={styles.custimizableColumnsFinal}>
-          <ImgCard variant="card" caption="Custom Columns">
+          <ImgCard caption="Custom Columns">
             <img
               src="/images/software-observability/custom-columns-final.jpg"
               alt="Customizable Columns Final Design"
@@ -713,7 +734,6 @@ export default function SoftwareObservabilityPage() {
         {/* ── section.Drag-and-Drop-final ── */}
         <Section className={styles.dragAndDropFinal}>
           <ImgCard
-            variant="card"
             layout="column"
             images={[
               {
@@ -814,7 +834,6 @@ export default function SoftwareObservabilityPage() {
           }
           image={
             <ImgCard
-              variant="card"
               images={[
                 {
                   src: "/images/software-observability/timeline-prototype-2.jpg",
@@ -875,7 +894,7 @@ export default function SoftwareObservabilityPage() {
 
         {/* ── section.overview-final ── */}
         <Section className={styles.overviewFinal}>
-          <ImgCard variant="card" caption="Final Overview Page" height="100vh">
+          <ImgCard caption="Final Overview Page" height="100vh">
             <LazyMount>
               <OverviewSpendLifecycleEmbed />
             </LazyMount>
@@ -889,11 +908,7 @@ export default function SoftwareObservabilityPage() {
 
         {/* ── section.final-design ── */}
         <Section className={styles.finalAllSoftwareDesign}>
-          <ImgCard
-            variant="card"
-            caption="Final All Software View"
-            height="100vh"
-          >
+          <ImgCard caption="Final All Software View" height="100vh">
             <LazyMount>
               <FinalAllSoftwareEmbed />
             </LazyMount>

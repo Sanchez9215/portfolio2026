@@ -35,24 +35,6 @@ const EYES: Eye[] = [
   { id: "big", pupil: 37.8, text: true },
 ];
 
-function BlueBlob({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="125 117 1291 900"
-      preserveAspectRatio="none"
-      fill="none"
-      data-blob
-      aria-hidden
-    >
-      <path
-        d="M125 517C125 296.086 304.086 117 525 117H1416V753C1416 898.803 1297.8 1017 1152 1017H125V517Z"
-        fill="currentColor"
-      />
-    </svg>
-  );
-}
-
 function Almond({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 900 372" fill="none" aria-hidden>
@@ -122,7 +104,6 @@ export default function ObservabilityEyes() {
 
   return (
     <>
-      <BlueBlob className={styles.blob} />
       {EYES.map((eye, i) => (
         <div
           key={eye.id}
@@ -150,9 +131,9 @@ export default function ObservabilityEyes() {
         </div>
       ))}
       <p className={styles.detail} data-detail>
-        At XOPS, observability meant full visibility into the enterprise estate,
-        its assets, their relationships to employees, and operational truth,
-        unified across HR, IT, and financial system data.
+        At XOPS, observability meant full visibility into enterprise assets,
+        their relationships to employees, and operational truth, unified across
+        HR, IT, financial, and third-party systems.
       </p>
     </>
   );

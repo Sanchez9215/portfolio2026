@@ -26,7 +26,6 @@ import Title from "@/components/Title";
 import TitleBlock from "@/components/TitleBlock";
 import GhostCursor from "@/components/case-studies/software-observability/GhostCursor";
 import MessageBubble from "@/components/MessageBubble";
-import Button from "@/components/Button";
 import SoftwareExperienceEmbed from "@/components/case-studies/software-observability/SoftwareExperienceEmbed";
 import {
   introTitleLines,
@@ -39,8 +38,6 @@ import styles from "./WorkCaseStudyRow.module.css";
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
 }
-
-const CASE_STUDY_HREF = "/work/software-observability";
 
 // Same beat shape as SectionIntroduction's TIMING, played on scroll-enter
 // instead of on mount.
@@ -119,39 +116,6 @@ const BUBBLE_PUSH_DURATION = 0.3;
 // it — matches the gap already visible before the responsive clamp kicks in.
 const CURSOR_BUBBLE_GAP = 12;
 
-// Inlined from /icons/go-arrow.svg — currentColor resolves from the icon
-// badge's own color, same convention as Hero/MenuItem/SoftwareExperienceEmbed.
-function ArrowOutwardIcon() {
-  return (
-    <svg
-      width="48"
-      height="48"
-      viewBox="0 0 48 48"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-hidden="true"
-    >
-      <mask
-        id="work-row-arrow-outward-mask"
-        style={{ maskType: "alpha" }}
-        maskUnits="userSpaceOnUse"
-        x="0"
-        y="0"
-        width="48"
-        height="48"
-      >
-        <rect width="48" height="48" fill="#D9D9D9" />
-      </mask>
-      <g mask="url(#work-row-arrow-outward-mask)">
-        <path
-          d="M13.0825 36.9326L9.34996 33.2001L27.9 14.6501H11.6325V9.3501H36.9325V34.6501H31.6325V18.3826L13.0825 36.9326Z"
-          fill="currentColor"
-        />
-      </g>
-    </svg>
-  );
-}
-
 export default function WorkCaseStudyRow() {
   // Gates SoftwareExperienceEmbed's internal ghost-cursor walkthrough behind
   // this row's own embedWrap fade-in starting (see the .call() below, fired
@@ -166,13 +130,6 @@ export default function WorkCaseStudyRow() {
   // own SoftwareExperienceEmbed instance only; the case study page's own
   // usage (SectionIntroduction) doesn't pass this prop.
   const [entranceReady, setEntranceReady] = useState(false);
-  // Case Study button steps large → medium below 1080px. Its per-size label
-  // font-size is baked into Button.module.css's .large/.medium classes
-  // (not exposed as an overridable custom property), so this switches the
-  // size prop itself via matchMedia rather than a CSS override.
-  const [ctaButtonSize, setCtaButtonSize] = useState<"large" | "medium">(
-    "large",
-  );
   const titleRef = useRef<HTMLHeadingElement>(null);
   const descriptionRef = useRef<HTMLParagraphElement>(null);
   const leftRef = useRef<HTMLDivElement>(null);
@@ -274,14 +231,6 @@ export default function WorkCaseStudyRow() {
     });
 
     return () => ctx.revert();
-  }, []);
-
-  useEffect(() => {
-    const mql = window.matchMedia("(max-width: 1080px)");
-    const onChange = () => setCtaButtonSize(mql.matches ? "medium" : "large");
-    onChange();
-    mql.addEventListener("change", onChange);
-    return () => mql.removeEventListener("change", onChange);
   }, []);
 
   // Hides the large pointer cursor immediately on mount — GhostCursor's raw
@@ -517,6 +466,7 @@ export default function WorkCaseStudyRow() {
           </Block>
         </div>
         <div ref={ctaRef} className={styles.ctaRow}>
+          {/* Hidden until the case study is ready to link to publicly.
           <Button
             variant="primary"
             size={ctaButtonSize}
@@ -524,7 +474,7 @@ export default function WorkCaseStudyRow() {
             icon={<ArrowOutwardIcon />}
           >
             Case Study
-          </Button>
+          </Button> */}
           {/* <Button
             variant="secondary"
             size="large"

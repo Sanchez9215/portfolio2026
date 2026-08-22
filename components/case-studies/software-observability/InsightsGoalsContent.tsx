@@ -31,8 +31,7 @@ const FUNNEL_HEIGHT = 128;
 const SPINE_FUNNEL_OVERLAP = 8;
 // Flat state: same path structure as the funnel shape, all y's collapsed to
 // 0, so it reads as the previous section's flat bottom edge before morphing.
-const FUNNEL_FLAT_D =
-  "M0 0C70.6875 0 128 0 128 0C128 0 185.312 0 256 0H0Z";
+const FUNNEL_FLAT_D = "M0 0C70.6875 0 128 0 128 0C128 0 185.312 0 256 0H0Z";
 const FUNNEL_SHAPE_D =
   "M0 0C70.6875 0 128 57.3066 128 128C128 57.3066 185.312 0 256 0H0Z";
 // Extra scroll distance (px) held after the spine reaches badge 3, so its
@@ -71,11 +70,11 @@ const INSIGHTS = [
   },
   {
     title: "Renewals were a recurring financial risk.",
-    body: "Without consolidated spend data or proactive renewal visibility, contracts auto-renewed for unused software before anyone could intervene.",
+    body: "No consolidated spend data or proactive renewal alerts led to contracts auto-renewing for unused software before anyone could intervene.",
   },
   {
     title: "Utilization data was rarely actionable.",
-    body: "Usage telemetry was pulled in isolation, disconnected from ownership, compliance, and cost context.",
+    body: "Usage data was pulled in isolation, disconnected from ownership, compliance, and cost context.",
   },
 ];
 
@@ -85,8 +84,9 @@ const GOALS = [
     body: "Create a unified view so finance and IT share the same numbers, and surface compliance risk before it becomes a liability.",
   },
   {
-    title: "Negotiation leverage from discrepancies and usage data.",
-    body: "Reconcile internal records against publisher and vendor data to catch discrepancies, and price low utilization, so renewal conversations are backed by verified numbers.",
+    title:
+      "Proactive renewal signaling and usage data for negotiation leverage.",
+    body: "Pair renewal deadlines with urgency flags, usage, and assignment data to enable early action, so decisions to cancel, renegotiate, or downsize are addressed in time and backed by verified data.",
   },
   {
     title: "Target unused licenses for recoverable spend.",
@@ -224,9 +224,13 @@ export default function InsightsGoalsContent() {
           getComputedStyle(goalItemEls[0]!).paddingRight,
         );
         const insightsEdgeX =
-          insightsColEl.getBoundingClientRect().left - sectionRect.left + insightPadding;
+          insightsColEl.getBoundingClientRect().left -
+          sectionRect.left +
+          insightPadding;
         const goalsEdgeX =
-          goalsColEl.getBoundingClientRect().right - sectionRect.left - goalPadding;
+          goalsColEl.getBoundingClientRect().right -
+          sectionRect.left -
+          goalPadding;
         return {
           width,
           height,
@@ -252,7 +256,12 @@ export default function InsightsGoalsContent() {
 
       const spineStartY = FUNNEL_HEIGHT - SPINE_FUNNEL_OVERLAP;
       gsap.set(spineEl, {
-        attr: { x1: m.centerX, x2: m.centerX, y1: spineStartY, y2: spineStartY },
+        attr: {
+          x1: m.centerX,
+          x2: m.centerX,
+          y1: spineStartY,
+          y2: spineStartY,
+        },
       });
       gsap.set(badgeEls, { opacity: 0, scale: 0.6 });
       badgeEls.forEach((el, i) => {
@@ -278,7 +287,10 @@ export default function InsightsGoalsContent() {
       leftConnEls.forEach((el, i) => {
         const attachX = m.centerX - m.badgeHalfWidth;
         const attachY = m.badgeTopYs[i] + m.badgeHalfWidth;
-        el!.setAttribute("transform", `translate(${attachX} ${attachY}) scale(-1, 1)`);
+        el!.setAttribute(
+          "transform",
+          `translate(${attachX} ${attachY}) scale(-1, 1)`,
+        );
         const length = el!.getTotalLength();
         gsap.set(el, { strokeDasharray: length, strokeDashoffset: length });
       });
@@ -311,18 +323,20 @@ export default function InsightsGoalsContent() {
 
       // Phase 1 — funnel morphs from flat to its full shape over the first
       // 25% of the section's entry.
-      gsap.timeline({
-        scrollTrigger: {
-          trigger: sectionEl,
-          start: "top bottom",
-          end: "top 75%",
-          scrub: true,
-        },
-      }).to(funnelEl, {
-        morphSVG: FUNNEL_SHAPE_D,
-        duration: 1,
-        ease: "none",
-      });
+      gsap
+        .timeline({
+          scrollTrigger: {
+            trigger: sectionEl,
+            start: "top bottom",
+            end: "top 75%",
+            scrub: true,
+          },
+        })
+        .to(funnelEl, {
+          morphSVG: FUNNEL_SHAPE_D,
+          duration: 1,
+          ease: "none",
+        });
 
       // Phase 2 — spine grows continuously and stops exactly at each
       // badge's top edge; that badge must be FULLY revealed by the time the
@@ -356,7 +370,12 @@ export default function InsightsGoalsContent() {
         const arrivesAt = (y - spineStartY) / totalPhaseLength;
         revealTl.to(
           badgeEls[i],
-          { opacity: 1, scale: 1, duration: badgeRevealDuration, ease: "power2.out" },
+          {
+            opacity: 1,
+            scale: 1,
+            duration: badgeRevealDuration,
+            ease: "power2.out",
+          },
           Math.max(0, arrivesAt - badgeRevealDuration),
         );
         // Both connectors start filling in the instant the spine arrives —
@@ -364,7 +383,11 @@ export default function InsightsGoalsContent() {
         // time as each other.
         revealTl.to(
           [rightConnEls[i], leftConnEls[i]],
-          { strokeDashoffset: 0, duration: CONNECTOR_FILL_DURATION, ease: "power2.out" },
+          {
+            strokeDashoffset: 0,
+            duration: CONNECTOR_FILL_DURATION,
+            ease: "power2.out",
+          },
           arrivesAt,
         );
         // Extensions pick up the instant the connectors finish, continuing
@@ -372,7 +395,11 @@ export default function InsightsGoalsContent() {
         const extensionStart = arrivesAt + CONNECTOR_FILL_DURATION;
         revealTl.to(
           [rightExtEls[i], leftExtEls[i]],
-          { strokeDashoffset: 0, duration: EXTENSION_FILL_DURATION, ease: "power2.out" },
+          {
+            strokeDashoffset: 0,
+            duration: EXTENSION_FILL_DURATION,
+            ease: "power2.out",
+          },
           extensionStart,
         );
         // Cards fade up right after the extension reaches the card edge —
@@ -391,7 +418,11 @@ export default function InsightsGoalsContent() {
 
   return (
     <>
-      <svg ref={svgRef} className={styles.insightsGoalsMotionSvg} aria-hidden="true">
+      <svg
+        ref={svgRef}
+        className={styles.insightsGoalsMotionSvg}
+        aria-hidden="true"
+      >
         <path ref={funnelRef} fill="var(--surface-base)" />
         <line
           ref={spineRef}
@@ -401,7 +432,9 @@ export default function InsightsGoalsContent() {
         {[0, 1, 2].map((i) => (
           <path
             key={i}
-            ref={(el) => { rightConnectorRefs.current[i] = el; }}
+            ref={(el) => {
+              rightConnectorRefs.current[i] = el;
+            }}
             d={CONNECTOR_PATH_D}
             stroke="var(--surface-card-border)"
             strokeWidth={1}
@@ -411,7 +444,9 @@ export default function InsightsGoalsContent() {
         {[0, 1, 2].map((i) => (
           <path
             key={i}
-            ref={(el) => { leftConnectorRefs.current[i] = el; }}
+            ref={(el) => {
+              leftConnectorRefs.current[i] = el;
+            }}
             d={CONNECTOR_PATH_D}
             stroke="var(--surface-card-border)"
             strokeWidth={1}
@@ -421,7 +456,9 @@ export default function InsightsGoalsContent() {
         {[0, 1, 2].map((i) => (
           <line
             key={i}
-            ref={(el) => { rightExtensionRefs.current[i] = el; }}
+            ref={(el) => {
+              rightExtensionRefs.current[i] = el;
+            }}
             stroke="var(--surface-card-border)"
             strokeWidth={1}
           />
@@ -429,7 +466,9 @@ export default function InsightsGoalsContent() {
         {[0, 1, 2].map((i) => (
           <line
             key={i}
-            ref={(el) => { leftExtensionRefs.current[i] = el; }}
+            ref={(el) => {
+              leftExtensionRefs.current[i] = el;
+            }}
             stroke="var(--surface-card-border)"
             strokeWidth={1}
           />
@@ -439,7 +478,9 @@ export default function InsightsGoalsContent() {
       {[0, 1, 2].map((i) => (
         <div
           key={i}
-          ref={(el) => { badgeRefs.current[i] = el; }}
+          ref={(el) => {
+            badgeRefs.current[i] = el;
+          }}
           className={styles.insightsGoalsBadge}
         >
           {String(i + 1).padStart(2, "0")}
@@ -460,49 +501,73 @@ export default function InsightsGoalsContent() {
         </Label>
         <div className={styles.insightsGoalsDescriptions}>
           {EXPERTS.map((expert, i) => (
-            <div key={expert.title} ref={(el) => { expertRefs.current[i] = el; }}>
-              <TitleBlock size="md" title={expert.title} body={expert.body} inverse />
+            <div
+              key={expert.title}
+              ref={(el) => {
+                expertRefs.current[i] = el;
+              }}
+            >
+              <TitleBlock
+                size="md"
+                title={expert.title}
+                body={expert.body}
+                inverse
+              />
             </div>
           ))}
         </div>
       </ContextBlock>
 
       <div ref={insightsColRef} className={styles.insightsGoalsInsights}>
-        <Label size="md" color="inverse">Insights</Label>
+        <Label size="md" color="inverse">
+          Insights
+        </Label>
         <div className={styles.insightsGoalsItems}>
           {INSIGHTS.map((item, i) => (
             <div
               key={item.title}
-              ref={(el) => { insightItemRefs.current[i] = el; }}
+              ref={(el) => {
+                insightItemRefs.current[i] = el;
+              }}
               className={styles.insightsGoalsItem}
             >
               <div
-                ref={(el) => { insightHeadingRefs.current[i] = el; }}
+                ref={(el) => {
+                  insightHeadingRefs.current[i] = el;
+                }}
                 className={styles.insightsGoalsItemHeading}
               >
                 <p className={styles.insightsGoalsItemTitle}>{item.title}</p>
               </div>
               <div className={styles.insightsGoalsItemBody}>
-                <Block size="md" color="inverse">{item.body}</Block>
+                <Block size="md" color="inverse">
+                  {item.body}
+                </Block>
               </div>
             </div>
           ))}
         </div>
       </div>
       <div ref={goalsColRef} className={styles.insightsGoalsGoals}>
-        <Label size="md" color="inverse">Goals</Label>
+        <Label size="md" color="inverse">
+          Goals
+        </Label>
         <div className={styles.insightsGoalsItems}>
           {GOALS.map((item, i) => (
             <div
               key={item.title}
-              ref={(el) => { goalItemRefs.current[i] = el; }}
+              ref={(el) => {
+                goalItemRefs.current[i] = el;
+              }}
               className={styles.insightsGoalsItem}
             >
               <div className={styles.insightsGoalsItemHeading}>
                 <p className={styles.insightsGoalsItemTitle}>{item.title}</p>
               </div>
               <div className={styles.insightsGoalsItemBody}>
-                <Block size="md" color="inverse">{item.body}</Block>
+                <Block size="md" color="inverse">
+                  {item.body}
+                </Block>
               </div>
             </div>
           ))}
