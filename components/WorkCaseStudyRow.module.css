@@ -125,10 +125,16 @@
   transform: translateY(24px);
 }
 
+/* Fixed height so a body-less item (heading only) still reserves the same
+   space as one with a body — keeps every row's impact items visually
+   aligned regardless of which have body text. Default 108px, overridable
+   per-row via the --impact-item-height custom property (see .impact below
+   and WorkCaseStudyRow's `impactItemHeight` prop). */
 .impactItem {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-sm);
+  height: var(--impact-item-height, 108px);
 }
 
 .impactHeading {
@@ -156,13 +162,16 @@
   white-space: nowrap;
 }
 
-/* div.embedWrap — live SoftwareExperienceEmbed, top corners only (Figma:
-   rounded-tl/tr, flush bottom against the row's own bottom edge) */
+/* div.embedWrap — the row's visual. Hugs whatever height the visual itself
+   renders at by default, so its own corners are exactly what gets rounded —
+   no fixed box cropping/letterboxing a visual that wasn't authored at that
+   ratio. All four corners round by default: a hugging box floats within the
+   row rather than sitting flush against a shared bottom edge, so a
+   square-bottomed box would read as unfinished, not flush. */
 .embedWrap {
   width: 100%;
-  aspect-ratio: 16 / 10;
   overflow: hidden;
-  border-radius: var(--border-radius-sm) var(--border-radius-sm) 0 0;
+  border-radius: var(--border-radius-sm);
   /* entrance-animation hidden state */
   opacity: 0;
   transform: translateY(24px);
@@ -170,18 +179,21 @@
 
 .embedWrap > * {
   width: 100%;
+}
+
+/* Opt-in fixed 16/10 box (WorkCaseStudyRow's `fixedVisualRatio`) — for a
+   visual that needs a bounded window rather than its own natural height,
+   e.g. Software Observability's live embed, which scrolls its real (much
+   taller) app content inside a fixed viewport. Rounds top corners only
+   (Figma: rounded-tl/tr) — this box sits flush against the row's own
+   bottom edge, so a bottom radius would look cut off, not rounded. */
+.embedWrapFixedRatio {
+  aspect-ratio: 16 / 10;
+  border-radius: var(--border-radius-sm) var(--border-radius-sm) 0 0;
+}
+
+.embedWrapFixedRatio > * {
   height: 100%;
-}
-
-/* Opt-out of the fixed 16/10 box (WorkCaseStudyRow's `fitVisualHeight`) —
-   the wrap hugs whatever height the visual's own intrinsic aspect ratio
-   renders at, instead of cropping/letterboxing it to 16/10. */
-.embedWrapFitHeight {
-  aspect-ratio: auto;
-}
-
-.embedWrapFitHeight > * {
-  height: auto;
 }
 
 /* ============================================================
@@ -355,6 +367,13 @@
      uneven gap below the shorter ones. */
   .impact > * {
     flex: none;
+  }
+
+  /* Row-only fix — the fixed 108px (see .impactItem's base rule) exists to
+     align items side-by-side; stacked in a column it would leave dangling
+     empty space under a body-less item. */
+  .impactItem {
+    height: auto;
   }
 
   /* The 3-column filler slots (see WorkCaseStudyRow.tsx's IMPACT_SLOTS)

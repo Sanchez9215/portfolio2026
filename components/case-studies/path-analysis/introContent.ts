@@ -9,7 +9,7 @@
 import type { CaseStudyIntro } from "@/components/case-studies/caseStudyIntro";
 
 export const pathAnalysisIntro: CaseStudyIntro = {
-  titleLines: ["Path Analysis", " "],
+  titleLines: ["Path Analysis"],
 
   description:
     "A native user journey mapping experience that removed the platform's reliance on third party tools and made analysis self serve, integrating session replay and frustration signals to reveal actionable friction points.",
@@ -32,15 +32,12 @@ export const pathAnalysisIntro: CaseStudyIntro = {
   impact: [
     {
       heading: "20% ARR Growth",
-      body: "Contributed to a 20% increase in ARR the quarter following launch.",
     },
     {
       heading: "78% Account Adoption",
-      body: "Adopted by 78% of accounts following launch.",
     },
     {
       heading: "92% Retention Rate",
-      body: "Contributed to a retention rate increase to 92%.",
     },
   ],
 };

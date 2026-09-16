@@ -10,7 +10,7 @@ import type { CaseStudyIntro } from "@/components/case-studies/caseStudyIntro";
 import styles from "./introContent.module.css";
 
 export const sessionReplayIntro: CaseStudyIntro = {
-  titleLines: ["Session Replay", " "],
+  titleLines: ["Session Replay"],
 
   description: (
     <>
@@ -46,12 +46,11 @@ export const sessionReplayIntro: CaseStudyIntro = {
 
   impact: [
     {
-      heading: "10% Usage Growth",
-      body: "Contributed to a 10% increase in session replay usage following launch.",
+      heading: "Competitive Retention & Acquisition",
+      body: "Helped close new deals and retain existing customers against competing replay tools, strengthening Heap's position ahead of its acquisition by Contentsquare.",
     },
     {
-      heading: "Competitive Retention & Acquisition",
-      body: "Helped close new deals and retain existing customers against competing session replay tools, strengthening Heap's position ahead of its acquisition by Contentsquare.",
+      heading: "10% Usage Growth",
     },
   ],
 };

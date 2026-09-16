@@ -49,24 +49,27 @@ export default function WorkSection() {
             enableExpandedView
           />
         )}
+        fixedVisualRatio
       />
-      <WorkCaseStudyRow
-        intro={dataHealthMonitorIntro}
-        visual={() => <WorkVisualPlaceholder />}
-      />
+      {/* Hidden until DHM's own outstanding work is done — see PLAN.md. */}
+      {false && (
+        <WorkCaseStudyRow
+          intro={dataHealthMonitorIntro}
+          visual={() => <WorkVisualPlaceholder />}
+        />
+      )}
       <WorkCaseStudyRow
         intro={sessionReplayIntro}
         visual={(_entranceReady, settled) => (
           <SessionReplayVideo play={settled} />
         )}
-        fitVisualHeight
       />
       <WorkCaseStudyRow
         intro={pathAnalysisIntro}
         visual={(_entranceReady, settled) => (
           <PathAnalysisVideo play={settled} />
         )}
-        fitVisualHeight
+        impactItemHeight={64}
       />
     </main>
   );

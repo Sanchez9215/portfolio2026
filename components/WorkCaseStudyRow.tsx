@@ -62,28 +62,32 @@ export interface WorkCaseStudyRowProps {
   /** The case study's own intro content — see `caseStudyIntro.ts`. */
   intro: CaseStudyIntro;
   /**
-   * The row's visual. Called with `entranceReady`, which flips true when
-   * this row's visual fade-in starts (not finishes) — a live embed can gate
-   * its own scripted walkthrough on it; static visuals ignore it.
-   */
-  /**
-   * `settled` flips once this row's visual fade/translate-in tween actually
-   * finishes (the visual is fully in place) — for a visual that shouldn't
-   * start doing its own thing (e.g. playing a video) until then.
+   * The row's visual. Called with `entranceReady` — flips true when this
+   * row's visual fade-in *starts* (a live embed can gate its own scripted
+   * walkthrough on it) — and `settled`, which flips once that fade/
+   * translate-in tween actually *finishes* (the visual is fully in place,
+   * e.g. for a video that shouldn't start playing until then). Static
+   * visuals ignore both.
    */
   visual: (entranceReady: boolean, settled: boolean) => ReactNode;
   /**
-   * Lets the visual's own intrinsic aspect ratio size the wrap instead of
-   * the shared fixed 16/10 box — for a visual (e.g. a video) that shouldn't
-   * be cropped or letterboxed to fit a ratio it wasn't authored at.
+   * Opts into a fixed 16/10 box instead of the default (the wrap hugs
+   * whatever height the visual itself renders at) — for a visual that needs
+   * a bounded window rather than its own natural height, e.g. Software
+   * Observability's live embed, which scrolls its real (much taller) app
+   * content inside a fixed viewport.
    */
-  fitVisualHeight?: boolean;
+  fixedVisualRatio?: boolean;
+  /** Overrides the impact items' shared 108px height (see .impactItem in
+   *  WorkCaseStudyRow.module.css) for this row only. */
+  impactItemHeight?: number;
 }
 
 export default function WorkCaseStudyRow({
   intro,
   visual,
-  fitVisualHeight = false,
+  fixedVisualRatio = false,
+  impactItemHeight,
 }: WorkCaseStudyRowProps) {
   const { titleLines, description, meta, impact } = intro;
   // Passed to the `visual` render prop. Flips when this row's own embedWrap
@@ -262,7 +266,17 @@ export default function WorkCaseStudyRow({
             );
           })}
         </div>
-        <div ref={impactRef} className={styles.impact}>
+        <div
+          ref={impactRef}
+          className={styles.impact}
+          style={
+            impactItemHeight !== undefined
+              ? ({
+                  "--impact-item-height": `${impactItemHeight}px`,
+                } as React.CSSProperties)
+              : undefined
+          }
+        >
           {/* Rendered as Title + Block directly rather than via TitleBlock —
               TitleBlock hardcodes its body to `tertiary`, and impact bodies
               are `secondary` here. Badge-less items simply omit the badge. */}
@@ -274,9 +288,11 @@ export default function WorkCaseStudyRow({
                   <span className={styles.badge}>{item.badge}</span>
                 )}
               </div>
-              <Block size="sm" color="secondary">
-                {item.body}
-              </Block>
+              {item.body && (
+                <Block size="sm" color="secondary">
+                  {item.body}
+                </Block>
+              )}
             </div>
           ))}
           {/* Empty slots padding the row out to IMPACT_SLOTS, so a row with
@@ -291,7 +307,7 @@ export default function WorkCaseStudyRow({
         </div>
         <div
           ref={embedRef}
-          className={`${styles.embedWrap}${fitVisualHeight ? ` ${styles.embedWrapFitHeight}` : ""}`}
+          className={`${styles.embedWrap}${fixedVisualRatio ? ` ${styles.embedWrapFixedRatio}` : ""}`}
         >
           {visual(entranceReady, visualSettled)}
         </div>

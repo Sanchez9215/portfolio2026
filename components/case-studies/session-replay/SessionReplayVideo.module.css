@@ -1,6 +1,6 @@
-/* Rendered at its native aspect ratio, full width — paired with
-   WorkCaseStudyRow's `fitVisualHeight` so the row's .embedWrap hugs this
-   height instead of cropping/letterboxing to the shared 16/10 box. */
+/* Rendered at its native aspect ratio, full width — the row's .embedWrap
+   hugs this height by default, instead of cropping/letterboxing to a fixed
+   ratio. */
 .video {
   width: 100%;
   height: auto;

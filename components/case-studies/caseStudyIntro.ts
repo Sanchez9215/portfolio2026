@@ -18,7 +18,8 @@ export interface IntroMetaItem {
 export interface IntroImpactItem {
   badge?: string;
   heading: string;
-  body: string;
+  /** Omit to show just the heading (+ badge) — no body line. */
+  body?: string;
 }
 
 import type { ReactNode } from "react";
