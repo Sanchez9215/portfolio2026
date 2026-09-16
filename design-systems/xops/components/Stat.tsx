@@ -64,13 +64,15 @@ export function Stat({
         )}
       </div>
       <div className={[styles.valueRow, spaceBetween && styles.valueRowBetween].filter(Boolean).join(" ")}>
-        <span
-          className={[styles.value, valueSize === "small" && styles.valueSmall]
-            .filter(Boolean)
-            .join(" ")}
-        >
-          {value}
-        </span>
+        {value && (
+          <span
+            className={[styles.value, valueSize === "small" && styles.valueSmall]
+              .filter(Boolean)
+              .join(" ")}
+          >
+            {value}
+          </span>
+        )}
         {meta && <span className={styles.meta}>{meta}</span>}
         {tag && <Tag status={tag.status}>{tag.label}</Tag>}
       </div>

@@ -8,10 +8,14 @@
  * but no color tokens are defined for them (TODO, see built-components.md).
  * text variant (bare/ghost, e.g. Nav's MENU trigger) built from Figma node
  * 572:1787 ("Portfolio Cleaning" file).
- * size: large (--control-height-large 64px) | medium (default, --control-height-medium
- * 48px) | m (40px) | small (--control-height-l 32px, e.g. Nav's MENU trigger).
- * Full 4-size scale + per-size icon/label/padding values sourced from the
- * button-set Figma node (789:912, "Portfolio Cleaning" file).
+ * size: large (--control-height-large 64px, 32px label) | medium (default,
+ * --control-height-medium 48px, 24px label) | small (48px, same box as
+ * medium, 16px label — added later, not on the original button-set Figma
+ * reference) | m (40px, 18px label) | xsmall (--control-height-l 32px, 14px
+ * label, e.g. Nav's MENU trigger — was named "small" until size="small" got
+ * repurposed above it).
+ * Per-size icon/label/padding values sourced from the button-set Figma node
+ * (789:912, "Portfolio Cleaning" file), except size="small" (see above).
  *
  * Every variant (primary, secondary, text) always renders as two full,
  * absolutely-stacked "faces" that slide horizontally on hover: default face
@@ -55,7 +59,7 @@ export type ButtonVariant =
   | "text"
   | "menu"
   | "ghost";
-export type ButtonSize = "large" | "medium" | "m" | "small";
+export type ButtonSize = "large" | "medium" | "m" | "small" | "xsmall";
 
 type ButtonBaseProps = Omit<
   ButtonHTMLAttributes<HTMLButtonElement>,
@@ -65,6 +69,11 @@ type ButtonBaseProps = Omit<
   size?: ButtonSize;
   /** Renders the button as an <a> tag */
   href?: string;
+  /** Opts out of the two-face slide hover that primary/secondary/text/menu
+   *  variants otherwise always render — falls back to a single static face
+   *  (icon badge + label), same layout outline/link use. Variant's own
+   *  colors are unaffected; only the hover animation is skipped. */
+  disableHoverSlide?: boolean;
 };
 
 export type ButtonProps = ButtonBaseProps & {
@@ -94,14 +103,16 @@ export default function Button(props: ButtonProps) {
     icon,
     href,
     className = "",
+    disableHoverSlide = false,
     ...rest
   } = props;
 
   const hasSlideHover =
-    variant === "primary" ||
-    variant === "secondary" ||
-    variant === "text" ||
-    variant === "menu";
+    !disableHoverSlide &&
+    (variant === "primary" ||
+      variant === "secondary" ||
+      variant === "text" ||
+      variant === "menu");
 
   const btnRef = useRef<HTMLAnchorElement | HTMLButtonElement | null>(null);
   const defaultFaceRef = useRef<HTMLSpanElement>(null);
@@ -278,11 +289,7 @@ export default function Button(props: ButtonProps) {
       </span>
     ) : (
       <>
-        {icon && (
-          <span className={styles.iconBadge} aria-hidden="true">
-            {icon}
-          </span>
-        )}
+        {icon}
         <span className={styles.label}>{children}</span>
       </>
     );

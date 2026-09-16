@@ -197,6 +197,7 @@
   --xops-surface-stat: var(--xops-grey-50);
   --xops-surface-page: var(--xops-white);
   --xops-surface-tooltip-section: var(--xops-grey-50);
+  --xops-surface-track: var(--xops-grey-200);
 
   /* Semantic — brand */
   --xops-brand-primary: var(--xops-brand-500);
@@ -259,6 +260,12 @@
 
   --xops-typography-body-14-font-size: 14px;
   --xops-typography-body-14-line-height: 20px;
+
+  --xops-typography-subheading-12-font-size: 12px;
+  --xops-typography-subheading-12-line-height: 18px;
+
+  --xops-typography-subheading-14-font-size: 14px;
+  --xops-typography-subheading-14-line-height: 20px;
 
   --xops-typography-subheading-16-font-size: 16px;
   --xops-typography-subheading-16-line-height: 24px;

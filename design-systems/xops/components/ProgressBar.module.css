@@ -10,7 +10,7 @@
   display: flex;
   align-items: center;
   flex: 1 0 0%;
-  min-width: 164px;
+  max-width: 152px;
 }
 
 .height16 {
@@ -39,6 +39,7 @@
 .track {
   width: 100%;
   height: 100%;
+  background-color: var(--xops-surface-track);
   border-radius: var(--xops-radius-6);
   overflow: hidden;
 }
@@ -46,6 +47,10 @@
 .fill {
   height: 100%;
   border-radius: var(--xops-radius-6);
+}
+
+.fillFlat {
+  border-radius: 0;
 }
 
 .markerWrap {
@@ -62,26 +67,20 @@
   -webkit-mask-size: contain;
 }
 
-.danger .track {
-  background-color: var(--xops-status-danger-tint);
-}
-
 .danger .fill {
   background-color: var(--xops-status-danger-solid);
-}
-
-.warning .track {
-  background-color: var(--xops-status-warning-tint);
 }
 
 .warning .fill {
   background-color: var(--xops-status-warning-solid);
 }
 
-.success .track {
-  background-color: var(--xops-status-success-tint);
-}
-
 .success .fill {
   background-color: var(--xops-status-success-solid);
+}
+
+/* Neutral in-progress indicator (not a threshold status) — revisit as part of a
+   cleaner status/variant model, see progress.md Deferred. */
+.info .fill {
+  background-color: var(--xops-brand-primary);
 }

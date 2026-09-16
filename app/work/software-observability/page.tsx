@@ -35,14 +35,17 @@ import styles from "./software-observability.module.css";
 // that weight out of the initial bundle the hero embed (SectionIntroduction)
 // has to load behind. SSR stays on (default) so case-study content still
 // renders in the initial HTML.
-const OverviewPrototypeHotspots = dynamic(
+// OverviewPrototypeHotspots now walks Intent → Insights → (embed swaps to
+// Prototype 02) → Decisions in one continuous sequence, with a Timeline
+// sidebar tracking the phase — see OverviewPrototypeSection, which wraps both
+// together (page.tsx itself is a server component and can't hold the shared
+// milestone state). OverviewPrototype2Hotspots.tsx is left unreferenced/kept
+// for reference — its own "Decision" hotspot data was migrated into
+// OverviewPrototypeHotspots.tsx's DECISION_ANNOTATION_HOTSPOTS instead.
+const OverviewPrototypeSection = dynamic(
   () =>
-    import("@/components/case-studies/software-observability/OverviewPrototypeHotspots"),
+    import("@/components/case-studies/software-observability/OverviewPrototypeSection"),
 );
-// const OverviewPrototype2Hotspots = dynamic(
-//   () =>
-//     import("@/components/case-studies/software-observability/OverviewPrototype2Hotspots"),
-// ); — hidden for now, see section.prototype-validation
 const AllSoftwareLegacyHotspots = dynamic(
   () =>
     import("@/components/case-studies/software-observability/AllSoftwareLegacyHotspots"),
@@ -242,7 +245,9 @@ export default function SoftwareObservabilityPage() {
           />
         </Section> */}
 
-        <DataScrollController fadeIn>
+        {/* section.parallel-prototyping hidden for now per user request —
+            component + data untouched, not rendered. */}
+        {/* <DataScrollController fadeIn>
           <Section className={styles.parallelPrototyping}>
             <div className={styles.parallelPrototypingLeft}>
               <LabelBlock
@@ -294,38 +299,30 @@ export default function SoftwareObservabilityPage() {
               </div>
             </div>
           </Section>
-        </DataScrollController>
+        </DataScrollController> */}
 
-        <Section className={styles.dataDictionary}>
+        {/* section.data-dictionary hidden for now per user request — component
+            + data untouched, not rendered. */}
+        {/* <Section className={styles.dataDictionary}>
           <DataDictionaryScene className={styles.dataDictionaryScene} />
           {/* <DataGlossaryTable /> — hidden while the pinned scene above
               (scaffold build → real data-dictionary table) is being built;
-              see PLAN.md beat 12 / progress.md. */}
-        </Section>
+              see PLAN.md beat 12 / progress.md. * /}
+        </Section> */}
 
         {/* ── section.prototype-validation ── */}
-        {/* Prototype 1 only for now, centered across the middle 8 columns —
-            Prototype 2 hidden per user request (hotspot walkthrough disabled
-            on Prototype 1 for now — see OverviewPrototypeHotspots.tsx's
-            disableHotspots prop). Previously a separate section.overview-prototypes
-            below this one. */}
+        {/* Card player walks Intent → Insights → Prototype 02 switch →
+            Decisions in one sequence; Timeline sidebar (right column) tracks
+            the phase. See OverviewPrototypeSection. Previously a separate
+            section.overview-prototypes below this one. */}
         <Section className={styles.prototypeValidation}>
           <LabelBlock
             className={styles.prototypeValidationTextBlock}
             size="display"
-            label="Prototype Validation"
-            body="Using the outputs as building blocks, I created a prototype to focus direction through sessions with leadership and subject matter experts."
+            label="Validating Understanding"
+            body="Using the outputs as building blocks, I created a prototype to identitfy knowledge gaps & focus direction through sessions with leadership and subject matter experts."
           />
-          <div className={styles.prototypeValidationCenter}>
-            <LazyMount>
-              <OverviewPrototypeHotspots disableHotspots />
-            </LazyMount>
-          </div>
-          {/* <div className={styles.prototypeValidationRight}>
-            <LazyMount>
-              <OverviewPrototype2Hotspots disableHotspots />
-            </LazyMount>
-          </div> */}
+          <OverviewPrototypeSection />
         </Section>
 
         {/* Gaps Identified section hidden per user request. */}

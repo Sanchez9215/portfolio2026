@@ -39,6 +39,9 @@
 }
 
 /* Icon variants inset the start padding so the icon badge sits flush */
+/* TODO(button): icon-side padding rule flagged for a future fix — revisit
+   whether --button-icon-inset should still apply uniformly once size="small"
+   (the new 16px-label tier) is in real use. */
 .hasIcon {
   padding-inline-start: var(--button-icon-inset);
 }
@@ -70,24 +73,47 @@
   --button-padding-x: var(--spacing-md);
 }
 
+/* --button-label-size/-lh/-ls let a specific consumer override just the
+   label's typography without switching size (same pattern as .xsmall .label
+   below) — falls back to m's own default 18px tier otherwise. */
 .m .label {
-  font-size: var(--text-label-lg-size);
-  line-height: var(--text-label-lg-lh);
-  letter-spacing: var(--text-label-lg-ls);
+  font-size: var(--button-label-size, var(--text-label-lg-size));
+  line-height: var(--button-label-lh, var(--text-label-lg-lh));
+  letter-spacing: var(--button-label-ls, var(--text-label-lg-ls));
 }
 
-/* size="small" — compact size, e.g. Nav's MENU trigger */
-.small {
+/* size="xsmall" — compact size, e.g. Nav's MENU trigger. Was called "small"
+   until size="small" got repurposed below for the new 16px-label tier —
+   every existing size="small" consumer was migrated to "xsmall" to keep its
+   look unchanged. */
+.xsmall {
   --button-height: var(--button-height-small);
   --button-padding-x: var(--button-padding-x-small);
   --button-icon-size: var(--button-icon-size-small);
   --button-icon-padding: var(--button-icon-padding-small);
 }
 
+/* --button-label-size/-lh/-ls let a specific consumer override just the
+   label's typography without switching size (which would also change the
+   32px height) — falls back to xsmall's own default 14px tier so every
+   other xsmall consumer (e.g. Nav's MENU trigger) is unaffected. */
+.xsmall .label {
+  font-size: var(--button-label-size, var(--text-label-sm-size));
+  line-height: var(--button-label-lh, var(--text-label-sm-lh));
+  letter-spacing: var(--button-label-ls, var(--text-label-sm-ls));
+}
+
+/* size="small" (new) — same height/icon/padding as "medium" (48px height,
+   32px icon, 18px padding-x — none redefined here since those are already
+   medium's own base/default values), just a smaller 16px label. */
+.small {
+  --button-padding-x: var(--button-padding-x-medium);
+}
+
 .small .label {
-  font-size: var(--text-label-sm-size);
-  line-height: var(--text-label-sm-lh);
-  letter-spacing: var(--text-label-sm-ls);
+  font-size: var(--text-label-md-size);
+  line-height: var(--text-label-md-lh);
+  letter-spacing: var(--text-label-md-ls);
 }
 
 /* ── Label ────────────────────────────────────────────────── */
@@ -104,6 +130,10 @@
   white-space: nowrap;
 }
 
+/* word-spacing already set on the base .label above applies to every size —
+   Clash Display is the one font used for all button labels, none of the
+   size variants below override font-family. */
+
 /* ── Icon badge ───────────────────────────────────────────── */
 
 .iconBadge {
@@ -119,6 +149,15 @@
 .iconBadge > :global(img) {
   width: var(--button-icon-size);
   height: var(--button-icon-size);
+}
+
+/* Default (non-slide-hover) icon+label render path has no wrapping span
+   around the icon — sizes the bare svg/img direct child instead. */
+.btn > :global(svg),
+.btn > :global(img) {
+  width: var(--button-icon-size);
+  height: var(--button-icon-size);
+  flex-shrink: 0;
 }
 
 /* ── Primary ──────────────────────────────────────────────── */

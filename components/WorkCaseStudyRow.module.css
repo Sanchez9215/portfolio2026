@@ -10,31 +10,18 @@
   position: relative;
   border-top: var(--border-card) solid var(--surface-card-border);
   padding-bottom: var(--spacing-xl);
-}
 
-/* Large page-level ghost cursor (desktop-only, see the ≤900px override
-   below) — positioned/animated relative to .work itself via GSAP, not
-   scoped to the embed like SoftwareExperienceEmbed's own internal cursor. */
-.pointerCursor {
-  z-index: 1;
-}
+  /* Meta (Company/Role/Timeline) renders at size="xs", globally 12px/16px.
+     Stepped up to 14px/20px here — the same pairing this file already uses
+     for these tokens at the ≤620px tier below. Scoped to .work so the
+     shared xs tokens elsewhere on the site are unaffected. */
+  --text-title-xs-size: 14px;
+  --text-title-xs-lh: 20px;
+  --text-title-xs-ls: -0.01em;
 
-/* Message-bubble stack, revealed one bubble at a time once .pointerCursor
-   lands. Anchored by `bottom` (not `top`) so the browser recomputes its top
-   upward as the container's own height grows with each addition — that's
-   what makes earlier bubbles read as pushed up (see WorkCaseStudyRow.tsx's
-   captureBubbleRects + bubbleMeasureRef). justify-content: flex-end matches
-   the anchor's intent (no visible effect on its own, height is intrinsic).
-   Positioned via GSAP (left/bottom, relative to the cursor's own center
-   point); each bubble's mount-in fade/push is GSAP-only (conditionally
-   rendered, not CSS-hidden), same desktop-only scope as the cursor itself. */
-.bubbleStack {
-  position: absolute;
-  z-index: 2;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  gap: var(--spacing-sm);
+  --text-body-xs-size: 14px;
+  --text-body-xs-lh: 20px;
+  --text-body-xs-ls: 0;
 }
 
 /* ── Left column (1/6): title + description + CTAs ─────────── */
@@ -186,6 +173,17 @@
   height: 100%;
 }
 
+/* Opt-out of the fixed 16/10 box (WorkCaseStudyRow's `fitVisualHeight`) —
+   the wrap hugs whatever height the visual's own intrinsic aspect ratio
+   renders at, instead of cropping/letterboxing it to 16/10. */
+.embedWrapFitHeight {
+  aspect-ratio: auto;
+}
+
+.embedWrapFitHeight > * {
+  height: auto;
+}
+
 /* ============================================================
    ≤ 1200px
    Deviates from the shared 1280 tier — Work's title (display-md,
@@ -245,16 +243,6 @@
     height: auto;
     min-height: 100vh;
     row-gap: var(--spacing-3xl);
-  }
-
-  /* Large ghost cursor is a desktop-only flourish — off at the stacked tier. */
-  .pointerCursor {
-    display: none;
-  }
-
-  /* Bubble stack rides with the cursor — same desktop-only scope. */
-  .bubbleStack {
-    display: none;
   }
 
   /* Unwraps .left/.right so their children become direct grid items of
@@ -342,15 +330,8 @@
     --text-body-sm-lh: 20px;
     --text-body-sm-ls: 0;
 
-    /* Meta's size="xs" text also steps up to 14px, matching title-sm/
-       body-sm's values above. */
-    --text-title-xs-size: 14px;
-    --text-title-xs-lh: 20px;
-    --text-title-xs-ls: -0.01em;
-
-    --text-body-xs-size: 14px;
-    --text-body-xs-lh: 20px;
-    --text-body-xs-ls: 0;
+    /* Meta's size="xs" values are now set at .work's base rule (14px/20px)
+       and never stepped down, so no xs override is needed at this tier. */
   }
 
   .intro {
@@ -374,6 +355,13 @@
      uneven gap below the shorter ones. */
   .impact > * {
     flex: none;
+  }
+
+  /* The 3-column filler slots (see WorkCaseStudyRow.tsx's IMPACT_SLOTS)
+     exist only to hold width in the row layout — once .impact stacks into
+     a column they'd read as an extra gap below the last real item. */
+  .impactFiller {
+    display: none;
   }
 
   /* Moves ahead of .impact — button → embed → meta → impact. */

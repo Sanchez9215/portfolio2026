@@ -1,0 +1,12 @@
+/* ============================================================
+   WorkVisualPlaceholder — empty visual slot in a WorkCaseStudyRow
+   --surface-card (grey-1000) is one ramp step lighter than the row's
+   own --surface-base (grey-1100) background, reusing the existing
+   semantic token rather than minting a placeholder-only one.
+   ============================================================ */
+
+.placeholder {
+  width: 100%;
+  height: 100%;
+  background: var(--surface-card);
+}

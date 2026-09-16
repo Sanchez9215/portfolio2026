@@ -20,11 +20,9 @@ gsap.registerPlugin(ScrollTrigger);
  * one pin, which is visually identical and structurally sound.
  *
  * Beats, in order (all on one scrubbed timeline):
- *  1. Overview, All Assets and Profiles start stacked concentric with
- *     Insights at the diagram's center (Figma start state); Insights
- *     settles first (so the inputs never track over it), then the three
- *     inputs unfurl in an overlapping stagger (Overview → All Assets →
- *     Profiles), each fading its label/body in as it lands.
+ *  1. Overview, All Assets, Profiles and Insights render already settled in
+ *     their final composition (no unfurl-in animation), blue-stroked, with
+ *     their original label/body visible.
  *  2. Rise: the whole content group translates up so the heading exits
  *     behind the nav and the row locks just below the nav's bottom edge.
  *  3. Three connectors draw in from the inputs into Insights, together.
@@ -38,20 +36,33 @@ gsap.registerPlugin(ScrollTrigger);
  * All 4 shapes + 3 connectors + the 4 wipe fills live in ONE shared inline
  * SVG canvas whose viewBox is fixed to the diagram's measured pixel size (1
  * unit = 1px) — shapes animate their real geometry (radius / polygon
- * points), never a transform:scale, so the shared 1px/6-4 dashed stroke
+ * points), never a transform:scale, so the shared 1px/6-8 dashed stroke
  * never scales with them.
  */
 
 // Dash spec shared by every shape + connector.
 const STROKE_WIDTH = 1;
-const DASH_ARRAY = "6 4";
+const DASH_LENGTH = 6;
+const DASH_GAP = 8;
+const DASH_ARRAY = `${DASH_LENGTH} ${DASH_GAP}`;
+const DASH_UNIT = DASH_LENGTH + DASH_GAP; // one dash+gap pair, px
 
-// Diagram center-X, in % of the measured diagram width — all 4 shapes
-// start here (horizontally), stacked concentric (largest = Insights
-// outermost), matching the Figma start state. Start-Y is derived at
-// runtime from the settled row's own Y, so the stack sits vertically
-// where the row will end up, not an independent guess.
-const START_X_PERCENT = 50;
+// Once the wipe fill completes, each connector gets a second, blue overlay
+// line pulsing "data" across it in blocks of PULSE_GROUP dashes on, then
+// PULSE_GROUP dashes off — a compound dasharray (below) rather than a
+// second uniform dash spacing, so the blue blocks land exactly on top of
+// whole dashes of the base grey pattern instead of cutting across them.
+const PULSE_GROUP = 4; // dash units per pulse block
+const PULSE_PERIOD = PULSE_GROUP * 2 * DASH_UNIT; // one full on+off cycle, px
+const PULSE_DURATION = 2.5; // seconds per cycle — tune to taste
+
+// [dash,gap] x(PULSE_GROUP-1) normal pairs, then a final pair whose gap is
+// extended by PULSE_GROUP more units — skipping the "off" block — so the
+// whole repeating sequence covers exactly PULSE_PERIOD px.
+const PULSE_DASH_ARRAY = Array.from({ length: PULSE_GROUP }, (_, i) => {
+  const isLast = i === PULSE_GROUP - 1;
+  return `${DASH_LENGTH} ${isLast ? DASH_GAP + PULSE_GROUP * DASH_UNIT : DASH_GAP}`;
+}).join(" ");
 
 // Absolute spacing (px), measured from the heading's own bottom edge.
 const GAP_HEADING_TO_ROW = 64; // row's top edge, below the heading's bottom edge
@@ -66,10 +77,10 @@ const ROW_LOCK_TOP_MARGIN = 48; // --spacing-2xl
 const ROW_END_SIZE = 320; // all 3 inputs settle at this size
 const INSIGHTS_END_SIZE = 502;
 
-// Label anchor padding (px) at the fully top-anchored (stacked/start)
-// extreme — matches the Figma start state's per-shape label pt, fading to
-// 0 as the label transitions to fully centered (settled) — see anchorY().
-const LABEL_TOP_PADDING = 16; // --spacing-md
+// Gap (px) between the shape's border and its solid wipe fill — the fill
+// sits inset from the true bounds so the border reads as a distinct ring
+// around it, rather than the fill running flush to the border's inner edge.
+const FILL_INSET = 16;
 
 type ShapeKind = "circle" | "polygon" | "star";
 
@@ -83,7 +94,6 @@ interface ShapeDef {
   sides?: number; // polygon only
   spikes?: number; // star only
   innerRatio?: number; // star only — inner/outer radius ratio
-  startSize: number; // px, bounding diameter at the stacked start state
   endSize: number; // px, bounding diameter at rest
   endXPercent: number; // final center, % of diagram width
 }
@@ -96,10 +106,10 @@ const INPUT_SHAPES: ShapeDef[] = [
     label: "Overview",
     body: "Real-time distribution view of assets across lifecycle stages, filterable from a single worksite to global operations.",
     newLabel: "Software Overview",
-    newBody: "A high-level portfolio view across lifecycle stages, surfacing spend, compliance risk, and renewal exposure at a glance.",
+    newBody:
+      "A high-level portfolio view across lifecycle stages, surfacing spend, compliance risk, and renewal exposure at a glance.",
     kind: "polygon",
     sides: 7,
-    startSize: 350,
     endSize: ROW_END_SIZE,
     endXPercent: 16,
   },
@@ -108,9 +118,9 @@ const INPUT_SHAPES: ShapeDef[] = [
     label: "All Assets",
     body: "A complete view of every asset owned, letting users segment by region, relationship, financial unit, or operational status.",
     newLabel: "All Software",
-    newBody: "A complete, filterable catalog of every title in the organization, letting teams isolate exactly what they need to act on.",
+    newBody:
+      "A complete, filterable catalog of every title in the organization, letting teams isolate exactly what they need to act on.",
     kind: "circle",
-    startSize: 210,
     endSize: ROW_END_SIZE,
     endXPercent: 50,
   },
@@ -119,10 +129,10 @@ const INPUT_SHAPES: ShapeDef[] = [
     label: "Profiles",
     body: "Combines core attributes, entity relationships and lifecycle events from purchased to retired in a single record.",
     newLabel: "Profiles",
-    newBody: "A software title record that surfaces licensing posture, utilization health, spend, and compliance standing.",
+    newBody:
+      "A software title record that surfaces licensing posture, utilization health, spend, and compliance standing.",
     kind: "polygon",
     sides: 5,
-    startSize: 96,
     endSize: ROW_END_SIZE,
     endXPercent: 84,
   },
@@ -134,37 +144,25 @@ const INSIGHTS_SHAPE: ShapeDef = {
   label: "Insights",
   body: "Translates lifecycle data into clear trends and signals to maximize operational efficiency, unlock cost reductions, and validate autonomous execution.",
   newLabel: "Software Insights",
-  newBody: "Surfaces portfolio trends to identify optimization opportunities, forecast renewals, and validate license reclamations.",
+  newBody:
+    "Surfaces portfolio trends to identify optimization opportunities, forecast renewals, and validate license reclamations.",
   kind: "star",
   spikes: 4,
   innerRatio: 0.55,
-  startSize: 672,
   endSize: INSIGHTS_END_SIZE,
   endXPercent: 50,
 };
 
 const ALL_SHAPES = [INSIGHTS_SHAPE, ...INPUT_SHAPES];
 
+// 3 diagonal (each input → Insights) + 2 horizontal (All Assets' sides →
+// Overview/Profiles), see the connectorSpecs built in the effect below.
+const CONNECTOR_COUNT = INPUT_SHAPES.length + 2;
+
 // Beat lengths (scroll px). The timeline's ScrollTrigger end is
 // `+=TOTAL_RUNWAY`, and the timeline duration is padded to exactly
 // TOTAL_RUNWAY (trailing spacer below), so 1 timeline "second" here equals
 // 1px of scroll (same convention as TheProblemPinnedScene's growTl).
-
-// Beat 1 — settle + unfurl.
-const INSIGHTS_MOVE_LENGTH = 500; // Insights travels + scales into place
-const INSIGHTS_REVEAL_LENGTH = 250; // its label push-up + body fade, right after landing
-const INSIGHTS_SETTLE = INSIGHTS_MOVE_LENGTH + INSIGHTS_REVEAL_LENGTH;
-// Inputs unfurl overlapping-staggered: shape i starts INPUT_STAGGER after
-// shape i-1 starts (not after it lands), so motion stays continuous.
-const INPUT_STAGGER = 220;
-const INPUT_MOVE_LENGTH = 500;
-const INPUT_REVEAL_LENGTH = 250; // each input's own push-up + fade, starts the instant IT lands
-const lastInputIndex = INPUT_SHAPES.length - 1;
-const SETTLE_END =
-  INSIGHTS_SETTLE +
-  lastInputIndex * INPUT_STAGGER +
-  INPUT_MOVE_LENGTH +
-  INPUT_REVEAL_LENGTH;
 
 // Beat 2 — rise (heading exits behind nav, row locks under it).
 const RISE_LENGTH = 400;
@@ -175,10 +173,12 @@ const HOLD_AFTER_CONNECTORS = 250; // shapes sit untouched once connectors lock 
 const WIPE_LENGTH = 250; // all 4 shapes wipe to blue-500 + swap content, simultaneously — a short beat
 const HOLD_AFTER_WIPE = 500; // before the pin releases for good
 
-// Absolute timeline offsets.
-const RISE_START = SETTLE_END;
+// Absolute timeline offsets. Shapes render already settled, so the rise
+// beat is the timeline's first beat.
+const RISE_START = 0;
 const CONNECTOR_START = RISE_START + RISE_LENGTH;
-const WIPE_START = CONNECTOR_START + CONNECTOR_DRAW_LENGTH + HOLD_AFTER_CONNECTORS;
+const WIPE_START =
+  CONNECTOR_START + CONNECTOR_DRAW_LENGTH + HOLD_AFTER_CONNECTORS;
 const WIPE_END = WIPE_START + WIPE_LENGTH;
 const TOTAL_RUNWAY = WIPE_END + HOLD_AFTER_WIPE;
 
@@ -197,7 +197,10 @@ function polygonVertices(
   const pts: Point[] = [];
   for (let i = 0; i < sides; i++) {
     const angle = ((360 / sides) * i - 90) * (Math.PI / 180);
-    pts.push({ x: cx + radius * Math.cos(angle), y: cy + radius * Math.sin(angle) });
+    pts.push({
+      x: cx + radius * Math.cos(angle),
+      y: cy + radius * Math.sin(angle),
+    });
   }
   return pts;
 }
@@ -220,11 +223,41 @@ function nearestPolygonVertex(
   let best = { angle: -90, dist: Infinity };
   for (let i = 0; i < sides; i++) {
     const angle = (360 / sides) * i - 90;
-    const diff = Math.abs((((angle - targetAngleDeg + 540) % 360) + 360) % 360 - 180);
+    const diff = Math.abs(
+      ((((angle - targetAngleDeg + 540) % 360) + 360) % 360) - 180,
+    );
     if (diff < best.dist) best = { angle, dist: diff };
   }
   const rad = best.angle * (Math.PI / 180);
   return { x: cx + radius * Math.cos(rad), y: cy + radius * Math.sin(rad) };
+}
+
+// True boundary point where a horizontal line at the shape's own center
+// height (y=cy) exits its left/right side — a circle's is simply cx±r, a
+// (vertex-up, so left-right symmetric) polygon's requires the actual
+// edge-line intersection, since no vertex generally sits exactly on that
+// line. Unlike nearestPolygonVertex (used for the corner-to-corner
+// diagonal connectors), this gives the true "centered edge" point.
+function shapeEdgeAtOwnCenter(
+  kind: ShapeKind,
+  sides: number | undefined,
+  cx: number,
+  cy: number,
+  radius: number,
+  side: "left" | "right",
+): Point {
+  if (kind !== "polygon") return { x: cx + (side === "right" ? radius : -radius), y: cy };
+  const verts = polygonVertices(cx, cy, radius, sides!);
+  for (let i = 0; i < verts.length; i++) {
+    const a = verts[i];
+    const b = verts[(i + 1) % verts.length];
+    if ((a.y - cy) * (b.y - cy) <= 0 && a.y !== b.y) {
+      const t = (cy - a.y) / (b.y - a.y);
+      const x = a.x + t * (b.x - a.x);
+      if (side === "right" ? x >= cx : x <= cx) return { x, y: cy };
+    }
+  }
+  return { x: cx + (side === "right" ? radius : -radius), y: cy }; // unreachable for a convex polygon
 }
 
 // Star vertices alternating outer/inner radius, first spike pointing up.
@@ -242,7 +275,10 @@ function starVertices(
     const isOuter = i % 2 === 0;
     const r = isOuter ? outerRadius : innerRadius;
     const angle = (step * i - 90) * (Math.PI / 180);
-    pts.push({ point: { x: cx + r * Math.cos(angle), y: cy + r * Math.sin(angle) }, isOuter });
+    pts.push({
+      point: { x: cx + r * Math.cos(angle), y: cy + r * Math.sin(angle) },
+      isOuter,
+    });
   }
   return pts;
 }
@@ -252,9 +288,14 @@ export default function FrameworkScene({ className }: { className?: string }) {
   const contentRef = useRef<HTMLDivElement>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
-  const shapeElRefs = useRef<Record<string, SVGCircleElement | SVGPolygonElement | null>>({});
+  const shapeElRefs = useRef<
+    Record<string, SVGCircleElement | SVGPolygonElement | null>
+  >({});
   const connectorRefs = useRef<(SVGLineElement | null)[]>([]);
-  const wipeFillRefs = useRef<Record<string, SVGCircleElement | SVGPolygonElement | null>>({});
+  const pulseRefs = useRef<(SVGLineElement | null)[]>([]);
+  const wipeFillRefs = useRef<
+    Record<string, SVGCircleElement | SVGPolygonElement | null>
+  >({});
   const wipeClipRectRefs = useRef<Record<string, SVGRectElement | null>>({});
   const labelWrapRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const contentInnerRefs = useRef<Record<string, HTMLDivElement | null>>({});
@@ -280,17 +321,15 @@ export default function FrameworkScene({ className }: { className?: string }) {
 
     const rootStyle = getComputedStyle(document.documentElement);
     const blueAccent = rootStyle.getPropertyValue("--accent-primary").trim();
-    const greyBorder = rootStyle
-      .getPropertyValue("--surface-card-border")
-      .trim();
-    const bodyGap = parseFloat(rootStyle.getPropertyValue("--spacing-sm")) || 8;
+    const greyStroke500 = rootStyle.getPropertyValue("--color-grey-500").trim();
     const navHeightPx =
       parseFloat(rootStyle.getPropertyValue("--nav-height")) || 0;
 
     const ctx = gsap.context(() => {
       const sceneRect = sceneEl.getBoundingClientRect();
       const width = sceneRect.width;
-      const headingBottom = headingEl.getBoundingClientRect().bottom - sceneRect.top;
+      const headingBottom =
+        headingEl.getBoundingClientRect().bottom - sceneRect.top;
       // .scene's own top offset within the padded <Section> — the pin
       // engages when the section's top hits nav-bottom, at which moment
       // .scene sits this far below nav-bottom. Needed for the rise amount.
@@ -315,8 +354,7 @@ export default function FrameworkScene({ className }: { className?: string }) {
       // at viewport (navHeight + sceneOffsetInSection + rowTopY); the
       // target is (navHeight + ROW_LOCK_TOP_MARGIN); the difference is the
       // rise (nav height cancels out).
-      const riseAmount =
-        sceneOffsetInSection + rowTopY - ROW_LOCK_TOP_MARGIN;
+      const riseAmount = sceneOffsetInSection + rowTopY - ROW_LOCK_TOP_MARGIN;
 
       // .scene's real height is the FULL diagram (can exceed one
       // viewport) — nothing here is clipped or panned; whatever doesn't
@@ -324,13 +362,6 @@ export default function FrameworkScene({ className }: { className?: string }) {
       // and normal scroll continues past this (taller) element.
       sceneEl.style.height = `${sceneContentHeight}px`;
       svgEl.setAttribute("viewBox", `0 0 ${width} ${sceneContentHeight}`);
-
-      const startCx = (START_X_PERCENT / 100) * width;
-      // The stack starts at the row's own Y (not an independent guess) —
-      // so once shapes separate, the row's 3 inputs barely have to move
-      // vertically at all, only horizontally + Insights moves down away
-      // from them.
-      const startY = rowCenterY;
 
       // Every shape's final (settled) geometry — computed once, reused by
       // the move targets, the connectors, and the wipe fills below.
@@ -349,40 +380,36 @@ export default function FrameworkScene({ className }: { className?: string }) {
         };
       });
 
-      // Natural body heights, measured before collapsing them for the reveal.
-      const bodyHeights = bodyEls.map((el) => el!.scrollHeight);
-
-      gsap.set(bodyEls, { height: 0, opacity: 0, marginTop: 0 });
-
-      // A shape's label anchor Y transitions from "near its own top edge"
-      // (anchor=1, matching the Figma start state's top-anchored, padded
-      // per-shape label box — the reason stacked labels don't overlap:
-      // different shape sizes put their top edges at different heights)
-      // to "the shape's true center" (anchor=0, matching the settled end
-      // state's centered label+body group).
-      const anchorY = (cy: number, size: number, anchor: number) =>
-        cy - (size / 2) * anchor + LABEL_TOP_PADDING * anchor;
-
-      const shapePoints = (def: ShapeDef, cx: number, cy: number, r: number) => {
+      const shapePoints = (
+        def: ShapeDef,
+        cx: number,
+        cy: number,
+        r: number,
+      ) => {
         if (def.kind === "circle") return null;
-        if (def.kind === "polygon") return pointsToAttr(polygonVertices(cx, cy, r, def.sides!));
+        if (def.kind === "polygon")
+          return pointsToAttr(polygonVertices(cx, cy, r, def.sides!));
         return pointsToAttr(
-          starVertices(cx, cy, r, def.innerRatio!, def.spikes!).map((v) => v.point),
+          starVertices(cx, cy, r, def.innerRatio!, def.spikes!).map(
+            (v) => v.point,
+          ),
         );
       };
 
-      // Renders a shape's geometry + label position at a given
-      // center/size/anchor — same function drives both the initial
-      // gsap.set and every animation frame.
+      // Renders a shape's geometry + centered label position at a given
+      // center/size. The border is drawn OUTSIDE the shape's true bounds
+      // (Figma "stroke position: outside") — SVG strokes are centered on
+      // the path by default, so the outline geometry itself is inflated by
+      // half the stroke width; `size`/finalPos's own r (used by the wipe
+      // fill + connectors) stay the true bounds, unaffected.
       const renderShape = (
         def: ShapeDef,
         cx: number,
         cy: number,
         size: number,
-        anchor: number,
       ) => {
         const el = shapeElRefs.current[def.id]!;
-        const r = size / 2;
+        const r = size / 2 + STROKE_WIDTH / 2;
         if (def.kind === "circle") {
           el.setAttribute("cx", String(cx));
           el.setAttribute("cy", String(cy));
@@ -392,36 +419,39 @@ export default function FrameworkScene({ className }: { className?: string }) {
         }
         const wrap = labelWrapRefs.current[def.id]!;
         wrap.style.left = `${cx}px`;
-        wrap.style.top = `${anchorY(cy, size, anchor)}px`;
+        wrap.style.top = `${cy}px`;
       };
 
-      // Start state: every shape stacked concentric (at the row's own Y,
-      // so the inputs barely travel vertically once separated), its own
-      // start size, fully top-anchored labels, blue stroke.
+      // Start state: every shape already in its final settled composition,
+      // centered labels, original label/body visible, blue stroke.
       ALL_SHAPES.forEach((def) => {
-        renderShape(def, startCx, startY, def.startSize, 1);
+        const { cx, cy } = finalPos[def.id];
+        renderShape(def, cx, cy, def.endSize);
         gsap.set(shapeElRefs.current[def.id], { attr: { stroke: blueAccent } });
       });
 
       // Wipe fills: a filled (blue-500) twin of each shape's FINAL settled
-      // geometry, set once up front (nothing moves them — only their clip
-      // rect's height animates, during the wipe beat). Clipped to a rect
-      // pinned to the shape's own bounding-box top edge, revealing
-      // top-to-bottom as the rect's height grows from 0 to the full box.
+      // geometry, inset by FILL_INSET from the true bounds (border sits at
+      // the true bounds), set once up front (nothing moves them — only
+      // their clip rect's height animates, during the wipe beat). Clipped
+      // to a rect pinned to the shape's own bounding-box top edge,
+      // revealing top-to-bottom as the rect's height grows from 0 to the
+      // full box.
       ALL_SHAPES.forEach((def) => {
         const { cx, cy, r } = finalPos[def.id];
+        const fillR = r - FILL_INSET;
         const fillEl = wipeFillRefs.current[def.id]!;
         if (def.kind === "circle") {
           fillEl.setAttribute("cx", String(cx));
           fillEl.setAttribute("cy", String(cy));
-          fillEl.setAttribute("r", String(r));
+          fillEl.setAttribute("r", String(fillR));
         } else {
-          fillEl.setAttribute("points", shapePoints(def, cx, cy, r)!);
+          fillEl.setAttribute("points", shapePoints(def, cx, cy, fillR)!);
         }
         const clipRectEl = wipeClipRectRefs.current[def.id]!;
-        clipRectEl.setAttribute("x", String(cx - r));
-        clipRectEl.setAttribute("y", String(cy - r));
-        clipRectEl.setAttribute("width", String(2 * r));
+        clipRectEl.setAttribute("x", String(cx - fillR));
+        clipRectEl.setAttribute("y", String(cy - fillR));
+        clipRectEl.setAttribute("width", String(2 * fillR));
         clipRectEl.setAttribute("height", "0");
       });
 
@@ -451,88 +481,7 @@ export default function FrameworkScene({ className }: { className?: string }) {
         },
       });
 
-      // ── Beat 1: settle + unfurl ──────────────────────────────────────
-
-      // Reveals one shape's label push-up + body fade-in at `at` — the body
-      // grows from 0 to its measured natural height while the label wrap
-      // simultaneously finishes its anchor transition (handled by the move
-      // tween), so by the time the body appears the label is already
-      // dead-center and rises together with the group centering.
-      const revealShape = (index: number, duration: number, at: number) => {
-        tl.to(
-          bodyEls[index],
-          {
-            height: bodyHeights[index],
-            opacity: 1,
-            marginTop: bodyGap,
-            duration,
-            ease: "none",
-          },
-          at,
-        );
-      };
-
-      // Insights moves + scales into its final spot first, then reveals.
       const insightsDef = INSIGHTS_SHAPE;
-      const insightsProxy = {
-        cx: startCx,
-        cy: startY,
-        size: insightsDef.startSize,
-        anchor: 1,
-      };
-      tl.to(
-        insightsProxy,
-        {
-          cx: finalPos[insightsDef.id].cx,
-          cy: finalPos[insightsDef.id].cy,
-          size: insightsDef.endSize,
-          anchor: 0,
-          duration: INSIGHTS_MOVE_LENGTH,
-          ease: "none",
-          onUpdate: () =>
-            renderShape(
-              insightsDef,
-              insightsProxy.cx,
-              insightsProxy.cy,
-              insightsProxy.size,
-              insightsProxy.anchor,
-            ),
-        },
-        0,
-      );
-      tl.to(
-        shapeElRefs.current[insightsDef.id],
-        { attr: { stroke: greyBorder }, duration: INSIGHTS_MOVE_LENGTH, ease: "none" },
-        0,
-      );
-      revealShape(0, INSIGHTS_REVEAL_LENGTH, INSIGHTS_MOVE_LENGTH);
-
-      // Three inputs unfurl overlapping-staggered, each fading in the
-      // instant its own move finishes.
-      INPUT_SHAPES.forEach((def, i) => {
-        const startAt = INSIGHTS_SETTLE + i * INPUT_STAGGER;
-        const proxy = { cx: startCx, cy: startY, size: def.startSize, anchor: 1 };
-        tl.to(
-          proxy,
-          {
-            cx: finalPos[def.id].cx,
-            cy: finalPos[def.id].cy,
-            size: def.endSize,
-            anchor: 0,
-            duration: INPUT_MOVE_LENGTH,
-            ease: "none",
-            onUpdate: () =>
-              renderShape(def, proxy.cx, proxy.cy, proxy.size, proxy.anchor),
-          },
-          startAt,
-        );
-        tl.to(
-          shapeElRefs.current[def.id],
-          { attr: { stroke: greyBorder }, duration: INPUT_MOVE_LENGTH, ease: "none" },
-          startAt,
-        );
-        revealShape(i + 1, INPUT_REVEAL_LENGTH, startAt + INPUT_MOVE_LENGTH);
-      });
 
       // ── Beat 2: rise ─────────────────────────────────────────────────
       // The whole content group translates up so the heading exits behind
@@ -546,12 +495,15 @@ export default function FrameworkScene({ className }: { className?: string }) {
 
       // ── Beat 3: connectors ───────────────────────────────────────────
       // Drawn once every shape has settled and risen — nothing else moves.
-      // Endpoints are corner-to-corner (not center-to-center): the left
-      // input's bottom-right corner to the star's farthest-left point, the
-      // right input's bottom-left corner to the star's farthest-right
-      // point, and the center input's bottom-center to the star's
-      // top-center (longer, given the 128px gap). All derived from each
-      // shape's already-known final geometry.
+      // Two groups, both corner-to-corner (not center-to-center):
+      //  - 3 diagonals, each input into Insights (left input's
+      //    bottom-right corner to the star's farthest-left point, right
+      //    input's bottom-left corner to the star's farthest-right point,
+      //    center input's bottom-center to the star's top-center).
+      //  - 2 horizontals linking the row itself: All Assets' left/right
+      //    side (vertically centered on the row, per its own request) to
+      //    Overview's/Profiles' facing vertex.
+      // All derived from each shape's already-known final geometry.
       const starOuter = starVertices(
         finalPos[insightsDef.id].cx,
         finalPos[insightsDef.id].cy,
@@ -562,51 +514,206 @@ export default function FrameworkScene({ className }: { className?: string }) {
         .filter((v) => v.isOuter)
         .map((v) => v.point);
       const insightsLeftPoint = starOuter.reduce((a, b) => (b.x < a.x ? b : a));
-      const insightsRightPoint = starOuter.reduce((a, b) => (b.x > a.x ? b : a));
+      const insightsRightPoint = starOuter.reduce((a, b) =>
+        b.x > a.x ? b : a,
+      );
       const insightsTopPoint = starOuter.reduce((a, b) => (b.y < a.y ? b : a));
 
-      const connectorSpecs = [
+      const overviewCx = finalPos[INPUT_SHAPES[0].id].cx;
+      const allAssetsCx = finalPos[INPUT_SHAPES[1].id].cx;
+      const profilesCx = finalPos[INPUT_SHAPES[2].id].cx;
+
+      const connectorSpecs: {
+        start: Point;
+        target: Point;
+        // The post-wipe data pulse always reads as "flowing toward
+        // Insights" — true for the two row connectors, since their own
+        // line runs start(All Assets) → target(Overview/Profiles), the
+        // opposite of the flow direction we want for the pulse.
+        reversePulse?: boolean;
+      }[] = [
         {
-          def: INPUT_SHAPES[0], // Overview (left) — bottom-right corner → star's farthest-left point.
-          corner: (cx: number, cy: number) =>
-            nearestPolygonVertex(cx, cy, ROW_END_SIZE / 2, INPUT_SHAPES[0].sides!, 45),
+          // Overview (left) — bottom-right corner → star's farthest-left point.
+          start: nearestPolygonVertex(
+            overviewCx,
+            rowCenterY,
+            ROW_END_SIZE / 2,
+            INPUT_SHAPES[0].sides!,
+            45,
+          ),
           target: insightsLeftPoint,
         },
         {
-          def: INPUT_SHAPES[1], // All Assets (center) — bottom-center → star's top-center.
-          corner: (cx: number, cy: number) => ({ x: cx, y: cy + ROW_END_SIZE / 2 }),
+          // All Assets (center) — bottom-center → star's top-center.
+          start: { x: allAssetsCx, y: rowCenterY + ROW_END_SIZE / 2 },
           target: insightsTopPoint,
         },
         {
-          def: INPUT_SHAPES[2], // Profiles (right) — bottom-left corner → star's farthest-right point.
-          corner: (cx: number, cy: number) =>
-            nearestPolygonVertex(cx, cy, ROW_END_SIZE / 2, INPUT_SHAPES[2].sides!, 135),
+          // Profiles (right) — bottom-left corner → star's farthest-right point.
+          start: nearestPolygonVertex(
+            profilesCx,
+            rowCenterY,
+            ROW_END_SIZE / 2,
+            INPUT_SHAPES[2].sides!,
+            135,
+          ),
           target: insightsRightPoint,
+        },
+        {
+          // All Assets' centered left edge → Overview's centered right
+          // edge — true boundary points at row-center height (not vertex
+          // snapped), so both ends sit exactly at half the shape's height.
+          start: shapeEdgeAtOwnCenter(
+            "circle",
+            undefined,
+            allAssetsCx,
+            rowCenterY,
+            ROW_END_SIZE / 2,
+            "left",
+          ),
+          target: shapeEdgeAtOwnCenter(
+            "polygon",
+            INPUT_SHAPES[0].sides,
+            overviewCx,
+            rowCenterY,
+            ROW_END_SIZE / 2,
+            "right",
+          ),
+          reversePulse: true,
+        },
+        {
+          // All Assets' centered right edge → Profiles' centered left edge.
+          start: shapeEdgeAtOwnCenter(
+            "circle",
+            undefined,
+            allAssetsCx,
+            rowCenterY,
+            ROW_END_SIZE / 2,
+            "right",
+          ),
+          target: shapeEdgeAtOwnCenter(
+            "polygon",
+            INPUT_SHAPES[2].sides,
+            profilesCx,
+            rowCenterY,
+            ROW_END_SIZE / 2,
+            "left",
+          ),
+          reversePulse: true,
         },
       ];
 
       connectorSpecs.forEach((spec, i) => {
         const lineEl = connectorRefs.current[i];
         if (!lineEl) return;
-        const cx = finalPos[spec.def.id].cx;
-        const start = spec.corner(cx, rowCenterY);
+        const { start, target } = spec;
         lineEl.setAttribute("x1", String(start.x));
         lineEl.setAttribute("y1", String(start.y));
-        lineEl.setAttribute("x2", String(spec.target.x));
-        lineEl.setAttribute("y2", String(spec.target.y));
-        const length = Math.hypot(spec.target.x - start.x, spec.target.y - start.y);
+        lineEl.setAttribute("x2", String(target.x));
+        lineEl.setAttribute("y2", String(target.y));
+        const length = Math.hypot(target.x - start.x, target.y - start.y);
+        // Marching-dash reveal: the real DASH_ARRAY pattern stays on the
+        // line throughout (set via the strokeDasharray JSX prop, left
+        // untouched here) — the connector fades in while its dashoffset
+        // runs down several pattern cycles, giving the dashes a sense of
+        // motion from the shape toward Insights (decreasing dashoffset
+        // marches the pattern in the direction the line is drawn, x1,y1 →
+        // x2,y2) instead of literally growing the line.
         gsap.set(lineEl, {
-          attr: { stroke: greyBorder, "stroke-dasharray": length, "stroke-dashoffset": length },
+          opacity: 0,
+          attr: { stroke: blueAccent, "stroke-dashoffset": 10 * length },
         });
         tl.to(
           lineEl,
           {
+            opacity: 1,
             attr: { "stroke-dashoffset": 0 },
             duration: CONNECTOR_DRAW_LENGTH,
             ease: "none",
           },
           CONNECTOR_START,
         );
+      });
+
+      // Connectors follow the same stroke color as the shapes: blue by
+      // default, grey-500 once the wipe reveals.
+      connectorRefs.current.forEach((lineEl) => {
+        if (!lineEl) return;
+        tl.to(
+          lineEl,
+          {
+            attr: { stroke: greyStroke500 },
+            duration: WIPE_LENGTH,
+            ease: "none",
+          },
+          WIPE_START,
+        );
+      });
+
+      // "Data" pulse: a second blue overlay per connector, same endpoints,
+      // using PULSE_DASH_ARRAY (blocks of PULSE_GROUP dashes on/off) so it
+      // reads as alternating groups of dashes lit up rather than a solid
+      // block. Runs on its own real-time (non-scrubbed) repeating
+      // timeline, independent of the scrubbed `tl` above — a scroll-driven
+      // tween can't loop on its own. Direction always flows toward
+      // Insights: decreasing dashoffset marches the pattern from x1,y1 →
+      // x2,y2 (the connector's own drawn direction), so reversePulse
+      // connectors (the two row connectors, drawn All Assets → Overview/
+      // Profiles) get the opposite sign.
+      const pulseTl = gsap.timeline({ repeat: -1, paused: true });
+      connectorSpecs.forEach((spec, i) => {
+        const pulseEl = pulseRefs.current[i];
+        if (!pulseEl) return;
+        const { start, target } = spec;
+        pulseEl.setAttribute("x1", String(start.x));
+        pulseEl.setAttribute("y1", String(start.y));
+        pulseEl.setAttribute("x2", String(target.x));
+        pulseEl.setAttribute("y2", String(target.y));
+        gsap.set(pulseEl, {
+          opacity: 0,
+          attr: {
+            stroke: blueAccent,
+            "stroke-dasharray": PULSE_DASH_ARRAY,
+            "stroke-dashoffset": 0,
+          },
+        });
+        const direction = spec.reversePulse ? 1 : -1;
+        pulseTl.fromTo(
+          pulseEl,
+          { attr: { "stroke-dashoffset": 0 } },
+          {
+            attr: { "stroke-dashoffset": direction * PULSE_PERIOD },
+            duration: PULSE_DURATION,
+            ease: "none",
+          },
+          0,
+        );
+      });
+
+      // The pulse only plays while pinned AND past the wipe (the fill has
+      // to actually be "done" for a data-pulse to make sense) — a second,
+      // independent ScrollTrigger sharing the same trigger/pin timing,
+      // scoped to just that trailing window of the pin.
+      ScrollTrigger.create({
+        trigger: sectionEl,
+        start: `top top+=${navHeightPx + WIPE_END}`,
+        end: `top top+=${navHeightPx + TOTAL_RUNWAY}`,
+        onEnter: () => {
+          gsap.set(pulseRefs.current, { opacity: 1 });
+          pulseTl.play(0);
+        },
+        onEnterBack: () => {
+          gsap.set(pulseRefs.current, { opacity: 1 });
+          pulseTl.play(0);
+        },
+        onLeave: () => {
+          pulseTl.pause(0);
+          gsap.set(pulseRefs.current, { opacity: 0 });
+        },
+        onLeaveBack: () => {
+          pulseTl.pause(0);
+          gsap.set(pulseRefs.current, { opacity: 0 });
+        },
       });
 
       // ── Beat 5: wipe + content swap ──────────────────────────────────
@@ -619,10 +726,19 @@ export default function FrameworkScene({ className }: { className?: string }) {
       // appears on top of it" without needing pixel-exact paint-order sync
       // between the SVG wipe and the DOM text layers.
       ALL_SHAPES.forEach((def) => {
-        const { r } = finalPos[def.id];
+        const fillR = finalPos[def.id].r - FILL_INSET;
         tl.to(
           wipeClipRectRefs.current[def.id],
-          { attr: { height: 2 * r }, duration: WIPE_LENGTH, ease: "none" },
+          { attr: { height: 2 * fillR }, duration: WIPE_LENGTH, ease: "none" },
+          WIPE_START,
+        );
+        tl.to(
+          shapeElRefs.current[def.id],
+          {
+            attr: { stroke: greyStroke500 },
+            duration: WIPE_LENGTH,
+            ease: "none",
+          },
           WIPE_START,
         );
 
@@ -631,7 +747,11 @@ export default function FrameworkScene({ className }: { className?: string }) {
         const bodyEl = bodyRefs.current[def.id]!;
         const wrapEl = labelWrapRefs.current[def.id]!;
         const halfWipe = WIPE_LENGTH / 2;
-        tl.to(innerEl, { opacity: 0, duration: halfWipe, ease: "none" }, WIPE_START);
+        tl.to(
+          innerEl,
+          { opacity: 0, duration: halfWipe, ease: "none" },
+          WIPE_START,
+        );
         // GSAP's tl.call() fires the same callback for both onComplete and
         // onReverseComplete (a delayed call has no motion to reverse), so a
         // single unconditional assignment here would re-apply the "new"
@@ -654,7 +774,11 @@ export default function FrameworkScene({ className }: { className?: string }) {
           undefined,
           WIPE_START + halfWipe,
         );
-        tl.to(innerEl, { opacity: 1, duration: halfWipe, ease: "none" }, WIPE_START + halfWipe);
+        tl.to(
+          innerEl,
+          { opacity: 1, duration: halfWipe, ease: "none" },
+          WIPE_START + halfWipe,
+        );
       });
 
       // ── Beat 6: trailing hold ────────────────────────────────────────
@@ -672,9 +796,14 @@ export default function FrameworkScene({ className }: { className?: string }) {
   }, []);
 
   return (
-    <div ref={sceneRef} className={`${styles.scene}${className ? ` ${className}` : ""}`}>
+    <div
+      ref={sceneRef}
+      className={`${styles.scene}${className ? ` ${className}` : ""}`}
+    >
       <div ref={contentRef} className={styles.content}>
-        <h2 ref={headingRef} className={styles.heading}>The Framework.</h2>
+        <h2 ref={headingRef} className={styles.heading}>
+          The Framework.
+        </h2>
         <svg ref={svgRef} className={styles.svgLayer} aria-hidden="true">
           <defs>
             {ALL_SHAPES.map((def) => (
@@ -687,6 +816,36 @@ export default function FrameworkScene({ className }: { className?: string }) {
               </clipPath>
             ))}
           </defs>
+          {/* Connectors render first so they paint BEHIND the shapes'
+              strokes (SVG paints in document order) — otherwise a
+              connector's straight end would visibly cut across a shape's
+              dashed outline instead of appearing to originate from it. */}
+          {Array.from({ length: CONNECTOR_COUNT }, (_, i) => (
+            <line
+              key={i}
+              className={styles.connector}
+              strokeWidth={STROKE_WIDTH}
+              strokeDasharray={DASH_ARRAY}
+              strokeLinecap="round"
+              ref={(el) => {
+                connectorRefs.current[i] = el;
+              }}
+            />
+          ))}
+          {/* Blue "data pulse" overlay, same geometry as the base
+              connectors above (set in JS) — painted on top of them, still
+              behind the shapes. Hidden (opacity 0) until the wipe
+              finishes. */}
+          {Array.from({ length: CONNECTOR_COUNT }, (_, i) => (
+            <line
+              key={i}
+              strokeWidth={STROKE_WIDTH}
+              strokeLinecap="round"
+              ref={(el) => {
+                pulseRefs.current[i] = el;
+              }}
+            />
+          ))}
           {ALL_SHAPES.map((def) => {
             const commonProps = {
               key: def.id,
@@ -704,18 +863,6 @@ export default function FrameworkScene({ className }: { className?: string }) {
               <polygon {...commonProps} />
             );
           })}
-          {INPUT_SHAPES.map((_, i) => (
-            <line
-              key={i}
-              className={styles.connector}
-              strokeWidth={STROKE_WIDTH}
-              strokeDasharray={DASH_ARRAY}
-              strokeLinecap="round"
-              ref={(el) => {
-                connectorRefs.current[i] = el;
-              }}
-            />
-          ))}
           {ALL_SHAPES.map((def) => {
             const fillProps = {
               key: def.id,

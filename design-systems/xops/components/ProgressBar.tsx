@@ -2,7 +2,7 @@ import React from "react";
 import Icon from "./Icon";
 import styles from "./ProgressBar.module.css";
 
-export type ProgressBarStatus = "danger" | "warning" | "success";
+export type ProgressBarStatus = "danger" | "warning" | "success" | "info";
 export type ProgressBarHeight = "16" | "8";
 
 export type ProgressBarProps = {
@@ -13,7 +13,7 @@ export type ProgressBarProps = {
   status: ProgressBarStatus;
   /** Optional trailing value number (e.g. "89%" or "-15 days"), rendered beside the bar */
   valueLabel?: string;
-  /** Off the shared bar-height scale. Defaults to "16". */
+  /** Off the shared bar-height scale. Defaults to "8". */
   height?: ProgressBarHeight;
   className?: string;
 };
@@ -23,14 +23,22 @@ export function ProgressBar({
   threshold,
   status,
   valueLabel,
-  height = "16",
+  height = "8",
   className,
 }: ProgressBarProps) {
   return (
     <div className={[styles.wrap, className].filter(Boolean).join(" ")}>
+      {valueLabel && (
+        <span className={[styles.valueLabel, styles[`${status}Label`]].filter(Boolean).join(" ")}>
+          {valueLabel}
+        </span>
+      )}
       <div className={[styles.bar, styles[status], styles[`height${height}`]].filter(Boolean).join(" ")}>
         <div className={styles.track}>
-          <div className={styles.fill} style={{ width: `${value}%` }} />
+          <div
+            className={[styles.fill, threshold !== undefined && styles.fillFlat].filter(Boolean).join(" ")}
+            style={{ width: `${value}%` }}
+          />
         </div>
         {threshold !== undefined && (
           <div className={styles.markerWrap} style={{ left: `${threshold}%` }}>
@@ -38,11 +46,6 @@ export function ProgressBar({
           </div>
         )}
       </div>
-      {valueLabel && (
-        <span className={[styles.valueLabel, styles[`${status}Label`]].filter(Boolean).join(" ")}>
-          {valueLabel}
-        </span>
-      )}
     </div>
   );
 }

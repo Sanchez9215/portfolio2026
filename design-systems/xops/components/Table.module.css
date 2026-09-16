@@ -69,8 +69,8 @@
   padding: var(--xops-spacing-12);
   border-bottom: var(--xops-border-width-1) solid var(--xops-border-divider);
   font-family: var(--xops-font-family);
-  font-size: var(--xops-typography-body-14-font-size);
-  line-height: var(--xops-typography-body-14-line-height);
+  font-size: var(--xops-typography-subheading-14-font-size);
+  line-height: var(--xops-typography-subheading-14-line-height);
   font-weight: var(--xops-font-weight-medium);
   color: var(--xops-text-secondary);
   text-align: left;
@@ -78,6 +78,11 @@
 
 .wrapper .headerCell {
   padding-left: var(--xops-spacing-24);
+}
+
+.headerCellSubheading12 {
+  font-size: var(--xops-typography-subheading-12-font-size);
+  line-height: var(--xops-typography-subheading-12-line-height);
 }
 
 .headerCell[data-width="auto"] {

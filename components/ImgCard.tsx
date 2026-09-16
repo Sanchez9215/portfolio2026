@@ -1,3 +1,7 @@
+'use client'
+
+import { useLayoutEffect, useRef } from 'react'
+import gsap from 'gsap'
 import Card from './Card'
 import styles from './ImgCard.module.css'
 
@@ -23,13 +27,17 @@ interface ImgCardProps {
   /** variant="embed" only — total hotspot count, rendered as a segment track
    *  above the embed. Omit to hide the track entirely. */
   progressSteps?: number
-  /** variant="embed" only — 0-based index of the current hotspot; segments up
-   *  through this index render filled. undefined/-1 = none filled yet (the
-   *  pre-walkthrough countdown state). */
+  /** variant="embed" only — 0-based index of the current hotspot; segments
+   *  before this index render fully filled. undefined/-1 = none filled yet
+   *  (the pre-walkthrough countdown state). */
   activeStep?: number
-  /** variant="embed" only — seconds remaining before the walkthrough starts;
-   *  null/undefined hides the countdown text. */
-  countdownSeconds?: number | null
+  /** variant="embed" only — how long activeStep's own segment takes to fill
+   *  grey → blue, in ms, matching the real auto-advance duration for that
+   *  card. Omit to render it fully filled instantly instead of animating. */
+  activeStepDurationMs?: number
+  /** variant="embed" only — freezes the active segment's fill tween in place
+   *  without resetting it (mirrors the auto-advance timer's own pause). */
+  paused?: boolean
 }
 
 export default function ImgCard({
@@ -45,11 +53,53 @@ export default function ImgCard({
   allowOverflow = false,
   progressSteps,
   activeStep,
-  countdownSeconds,
+  activeStepDurationMs,
+  paused,
 }: ImgCardProps) {
   const captionClassName = `${styles.caption}${inverse ? ` ${styles.inverse}` : ''}`
   const imgWrapperClassName = `${styles.imgWrapper}${allowOverflow ? ` ${styles.imgWrapperOverflowVisible}` : ''}`
   const isEmbed = variant === 'embed'
+
+  // Drives every segment's fill directly via GSAP on each activeStep change
+  // (not just the active one) — earlier this only touched the active
+  // segment and let React's own inline `style` handle the rest, but React
+  // only rewrites style.transform when the *declared* value differs from
+  // what it last wrote; stepping backward doesn't change that declared
+  // value for the vacated segment (still "0 → false → scaleX(0)" either
+  // way), so GSAP's mid-tween leftover value silently survived instead of
+  // clearing. Being the single source of truth for all of them avoids that
+  // desync: completed segments snap to filled, the active one tweens
+  // grey → blue, everything after clears to grey — every time, in both
+  // directions.
+  const fillRefs = useRef<(HTMLSpanElement | null)[]>([])
+  useLayoutEffect(() => {
+    if (!isEmbed || !progressSteps) return
+    let tween: gsap.core.Tween | null = null
+    for (let i = 0; i < progressSteps; i++) {
+      const el = fillRefs.current[i]
+      if (!el) continue
+      if (activeStep == null || activeStep < 0 || i > activeStep) {
+        gsap.set(el, { scaleX: 0 })
+      } else if (i < activeStep) {
+        gsap.set(el, { scaleX: 1 })
+      } else if (paused) {
+        // Active segment, paused — leave its current fill exactly where it
+        // is rather than resetting it.
+      } else if (!activeStepDurationMs) {
+        gsap.set(el, { scaleX: 1 })
+      } else {
+        gsap.set(el, { scaleX: 0 })
+        tween = gsap.to(el, {
+          scaleX: 1,
+          duration: activeStepDurationMs / 1000,
+          ease: 'none',
+        })
+      }
+    }
+    return () => {
+      tween?.kill()
+    }
+  }, [isEmbed, progressSteps, activeStep, activeStepDurationMs, paused])
 
   const content = images ? (
     <div className={`${styles.inner} ${styles.innerMulti} ${layout === 'column' ? styles.innerMultiColumn : ''}`}>
@@ -65,29 +115,24 @@ export default function ImgCard({
       ))}
     </div>
   ) : (
-    <div className={styles.inner}>
+    <div className={`${styles.inner}${isEmbed ? ` ${styles.innerEmbed}` : ''}`}>
       {isEmbed && (
         <div className={styles.embedHeader}>
-          <div className={styles.embedHeaderRow}>
-            {caption && <span className={captionClassName}>{caption}</span>}
-            {countdownSeconds != null && (
-              <span className={styles.countdown}>
-                Walkthrough starts in{' '}
-                <strong className={styles.countdownValue}>
-                  {String(countdownSeconds).padStart(2, '0')}
-                </strong>
-              </span>
-            )}
-          </div>
+          {caption && <span className={captionClassName}>{caption}</span>}
           {progressSteps != null && progressSteps > 0 && (
             <div className={styles.progressTrack}>
               {Array.from({ length: progressSteps }).map((_, i) => (
-                <span
-                  key={i}
-                  className={`${styles.progressSegment}${
-                    i <= (activeStep ?? -1) ? ` ${styles.progressSegmentFilled}` : ''
-                  }`}
-                />
+                <span key={i} className={styles.progressSegment}>
+                  <span
+                    ref={(el) => {
+                      fillRefs.current[i] = el
+                    }}
+                    className={styles.progressSegmentFill}
+                    style={{
+                      transform: `scaleX(${i < (activeStep ?? -1) ? 1 : 0})`,
+                    }}
+                  />
+                </span>
               ))}
             </div>
           )}

@@ -332,7 +332,7 @@ export function SoftwareProfile({
           <div data-hotspot="department-breakdown-chart">
             <Card
               title={`Inactive Licenses by ${distributionUnitLabel}`}
-              titleSize="body-14"
+              titleSize="subheading-14"
               headerValue={formatBreakdownTotal(departmentBreakdown)}
             >
               <RankedBarChart
@@ -373,7 +373,7 @@ export function SoftwareProfile({
           <div data-hotspot="terminated-breakdown-chart">
             <Card
               title={`Licenses Assigned to Terminated Employees by ${distributionUnitLabel}`}
-              titleSize="body-14"
+              titleSize="subheading-14"
               headerValue={formatBreakdownTotal(terminatedEmployeesBreakdown)}
             >
               <RankedBarChart

@@ -349,7 +349,13 @@ section.prototypeValidation {
 }
 
 .prototypeValidationCenter {
-  grid-column: 3 / 11;
+  grid-column: 1 / 10;
+}
+
+/* Timeline sidebar (see OverviewPrototypeSection/Timeline.tsx) — the last 3
+   of the grid's 12 columns, right-flush. */
+.prototypeValidationRight {
+  grid-column: 10 / 13;
 }
 
 /* Initial state for the scroll-triggered fade-in (see OverviewPrototypeHotspots.tsx)

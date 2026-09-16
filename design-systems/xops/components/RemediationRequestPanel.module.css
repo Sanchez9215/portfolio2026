@@ -1,0 +1,270 @@
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--xops-spacing-16);
+}
+
+.topBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.topBarRight {
+  display: flex;
+  align-items: center;
+  gap: var(--xops-spacing-16);
+}
+
+.selectedSummary {
+  font-family: var(--xops-font-family);
+  font-weight: var(--xops-font-weight-regular);
+  font-size: var(--xops-typography-body-14-font-size);
+  line-height: var(--xops-typography-body-14-line-height);
+  color: var(--xops-text-primary);
+  white-space: nowrap;
+}
+
+.projectedPill {
+  border-radius: var(--xops-radius-full);
+  flex-shrink: 0;
+}
+
+.projectedPillContent {
+  padding: var(--xops-spacing-6) var(--xops-spacing-12);
+  font-family: var(--xops-font-family);
+  font-weight: var(--xops-font-weight-regular);
+  font-size: var(--xops-typography-body-14-font-size);
+  line-height: var(--xops-typography-body-14-line-height);
+  color: var(--xops-text-primary);
+  white-space: nowrap;
+}
+
+.title {
+  margin: 0;
+  font-family: var(--xops-font-family);
+  font-weight: var(--xops-font-weight-medium);
+  font-size: var(--xops-typography-title-18-font-size);
+  line-height: var(--xops-typography-title-18-line-height);
+  color: var(--xops-text-primary);
+}
+
+.statRow {
+  display: flex;
+  gap: var(--xops-spacing-8);
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--xops-spacing-16);
+}
+
+.searchField {
+  display: flex;
+  align-items: center;
+  gap: var(--xops-spacing-4);
+  width: 360px;
+  padding: var(--xops-spacing-6) var(--xops-spacing-12);
+  border: var(--xops-border-width-1) solid var(--xops-border-divider);
+  border-radius: var(--xops-radius-6);
+}
+
+.searchInput {
+  border: none;
+  outline: none;
+  width: 100%;
+  font-family: var(--xops-font-family);
+  font-weight: var(--xops-font-weight-regular);
+  font-size: var(--xops-typography-body-14-font-size);
+  line-height: var(--xops-typography-body-14-line-height);
+  color: var(--xops-text-primary);
+}
+
+.toolbarRight {
+  display: flex;
+  align-items: center;
+  gap: var(--xops-spacing-8);
+}
+
+.toolbarLabel {
+  font-family: var(--xops-font-family);
+  font-weight: var(--xops-font-weight-regular);
+  font-size: var(--xops-typography-body-14-font-size);
+  line-height: var(--xops-typography-body-14-line-height);
+  color: var(--xops-text-secondary);
+  white-space: nowrap;
+}
+
+.attributeList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--xops-spacing-4);
+}
+
+.attributeRow {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.attributeHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--xops-spacing-8);
+  padding: var(--xops-spacing-8) var(--xops-spacing-12);
+  border-radius: var(--xops-radius-6);
+}
+
+.attributeToggle {
+  display: flex;
+  align-items: center;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.attributeToggle:hover {
+  background-color: var(--xops-state-hover-on-surface);
+}
+
+.chevron {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--xops-spacing-4);
+  transition: transform var(--xops-motion-duration-default) var(--xops-motion-easing-default);
+}
+
+.chevronOpen {
+  transform: rotate(180deg);
+}
+
+.attributeLabel {
+  font-family: var(--xops-font-family);
+  font-weight: var(--xops-font-weight-medium);
+  font-size: var(--xops-typography-body-14-font-size);
+  line-height: var(--xops-typography-body-14-line-height);
+  color: var(--xops-text-primary);
+}
+
+.attributeLabelStatic {
+  padding-left: calc(var(--xops-spacing-4) * 2 + 20px);
+}
+
+.attributeCounts {
+  display: flex;
+  align-items: center;
+  gap: var(--xops-spacing-16);
+  margin-left: auto;
+  font-family: var(--xops-font-family);
+  font-weight: var(--xops-font-weight-regular);
+  font-size: var(--xops-typography-body-14-font-size);
+  line-height: var(--xops-typography-body-14-line-height);
+  color: var(--xops-text-primary);
+  white-space: nowrap;
+}
+
+.attributeRecords {
+  color: var(--xops-text-secondary);
+}
+
+.attributeCount {
+  display: flex;
+  align-items: center;
+  gap: var(--xops-spacing-4);
+}
+
+.attributeDetail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--xops-spacing-8);
+  padding: var(--xops-spacing-8) var(--xops-spacing-12) var(--xops-spacing-12);
+}
+
+.showingLabel {
+  margin: 0;
+  font-family: var(--xops-font-family);
+  font-weight: var(--xops-font-weight-regular);
+  font-size: var(--xops-typography-body-12-font-size);
+  line-height: var(--xops-typography-body-12-line-height);
+  color: var(--xops-text-secondary);
+}
+
+.remediationDot {
+  display: inline-block;
+  width: var(--xops-legend-swatch-size);
+  height: var(--xops-legend-swatch-size);
+  border-radius: var(--xops-radius-full);
+  flex-shrink: 0;
+}
+
+.remediationPath {
+  display: flex;
+  align-items: center;
+  gap: var(--xops-spacing-6);
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: var(--xops-font-family);
+  font-weight: var(--xops-font-weight-regular);
+  font-size: var(--xops-typography-body-14-font-size);
+  line-height: var(--xops-typography-body-14-line-height);
+  color: var(--xops-text-primary);
+}
+
+.remediationPath:disabled {
+  cursor: default;
+}
+
+.remediationPath:not(:disabled) {
+  cursor: pointer;
+}
+
+.emptyValue {
+  color: var(--xops-text-disabled);
+}
+
+.otherFailures {
+  display: flex;
+  flex-direction: column;
+  gap: var(--xops-spacing-8);
+  padding: var(--xops-spacing-8) 0;
+}
+
+.otherFailuresTitle {
+  margin: 0;
+  font-family: var(--xops-font-family);
+  font-weight: var(--xops-font-weight-medium);
+  font-size: var(--xops-typography-body-14-font-size);
+  line-height: var(--xops-typography-body-14-line-height);
+  color: var(--xops-text-primary);
+}
+
+.otherFailuresList {
+  display: flex;
+  flex-direction: column;
+}
+
+.otherFailuresRow {
+  display: flex;
+  gap: var(--xops-spacing-16);
+  padding: var(--xops-spacing-6) 0;
+  border-bottom: var(--xops-border-width-1) solid var(--xops-border-divider);
+  font-family: var(--xops-font-family);
+  font-weight: var(--xops-font-weight-regular);
+  font-size: var(--xops-typography-body-14-font-size);
+  line-height: var(--xops-typography-body-14-line-height);
+}
+
+.otherFailuresCategory {
+  color: var(--xops-text-secondary);
+  width: 160px;
+  flex-shrink: 0;
+}
+
+.otherFailuresAttribute {
+  color: var(--xops-text-primary);
+}

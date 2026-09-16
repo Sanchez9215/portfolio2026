@@ -106,6 +106,6 @@
    technique as TheProblemPinnedScene's .messageCard, rather than adding a
    one-off color variant to the shared Label component. */
 .revealed {
-  --text-primary:   var(--text-inverse-primary);
-  --text-tertiary:  var(--text-inverse-primary);
+  --text-primary:   var(--text-dark-display);
+  --text-tertiary:  var(--text-dark-display);
 }
