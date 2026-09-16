@@ -147,6 +147,7 @@
 
   --spacing-xs:  4px;
   --spacing-sm:  8px;
+  --spacing-sm-md: 12px;
   --spacing-md:  16px;
   --spacing-mlg: 20px;
   --spacing-lg:  24px;
@@ -572,5 +573,5 @@
   display: grid;
   grid-template-columns: repeat(12, 1fr);
   column-gap: var(--spacing-xl);
-  padding-inline: var(--spacing-xl);
+  padding-inline: var(--spacing-4xl);
 }

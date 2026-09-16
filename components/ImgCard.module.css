@@ -12,6 +12,13 @@
   width:          100%;
 }
 
+/* variant="embed" only — no gap between .embedHeader and the live embed
+   below it (the base .inner gap above still applies to every other variant,
+   e.g. bare/card's image-to-caption spacing). */
+.innerEmbed {
+  gap: 0;
+}
+
 /* div.imgWrapper — clips image to rounded corners */
 .imgWrapper {
   border-radius: var(--radius-default);
@@ -85,43 +92,34 @@
   order: -1;
 }
 
-/* ── variant="embed" header — caption + countdown row, then a progress-
-   segment track, both above the embed. Replaces the bottom .labelWrapper
-   caption entirely for this variant (see ImgCard.tsx). */
+/* ── variant="embed" header — caption, then a progress-segment track, both
+   above the embed. Replaces the bottom .labelWrapper caption entirely for
+   this variant (see ImgCard.tsx). Countdown/Start Now/Exit/Restart used to
+   live here too — moved to the Timeline sidebar's player block (see
+   Timeline.tsx/Timeline.module.css). */
 .embedHeader {
   display:        flex;
   flex-direction: column;
-  gap:            var(--spacing-sm);
+  gap:            var(--spacing-md);
   width:          100%;
-  position:       sticky;
-  top:            var(--nav-height);
   /* Above AnnotationConnectorHotspot's .overlay (z-index: 10) so hotspot
-     tooltips stack under this header, not over it — otherwise they'd render
-     on top of the opaque background below, making it look see-through. */
+     tooltips (which can spill upward via allowOverflow) stack under this
+     header, not over it. */
+  position:       relative;
   z-index:        20;
   background:     var(--surface-base);
   padding-block:  var(--spacing-md);
 }
 
-.embedHeaderRow {
-  display:         flex;
-  align-items:     center;
-  justify-content: space-between;
-  gap:             var(--spacing-md);
-}
-
-.countdown {
-  font-family: var(--font-family-body);
-  font-size:   var(--text-body-sm-size);
-  color:       var(--text-secondary);
-  white-space: nowrap;
-}
-
-.countdownValue {
-  font-size:   var(--text-label-md-size);
-  font-weight: var(--font-weight-bold);
-  color:       var(--text-primary);
-  margin-left: var(--spacing-sm);
+/* Embed variant's caption only — raised off the shared .caption's default
+   label-xs (12px) to label-md (16px, with its own matching 22px line-height/
+   -0.02em letter-spacing), scoped here so every other ImgCard caption across
+   the site is unaffected. */
+.embedHeader .caption {
+  font-size:      var(--text-label-md-size);
+  line-height:    var(--text-label-md-lh);
+  letter-spacing: var(--text-label-md-ls);
+  word-spacing:   var(--word-spacing-display);
 }
 
 .progressTrack {
@@ -131,12 +129,20 @@
 }
 
 .progressSegment {
+  position:      relative;
   flex:          1;
   height:        2px;
   border-radius: var(--border-radius-full);
   background:    var(--text-tertiary);
+  overflow:      hidden;
 }
 
-.progressSegmentFilled {
-  background: var(--text-accent);
+/* Scaled 0→1 (transform-origin: left) by ImgCard.tsx — either instantly for
+   a completed segment, or tweened over activeStepDurationMs for the active
+   one, so the fill visibly tracks real elapsed time instead of flipping. */
+.progressSegmentFill {
+  position:         absolute;
+  inset:            0;
+  background:       var(--text-accent);
+  transform-origin: left center;
 }

@@ -1,18 +1,19 @@
 "use client";
 
 import React, { useState } from "react";
-import Sidebar from "../../../design-systems/xops/components/Sidebar";
-import GlobalHeader from "../../../design-systems/xops/components/GlobalHeader";
-import PageHeader from "../../../design-systems/xops/components/PageHeader";
-import { FilterTabs, FilterTabOption } from "../../../design-systems/xops/components/FilterTabs";
-import { Tag } from "../../../design-systems/xops/components/Tag";
-import Icon from "../../../design-systems/xops/components/Icon";
-import { Stat } from "../../../design-systems/xops/components/Stat";
-import { ProgressBar } from "../../../design-systems/xops/components/ProgressBar";
-import { Card } from "../../../design-systems/xops/components/Card";
-import { Table, Column } from "../../../design-systems/xops/components/Table";
-import { TagStatus } from "../../../design-systems/xops/components/Tag";
-import { BarChart } from "../../../design-systems/xops/components/BarChart";
+import { useRouter } from "next/navigation";
+import Sidebar from "@/design-systems/xops/components/Sidebar";
+import GlobalHeader from "@/design-systems/xops/components/GlobalHeader";
+import PageHeader from "@/design-systems/xops/components/PageHeader";
+import { FilterTabs, FilterTabOption } from "@/design-systems/xops/components/FilterTabs";
+import { Tag } from "@/design-systems/xops/components/Tag";
+import Icon from "@/design-systems/xops/components/Icon";
+import { Stat } from "@/design-systems/xops/components/Stat";
+import { ProgressBar } from "@/design-systems/xops/components/ProgressBar";
+import { Card } from "@/design-systems/xops/components/Card";
+import { Table, Column } from "@/design-systems/xops/components/Table";
+import { TagStatus } from "@/design-systems/xops/components/Tag";
+import { BarChart } from "@/design-systems/xops/components/BarChart";
 
 type InsightsTabKey =
   | "requests"
@@ -97,7 +98,7 @@ function MetricCell({ metric }: { metric: DomainMetric }) {
         status={metricStatus(metric)}
         valueLabel={`${metric.value}%`}
       />
-      <span style={deltaStyle}>{metric.deltaText}</span>
+      <span style={{ ...deltaStyle, marginLeft: "var(--xops-spacing-32)" }}>{metric.deltaText}</span>
     </div>
   );
 }
@@ -128,14 +129,14 @@ const domainHealthColumns: Column<DomainHealthRow>[] = [
   {
     key: "status",
     label: "Status",
-    width: "auto",
+    width: "flex",
     sortable: true,
     render: (row) => <Tag status={row.status}>{row.statusLabel}</Tag>,
   },
   {
     key: "completeness",
     label: "Completeness",
-    width: "auto",
+    width: "flex",
     align: "left",
     sortable: true,
     render: (row) => <MetricCell metric={row.completeness} />,
@@ -143,7 +144,7 @@ const domainHealthColumns: Column<DomainHealthRow>[] = [
   {
     key: "quality",
     label: "Quality",
-    width: "auto",
+    width: "flex",
     align: "left",
     sortable: true,
     render: (row) => <MetricCell metric={row.quality} />,
@@ -151,16 +152,10 @@ const domainHealthColumns: Column<DomainHealthRow>[] = [
   {
     key: "recency",
     label: "Recency",
-    width: "auto",
+    width: "flex",
     align: "left",
     sortable: true,
     render: (row) => <MetricCell metric={row.recency} />,
-  },
-  {
-    key: "spacer",
-    label: "",
-    width: "flex",
-    render: () => null,
   },
 ];
 
@@ -427,6 +422,7 @@ const insightsTabs: FilterTabOption<InsightsTabKey>[] = [
 ];
 
 export function DataHealthScreen() {
+  const router = useRouter();
   const [insightsTab, setInsightsTab] = useState<InsightsTabKey>("data-health");
   const [domainSortKey, setDomainSortKey] = useState<string | undefined>(undefined);
   const [domainSortDirection, setDomainSortDirection] = useState<"asc" | "desc">("asc");
@@ -487,7 +483,7 @@ export function DataHealthScreen() {
           style={{
             display: "flex",
             flexDirection: "column",
-            gap: "var(--xops-spacing-24)",
+            gap: "var(--xops-spacing-32)",
             padding: "var(--xops-grid-margin)",
             paddingBottom: "var(--xops-spacing-8)",
             backgroundColor: "var(--xops-surface-page)",
@@ -521,12 +517,12 @@ export function DataHealthScreen() {
                   margin: 0,
                   fontFamily: "var(--xops-font-family)",
                   fontWeight: "var(--xops-font-weight-medium)",
-                  fontSize: "var(--xops-typography-title-18-font-size)",
-                  lineHeight: "var(--xops-typography-title-18-line-height)",
+                  fontSize: "var(--xops-typography-heading-20-font-size)",
+                  lineHeight: "var(--xops-typography-heading-20-line-height)",
                   color: "var(--xops-text-primary)",
                 }}
               >
-                Data Health Overview
+                Data Health
               </h1>
               <div style={{ display: "flex", alignItems: "center", gap: "var(--xops-spacing-6)" }}>
                 <Icon name="cloud_download" color="var(--xops-text-secondary)" />
@@ -549,8 +545,8 @@ export function DataHealthScreen() {
                 display: "flex",
                 alignItems: "center",
                 gap: "var(--xops-spacing-8)",
-                // parent already applies spacing-16 gap between rows; this adds the remainder to net spacing-24 above this row specifically
-                marginTop: "calc(var(--xops-spacing-24) - var(--xops-spacing-16))",
+                // parent already applies spacing-16 gap between rows; this adds the remainder to net spacing-32
+                marginTop: "calc(var(--xops-spacing-32) - var(--xops-spacing-16))",
               }}
             >
               <span
@@ -571,7 +567,10 @@ export function DataHealthScreen() {
               <Stat
                 label="Completeness"
                 value="82%"
-                icon
+                tooltip={{
+                  title: "Completeness",
+                  description: "Percentage of configuration items with all required fields populated.",
+                }}
                 content={
                   <>
                     <ProgressBar value={82} threshold={85} status="danger" />
@@ -582,7 +581,10 @@ export function DataHealthScreen() {
               <Stat
                 label="Quality"
                 value="77%"
-                icon
+                tooltip={{
+                  title: "Quality",
+                  description: "Percentage of records that are accurate, properly formatted, and consistent across systems.",
+                }}
                 content={
                   <>
                     <ProgressBar value={77} threshold={80} status="danger" />
@@ -593,7 +595,10 @@ export function DataHealthScreen() {
               <Stat
                 label="Recency"
                 value="71%"
-                icon
+                tooltip={{
+                  title: "Recency",
+                  description: "Percentage of configuration items synced within the last 24 hours.",
+                }}
                 content={
                   <>
                     <ProgressBar value={71} threshold={75} status="danger" />
@@ -603,7 +608,16 @@ export function DataHealthScreen() {
               />
             </div>
 
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: "var(--xops-spacing-4)" }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "flex-end",
+                gap: "var(--xops-spacing-4)",
+                // parent already applies spacing-16 gap above this row; this subtracts the excess to net spacing-8
+                marginTop: "calc(var(--xops-spacing-8) - var(--xops-spacing-16))",
+              }}
+            >
               <span
                 style={{
                   fontFamily: "var(--xops-font-family)",
@@ -616,7 +630,6 @@ export function DataHealthScreen() {
               >
                 Learn More About Thresholds
               </span>
-              <Icon name="InfoCircle" color="var(--xops-text-secondary)" />
             </div>
 
             <Card title="Health by Domain">
@@ -627,7 +640,10 @@ export function DataHealthScreen() {
                 sortKey={domainSortKey}
                 sortDirection={domainSortDirection}
                 onSortChange={handleDomainSortChange}
-                onRowClick={() => {}}
+                headerLabelSize="subheading-12"
+                onRowClick={(row) => {
+                  if (row.domain === "Infrastructure") router.push("/work/data-health-monitor/prototype/domain");
+                }}
                 showChevron
                 chrome={false}
                 scrollFade={false}
@@ -653,7 +669,7 @@ export function DataHealthScreen() {
                   </div>
 
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <Card title="Missing Required Data" headerValue="6,200 Failures (49.8% of Total)" titleSize="body-14">
+                    <Card title="Missing Required Data" headerValue="6,200 Failures (49.8% of Total)" titleSize="subheading-14">
                       <div style={{ display: "flex", flexDirection: "column", gap: "var(--xops-spacing-16)" }}>
                         <div style={{ display: "flex", gap: "var(--xops-spacing-8)" }}>
                           <Stat label="Affected Records" value="4,196" icon />
@@ -681,6 +697,7 @@ export function DataHealthScreen() {
                           sortDirection={failureSortDirection}
                           onSortChange={handleFailureSortChange}
                           onRowClick={() => {}}
+                          headerLabelSize="subheading-12"
                           showChevron
                           chrome={false}
                           scrollFade={false}
@@ -701,6 +718,7 @@ export function DataHealthScreen() {
                 sortDirection={certificationSortDirection}
                 onSortChange={handleCertificationSortChange}
                 onRowClick={() => {}}
+                headerLabelSize="subheading-12"
                 showChevron
                 chrome={false}
                 scrollFade={false}

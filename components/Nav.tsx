@@ -9,7 +9,7 @@
  *
  * Header row rebuilt from Figma node 572:1787 ("Portfolio Cleaning" file) —
  * plain-text "Edgar Sanchez" wordmark (Label, no logo mark) + a bare-text
- * "Menu"/"Close" trigger (Button variant="text" size="small"). Expand/collapse
+ * "Menu"/"Close" trigger (Button variant="text" size="xsmall"). Expand/collapse
  * mechanism below is unchanged, still from the original nodes 273:439
  * (nav-button) + 274:75 (nav) — Claude-Code file.
  * Tokens: nav.* + surface.* + motion.* (design-system/tokens.json)
@@ -276,7 +276,7 @@ export default function Nav() {
             <div className={styles.desktopTrigger}>
               <Button
                 variant="text"
-                size="small"
+                size="xsmall"
                 onClick={toggleNav}
                 aria-label={isOpen ? "Close navigation" : "Open navigation"}
               >

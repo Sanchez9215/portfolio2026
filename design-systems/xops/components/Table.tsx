@@ -58,6 +58,8 @@ export type TableProps<T extends Record<string, unknown>> = {
   scrollToX?: "start" | "end";
   /** Trailing arrow_forward_ios cell on every row, signaling the row navigates to a different page (vs. onRowClick alone, which covers in-place actions like row selection or opening a side panel). Requires onRowClick. */
   showChevron?: boolean;
+  /** Column header label size. Defaults to "subheading-14". */
+  headerLabelSize?: "subheading-14" | "subheading-12";
 };
 
 function colStyle(width: ColumnWidth): CSSProperties {
@@ -84,6 +86,7 @@ export function Table<T extends Record<string, unknown>>({
   disableHorizontalScroll = false,
   scrollToX,
   showChevron = false,
+  headerLabelSize = "subheading-14",
 }: TableProps<T>) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const paginationRef = useRef<HTMLDivElement>(null);
@@ -168,7 +171,9 @@ export function Table<T extends Record<string, unknown>>({
                 <th
                   key={column.key}
                   scope="col"
-                  className={styles.headerCell}
+                  className={[styles.headerCell, headerLabelSize === "subheading-12" && styles.headerCellSubheading12]
+                    .filter(Boolean)
+                    .join(" ")}
                   data-align={align}
                   data-width={typeof column.width === "string" ? column.width : "fixed"}
                   aria-sort={

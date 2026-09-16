@@ -1,0 +1,17 @@
+/* ============================================================
+   WorkVisualPlaceholder — empty visual slot in a WorkCaseStudyRow
+   --surface-card (grey-1000) is one ramp step lighter than the row's
+   own --surface-base (grey-1100) background, reusing the existing
+   semantic token rather than minting a placeholder-only one.
+
+   Owns its own 16/10 ratio — the row's .embedWrap now hugs whatever
+   height its visual renders at, rather than forcing one, so a visual
+   with no natural height of its own (like this empty box) has to
+   supply one.
+   ============================================================ */
+
+.placeholder {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  background: var(--surface-card);
+}

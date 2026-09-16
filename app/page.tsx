@@ -2,7 +2,7 @@ import '@/design-systems/xops/tokens.css'
 import Nav from '@/components/Nav'
 import Hero from '@/components/Hero'
 import HeroWithCanvas from '@/components/HeroWithCanvas'
-import WorkCaseStudyRow from '@/components/WorkCaseStudyRow'
+import WorkSection from '@/components/WorkSection'
 
 export default function Home() {
   return (
@@ -10,9 +10,7 @@ export default function Home() {
       <Nav />
       <Hero />
       {false && <HeroWithCanvas />}
-      <main id="work">
-        <WorkCaseStudyRow />
-      </main>
+      <WorkSection />
     </>
   )
 }

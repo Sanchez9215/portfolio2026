@@ -30,9 +30,9 @@
   color: var(--xops-text-primary);
 }
 
-.titleBody14 {
-  font-size: var(--xops-typography-body-14-font-size);
-  line-height: var(--xops-typography-body-14-line-height);
+.titleSubheading14 {
+  font-size: var(--xops-typography-subheading-14-font-size);
+  line-height: var(--xops-typography-subheading-14-line-height);
 }
 
 .headerValue {

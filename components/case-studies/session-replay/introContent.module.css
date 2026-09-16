@@ -1,0 +1,8 @@
+/* Inline link within the description Block — inherits the surrounding
+   text's own color (currentColor) rather than a separate link color, same
+   convention as MetricCard's citation link; underline is the only signal
+   that it's a link. */
+.inlineLink {
+  color: currentColor;
+  text-decoration: underline;
+}

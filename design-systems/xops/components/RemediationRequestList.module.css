@@ -1,0 +1,91 @@
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--xops-spacing-8);
+  width: 100%;
+}
+
+.row {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  border-radius: var(--xops-radius-6);
+}
+
+.header:hover {
+  background-color: var(--xops-state-hover-on-surface);
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+}
+
+.chevron {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--xops-spacing-12) var(--xops-spacing-6);
+  transition: transform var(--xops-motion-duration-default) var(--xops-motion-easing-default);
+}
+
+.chevronOpen {
+  transform: rotate(180deg);
+}
+
+.ticketId {
+  padding: var(--xops-spacing-12);
+  font-family: var(--xops-font-family);
+  font-weight: var(--xops-font-weight-medium);
+  font-size: var(--xops-typography-body-14-font-size);
+  line-height: var(--xops-typography-body-14-line-height);
+  color: var(--xops-text-primary);
+  white-space: nowrap;
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+}
+
+.progressCell {
+  display: flex;
+  align-items: center;
+  gap: var(--xops-spacing-8);
+  padding: var(--xops-spacing-12);
+  /* Figma's bar is 111px, but ProgressBar has a deliberate 164px min-width floor
+     (see Table registry note) — this cell hugs that floor instead of fighting it.
+     Revisit alongside the "info" status cleanup. */
+  flex-shrink: 0;
+}
+
+.recordsCell {
+  padding: var(--xops-spacing-12) var(--xops-spacing-16) var(--xops-spacing-12) var(--xops-spacing-12);
+  width: 170px;
+  flex-shrink: 0;
+  text-align: right;
+  font-family: var(--xops-font-family);
+  font-weight: var(--xops-font-weight-regular);
+  font-size: var(--xops-typography-body-14-font-size);
+  line-height: var(--xops-typography-body-14-line-height);
+  color: var(--xops-text-secondary);
+  white-space: nowrap;
+}
+
+.detail {
+  padding-left: var(--xops-spacing-24);
+  padding-right: var(--xops-spacing-16);
+  padding-top: var(--xops-spacing-8);
+  width: 100%;
+}

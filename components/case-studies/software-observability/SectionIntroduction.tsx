@@ -6,12 +6,7 @@ import Block from "@/components/Block";
 import Title from "@/components/Title";
 import TitleBlock from "@/components/TitleBlock";
 import SoftwareExperienceEmbed from "./SoftwareExperienceEmbed";
-import {
-  introTitleLines,
-  introDescription,
-  introMeta,
-  introImpact,
-} from "./introContent";
+import { softwareObservabilityIntro } from "./introContent";
 import styles from "./SectionIntroduction.module.css";
 
 // Entrance choreography, all landing within ~1s of mount:
@@ -128,6 +123,13 @@ export default function SectionIntroduction() {
       ctx.revert();
     };
   }, []);
+
+  const {
+    titleLines: introTitleLines,
+    description: introDescription,
+    meta: introMeta,
+    impact: introImpact,
+  } = softwareObservabilityIntro;
 
   return (
     <section className={`cs-grid ${styles.introduction}`}>

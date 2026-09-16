@@ -1,0 +1,370 @@
+.timeline {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  padding-top: var(--spacing-2xl);
+}
+
+/* Groups the player (countdown/button/shortcuts) + the Timeline rows block
+   together at 32px gap (Figma node 1004:425's own `gap-[32px]`), with a
+   border-bottom divider (Figma's own border-b, --color-grey-1000) closing
+   off this group before the Prototype 02 preview below — the section
+   boundary .timeline's own gap used to stand in for alone. */
+.topGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl);
+  padding-bottom: var(--spacing-md);
+  border-bottom: 1px solid var(--color-grey-1000);
+}
+
+/* Countdown/Start Now/shortcuts block (Figma node 991:207) — its own
+   16px padding on all sides (per-section, not inherited from a parent),
+   matching the frame's own 16px gap between its 3 stacked pieces. */
+.player {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+}
+
+/* Ported as-is from the old ImgCard embed-header implementation (same
+   values, same "keep Cabinet for both" decision — Figma's own Clash Display
+   number was not adopted). */
+.countdown {
+  display:        flex;
+  align-items:    center;
+  font-family:    var(--font-family-body);
+  font-size:      var(--text-label-lg-size);
+  line-height:    var(--text-label-lg-lh);
+  letter-spacing: var(--text-label-lg-ls);
+  color:          var(--text-secondary);
+  white-space:    nowrap;
+}
+
+.countdownValue {
+  font-size:   var(--text-label-lg-size);
+  font-weight: var(--font-weight-bold);
+  color:       var(--text-secondary);
+  margin-left: var(--spacing-sm);
+}
+
+/* Reverted to the secondary + headerButtonIcon-style treatment this button
+   used before the primary/medium redesign (per user request), on size="m"
+   (40px height, per later user request — was xsmall/32px) — 8px left/right
+   padding (overrides m's own 16px --button-padding-x), 8px icon-to-label
+   gap, 16px label (text-label-md-size) instead of m's default 18px, default
+   6px corners — stretched full-width (Figma node 991:200 spans the
+   sidebar's full width). Gap/label overrides go through Button's own
+   --button-gap/--button-label-size/-lh/-ls vars (see Button.module.css's .m
+   .label) since CSS Modules hash classnames per-file — a bare `.label`
+   selector here can't reach Button.module.css's actual .label class. */
+.playerButton {
+  --button-gap:         var(--spacing-sm);
+  --button-label-size:  var(--text-label-md-size);
+  --button-label-lh:    var(--text-label-md-lh);
+  --button-label-ls:    var(--text-label-md-ls);
+  --button-padding-x:   var(--spacing-sm);
+  width: 100%;
+}
+
+/* Overrides Button's own base .btn justify-content:center — needs the
+   `button` element qualifier for higher specificity than `.btn` (same
+   cross-module cascade-order collision hit when this rule first existed on
+   ImgCard's .headerButtonIcon). */
+button.playerButton {
+  justify-content: flex-start;
+}
+
+/* PlayerButtonContent's wrapper — rendered as the single persistent
+   .playerButton's `children`, so it lands inside Button's own .label span
+   (no second button box ever mounts). The current icon+label layer sets the
+   stack's real size (normal flow); the outgoing layer overlays it exactly
+   (absolute, inset 0) for the duration of its exit tween, then unmounts.
+   overflow:hidden clips both layers' vertical slide so neither spills above/
+   below the button's own box. vertical-align:middle since this sits as an
+   inline-flex child inside Button's own (non-flex) .label span — without it,
+   the stack follows normal baseline alignment within that span's line box
+   instead of sitting centered in it. */
+.playerButtonContentStack {
+  position: relative;
+  display: inline-flex;
+  overflow: hidden;
+  vertical-align: middle;
+}
+
+.playerButtonContentLayer {
+  display: flex;
+  align-items: center;
+  gap: var(--button-gap);
+}
+
+.playerButtonContentOutgoing {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--button-gap);
+}
+
+/* Icon isn't a direct child of .btn here (it's nested inside Button's own
+   .label span via PlayerButtonContent), so it misses Button.module.css's
+   `.btn > svg` sizing rule — set the same --button-icon-size explicitly,
+   inherited through the DOM from the ancestor .m/.playerButton regardless
+   of module scoping. */
+.playerButtonIcon {
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+.playerButtonIcon :global(svg) {
+  width: var(--button-icon-size);
+  height: var(--button-icon-size);
+}
+
+.shortcuts {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.shortcutRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.shortcutLabel {
+  font-family: var(--font-family-body);
+  font-weight: var(--font-weight-regular);
+  font-size: var(--text-body-xs-size);
+  line-height: var(--text-body-xs-lh);
+  color: var(--color-grey-600);
+}
+
+/* Pills — 2px radius in Figma has no matching token (smallest is
+   --border-radius-xs, 4px) — used that instead per user confirmation. */
+.shortcutPill {
+  display: flex;
+  align-items: center;
+  padding: var(--spacing-xs) var(--spacing-md);
+  border-radius: var(--border-radius-xs);
+  background: var(--surface-card);
+  font-family: var(--font-family-body);
+  font-weight: var(--font-weight-regular);
+  font-size: var(--text-body-xs-size);
+  line-height: var(--text-body-xs-lh);
+  color: var(--color-grey-600);
+}
+
+.shortcutIconGroup {
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
+.shortcutIconPill {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-xs);
+  border-radius: var(--border-radius-xs);
+  background: var(--surface-card);
+}
+
+.shortcutIconPill img {
+  width: var(--spacing-md);
+  height: var(--spacing-md);
+}
+
+/* Figma node 941:812 — its own 16px padding on all sides (per-section, not
+   inherited from a parent), 16px gap down to the rows list. */
+.block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+}
+
+/* Heading + hint (Figma node 991:300) — 8px gap between just these two,
+   separate from .block's own 16px gap down to the rows list. */
+.blockLabelGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.heading {
+  font-family: var(--font-family-display);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--text-label-md-size);
+  line-height: var(--text-label-md-lh);
+  letter-spacing: var(--text-label-md-ls);
+  word-spacing: var(--word-spacing-display);
+  text-transform: uppercase;
+  color: var(--color-grey-300);
+}
+
+.hint {
+  font-family: var(--font-family-body);
+  font-weight: var(--font-weight-regular);
+  font-size: var(--text-body-xs-size);
+  line-height: var(--text-body-xs-lh);
+  color: var(--color-grey-700);
+}
+
+.rows {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+/* Solid connector, horizontally centered through the 8px square markers
+   (--spacing-sm / 2, minus half the line's own 1px width). top/bottom land
+   exactly on the first/last dot's real vertical center — each row's real
+   height is .labelWrap's box (12px padding-block + the label's 24px
+   line-height + 12px padding-block = 48px), and the 8px dot sits centered
+   within that via .row's align-items:center, so the true center is half
+   that full row height, not the label's own half-line-height. */
+.rows::before {
+  content: "";
+  position: absolute;
+  left: calc(var(--spacing-sm) / 2 - 0.5px);
+  top: calc(var(--spacing-sm-md) + var(--text-body-lg-lh) / 2);
+  bottom: calc(var(--spacing-sm-md) + var(--text-body-lg-lh) / 2);
+  width: 1px;
+  background: var(--color-grey-700);
+}
+
+.row {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  cursor: pointer;
+}
+
+.dot {
+  flex-shrink: 0;
+  width: var(--spacing-sm);
+  height: var(--spacing-sm);
+  background: var(--color-grey-700);
+}
+
+.dotActive {
+  background: var(--color-grey-500);
+}
+
+/* 12px padding on all sides (Figma node 941:812's own `p-[12px]` wrapper
+   around the label, dot excluded) — the dot stays flush at the row's left
+   edge, unpadded. flex:1 so this box (and its hover/active background)
+   fills the row's full remaining width, not just the label's own text
+   width. */
+.labelWrap {
+  flex: 1 0 0;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  padding: var(--spacing-sm-md);
+  border-radius: var(--border-radius-sm);
+  transition:
+    background-color 150ms ease,
+    color 150ms ease;
+}
+
+.row:hover .labelWrap {
+  background-color: var(--color-grey-900);
+}
+
+/* Current walkthrough step — persistent background highlight (not just on
+   hover), Figma node 941:818's own bg-grey-1000. */
+.labelWrapActive {
+  background-color: var(--color-grey-1000);
+}
+
+.row:hover .label {
+  color: var(--color-grey-500);
+  font-weight: var(--font-weight-bold);
+}
+
+.row:hover .dot {
+  background: var(--color-grey-500);
+}
+
+.label {
+  font-family: var(--font-family-body);
+  font-weight: var(--font-weight-regular);
+  font-size: var(--text-body-lg-size);
+  line-height: var(--text-body-lg-lh);
+  color: var(--color-grey-700);
+}
+
+.labelActive {
+  font-weight: var(--font-weight-bold);
+  color: var(--color-grey-500);
+}
+
+/* Figma node 941:836 — its own 16px padding on all sides (per-section, not
+   inherited from a parent), 16px gap down to the preview box. */
+.preview {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  /* Button reset — this is a clickable jump-to-Prototype-02 trigger, not a
+     styled button, so it should look exactly like the static box it replaced. */
+  border: none;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: inherit;
+  cursor: pointer;
+}
+
+/* Figma node 941:837's own label-wrapper — "Skip to..." + "PROTOTYPE 02"
+   stacked at 8px gap. */
+.previewLabelWrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.previewSkipTo {
+  font-family: var(--font-family-body);
+  font-weight: var(--font-weight-regular);
+  font-size: var(--text-body-xs-size);
+  line-height: var(--text-body-xs-lh);
+  letter-spacing: var(--text-body-xs-ls);
+  color: var(--color-grey-700);
+}
+
+.previewLabel {
+  font-family: var(--font-family-display);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--text-label-md-size);
+  line-height: var(--text-label-md-lh);
+  letter-spacing: var(--text-label-md-ls);
+  text-transform: uppercase;
+  color: var(--color-grey-300);
+}
+
+/* aspect-ratio 16/10 — same "screen ratio" convention WorkCaseStudyRow's
+   own live-embed thumbnail already uses (see its .embedWrap) — crops the
+   embed's real (taller) content to a fixed screen-shaped preview instead of
+   hugging its full scaled height. */
+.previewBox {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  border-radius: var(--border-radius-md);
+  background: var(--surface-card);
+  overflow: hidden;
+}
+
+/* Non-interactive — this is a decorative live preview, not a second
+   functional copy of the screen. */
+.previewInteractionBlock {
+  pointer-events: none;
+}

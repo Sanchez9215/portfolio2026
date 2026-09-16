@@ -18,7 +18,18 @@ if (typeof window !== "undefined") {
 }
 
 const NATIVE_WIDTH = 1440;
-const TARGET_SKU_LABEL = "Adobe Acrobat Pro";
+// Which All Software row Phase 2 clicks open, by position (1-based) rather than by
+// product name. Deliberately positional: the table is sorted by opportunity descending,
+// so row 4 is always a high-opportunity product regardless of what the dataset contains.
+//
+// This used to match the literal name "Adobe Acrobat Pro", which broke silently. The
+// dataset is generated from a seeded recipe (design-systems/xops/data/generate.ts), and
+// each product draws a lifecycle stage from one shared sequential RNG. Adding the
+// shadow-IT pass in 1f9ebcc shifted that stream, flipping Acrobat from a purchased stage
+// to "evaluation" — and evaluation products have no contract, so they never appear in
+// this table at all. Nothing caught it: the row was found by a runtime DOM text search,
+// so there was no type, test, or import tying the name to the data.
+const TARGET_ROW_INDEX = 4;
 const CURSOR_SIZE = 64;
 
 // Live-tweak surface for the ghost-cursor scripted sequence — edit and save
@@ -42,7 +53,7 @@ const TIMING = {
   clickBounceDownDuration: 0.12,
   clickBounceUpDuration: 0.18,
 
-  // Phase 2 — All Software: click Adobe Acrobat Pro row, hover stats, scroll panel.
+  // Phase 2 — All Software: click the TARGET_ROW_INDEX row, hover stats, scroll panel.
   phase2StartDelayMs: 500,
   moveToRowDuration: 0.8,
   holdBeforeRowClickMs: 400,
@@ -144,16 +155,14 @@ function dispatchUnhover(el: HTMLElement) {
   el.dispatchEvent(new MouseEvent("mouseout", opts));
 }
 
-// Finds the table row whose text content matches a product name — the shared
-// XOPS Table component deliberately has no per-row hotspot hook (same reason
-// the All Software hotspot embeds target columns structurally instead), so
-// this is a text-content lookup rather than a data attribute.
-function findRowByText(wrapper: HTMLElement, text: string): HTMLElement | null {
+// Returns the nth (1-based) table row — the shared XOPS Table component deliberately
+// has no per-row hotspot hook (same reason the All Software hotspot embeds target
+// columns structurally instead), so this is a positional lookup rather than a data
+// attribute. Positional beats a name match here: any row at this position works, so
+// the walkthrough survives the dataset changing underneath it.
+function findRowByIndex(wrapper: HTMLElement, index: number): HTMLElement | null {
   const rows = wrapper.querySelectorAll<HTMLElement>("tbody tr");
-  for (const row of Array.from(rows)) {
-    if (row.textContent?.includes(text)) return row;
-  }
-  return null;
+  return rows[index - 1] ?? null;
 }
 
 // Polls for an element to appear (panel content mounts on a React state
@@ -936,20 +945,38 @@ export default function SoftwareExperienceEmbed({
     canPortal,
   ]);
 
-  // Phase 2: once All Software has mounted, move the cursor to the Adobe
-  // Acrobat Pro row (no embed scroll — it's on page 1, already in view) and
+  // Phase 2: once All Software has mounted, move the cursor to the
+  // TARGET_ROW_INDEX row (no embed scroll — it's on page 1, already in view) and
   // click it to open the Software Profile panel. Phase 3 continues straight
   // on from there: hover Inactive Waste, hover Utilization Rate, scroll the
   // panel itself down to Inactive License Distribution, pause, scroll back
   // up, then unlock.
   useEffect(() => {
+    // TEMP DIAGNOSTICS (remove once the Phase 2 freeze is fixed) — every bail
+    // below is a silent `return` that leaves the cursor frozen and the embed
+    // permanently locked, with nothing in the console to say which one fired.
+    console.log("[ghost-cursor-p2] effect fired", {
+      screen,
+      canPortal,
+      enableExpandedView,
+      runPhaseTwo: runPhaseTwo.current,
+    });
     if (enableExpandedView && !canPortal) return; // content not portaled yet
     if (screen !== "all-software" || !runPhaseTwo.current) return;
     runPhaseTwo.current = false;
 
     const wrapper = wrapperRef.current;
     const cursor = cursorRef.current;
-    if (!wrapper || !cursor) return;
+    if (!wrapper || !cursor) {
+      console.log("[ghost-cursor-p2] BAIL: no wrapper/cursor ref", {
+        wrapper: !!wrapper,
+        cursor: !!cursor,
+      });
+      // Fail-safe: release the interaction lock even though there's no cursor
+      // to fade — an unclickable embed is worse than one with no exit animation.
+      finishWalkthrough();
+      return;
+    }
 
     let cancelled = false;
     const track = (t: gsap.core.Tween) => {
@@ -958,11 +985,36 @@ export default function SoftwareExperienceEmbed({
     };
 
     async function run() {
-      await wait(TIMING.phase2StartDelayMs);
-      if (cancelled || takenOverRef.current) return;
+      const t0 = performance.now();
+      const log = (label: string, extra?: unknown) =>
+        console.log(
+          `[ghost-cursor-p2] +${(performance.now() - t0).toFixed(0)}ms ${label}`,
+          extra ?? "",
+        );
+      // Logs which interrupt fired, so a cancelled/taken-over bail is
+      // distinguishable from a missing-target bail.
+      const interrupted = (at: string) => {
+        if (cancelled) log(`BAIL: cancelled (effect cleanup) at ${at}`);
+        else if (takenOverRef.current) log(`BAIL: takenOver at ${at}`);
+        return cancelled || takenOverRef.current;
+      };
 
-      const row = findRowByText(wrapper!, TARGET_SKU_LABEL);
-      if (!row) return;
+      log("run() start");
+      await wait(TIMING.phase2StartDelayMs);
+      if (interrupted("phase2StartDelay")) return;
+
+      const row = findRowByIndex(wrapper!, TARGET_ROW_INDEX);
+      if (!row) {
+        const rowCount = wrapper!.querySelectorAll("tbody tr").length;
+        log(
+          `BAIL: row ${TARGET_ROW_INDEX} not found | rowCount=${rowCount} | tables=${wrapper!.querySelectorAll("table").length}`,
+        );
+        // Fail-safe: a missing target ends the walkthrough early instead of
+        // leaving the cursor frozen and the embed permanently unclickable.
+        finishWalkthrough();
+        return;
+      }
+      log(`row ${TARGET_ROW_INDEX} found: "${(row.textContent || "").trim().slice(0, 40)}"`);
 
       const wrapperRect = wrapper!.getBoundingClientRect();
       const rowRect = row.getBoundingClientRect();
@@ -970,15 +1022,16 @@ export default function SoftwareExperienceEmbed({
       const rowY = rowRect.top + rowRect.height / 2 - wrapperRect.top;
 
       await moveCursorTo(rowX, rowY, TIMING.moveToRowDuration).then();
-      if (cancelled || takenOverRef.current) return;
+      if (interrupted("moveToRow")) return;
 
       await wait(TIMING.holdBeforeRowClickMs);
-      if (cancelled || takenOverRef.current) return;
+      if (interrupted("holdBeforeRowClick")) return;
 
       await clickBounce().then();
-      if (cancelled || takenOverRef.current) return;
+      if (interrupted("clickBounce")) return;
 
       dispatchClick(row);
+      log("row clicked");
 
       // Phase 3 — panel is now open.
       const opportunityBreakdown = await waitForElement(() =>
@@ -986,7 +1039,18 @@ export default function SoftwareExperienceEmbed({
           '[data-hotspot="opportunity-breakdown"]',
         ),
       );
-      if (cancelled || takenOverRef.current || !opportunityBreakdown) return;
+      if (interrupted("waitForElement")) return;
+      if (!opportunityBreakdown) {
+        log("BAIL: opportunity-breakdown never appeared (waitForElement timed out)", {
+          panelInWrapper: !!wrapper!.querySelector('[class*="sidePanel"]'),
+          anyHotspotInWrapper:
+            wrapper!.querySelectorAll("[data-hotspot]").length,
+        });
+        // Fail-safe: see the row-not-found bail above.
+        finishWalkthrough();
+        return;
+      }
+      log("panel open, opportunity-breakdown found");
 
       const inactiveWasteStat = opportunityBreakdown.children[0] as
         | HTMLElement
@@ -1000,8 +1064,21 @@ export default function SoftwareExperienceEmbed({
       const distributionSection = wrapper!.querySelector<HTMLElement>(
         '[data-hotspot="department-breakdown-chart"]',
       );
-      if (!inactiveWasteStat || !utilizationRateStat || !distributionSection)
+      if (!inactiveWasteStat || !utilizationRateStat || !distributionSection) {
+        log("BAIL: a Phase 3 target is missing", {
+          inactiveWasteStat: !!inactiveWasteStat,
+          statusTags: !!statusTags,
+          statusTagsChildCount: statusTags?.children.length ?? null,
+          utilizationRateStat: !!utilizationRateStat,
+          distributionSection: !!distributionSection,
+        });
+        // Fail-safe: see the row-not-found bail above. The panel itself is
+        // already open at this point, so the visitor lands on a real, usable
+        // profile view rather than a frozen one.
+        finishWalkthrough();
         return;
+      }
+      log("all Phase 3 targets found");
 
       // Hover Inactive Waste.
       let point = hoverPointFor(
@@ -1009,10 +1086,11 @@ export default function SoftwareExperienceEmbed({
         wrapper!.getBoundingClientRect(),
       );
       await moveCursorTo(point.x, point.y, TIMING.hoverMoveDuration).then();
-      if (cancelled || takenOverRef.current) return;
+      if (interrupted("moveToInactiveWaste")) return;
       dispatchHover(inactiveWasteStat);
+      log("hovering Inactive Waste");
       await wait(TIMING.hoverHoldMs);
-      if (cancelled || takenOverRef.current) return;
+      if (interrupted("inactiveWasteHold")) return;
       dispatchUnhover(inactiveWasteStat);
 
       // Hover Utilization Rate.
@@ -1021,10 +1099,11 @@ export default function SoftwareExperienceEmbed({
         wrapper!.getBoundingClientRect(),
       );
       await moveCursorTo(point.x, point.y, TIMING.hoverMoveDuration).then();
-      if (cancelled || takenOverRef.current) return;
+      if (interrupted("moveToUtilizationRate")) return;
       dispatchHover(utilizationRateStat);
+      log("hovering Utilization Rate");
       await wait(TIMING.hoverHoldMs);
-      if (cancelled || takenOverRef.current) return;
+      if (interrupted("utilizationRateHold")) return;
       dispatchUnhover(utilizationRateStat);
 
       // Scroll the panel itself (not the outer embed) down to the
@@ -1033,7 +1112,13 @@ export default function SoftwareExperienceEmbed({
         distributionSection,
         wrapper!,
       );
-      if (!panelScrollEl) return;
+      if (!panelScrollEl) {
+        log("BAIL: no scrollable ancestor for the distribution section");
+        // Fail-safe: see the row-not-found bail above.
+        finishWalkthrough();
+        return;
+      }
+      log("panel scroll region found");
 
       const targetTop = offsetTopWithin(distributionSection, panelScrollEl);
       const maxPanelScroll =
@@ -1057,10 +1142,11 @@ export default function SoftwareExperienceEmbed({
           TIMING.scrollPanelDownDuration,
         ).then(),
       ]);
-      if (cancelled || takenOverRef.current) return;
+      if (interrupted("scrollPanelDown")) return;
+      log("panel scrolled to distribution");
 
       await wait(TIMING.holdAtDistributionMs);
-      if (cancelled || takenOverRef.current) return;
+      if (interrupted("holdAtDistribution")) return;
 
       await track(
         gsap.to(panelScrollEl, {
@@ -1069,15 +1155,21 @@ export default function SoftwareExperienceEmbed({
           ease: "power2.inOut",
         }),
       ).then();
-      if (cancelled || takenOverRef.current) return;
+      if (interrupted("scrollPanelUp")) return;
 
       // Walkthrough is done — fade the cursor out and unlock the embed.
+      log("COMPLETE: finishWalkthrough()");
       finishWalkthrough();
     }
 
     run();
 
     return () => {
+      // TEMP DIAGNOSTIC: if this fires while run() is mid-flight, any tween
+      // it's currently awaiting is killed — and a killed tween's promise
+      // never settles, so run() hangs forever with no further log at all.
+      // A cleanup logged here with no "COMPLETE" after it IS the freeze.
+      console.log("[ghost-cursor-p2] effect CLEANUP (kills in-flight tweens)");
       cancelled = true;
       activeTweensRef.current.forEach((t) => t.kill());
     };
