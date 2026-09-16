@@ -18,7 +18,7 @@ import CardRow from "@/components/CardRow";
 import CardColumn from "@/components/CardColumn";
 import SectionImg from "@/components/SectionImg";
 // import DataGlossaryTable from "@/components/case-studies/software-observability/DataGlossaryTable"; — hidden, see section.data-dictionary
-import DataDictionaryScene from "@/components/case-studies/software-observability/DataDictionaryScene";
+// import DataDictionaryScene from "@/components/case-studies/software-observability/DataDictionaryScene"; — hidden along with section.data-dictionary below
 import ObservabilityEyes from "@/components/case-studies/software-observability/ObservabilityEyes";
 import FrameworkFunnelSpine from "@/components/case-studies/software-observability/FrameworkFunnelSpine";
 import FrameworkScene from "@/components/case-studies/software-observability/FrameworkScene";
