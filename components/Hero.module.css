@@ -28,13 +28,39 @@
   gap: var(--spacing-lg);
 }
 
-/* entrance-animation hidden state — see useTextReveal in Hero.tsx */
+/* Entrance reveal — CSS keyframes, not GSAP (see Hero.tsx). The headline is
+   this page's LCP element; a GSAP-driven fade can't paint until React
+   hydrates (~4s on mid-tier mobile), which was scoring mobile LCP at 5.7s.
+   CSS starts as soon as the stylesheet parses (~0.5s) instead.
+
+   --hero-reveal-duration/--hero-reveal-ease mirror Hero.tsx's TIMING object
+   (titleDuration/ease) — kept in sync by hand, since the choreography now
+   lives in two files. --hero-title-start/--hero-title-stagger below do the
+   same for TIMING.titleStart/titleStagger. */
+.section {
+  --hero-reveal-duration: 0.75s;
+  --hero-reveal-ease: cubic-bezier(0.25, 0.46, 0.45, 0.94); /* power2.out approximation */
+  --hero-title-start: 0.25s;
+  --hero-title-stagger: 0.25s;
+}
+
+@keyframes heroReveal {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 .labelRow {
   display: flex;
   align-items: center;
   gap: var(--spacing-md);
-  opacity: 0;
-  transform: translateY(24px);
+  animation: heroReveal var(--hero-reveal-duration) var(--hero-reveal-ease) both;
+  animation-delay: 0s; /* TIMING.labelStart */
 }
 
 .icon {
@@ -91,21 +117,47 @@
   }
 }
 
-/* each headline word — entrance-animation target; grouped by rendered line
-   (useTextReveal's groupByPosition) and staggered in by that line, so it
-   works regardless of how words wrap at any breakpoint */
+/* each headline word — entrance-animation target. Grouped by rendered line
+   via --group, set on each line's data-line wrapper below (per breakpoint,
+   since the <br> toggles above change which words share a visual line) —
+   a hardcoded equivalent of the old JS groupByPosition measurement, needed
+   because CSS can't measure offsetTop the way GSAP could.
+   display:inline-block (not inline) because CSS transforms don't apply to
+   inline elements — this is also why the old mobile "natural word wrap, no
+   animation" tier was removed: the two are mutually exclusive, and the
+   animation was kept. */
 .titleWord {
   display: inline-block;
-  opacity: 0;
-  transform: translateY(24px);
+  animation: heroReveal var(--hero-reveal-duration) var(--hero-reveal-ease) both;
+  animation-delay: calc(
+    var(--hero-title-start) + (var(--group, 0) * var(--hero-title-stagger))
+  );
+}
+
+/* Line-to-group mapping, desktop default (>768px): "Specializing in
+   Enterprise" / "Data Systems Designed" / "for High Stakes." — matches
+   HEADLINE_LINES' index order in Hero.tsx (0=Enterprise, 1=Data, 2=Systems,
+   3=Designed, 4=for, 5=High Stakes.). The ≤908px tier hides the prefix but
+   renders the same three lines, so no override needed until 768px. */
+.headline [data-line="0"] {
+  --group: 0;
+}
+.headline [data-line="1"],
+.headline [data-line="2"],
+.headline [data-line="3"] {
+  --group: 1;
+}
+.headline [data-line="4"],
+.headline [data-line="5"] {
+  --group: 2;
 }
 
 /* subline block — entrance-animation hidden state; the rotating-phrase loop
-   inside it only starts once this tween completes (see useTextReveal's
-   onComplete beat in Hero.tsx) */
+   inside it only starts once this animation ends (see the animationend
+   listener in Hero.tsx, replacing the old useTextReveal onComplete beat) */
 .subline {
-  opacity: 0;
-  transform: translateY(24px);
+  animation: heroReveal var(--hero-reveal-duration) var(--hero-reveal-ease) both;
+  animation-delay: 1.25s; /* TIMING.sublineStart */
 }
 
 /* Subline mixed-weight emphasis — Block has no inline-weight-mixing support yet,
@@ -169,6 +221,19 @@
   gap: var(--spacing-xl);
 }
 
+/* Entrance reveal only — the phrase-rotation loop has its own reduced-motion
+   check in Hero.tsx (JS, since it's an infinite GSAP loop, not a one-shot
+   CSS animation). */
+@media (prefers-reduced-motion: reduce) {
+  .labelRow,
+  .titleWord,
+  .subline {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
+
 /* ============================================================
    Laptop and below (≤ 1280px)
    Hero-only type tokens (label-2xl / body-2xl / title-xl) step down.
@@ -226,14 +291,20 @@
     gap: var(--spacing-sm);
   }
 
-  /* Entrance animation removed at this breakpoint so titleRow can switch to
-     display:inline for natural word-level wrap (inline-block wraps as an
-     atomic unit, blocking words like "Systems" from joining the line above).
-     Revisit with a mobile-appropriate animation later. */
-  .titleRow {
-    display: inline;
-    opacity: 1 !important;
-    transform: none !important;
+  /* Line-to-group remap: "Enterprise Data" / "Systems Designed" / "for High
+     Stakes." — line 1 (Data) now shares a visual line with line 0
+     (Enterprise) instead of lines 2-3, so it moves from group 1 to group 0. */
+  .headline [data-line="0"],
+  .headline [data-line="1"] {
+    --group: 0;
+  }
+  .headline [data-line="2"],
+  .headline [data-line="3"] {
+    --group: 1;
+  }
+  .headline [data-line="4"],
+  .headline [data-line="5"] {
+    --group: 2;
   }
 
   /* .content/.topGroup/.headlineGroup normally shrink-wrap (their flex-
@@ -279,6 +350,25 @@
      High Stakes.). */
   .break-data {
     display: none;
+  }
+
+  /* Line-to-group remap for the 4-line layout above: Enterprise / Data
+     Systems / Designed for / High Stakes. — a 4th group appears (delay
+     1.00s = --hero-title-start + 3 * --hero-title-stagger), so the
+     headline's own reveal finishes 0.25s later than at every other width. */
+  .headline [data-line="0"] {
+    --group: 0;
+  }
+  .headline [data-line="1"],
+  .headline [data-line="2"] {
+    --group: 1;
+  }
+  .headline [data-line="3"],
+  .headline [data-line="4"] {
+    --group: 2;
+  }
+  .headline [data-line="5"] {
+    --group: 3;
   }
 }
 

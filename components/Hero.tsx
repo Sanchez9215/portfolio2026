@@ -8,15 +8,21 @@
  * Headline line breaks are explicitly authored (Figma's own <br> positions),
  * rendered as one span per line so each can be staggered in on entrance.
  *
- * Entrance reveal (label → headline lines → subline, fade+translateY) uses
- * the shared useTextReveal hook — same choreography as SectionIntroduction/
- * WorkCaseStudyRow's title+description, on mount rather than scroll.
+ * Entrance reveal (label → headline lines → subline, fade+translateY) is
+ * pure CSS (see Hero.module.css's heroReveal keyframes + --group vars), not
+ * GSAP/useTextReveal like SectionIntroduction/WorkCaseStudyRow use. The
+ * headline is this page's LCP element — a GSAP-driven fade can't paint
+ * until React hydrates, which was measured at ~5.7s mobile LCP (89% render
+ * delay). CSS starts as soon as the stylesheet parses instead. Respects
+ * prefers-reduced-motion (see Hero.module.css).
  *
  * Subline's emphasis clause rotates through ROTATING_PHRASES (fade+translateY
- * crossfade loop, GSAP). Block has no inline-weight-mixing support yet, so
- * this is a Hero-scoped span override rather than a Block API change. The
- * rotation loop's first cycle only starts once the subline's own entrance
- * tween completes, so nothing crossfades mid fade-in.
+ * crossfade loop, GSAP — this loop is fine to gate on hydration, since it's
+ * below the fold of "first thing visible" and never the LCP element). Block
+ * has no inline-weight-mixing support yet, so this is a Hero-scoped span
+ * override rather than a Block API change. The rotation loop's first cycle
+ * only starts once the subline's own CSS entrance animation ends (see the
+ * animationend listener below), so nothing crossfades mid fade-in.
  * Respects prefers-reduced-motion (shows the first phrase, static, no loop).
  */
 
@@ -28,7 +34,6 @@ import gsap from "gsap";
 import Label from "./Label";
 import Title from "./Title";
 import Block from "./Block";
-import { useTextReveal } from "@/hooks/useTextReveal";
 import styles from "./Hero.module.css";
 
 const HEADLINE_LINES = [
@@ -41,8 +46,8 @@ const HEADLINE_LINES = [
 ];
 
 // Splits a run of text into individually-animatable word spans (so a line
-// can wrap naturally at any width and still be grouped/staggered by its
-// rendered line — see useTextReveal's groupByPosition), joined by literal
+// can wrap naturally at any width while still staggering in together — see
+// the data-line/--group mapping in Hero.module.css), joined by literal
 // space text nodes so the browser wraps between them like normal text.
 function renderWords(text: string, keyPrefix: string) {
   return text
@@ -67,13 +72,13 @@ const ROTATING_PHRASES = [
   "productizing technical edge.",
 ];
 
-// TIMING is a live-tweak surface for both the entrance reveal (label/
-// headline/subline) and the subline phrase rotation — edit and save to see
-// changes via Fast Refresh.
+// TIMING documents the entrance reveal's numbers (label/headline/subline) —
+// the reveal itself now runs in Hero.module.css (heroReveal keyframes,
+// --hero-reveal-duration/--hero-title-start/--hero-title-stagger), kept in
+// sync with this object by hand since editing this alone no longer changes
+// anything on screen. Only the phrase-rotation fields below are still live.
 const TIMING = {
-  // Entrance — same duration/stagger/ease as SectionIntroduction/
-  // WorkCaseStudyRow's title+description reveal, overlapping cascade style
-  // (each beat starts before the previous one fully finishes).
+  // Entrance — mirrored in Hero.module.css.
   labelStart: 0,
   labelDuration: 0.75,
   titleStart: 0.25,
@@ -81,10 +86,10 @@ const TIMING = {
   titleStagger: 0.25,
   sublineStart: 1.25,
   sublineDuration: 0.75,
-  ease: "power2.out",
+  ease: "power2.out", // CSS equivalent: cubic-bezier(0.25, 0.46, 0.45, 0.94)
   // Phrase rotation — unchanged, but its first `advance()` call is now
-  // gated on the subline's own entrance tween finishing (see useTextReveal
-  // beat below) instead of firing immediately on mount.
+  // gated on the subline's own CSS entrance animation ending (see the
+  // animationend effect below) instead of firing immediately on mount.
   hold: 1.85,
   slideDuration: 0.185,
   rotateEase: "power2.inOut",
@@ -96,14 +101,12 @@ const TIMING = {
 
 export default function Hero() {
   const phraseRefs = useRef<(HTMLSpanElement | null)[]>([]);
-  const labelRef = useRef<HTMLDivElement>(null);
-  const titleRef = useRef<HTMLSpanElement>(null);
   const sublineRef = useRef<HTMLParagraphElement>(null);
   const sublineMediumRef = useRef<HTMLSpanElement>(null);
   const sublineSlotRef = useRef<HTMLSpanElement>(null);
   // Set by the rotation-setup effect below, called by the subline's own
-  // entrance-reveal onComplete (useTextReveal beat) so the crossfade loop
-  // never starts before the subline has finished fading in.
+  // CSS entrance animation ending (animationend effect further down) so
+  // the crossfade loop never starts before the subline has finished fading in.
   const startRotationRef = useRef<() => void>(() => {});
 
   // Toggles .sublineWrapped (an 8px top margin) on sublineSlot when it and
@@ -200,36 +203,35 @@ export default function Hero() {
     return () => ctx.revert();
   }, []);
 
-  useTextReveal({
-    ease: TIMING.ease,
-    beats: [
-      {
-        ref: labelRef,
-        start: TIMING.labelStart,
-        duration: TIMING.labelDuration,
-      },
-      {
-        ref: titleRef,
-        childSelector: `.${styles.titleWord}`,
-        start: TIMING.titleStart,
-        duration: TIMING.titleDuration,
-        stagger: TIMING.titleStagger,
-        groupByPosition: true,
-      },
-      {
-        ref: sublineRef,
-        start: TIMING.sublineStart,
-        duration: TIMING.sublineDuration,
-        onComplete: () => startRotationRef.current(),
-      },
-    ],
-  });
+  // Replaces the old useTextReveal onComplete beat — the entrance is CSS
+  // now (see Hero.module.css), so the subline's own animation firing
+  // `animationend` is what tells the rotation loop it's safe to start.
+  useEffect(() => {
+    const el = sublineRef.current;
+    if (!el) return;
+
+    const reduceMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    // Reduced motion skips the entrance animation entirely (Hero.module.css
+    // sets animation: none), so animationend never fires — start directly.
+    if (reduceMotion) {
+      startRotationRef.current();
+      return;
+    }
+
+    const handleEntranceEnd = (e: AnimationEvent) => {
+      if (e.target === el) startRotationRef.current();
+    };
+    el.addEventListener("animationend", handleEntranceEnd);
+    return () => el.removeEventListener("animationend", handleEntranceEnd);
+  }, []);
 
   return (
     <section className={styles.section}>
       <div className={styles.content}>
         <div className={styles.topGroup}>
-          <div ref={labelRef} className={styles.labelRow}>
+          <div className={styles.labelRow}>
             <span className={styles.icon} aria-hidden="true">
               <Image src="/icons/happy.svg" alt="" width={32} height={32} />
             </span>
@@ -239,9 +241,9 @@ export default function Hero() {
           </div>
           <div className={styles.headlineGroup}>
             <Title size="xl" color="primary" className={styles.headline}>
-              <span ref={titleRef}>
+              <span>
                 {HEADLINE_LINES.map((line, i) => (
-                  <span key={line.text}>
+                  <span key={line.text} data-line={i}>
                     {i > 0 &&
                       (line.breakBefore ? (
                         <>
