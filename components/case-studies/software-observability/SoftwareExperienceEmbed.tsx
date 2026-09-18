@@ -952,15 +952,6 @@ export default function SoftwareExperienceEmbed({
   // panel itself down to Inactive License Distribution, pause, scroll back
   // up, then unlock.
   useEffect(() => {
-    // TEMP DIAGNOSTICS (remove once the Phase 2 freeze is fixed) — every bail
-    // below is a silent `return` that leaves the cursor frozen and the embed
-    // permanently locked, with nothing in the console to say which one fired.
-    console.log("[ghost-cursor-p2] effect fired", {
-      screen,
-      canPortal,
-      enableExpandedView,
-      runPhaseTwo: runPhaseTwo.current,
-    });
     if (enableExpandedView && !canPortal) return; // content not portaled yet
     if (screen !== "all-software" || !runPhaseTwo.current) return;
     runPhaseTwo.current = false;
@@ -968,10 +959,6 @@ export default function SoftwareExperienceEmbed({
     const wrapper = wrapperRef.current;
     const cursor = cursorRef.current;
     if (!wrapper || !cursor) {
-      console.log("[ghost-cursor-p2] BAIL: no wrapper/cursor ref", {
-        wrapper: !!wrapper,
-        cursor: !!cursor,
-      });
       // Fail-safe: release the interaction lock even though there's no cursor
       // to fade — an unclickable embed is worse than one with no exit animation.
       finishWalkthrough();
@@ -985,36 +972,18 @@ export default function SoftwareExperienceEmbed({
     };
 
     async function run() {
-      const t0 = performance.now();
-      const log = (label: string, extra?: unknown) =>
-        console.log(
-          `[ghost-cursor-p2] +${(performance.now() - t0).toFixed(0)}ms ${label}`,
-          extra ?? "",
-        );
-      // Logs which interrupt fired, so a cancelled/taken-over bail is
-      // distinguishable from a missing-target bail.
-      const interrupted = (at: string) => {
-        if (cancelled) log(`BAIL: cancelled (effect cleanup) at ${at}`);
-        else if (takenOverRef.current) log(`BAIL: takenOver at ${at}`);
-        return cancelled || takenOverRef.current;
-      };
+      const interrupted = () => cancelled || takenOverRef.current;
 
-      log("run() start");
       await wait(TIMING.phase2StartDelayMs);
-      if (interrupted("phase2StartDelay")) return;
+      if (interrupted()) return;
 
       const row = findRowByIndex(wrapper!, TARGET_ROW_INDEX);
       if (!row) {
-        const rowCount = wrapper!.querySelectorAll("tbody tr").length;
-        log(
-          `BAIL: row ${TARGET_ROW_INDEX} not found | rowCount=${rowCount} | tables=${wrapper!.querySelectorAll("table").length}`,
-        );
         // Fail-safe: a missing target ends the walkthrough early instead of
         // leaving the cursor frozen and the embed permanently unclickable.
         finishWalkthrough();
         return;
       }
-      log(`row ${TARGET_ROW_INDEX} found: "${(row.textContent || "").trim().slice(0, 40)}"`);
 
       const wrapperRect = wrapper!.getBoundingClientRect();
       const rowRect = row.getBoundingClientRect();
@@ -1022,16 +991,15 @@ export default function SoftwareExperienceEmbed({
       const rowY = rowRect.top + rowRect.height / 2 - wrapperRect.top;
 
       await moveCursorTo(rowX, rowY, TIMING.moveToRowDuration).then();
-      if (interrupted("moveToRow")) return;
+      if (interrupted()) return;
 
       await wait(TIMING.holdBeforeRowClickMs);
-      if (interrupted("holdBeforeRowClick")) return;
+      if (interrupted()) return;
 
       await clickBounce().then();
-      if (interrupted("clickBounce")) return;
+      if (interrupted()) return;
 
       dispatchClick(row);
-      log("row clicked");
 
       // Phase 3 — panel is now open.
       const opportunityBreakdown = await waitForElement(() =>
@@ -1039,18 +1007,12 @@ export default function SoftwareExperienceEmbed({
           '[data-hotspot="opportunity-breakdown"]',
         ),
       );
-      if (interrupted("waitForElement")) return;
+      if (interrupted()) return;
       if (!opportunityBreakdown) {
-        log("BAIL: opportunity-breakdown never appeared (waitForElement timed out)", {
-          panelInWrapper: !!wrapper!.querySelector('[class*="sidePanel"]'),
-          anyHotspotInWrapper:
-            wrapper!.querySelectorAll("[data-hotspot]").length,
-        });
         // Fail-safe: see the row-not-found bail above.
         finishWalkthrough();
         return;
       }
-      log("panel open, opportunity-breakdown found");
 
       const inactiveWasteStat = opportunityBreakdown.children[0] as
         | HTMLElement
@@ -1065,20 +1027,12 @@ export default function SoftwareExperienceEmbed({
         '[data-hotspot="department-breakdown-chart"]',
       );
       if (!inactiveWasteStat || !utilizationRateStat || !distributionSection) {
-        log("BAIL: a Phase 3 target is missing", {
-          inactiveWasteStat: !!inactiveWasteStat,
-          statusTags: !!statusTags,
-          statusTagsChildCount: statusTags?.children.length ?? null,
-          utilizationRateStat: !!utilizationRateStat,
-          distributionSection: !!distributionSection,
-        });
         // Fail-safe: see the row-not-found bail above. The panel itself is
         // already open at this point, so the visitor lands on a real, usable
         // profile view rather than a frozen one.
         finishWalkthrough();
         return;
       }
-      log("all Phase 3 targets found");
 
       // Hover Inactive Waste.
       let point = hoverPointFor(
@@ -1086,11 +1040,10 @@ export default function SoftwareExperienceEmbed({
         wrapper!.getBoundingClientRect(),
       );
       await moveCursorTo(point.x, point.y, TIMING.hoverMoveDuration).then();
-      if (interrupted("moveToInactiveWaste")) return;
+      if (interrupted()) return;
       dispatchHover(inactiveWasteStat);
-      log("hovering Inactive Waste");
       await wait(TIMING.hoverHoldMs);
-      if (interrupted("inactiveWasteHold")) return;
+      if (interrupted()) return;
       dispatchUnhover(inactiveWasteStat);
 
       // Hover Utilization Rate.
@@ -1099,11 +1052,10 @@ export default function SoftwareExperienceEmbed({
         wrapper!.getBoundingClientRect(),
       );
       await moveCursorTo(point.x, point.y, TIMING.hoverMoveDuration).then();
-      if (interrupted("moveToUtilizationRate")) return;
+      if (interrupted()) return;
       dispatchHover(utilizationRateStat);
-      log("hovering Utilization Rate");
       await wait(TIMING.hoverHoldMs);
-      if (interrupted("utilizationRateHold")) return;
+      if (interrupted()) return;
       dispatchUnhover(utilizationRateStat);
 
       // Scroll the panel itself (not the outer embed) down to the
@@ -1113,12 +1065,10 @@ export default function SoftwareExperienceEmbed({
         wrapper!,
       );
       if (!panelScrollEl) {
-        log("BAIL: no scrollable ancestor for the distribution section");
         // Fail-safe: see the row-not-found bail above.
         finishWalkthrough();
         return;
       }
-      log("panel scroll region found");
 
       const targetTop = offsetTopWithin(distributionSection, panelScrollEl);
       const maxPanelScroll =
@@ -1142,11 +1092,10 @@ export default function SoftwareExperienceEmbed({
           TIMING.scrollPanelDownDuration,
         ).then(),
       ]);
-      if (interrupted("scrollPanelDown")) return;
-      log("panel scrolled to distribution");
+      if (interrupted()) return;
 
       await wait(TIMING.holdAtDistributionMs);
-      if (interrupted("holdAtDistribution")) return;
+      if (interrupted()) return;
 
       await track(
         gsap.to(panelScrollEl, {
@@ -1155,21 +1104,15 @@ export default function SoftwareExperienceEmbed({
           ease: "power2.inOut",
         }),
       ).then();
-      if (interrupted("scrollPanelUp")) return;
+      if (interrupted()) return;
 
       // Walkthrough is done — fade the cursor out and unlock the embed.
-      log("COMPLETE: finishWalkthrough()");
       finishWalkthrough();
     }
 
     run();
 
     return () => {
-      // TEMP DIAGNOSTIC: if this fires while run() is mid-flight, any tween
-      // it's currently awaiting is killed — and a killed tween's promise
-      // never settles, so run() hangs forever with no further log at all.
-      // A cleanup logged here with no "COMPLETE" after it IS the freeze.
-      console.log("[ghost-cursor-p2] effect CLEANUP (kills in-flight tweens)");
       cancelled = true;
       activeTweensRef.current.forEach((t) => t.kill());
     };

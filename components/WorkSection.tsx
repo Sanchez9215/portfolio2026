@@ -6,17 +6,15 @@
  * (it calls back with `entranceReady`), and functions can't be passed across
  * the server/client boundary — so the composition lives here rather than in
  * app/page.tsx, which stays a Server Component.
- *
- * Rows without a real visual yet render WorkVisualPlaceholder.
  */
 
 "use client";
 
 import WorkCaseStudyRow from "@/components/WorkCaseStudyRow";
-import WorkVisualPlaceholder from "@/components/WorkVisualPlaceholder";
 import SoftwareExperienceEmbed from "@/components/case-studies/software-observability/SoftwareExperienceEmbed";
 import { softwareObservabilityIntro } from "@/components/case-studies/software-observability/introContent";
 import { dataHealthMonitorIntro } from "@/components/case-studies/data-health-monitor/introContent";
+import DataHealthEmbed from "@/components/case-studies/data-health-monitor/DataHealthEmbed";
 import { sessionReplayIntro } from "@/components/case-studies/session-replay/introContent";
 import SessionReplayVideo from "@/components/case-studies/session-replay/SessionReplayVideo";
 import { pathAnalysisIntro } from "@/components/case-studies/path-analysis/introContent";
@@ -50,14 +48,13 @@ export default function WorkSection() {
           />
         )}
         fixedVisualRatio
+        flushBottomRadius
       />
-      {/* Hidden until DHM's own outstanding work is done — see PLAN.md. */}
-      {false && (
-        <WorkCaseStudyRow
-          intro={dataHealthMonitorIntro}
-          visual={() => <WorkVisualPlaceholder />}
-        />
-      )}
+      <WorkCaseStudyRow
+        intro={dataHealthMonitorIntro}
+        visual={() => <DataHealthEmbed />}
+        fixedVisualRatio
+      />
       <WorkCaseStudyRow
         intro={sessionReplayIntro}
         visual={(_entranceReady, settled) => (

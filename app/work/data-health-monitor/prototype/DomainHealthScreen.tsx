@@ -9,6 +9,7 @@ import { FilterTabs, FilterTabOption } from "@/design-systems/xops/components/Fi
 import { Tag } from "@/design-systems/xops/components/Tag";
 import Icon from "@/design-systems/xops/components/Icon";
 import Button from "@/design-systems/xops/components/Button";
+import { MetaText } from "@/design-systems/xops/components/MetaText";
 import { Stat } from "@/design-systems/xops/components/Stat";
 import { ProgressBar } from "@/design-systems/xops/components/ProgressBar";
 import { Card } from "@/design-systems/xops/components/Card";
@@ -55,26 +56,26 @@ const remediationRequests: RemediationRequest[] = [
     id: "#INF-9912",
     percent: 65,
     percentLabel: "65% Complete",
-    recordsLabel: "1,475/2,270 Records",
+    recordsLabel: "1,475/2,270 CIs",
     departments: [
-      { department: "Network Engineering", percent: 100, remediatedTotalLabel: "300/300 Records" },
-      { department: "Global Data Centers", percent: 82, remediatedTotalLabel: "590/720 Records" },
-      { department: "Cloud & Virtualization", percent: 60, remediatedTotalLabel: "240/400 Records" },
-      { department: "Cloud & Virtualization", percent: 40, remediatedTotalLabel: "340 / 850 Records" },
+      { department: "Network Engineering", percent: 100, remediatedTotalLabel: "300/300 CIs" },
+      { department: "Global Data Centers", percent: 82, remediatedTotalLabel: "590/720 CIs" },
+      { department: "Cloud & Virtualization", percent: 60, remediatedTotalLabel: "240/400 CIs" },
+      { department: "Cloud & Virtualization", percent: 40, remediatedTotalLabel: "340 / 850 CIs" },
     ],
   },
   {
     id: "#INF-9911",
     percent: 92,
     percentLabel: "92% Complete",
-    recordsLabel: "1,104/1,200 Records",
+    recordsLabel: "1,104/1,200 CIs",
     departments: [],
   },
   {
     id: "#INF-9910",
     percent: 8,
     percentLabel: "8% Complete",
-    recordsLabel: "24/310 Records",
+    recordsLabel: "24/310 CIs",
     departments: [],
   },
 ];
@@ -90,7 +91,7 @@ const domainFailureCategoryTabs: FilterTabOption<FailureCategoryKey>[] = [
   { value: "missing-required-data", label: "Missing Required Data", stat: "3,100" },
   { value: "business-rule-violation", label: "Business Rule Violation", stat: "1,850" },
   { value: "format-violations", label: "Format Violations", stat: "1,200" },
-  { value: "duplicate-records", label: "Duplicate Records", stat: "750" },
+  { value: "duplicate-records", label: "Duplicate CIs", stat: "750" },
   { value: "referential-integrity", label: "Referential Integrity", stat: "500" },
 ];
 
@@ -259,7 +260,7 @@ export function DomainHealthScreen() {
     },
     {
       key: "affectedRecords",
-      label: "Affected Records",
+      label: "Affected CIs",
       width: 149,
       align: "right",
       sortable: true,
@@ -354,7 +355,7 @@ export function DomainHealthScreen() {
         backgroundColor: "var(--xops-grey-50)",
       }}
     >
-      <Sidebar activeItem="requests" />
+      <Sidebar activeControlCenterItem="insights" />
       <div
         style={{
           display: "flex",
@@ -426,20 +427,7 @@ export function DomainHealthScreen() {
               >
                 Infrastructure Data Health
               </h1>
-              <div style={{ display: "flex", alignItems: "center", gap: "var(--xops-spacing-6)" }}>
-                <Icon name="cloud_download" color="var(--xops-text-secondary)" />
-                <span
-                  style={{
-                    fontFamily: "var(--xops-font-family)",
-                    fontWeight: "var(--xops-font-weight-regular)",
-                    fontSize: "var(--xops-typography-body-14-font-size)",
-                    lineHeight: "var(--xops-typography-body-14-line-height)",
-                    color: "var(--xops-text-secondary)",
-                  }}
-                >
-                  Data last updated Jul 15, 2025 at 02:06PM
-                </span>
-              </div>
+              <MetaText icon="cloud_download" text="Data last updated Jul 15, 2025 at 02:06PM" />
             </div>
 
             <div
@@ -538,7 +526,7 @@ export function DomainHealthScreen() {
               <div style={{ display: "flex", flexDirection: "column", gap: "var(--xops-spacing-24)" }}>
                 <div style={{ display: "flex", gap: "var(--xops-spacing-8)" }}>
                   <Stat label="Total Failures Across Domain" value="7,400" icon />
-                  <Stat label="Total Affected Records" value="4,800" icon />
+                  <Stat label="Total Affected CIs" value="4,800" icon />
                 </div>
 
                 <div style={{ display: "flex", gap: "var(--xops-spacing-16)", alignItems: "flex-start" }}>
@@ -556,16 +544,16 @@ export function DomainHealthScreen() {
                     <Card title="Missing Required Data" headerValue="3,100 Failures (50% of Total)" titleSize="subheading-14">
                       <div style={{ display: "flex", flexDirection: "column", gap: "var(--xops-spacing-16)" }}>
                         <div style={{ display: "flex", gap: "var(--xops-spacing-8)" }}>
-                          <Stat label="Affected Records" value="2,100" icon />
+                          <Stat label="Affected CIs" value="2,100" icon />
                           <Stat
-                            label="Single-Issue Records"
+                            label="Single-Issue CIs"
                             value="1,260"
                             meta="(60%)"
                             icon
                             legendColor="var(--xops-brand-primary)"
                           />
                           <Stat
-                            label="Multi-Issue Records"
+                            label="Multi-Issue CIs"
                             value="840"
                             meta="(40%)"
                             icon

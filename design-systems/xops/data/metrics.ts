@@ -118,6 +118,7 @@ export type ProductSummary = {
   purchased: number;
   assigned: number;
   unassigned: number;
+  excessAssigned: number; // max(0, assigned - purchased) — an ELP shortfall, not spend waste
   active: number;
   inactive: number;
   utilization: number; // active ÷ assigned, 0–100
@@ -162,6 +163,11 @@ function summarizeProduct(ds: Dataset, proc: ProcurementRow): ProductSummary {
   }
   const inactive = assigned - active;
   const unassigned = Math.max(0, proc.quantity - assigned);
+  // Effective License Position shortfall: more licenses assigned than
+  // purchased — a compliance/true-up risk (an audit-flaggable licensing
+  // mismatch), not a spend-waste concept like inactiveWaste/unassignedWaste
+  // below. Zero whenever purchased covers assigned (the normal case).
+  const excessAssigned = Math.max(0, assigned - proc.quantity);
   const unitCost = proc.unitPrice;
   const inactiveWaste = inactive * unitCost;
   const unassignedWaste = unassigned * unitCost;
@@ -187,6 +193,7 @@ function summarizeProduct(ds: Dataset, proc: ProcurementRow): ProductSummary {
     purchased: proc.quantity,
     assigned,
     unassigned,
+    excessAssigned,
     active,
     inactive,
     utilization: assigned > 0 ? Math.round((active / assigned) * 100) : 0,
@@ -457,4 +464,19 @@ export function licenseModelProducts(ds: Dataset, model: LicenseModel): ProductS
 
 export function totalAnnualSpend(ds: Dataset): number {
   return ds.procurement.reduce((sum, p) => sum + p.annualCost, 0);
+}
+
+// Sum of every product's excessAssigned — the same stored field the Assigned
+// stat's over-assigned tag reads, just aggregated across the org. Both derive
+// from the one value computed in summarizeProduct(), not two independent
+// comparisons, so the per-product tag and the org-wide banner can't disagree
+// about what counts as over-assigned.
+export function totalOverAssignedLicenses(ds: Dataset): number {
+  return productSummaries(ds).reduce((sum, s) => sum + s.excessAssigned, 0);
+}
+
+// Count of distinct products contributing to totalOverAssignedLicenses above —
+// same excessAssigned field, just counted instead of summed.
+export function overAssignedProductCount(ds: Dataset): number {
+  return productSummaries(ds).filter((s) => s.excessAssigned > 0).length;
 }

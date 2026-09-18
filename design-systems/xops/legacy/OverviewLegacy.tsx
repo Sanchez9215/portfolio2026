@@ -733,6 +733,7 @@ export default function OverviewLegacy({ forceAlertsOpen, alertsBoundsRef, showL
                   <Table
                     chrome={false}
                     scrollFade={false}
+                    headerSurface="grey"
                     columns={[
                       { key: "vendor", label: "Vendor", width: "flex" },
                       {
@@ -805,6 +806,7 @@ export default function OverviewLegacy({ forceAlertsOpen, alertsBoundsRef, showL
                     <Table
                       chrome={false}
                       scrollFade={false}
+                      headerSurface="grey"
                       columns={[
                         {
                           key: "software",
@@ -850,6 +852,7 @@ export default function OverviewLegacy({ forceAlertsOpen, alertsBoundsRef, showL
                 {stage === "procurement" && (
                   <div className={styles.tableOutline}>
                     <Table
+                      headerSurface="grey"
                       columns={procurementColumns}
                       data={pagedEvaluationRows}
                       rowKey={(row) => row.sku}
@@ -875,6 +878,7 @@ export default function OverviewLegacy({ forceAlertsOpen, alertsBoundsRef, showL
                 {stage === "provisioning" && (
                   <div className={styles.tableOutline}>
                     <Table
+                      headerSurface="grey"
                       columns={provisioningColumns}
                       data={pagedRolloutRows}
                       rowKey={(row) => row.sku}
@@ -900,6 +904,7 @@ export default function OverviewLegacy({ forceAlertsOpen, alertsBoundsRef, showL
                 {stage === "active" && (
                   <div className={styles.tableOutline}>
                     <Table
+                      headerSurface="grey"
                       columns={activeColumns}
                       data={pagedOperationalRows}
                       rowKey={(row) => row.sku}
@@ -925,6 +930,7 @@ export default function OverviewLegacy({ forceAlertsOpen, alertsBoundsRef, showL
                 {stage === "renewal" && (
                   <div className={styles.tableOutline}>
                     <Table
+                      headerSurface="grey"
                       columns={renewalColumns}
                       data={pagedRenewalRows}
                       rowKey={(row) => row.sku}

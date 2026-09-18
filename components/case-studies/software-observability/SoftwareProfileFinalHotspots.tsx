@@ -198,6 +198,8 @@ export default function SoftwareProfileFinalHotspots({
                 licensesPurchasedTotal={formatCount(row.purchased, { compact: true })}
                 assignedValue={formatCount(row.assigned, { compact: true })}
                 assignedPercent={formatPercent(row.assigned, row.purchased)}
+                assignedIsOverAssigned={row.excessAssigned > 0}
+                excessAssignedLabel={formatCount(row.excessAssigned)}
                 assignedTooltip={assignedTooltip}
                 unassignedLicensesValue={formatCount(row.unassigned, { compact: true })}
                 unassignedLicensesPercent={formatPercent(row.unassigned, row.purchased)}

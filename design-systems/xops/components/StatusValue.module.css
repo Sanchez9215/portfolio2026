@@ -1,0 +1,36 @@
+.statusValue {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--xops-spacing-6);
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--xops-radius-full);
+  flex-shrink: 0;
+}
+
+.success {
+  background-color: var(--xops-status-success-solid);
+}
+
+.warning {
+  background-color: var(--xops-status-warning-solid);
+}
+
+.danger {
+  background-color: var(--xops-status-danger-solid);
+}
+
+.caution {
+  background-color: var(--xops-status-caution-solid);
+}
+
+.value {
+  font-family: var(--xops-font-family);
+  font-weight: var(--xops-font-weight-regular);
+  font-size: var(--xops-typography-body-14-font-size);
+  line-height: var(--xops-typography-body-14-line-height);
+  color: var(--xops-text-primary);
+}

@@ -1,6 +1,6 @@
 import React from "react";
-import Icon from "./Icon";
 import Count from "./Count";
+import { MetaText } from "./MetaText";
 import styles from "./PageHeader.module.css";
 
 export type PageHeaderProps = {
@@ -26,12 +26,7 @@ export default function PageHeader({ title, count, metaIcon, metaText }: PageHea
         {hasCount && <Count value={count as number} />}
       </div>
 
-      {(metaIcon || metaText) && (
-        <div className={styles.meta}>
-          {metaIcon && <Icon name={metaIcon} color="var(--xops-text-secondary)" />}
-          {metaText && <span className={styles.metaText}>{metaText}</span>}
-        </div>
-      )}
+      {metaText && <MetaText icon={metaIcon} text={metaText} />}
     </div>
   );
 }

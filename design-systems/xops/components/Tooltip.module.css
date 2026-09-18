@@ -41,8 +41,8 @@
 .description {
   margin: 0;
   font-family: var(--xops-font-family);
-  font-size: var(--xops-typography-body-14-font-size);
-  line-height: var(--xops-typography-body-14-line-height);
+  font-size: var(--xops-typography-body-12-font-size);
+  line-height: var(--xops-typography-body-12-line-height);
   color: var(--xops-text-primary);
 }
 
@@ -115,7 +115,13 @@
 
 .footer {
   display: flex;
-  justify-content: flex-end;
+  align-items: center;
+  gap: var(--xops-spacing-8);
+}
+
+.footer .learnMoreButton {
+  flex-shrink: 0;
+  margin-left: auto;
 }
 
 .success {
@@ -131,6 +137,11 @@
 .danger {
   background-color: var(--xops-status-danger-tint);
   color: var(--xops-status-danger-text);
+}
+
+.caution {
+  background-color: var(--xops-status-caution-tint);
+  color: var(--xops-status-caution-text);
 }
 
 .neutral {

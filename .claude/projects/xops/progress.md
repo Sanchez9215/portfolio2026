@@ -47,6 +47,8 @@ All in `design-systems/xops/tokens.json` + `tokens.css`.
 20. **motion.duration.slow** — 1500ms, first entrance-animation value
 21. **spacing.2** — new smallest spacing step, for `Toggle`'s track padding
 22. **barHeight** — `default`(24px)/`18`/`16`, first sizing tier for bar-chart primitives
+23. **status.info** — solid/tint (`brand.500`/`brand.100`), sourced from the sidebar's own selected-state blue, not a new arbitrary color
+24. **color.neutral ramp** — 1:1 alias of `color.grey`; gives `status.neutral` a same-named primitive ramp like every other status (grey itself untouched, still used directly everywhere unrelated to status)
 
 No general semantic layer over spacing/radius yet (component-scoped exceptions: `Semantic.button.*`, `Semantic.nav.background-active`, `Semantic.header.*`); motion has two durations but no full scale.
 
@@ -163,12 +165,14 @@ All in `design-systems/xops/components/`, matching Storybook story per component
 - **Unused Licenses / Over-Assigned tooltips** — copy drafted in conversation only; on hold per user
 - **Dropdown open-menu visual confirmation** — `Menu` panel/option styling built with no open-state Figma reference; opens-above placement confirmed, visuals still unaudited
 - **Storybook canvas padding** — give `.sb-show-main.sb-main-padded` padding matching `--xops-grid-margin` (32px) so standalone `Grid` stories show margins
-- **Warning/notification banner** — excluded from both chart cards; notifications are a dedicated future system
+- **Table `rowSelected` border seam in scaled `LiveEmbed`** — the highlighted row's box-shadow border shows a hairline gap at cell boundaries only inside `LiveEmbed`'s non-integer `transform:scale` (confirmed: doesn't reproduce at the real 1:1-scale route); a thickened-border attempt looked worse and was reverted — real fix not found yet
 - **DonutChart extensions** — center-overlay content + rounded segment caps, both straightforward later additions
 - **Table row-selection transition** — `rowSelected` background/border should ease in, not snap
 - **`expand_content` icon behavior** — decorative in `SidePanel`; roadmapped to expand the panel to full main-section width
 - **Full ARIA radiogroup for `FilterTabs`** — roving tabindex + arrow keys per WAI-ARIA APG; large variant only got a minimal div + Enter/Space fix
 - **Button padding review** — small buttons and icon-bearing buttons currently share the same `padding-inline` as all other sizes/variants; revisit sizing for both
+- **Migrate existing icon-size CSS overrides to `Icon`'s new `size` prop** — `Stat`/`TimelineEvent`/`StageFilter`/`Legend`/`FilterTabs`/`SoftwareProfile`/`Tooltip`.module.css each hand-roll their own `width/height: var(--xops-icon-size-*)` override class instead of using `Icon`'s new `size` prop (added for `Indicator`); not migrated yet to keep this session's change additive-only
+- **`Indicator` `dot` variant** — declared in the type union, throws if used; no real consumer yet, size unconfirmed so left unbuilt rather than guessed
 
 ---
 
@@ -187,6 +191,11 @@ Not started for Overview or All Software (Software Profile confirmed structural-
 
 ### Source-tagged data model (built + verified)
 `design-systems/xops/data/` complete — `types.ts` / `catalog.ts` (105 products) / `generate.ts` (seeded, 3K employees) / `metrics.ts` (join-and-count seam via `getDataset()`). Three paths by license model: seat-based (enterprise/perpetual) → contracts+assignments+activity; consumption → spend-only (`seatBased:false`, no seats); open-source → separate Component/Version/Users list. Smoke-verified: 88 contracts + 15 evals + 2 OSS, ~48K assignments, totals reconcile, drill-downs real, 85% logo coverage. **Views rewired + verified** — Overview and All Software (incl. Software Profile + drill-downs) both read the seam; enterprise tab shows real seat counts, consumption shows "—"; efficiency rate = active÷purchased; `ProductSummary` extended with `acquisitionCost`/`annualMaintenance` for the Perpetual tab; the three metrics summary types are `type` (not `interface`) so they satisfy `Table`'s `Record` constraint. Next chunk: config-as-YAML view + "plugs into" visual (`PLAN.md` 11a) + `PLAN.md` 12 modularity toggle.
+
+### Banner + Assigned over-assignment state (built, not yet visually verified)
+`Banner.tsx` (Figma 666:559) — persistent tinted-background + solid-icon disclosure, not a toast (stays visible, no dismiss). 5 statuses in `Banner.module.css`: `danger` is live (org-wide over-assignment total on All Software, below `GlobalHeader`); `risk` (reuses caution), `info` (new `status.info` tokens), `neutral`, `success` are scaffolded with real colors but no usage yet. New `ProductSummary.excessAssigned` field (`metrics.ts`) is the single source for both the Banner's aggregate (`totalOverAssignedLicenses`) and the Assigned `Stat`'s tag — `SoftwareProfile.tsx` now renders `danger`-status tag + percent when `excessAssigned > 0`, plain `meta` text otherwise (was previously a hardcoded `success` tag regardless of value — a real display bug, not a design gap).
+
+**Next session starts here:** none of this has been looked at in-browser yet. Check: the banner's placement/spacing below `GlobalHeader` on All Software, the danger tag actually replacing the old always-green tag on an over-assigned row (e.g. row 4, ServiceNow ITSM today), and that a normal (not over-assigned) row correctly shows plain text with no tag at all.
 
 ### Catalog logo work (roadmap)
 16 new publishers wired to empty-state (`PUBLISHER_LOGOS` nulls in `catalog.ts`): Snowflake, Databricks, Datadog, MongoDB, Notion, Asana, Box, Miro, HubSpot, Palo Alto Networks, Fortinet, Coupa, Anaplan, Smartsheet, GitLab, Elastic. Empty-state is now live (`code_blocks` glyph via `LogoTile`). Source a subset for ~85% coverage — some stay empty-state on purpose (100% reads too clean); confirm source before fetching; wire added logos into the map as files land.

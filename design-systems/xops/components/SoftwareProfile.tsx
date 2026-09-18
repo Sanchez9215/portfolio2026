@@ -11,6 +11,7 @@ import Icon from "./Icon";
 import { Tooltip, TooltipProps } from "./Tooltip";
 import { TagStatus } from "./Tag";
 import { MagicSurface } from "./MagicSurface";
+import { Banner, BannerEmphasis } from "./Banner";
 import { formatCount, formatCurrency, formatPercent } from "../lib/format";
 import styles from "./SoftwareProfile.module.css";
 
@@ -75,6 +76,8 @@ export type SoftwareProfileProps = {
   licensesPurchasedTotal: string;
   assignedValue: string;
   assignedPercent: string;
+  assignedIsOverAssigned: boolean;
+  excessAssignedLabel: string;
   assignedTooltip: Omit<TooltipProps, "children" | "className">;
   unassignedLicensesValue: string;
   unassignedLicensesPercent: string;
@@ -124,6 +127,8 @@ export function SoftwareProfile({
   licensesPurchasedTotal,
   assignedValue,
   assignedPercent,
+  assignedIsOverAssigned,
+  excessAssignedLabel,
   assignedTooltip,
   unassignedLicensesValue,
   unassignedLicensesPercent,
@@ -203,6 +208,19 @@ export function SoftwareProfile({
             />
           </div>
         </div>
+        {assignedIsOverAssigned && (
+          <Banner
+            status="danger"
+            icon="warning"
+            title={`${excessAssignedLabel} Licenses Over-Assigned`}
+            description={
+              <>
+                Over-assigned licenses are included within <BannerEmphasis>Active</BannerEmphasis> and{" "}
+                <BannerEmphasis>Inactive</BannerEmphasis> license counts.
+              </>
+            }
+          />
+        )}
         {/* Hidden until all 40 authored descriptions are in */}
         {/* <p className={styles.description}>{description}</p> */}
       </div>
@@ -245,7 +263,9 @@ export function SoftwareProfile({
             <Stat
               label="Assigned"
               value={assignedValue}
-              tag={{ status: "success", label: assignedPercent }}
+              {...(assignedIsOverAssigned
+                ? { tag: { status: "danger" as const, label: assignedPercent } }
+                : { meta: assignedPercent })}
               tooltip={assignedTooltip}
             />
             <Stat

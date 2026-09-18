@@ -4,7 +4,6 @@ import Icon from "./Icon";
 import styles from "./Sidebar.module.css";
 
 type NavLeafKey =
-  | "control-center"
   | "employees"
   | "problem-mgmt"
   | "worksite"
@@ -15,11 +14,25 @@ type NavLeafKey =
   | "users";
 
 export type SoftwareSubKey = "overview" | "all-software";
+export type ControlCenterSubKey = "insights";
 
 const SOFTWARE_SUB_ROUTES: Record<SoftwareSubKey, string> = {
   overview: "/work/software-observability/xops-overview",
   "all-software": "/work/software-observability/xops-all-software",
 };
+
+const SOFTWARE_SUB_ITEMS: { key: SoftwareSubKey; label: string }[] = [
+  { key: "overview", label: "Overview" },
+  { key: "all-software", label: "All Software" },
+];
+
+const CONTROL_CENTER_SUB_ROUTES: Record<ControlCenterSubKey, string> = {
+  insights: "/work/data-health-monitor/prototype",
+};
+
+const CONTROL_CENTER_SUB_ITEMS: { key: ControlCenterSubKey; label: string }[] = [
+  { key: "insights", label: "Insights" },
+];
 
 type NavItemData = {
   key: NavLeafKey;
@@ -28,7 +41,6 @@ type NavItemData = {
 };
 
 const NAV_ITEMS: NavItemData[] = [
-  { key: "control-center", label: "Control Center", icon: "speed" },
   { key: "employees", label: "Employees", icon: "group" },
   { key: "problem-mgmt", label: "Problem Mgmt", icon: "e911_emergency" },
   { key: "worksite", label: "Worksite", icon: "domain" },
@@ -45,14 +57,21 @@ const NAV_ITEMS_AFTER_SOFTWARE: NavItemData[] = [
 export type SidebarProps = {
   activeItem?: NavLeafKey;
   activeSoftwareItem?: SoftwareSubKey;
+  activeControlCenterItem?: ControlCenterSubKey;
   /** When set, the software sub-links call this instead of routing via next/link —
    *  used to drive an in-place embed's screen state (the live case-study hero flow)
    *  where real routing would navigate the whole portfolio page away. */
   onNavigate?: (screen: SoftwareSubKey) => void;
 };
 
-export default function Sidebar({ activeItem, activeSoftwareItem, onNavigate }: SidebarProps) {
+export default function Sidebar({
+  activeItem,
+  activeSoftwareItem,
+  activeControlCenterItem,
+  onNavigate,
+}: SidebarProps) {
   const softwareExpanded = Boolean(activeSoftwareItem);
+  const controlCenterExpanded = Boolean(activeControlCenterItem);
 
   return (
     <nav className={styles.sidebar} aria-label="Primary">
@@ -60,35 +79,30 @@ export default function Sidebar({ activeItem, activeSoftwareItem, onNavigate }: 
         <img src="/xops/svg/XOPSLogo.svg" alt="XOPS" width={81} height={24} />
       </div>
       <ul className={styles.menu}>
+        <NavGroup
+          icon="speed"
+          label="Control Center"
+          expanded={controlCenterExpanded}
+          items={CONTROL_CENTER_SUB_ITEMS}
+          routes={CONTROL_CENTER_SUB_ROUTES}
+          activeKey={activeControlCenterItem}
+        />
+
         {NAV_ITEMS.map((item) => (
           <li key={item.key}>
             <NavButton icon={item.icon} label={item.label} active={activeItem === item.key} />
           </li>
         ))}
 
-        <li>
-          <NavButton icon="code_blocks" label="Software" expanded={softwareExpanded} />
-          {softwareExpanded && (
-            <ul className={styles.submenu}>
-              <li>
-                <SubmenuItem
-                  screen="overview"
-                  label="Overview"
-                  active={activeSoftwareItem === "overview"}
-                  onNavigate={onNavigate}
-                />
-              </li>
-              <li>
-                <SubmenuItem
-                  screen="all-software"
-                  label="All Software"
-                  active={activeSoftwareItem === "all-software"}
-                  onNavigate={onNavigate}
-                />
-              </li>
-            </ul>
-          )}
-        </li>
+        <NavGroup
+          icon="code_blocks"
+          label="Software"
+          expanded={softwareExpanded}
+          items={SOFTWARE_SUB_ITEMS}
+          routes={SOFTWARE_SUB_ROUTES}
+          activeKey={activeSoftwareItem}
+          onNavigate={onNavigate}
+        />
 
         {NAV_ITEMS_AFTER_SOFTWARE.map((item) => (
           <li key={item.key}>
@@ -100,16 +114,60 @@ export default function Sidebar({ activeItem, activeSoftwareItem, onNavigate }: 
   );
 }
 
-function SubmenuItem({
+// Shared shape for any top-level item that expands into routed sub-items (currently
+// Control Center → Insights, Software → Overview/All Software) — generalized once a
+// second item needed the same expand/active/submenu behavior as the first.
+function NavGroup<K extends string>({
+  icon,
+  label,
+  expanded,
+  items,
+  routes,
+  activeKey,
+  onNavigate,
+}: {
+  icon: string;
+  label: string;
+  expanded: boolean;
+  items: { key: K; label: string }[];
+  routes: Record<K, string>;
+  activeKey?: K;
+  onNavigate?: (screen: K) => void;
+}) {
+  return (
+    <li>
+      <NavButton icon={icon} label={label} expanded={expanded} />
+      {expanded && (
+        <ul className={styles.submenu}>
+          {items.map((item) => (
+            <li key={item.key}>
+              <SubmenuItem
+                screen={item.key}
+                label={item.label}
+                href={routes[item.key]}
+                active={activeKey === item.key}
+                onNavigate={onNavigate}
+              />
+            </li>
+          ))}
+        </ul>
+      )}
+    </li>
+  );
+}
+
+function SubmenuItem<K extends string>({
   screen,
   label,
+  href,
   active,
   onNavigate,
 }: {
-  screen: SoftwareSubKey;
+  screen: K;
   label: string;
+  href: string;
   active: boolean;
-  onNavigate?: (screen: SoftwareSubKey) => void;
+  onNavigate?: (screen: K) => void;
 }) {
   const className = [styles.submenuItem, active ? styles.submenuItemActive : ""]
     .filter(Boolean)
@@ -129,7 +187,7 @@ function SubmenuItem({
   }
 
   return (
-    <Link href={SOFTWARE_SUB_ROUTES[screen]} className={className}>
+    <Link href={href} className={className}>
       {label}
     </Link>
   );

@@ -72,6 +72,18 @@
   flex-shrink: 0;
 }
 
+.valueDanger {
+  color: var(--xops-status-danger-solid);
+}
+
+.valueWarning {
+  color: var(--xops-status-warning-solid);
+}
+
+.valueSuccess {
+  color: var(--xops-status-success-solid);
+}
+
 .valueSmall {
   font-size: var(--xops-typography-body-14-font-size);
   line-height: var(--xops-typography-body-14-line-height);

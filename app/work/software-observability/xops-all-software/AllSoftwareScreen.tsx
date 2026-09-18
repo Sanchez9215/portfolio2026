@@ -25,7 +25,13 @@ import {
 } from "../../../../design-systems/xops/components/EmployeeBreakdownView";
 import { TooltipProps } from "../../../../design-systems/xops/components/Tooltip";
 import { getDataset } from "../../../../design-systems/xops/data/generate";
-import { formatCount, formatCurrency, formatPercent, EM_DASH } from "../../../../design-systems/xops/lib/format";
+import {
+  formatCount,
+  formatCurrency,
+  formatPercent,
+  formatCountWithPercent,
+  EM_DASH,
+} from "../../../../design-systems/xops/lib/format";
 import {
   productSummaries,
   ProductSummary,
@@ -35,7 +41,11 @@ import {
   terminatedByCostCenter,
   inactiveEmployees,
   terminatedEmployees,
+  totalOverAssignedLicenses,
+  overAssignedProductCount,
 } from "../../../../design-systems/xops/data/metrics";
+import { Banner, BannerEmphasis } from "../../../../design-systems/xops/components/Banner";
+import { Indicator } from "../../../../design-systems/xops/components/Indicator";
 
 // Active Licenses ÷ Assigned Licenses, per the audited Utilization tooltip (Figma 352:28400):
 // Critical ≤74%, Underutilized 75–84%, Healthy ≥85%.
@@ -137,14 +147,13 @@ export function renewalStatus(days: number): TagStatus {
 
 // Display only — matches renewalStatus's own ≤180-day boundary. Below it, the three urgent
 // tiers show raw days; the open-ended Low Priority tier (≥181) switches to months, then years.
+// Negative days (a Manual-renewal contract still pending its renewal action past the
+// contract's own end date) get their own "Overdue" label rather than a raw negative count.
 export function formatRenewalDuration(days: number): string {
-  if (days <= 180) return `${days} days`;
-  if (days < 365) {
-    const months = Math.round(days / 30);
-    return `${months} month${months === 1 ? "" : "s"}`;
-  }
-  const years = Math.round(days / 365);
-  return `${years} year${years === 1 ? "" : "s"}`;
+  if (days < 0) return `${Math.abs(days)}d Overdue`;
+  if (days <= 180) return `${days}d`;
+  if (days < 365) return `${Math.round(days / 30)}mo`;
+  return `${Math.round(days / 365)}yr`;
 }
 
 // ISO date → "Mmm D, YYYY", matching the format the audited screens already displayed.
@@ -200,6 +209,34 @@ export const softwareColumns: Column<ProductSummary>[] = [
     render: (row) => (row.seatBased ? formatCurrency(row.opportunity) : EM_DASH),
   },
   {
+    key: "assigned",
+    label: "Assigned",
+    width: "auto",
+    align: "right",
+    sortable: true,
+    tooltip: assignedTooltip,
+    render: (row) =>
+      row.seatBased ? (
+        <span
+          style={{
+            display: "flex",
+            width: "100%",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: "var(--xops-spacing-6)",
+            color: row.excessAssigned > 0 ? "var(--xops-status-danger-text)" : undefined,
+          }}
+        >
+          {row.excessAssigned > 0 && <Indicator variant="icon" status="danger" icon="warning" />}
+          <span style={{ flex: 1, textAlign: "right" }}>
+            {formatCountWithPercent(row.assigned, row.purchased)}
+          </span>
+        </span>
+      ) : (
+        EM_DASH
+      ),
+  },
+  {
     key: "utilization",
     label: "Utilization",
     width: "auto",
@@ -219,7 +256,15 @@ export const softwareColumns: Column<ProductSummary>[] = [
     sortable: true,
     render: (row) => (
       <div style={{ display: "flex", alignItems: "center", gap: "var(--xops-spacing-8)" }}>
-        <span>{formatDate(row.renewalDate)}</span>
+        <span
+          style={{
+            width: "12ch",
+            textAlign: "right",
+            fontVariantNumeric: "tabular-nums",
+          }}
+        >
+          {formatDate(row.renewalDate)}
+        </span>
         <Tag status={renewalStatus(row.renewalDays)}>{formatRenewalDuration(row.renewalDays)}</Tag>
       </div>
     ),
@@ -278,6 +323,9 @@ export function AllSoftwareScreen({
       return b.opportunity - a.opportunity;
     });
   }, [ds]);
+
+  const overAssignedTotal = useMemo(() => totalOverAssignedLicenses(ds), [ds]);
+  const overAssignedProducts = useMemo(() => overAssignedProductCount(ds), [ds]);
 
   const [region, setRegion] = useState("global");
   const [sortKey, setSortKey] = useState<string | undefined>("opportunity");
@@ -393,6 +441,26 @@ export function AllSoftwareScreen({
             backgroundColor: "var(--xops-surface-page)",
           }}
         >
+          {overAssignedTotal > 1 && (
+            <Banner
+              status="danger"
+              icon="warning"
+              title={
+                <>
+                  {formatCount(overAssignedTotal)} Licenses Over-Assigned{" "}
+                  <span style={{ fontWeight: "var(--xops-font-weight-regular)" }}>across</span>{" "}
+                  {formatCount(overAssignedProducts)} Products
+                </>
+              }
+              description={
+                <>
+                  Over-assigned licenses are included within{" "}
+                  <BannerEmphasis>Active</BannerEmphasis> and{" "}
+                  <BannerEmphasis>Inactive</BannerEmphasis> license counts.
+                </>
+              }
+            />
+          )}
           <PageHeader
             title="All Software"
             count={summaries.length}
@@ -518,6 +586,8 @@ export function AllSoftwareScreen({
             licensesPurchasedTotal={formatCount(selectedRow.purchased, { compact: true })}
             assignedValue={formatCount(selectedRow.assigned, { compact: true })}
             assignedPercent={formatPercent(selectedRow.assigned, selectedRow.purchased)}
+            assignedIsOverAssigned={selectedRow.excessAssigned > 0}
+            excessAssignedLabel={formatCount(selectedRow.excessAssigned)}
             assignedTooltip={assignedTooltip}
             unassignedLicensesValue={formatCount(selectedRow.unassigned, { compact: true })}
             unassignedLicensesPercent={formatPercent(selectedRow.unassigned, selectedRow.purchased)}

@@ -50,7 +50,7 @@ export type RemediationRequestPanelProps = {
 };
 
 const recordFilterOptions = [
-  { value: "all" as const, label: "All Records" },
+  { value: "all" as const, label: "All CIs" },
   { value: "single" as const, label: "Single-Issue Only" },
 ];
 
@@ -246,7 +246,7 @@ export function RemediationRequestPanel({ domain, attributes, filter, onCancel }
           </span>
           <MagicSurface className={styles.projectedPill} contentClassName={styles.projectedPillContent} scale={0.3}>
             <span>
-              Projected Healthy Records:{" "}
+              Projected Healthy CIs:{" "}
               <strong>{singleFailureTotal.toLocaleString("en-US")}</strong> ({singleFailurePercent}% of Selection)
             </span>
           </MagicSurface>
@@ -258,16 +258,16 @@ export function RemediationRequestPanel({ domain, attributes, filter, onCancel }
 
       <div className={styles.statRow}>
         <Stat label="Attributes Selected" value={String(selectedAttributes.size)} icon />
-        <Stat label="Total Records" value={totalRecords.toLocaleString("en-US")} icon />
+        <Stat label="Total CIs" value={totalRecords.toLocaleString("en-US")} icon />
         <Stat
-          label="Single-Failure Records"
+          label="Single-Failure CIs"
           value={singleFailureTotal.toLocaleString("en-US")}
           meta={`(${singleFailurePercent}%)`}
           icon
           legendColor="var(--xops-brand-primary)"
         />
         <Stat
-          label="Multi-Failure Records"
+          label="Multi-Failure CIs"
           value={multiFailureTotal.toLocaleString("en-US")}
           meta={`(${multiFailurePercent}%)`}
           icon
@@ -287,12 +287,12 @@ export function RemediationRequestPanel({ domain, attributes, filter, onCancel }
           />
         </div>
         <div className={styles.toolbarRight}>
-          <span className={styles.toolbarLabel}>Show Only Single-Issue Records</span>
+          <span className={styles.toolbarLabel}>Show Only Single-Issue CIs</span>
           <Toggle
             options={recordFilterOptions}
             value={recordFilter}
             onChange={setRecordFilter}
-            ariaLabel="Record filter"
+            ariaLabel="CI filter"
             size="small"
           />
         </div>
@@ -329,7 +329,7 @@ export function RemediationRequestPanel({ domain, attributes, filter, onCancel }
                   </span>
                 )}
                 <div className={styles.attributeCounts}>
-                  <span className={styles.attributeRecords}>{row.totalRecords.toLocaleString("en-US")} Records</span>
+                  <span className={styles.attributeRecords}>{row.totalRecords.toLocaleString("en-US")} CIs</span>
                   <span className={styles.attributeCount}>
                     <span className={styles.remediationDot} style={{ backgroundColor: "var(--xops-brand-primary)" }} />
                     {row.singleFailure.toLocaleString("en-US")}
@@ -347,7 +347,7 @@ export function RemediationRequestPanel({ domain, attributes, filter, onCancel }
               {isOpen && isExpandable && (
                 <div className={styles.attributeDetail}>
                   <p className={styles.showingLabel}>
-                    Showing {entityRows.length} of {(row.entitiesTotal ?? row.totalRecords).toLocaleString("en-US")} Records
+                    Showing {entityRows.length} of {(row.entitiesTotal ?? row.totalRecords).toLocaleString("en-US")} CIs
                   </p>
                   <Table
                     columns={entityColumns}
