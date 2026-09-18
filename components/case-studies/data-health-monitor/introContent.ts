@@ -35,7 +35,7 @@ export const dataHealthMonitorIntro: CaseStudyIntro = {
     {
       badge: "0 → 1",
       heading: "Platform Expansion",
-      body: "DHM provided the data trust layer that autonomous outcomes depended on. This first step into data governance directly contributed to XOPS' mission of unifying enterprise systems.",
+      body: "DHM introduced the data trust layer autonomous outcomes depended on. This marked XOPS' evolution into enterprise data governance.",
     },
     {
       heading: "99%+ Data Accuracy",
