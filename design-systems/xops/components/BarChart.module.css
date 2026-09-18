@@ -16,6 +16,10 @@
   height: var(--xops-bar-height-16);
 }
 
+.height8 {
+  height: var(--xops-bar-height-8);
+}
+
 .segment {
   height: 100%;
   min-width: 0;

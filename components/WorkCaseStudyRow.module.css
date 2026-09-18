@@ -26,16 +26,23 @@
 
 /* ── Left column (1/6): title + description + CTAs ─────────── */
 
+/* Local 4-column sub-grid (same column-gap as the outer cs-grid) so .intro
+   can span 3 of its own 4 tracks — mathematically identical width to 3 of
+   the outer grid's 12 tracks, since .left itself already occupies exactly
+   4 of those 12. */
 .left {
   grid-column: 1 / 5;
   min-width: 0;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  column-gap: var(--spacing-xl);
+  row-gap: var(--spacing-3xl);
   justify-content: start;
-  gap: var(--spacing-3xl);
 }
 
 .intro {
+  grid-column: 1 / 4;
+  grid-row: 1;
   display: flex;
   flex-direction: column;
   gap: var(--spacing-xl);
@@ -67,6 +74,8 @@
 
 /* div.ctaRow — Case Study / View Build buttons, full-width, stacked */
 .ctaRow {
+  grid-column: 1 / 5;
+  grid-row: 2;
   display: flex;
   flex-direction: column;
   gap: var(--spacing-lg);
@@ -183,17 +192,25 @@
 
 /* Opt-in fixed 16/10 box (WorkCaseStudyRow's `fixedVisualRatio`) — for a
    visual that needs a bounded window rather than its own natural height,
-   e.g. Software Observability's live embed, which scrolls its real (much
-   taller) app content inside a fixed viewport. Rounds top corners only
-   (Figma: rounded-tl/tr) — this box sits flush against the row's own
-   bottom edge, so a bottom radius would look cut off, not rounded. */
+   e.g. a live embed that scrolls its real (much taller) app content inside
+   a fixed viewport. Corner rounding is separate (see .embedWrapFlushBottom
+   below) — a fixed ratio alone doesn't imply flush-bottom styling. */
 .embedWrapFixedRatio {
   aspect-ratio: 16 / 10;
-  border-radius: var(--border-radius-sm) var(--border-radius-sm) 0 0;
 }
 
 .embedWrapFixedRatio > * {
   height: 100%;
+}
+
+/* Opt-in flush-bottom rounding (WorkCaseStudyRow's `flushBottomRadius`) —
+   top corners only (Figma: rounded-tl/tr), for a box specifically designed
+   to sit flush against the row's own bottom edge, e.g. Software
+   Observability's embed. A bottom radius there would look cut off, not
+   rounded — but that's specific to that row's own design, not a general
+   consequence of using a fixed aspect ratio. */
+.embedWrapFlushBottom {
+  border-radius: var(--border-radius-sm) var(--border-radius-sm) 0 0;
 }
 
 /* ============================================================

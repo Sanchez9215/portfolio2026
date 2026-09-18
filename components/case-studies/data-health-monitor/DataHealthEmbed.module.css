@@ -1,0 +1,6 @@
+/* Disables all interaction with the embedded real screen (clicks, hovers,
+   sort, row navigation) — this is a static preview, nothing clickable yet. */
+.inert {
+  width: 100%;
+  pointer-events: none;
+}

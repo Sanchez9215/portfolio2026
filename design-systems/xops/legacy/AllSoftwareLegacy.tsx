@@ -256,6 +256,7 @@ export default function AllSoftwareLegacy({
                   disableVerticalScroll={disableVerticalScroll}
                   disableHorizontalScroll={disableHorizontalScroll}
                   scrollToX={scrollToX}
+                  headerSurface="grey"
                   scrollFade={false}
                 />
               </div>

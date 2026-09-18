@@ -25,18 +25,3 @@
   padding-right: var(--xops-spacing-12);
   border-right: var(--xops-border-width-1) solid var(--xops-border-divider);
 }
-
-.meta {
-  display: flex;
-  align-items: center;
-  gap: var(--xops-spacing-6);
-}
-
-.metaText {
-  font-family: var(--xops-font-family);
-  font-weight: var(--xops-font-weight-regular);
-  font-size: var(--xops-typography-body-14-font-size);
-  line-height: var(--xops-typography-body-14-line-height);
-  color: var(--xops-text-secondary);
-  white-space: nowrap;
-}

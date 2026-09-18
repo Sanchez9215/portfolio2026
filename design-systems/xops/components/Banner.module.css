@@ -1,0 +1,82 @@
+.banner {
+  display: flex;
+  align-items: center;
+  padding: var(--xops-spacing-12);
+  border-radius: var(--xops-radius-6);
+}
+
+.danger {
+  background-color: var(--xops-status-danger-tint);
+  --banner-icon-color: var(--xops-status-danger-solid);
+}
+
+/* Reuses caution's color — no separate "risk" tokens exist; caution already
+   sits between danger and warning in this app's severity ordering (see
+   renewalStatus in AllSoftwareScreen.tsx), which matches "risk" closer than
+   any other existing status. */
+.risk {
+  background-color: var(--xops-status-caution-tint);
+  --banner-icon-color: var(--xops-status-caution-solid);
+}
+
+.info {
+  background-color: var(--xops-status-info-tint);
+  --banner-icon-color: var(--xops-status-info-solid);
+}
+
+.neutral {
+  background-color: var(--xops-status-neutral-tint);
+  /* No --xops-status-neutral-solid exists (Tag never needed one — it has no
+     icon). Uses --xops-neutral-500 (the neutral ramp's own anchor step,
+     1:1 aliased to grey-500) — same role every other status's icon color
+     already plays via its own ramp's -500 step. */
+  --banner-icon-color: var(--xops-neutral-500);
+}
+
+.success {
+  background-color: var(--xops-status-success-tint);
+  --banner-icon-color: var(--xops-status-success-solid);
+}
+
+.content {
+  display: flex;
+  flex: 1 0 0;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: var(--xops-spacing-8);
+}
+
+.title {
+  font-family: var(--xops-font-family);
+  font-weight: var(--xops-font-weight-semibold);
+  font-size: var(--xops-typography-subheading-14-font-size);
+  line-height: var(--xops-typography-subheading-14-line-height);
+  color: var(--xops-text-primary);
+}
+
+.body {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  padding-left: calc(var(--xops-icon-size-20) + var(--xops-spacing-8));
+}
+
+.description {
+  flex: 1 0 0;
+  min-width: 0;
+  font-family: var(--xops-font-family);
+  font-weight: var(--xops-font-weight-regular);
+  font-size: var(--xops-typography-body-14-font-size);
+  line-height: var(--xops-typography-body-14-line-height);
+  color: var(--xops-text-primary);
+}
+
+.emphasis {
+  font-weight: var(--xops-font-weight-medium);
+}

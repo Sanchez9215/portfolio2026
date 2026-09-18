@@ -25,6 +25,8 @@ export type StatProps = {
   legendColor?: string;
   /** Optional content rendered below the value row — e.g. a ProgressBar + caption. */
   content?: ReactNode;
+  /** Colors the value text with the matching status-*-solid token. Omit for the default text-primary. */
+  valueStatus?: "danger" | "warning" | "success";
   className?: string;
   style?: CSSProperties;
   /** Sets `data-hotspot` on the outer tile element, for hotspot targeting. */
@@ -44,6 +46,7 @@ export function Stat({
   spaceBetween,
   legendColor,
   content,
+  valueStatus,
   className,
   style,
   hotspotId,
@@ -66,7 +69,11 @@ export function Stat({
       <div className={[styles.valueRow, spaceBetween && styles.valueRowBetween].filter(Boolean).join(" ")}>
         {value && (
           <span
-            className={[styles.value, valueSize === "small" && styles.valueSmall]
+            className={[
+              styles.value,
+              valueSize === "small" && styles.valueSmall,
+              valueStatus && styles[`value${valueStatus.charAt(0).toUpperCase()}${valueStatus.slice(1)}`],
+            ]
               .filter(Boolean)
               .join(" ")}
           >

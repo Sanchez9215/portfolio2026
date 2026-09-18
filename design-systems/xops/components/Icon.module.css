@@ -11,3 +11,18 @@
   -webkit-mask-size: contain;
   mask-size: contain;
 }
+
+.size16 {
+  width: var(--xops-icon-size-16);
+  height: var(--xops-icon-size-16);
+}
+
+.size18 {
+  width: var(--xops-icon-size-18);
+  height: var(--xops-icon-size-18);
+}
+
+.size20 {
+  width: var(--xops-icon-size-20);
+  height: var(--xops-icon-size-20);
+}

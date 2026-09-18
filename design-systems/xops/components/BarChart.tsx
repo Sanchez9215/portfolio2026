@@ -6,12 +6,12 @@ export type BarSegment = {
   color: string;
 };
 
-export type BarChartHeight = "default" | "18" | "16";
+export type BarChartHeight = "default" | "18" | "16" | "8";
 
 export type BarChartProps = {
   segments: BarSegment[];
   total?: number;
-  /** Off the shared bar-height scale (24px default / 18px / 16px). Defaults to "default". */
+  /** Off the shared bar-height scale (24px default / 18px / 16px / 8px). Defaults to "default". */
   height?: BarChartHeight;
   className?: string;
 };
@@ -20,6 +20,7 @@ const heightClass: Record<BarChartHeight, string | undefined> = {
   default: undefined,
   "18": styles.height18,
   "16": styles.height16,
+  "8": styles.height8,
 };
 
 export function BarChart({ segments, total, height = "default", className }: BarChartProps) {

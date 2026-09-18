@@ -381,7 +381,11 @@ function buildEmployees(
   return employees;
 }
 
-function contractWindow(rng: Rng, stage: Exclude<LifecycleStage, "evaluation">): {
+function contractWindow(
+  rng: Rng,
+  stage: Exclude<LifecycleStage, "evaluation">,
+  autoRenew: "Automatic" | "Manual",
+): {
   effective: Date;
   expiration: Date;
   termMonths: number;
@@ -396,10 +400,14 @@ function contractWindow(rng: Rng, stage: Exclude<LifecycleStage, "evaluation">):
   }
   if (stage === "renewal") {
     effective = addMonths(AS_OF, -rng.int(10, 34));
-    // Most renewal-stage contracts are still ahead of their end date; a subset (~28%)
-    // have already lapsed — expired but still in active use, the real case that drives
-    // compliance's Expired-and-active state (complianceMetrics.ts).
-    expiration = rng.chance(0.42) ? addDays(AS_OF, -rng.int(15, 160)) : addDays(AS_OF, rng.int(5, 180));
+    // Most renewal-stage contracts are still ahead of their end date; a subset (~28%) of
+    // Manual-renewal ones have already lapsed — renewal requires a human procurement
+    // action, so it can sit overdue pending that. Automatic contracts renew themselves at
+    // the term boundary and so never land in the past.
+    expiration =
+      autoRenew === "Manual" && rng.chance(0.42)
+        ? addDays(AS_OF, -rng.int(15, 160))
+        : addDays(AS_OF, rng.int(5, 180));
   } else {
     // operational
     effective = addMonths(AS_OF, -rng.int(7, 28));
@@ -479,7 +487,8 @@ function buildContractsAndUsage(
       continue;
     }
 
-    const { effective, expiration, termMonths } = contractWindow(rng, stage);
+    const autoRenew: "Automatic" | "Manual" = rng.chance(0.5) ? "Automatic" : "Manual";
+    const { effective, expiration, termMonths } = contractWindow(rng, stage, autoRenew);
 
     // ----- Consumption: usage-billed spend row — cost is visible, but no seats/assignments/utilization -----
     if (!seatBased) {
@@ -505,7 +514,7 @@ function buildContractsAndUsage(
         totalContractValue: Math.round(annualCost * (termMonths / 12)),
         paymentTerms: rng.pick(PAYMENT_TERMS),
         noticePeriodDeadline: iso(addDays(expiration, -rng.int(30, 90))),
-        autoRenew: rng.chance(0.5) ? "Automatic" : "Manual",
+        autoRenew,
       });
       continue;
     }
@@ -557,7 +566,7 @@ function buildContractsAndUsage(
       totalContractValue,
       paymentTerms: rng.pick(PAYMENT_TERMS),
       noticePeriodDeadline: iso(addDays(expiration, -rng.int(30, 90))),
-      autoRenew: rng.chance(0.5) ? "Automatic" : "Manual",
+      autoRenew,
     });
 
     // Assign to a random subset — affinity employees first, then spill to the rest.

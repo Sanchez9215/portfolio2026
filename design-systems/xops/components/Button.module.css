@@ -98,9 +98,52 @@
   border-color: transparent;
 }
 
+/* True inline link — flows as text within a sentence rather than reading as a discrete
+   control, so it drops button chrome (fixed height/padding) regardless of size and uses
+   underline-on-hover instead of a hover background pill. */
+.inline-link {
+  display: inline;
+  height: auto;
+  padding: 0;
+  background-color: transparent;
+  color: var(--xops-brand-primary);
+  border-color: transparent;
+}
+
+.inline-link:hover {
+  text-decoration: underline;
+}
+
+.inline-link:active {
+  background-color: transparent;
+}
+
+.inline-link:disabled {
+  background-color: transparent;
+  color: var(--xops-state-disabled-text);
+  border-color: transparent;
+}
+
 .iconOnly {
   padding: 0;
   width: var(--xops-control-height-medium);
+}
+
+.xsmall {
+  height: auto;
+  font-size: var(--xops-typography-body-12-font-size);
+  line-height: var(--xops-typography-body-12-line-height);
+}
+
+/* A "true" link at xsmall drops the button chrome entirely — no padding, no hover
+   background pill — since a link this small should read as inline text, not a control. */
+.link.xsmall {
+  padding-inline: 0;
+}
+
+.link.xsmall:hover,
+.link.xsmall:active {
+  background-color: transparent;
 }
 
 .small {

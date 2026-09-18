@@ -19,6 +19,24 @@
   --xops-grey-900: #252c37;
   --xops-grey-950: #111418;
 
+  /* Primitives — Neutral ramp — 1:1 alias of grey, existing solely so the
+     "neutral" status has a same-named primitive ramp like every other status
+     (color.success, color.danger, etc. each have their own). Grey itself
+     stays untouched and is still used directly everywhere unrelated to
+     status (text-primary, borders, disabled states, ...) — this ramp exists
+     only for status.neutral to reference. */
+  --xops-neutral-50: var(--xops-grey-50);
+  --xops-neutral-100: var(--xops-grey-100);
+  --xops-neutral-200: var(--xops-grey-200);
+  --xops-neutral-300: var(--xops-grey-300);
+  --xops-neutral-400: var(--xops-grey-400);
+  --xops-neutral-500: var(--xops-grey-500);
+  --xops-neutral-600: var(--xops-grey-600);
+  --xops-neutral-700: var(--xops-grey-700);
+  --xops-neutral-800: var(--xops-grey-800);
+  --xops-neutral-900: var(--xops-grey-900);
+  --xops-neutral-950: var(--xops-grey-950);
+
   /* Primitives — Brand ramp (anchor: 500 = audited brand color) */
   --xops-brand-50: #f1f6fe;
   --xops-brand-100: #dbeaff;
@@ -212,15 +230,22 @@
   --xops-status-warning-text: var(--xops-warning-800);
 
   --xops-status-danger-solid: var(--xops-danger-500);
-  --xops-status-danger-tint: var(--xops-danger-200);
+  --xops-status-danger-tint: var(--xops-danger-100);
   --xops-status-danger-text: var(--xops-danger-800);
 
-  --xops-status-neutral-tint: var(--xops-grey-100);
-  --xops-status-neutral-text: var(--xops-grey-800);
+  --xops-status-neutral-tint: var(--xops-neutral-100);
+  --xops-status-neutral-text: var(--xops-neutral-800);
 
   --xops-status-caution-solid: var(--xops-caution-500);
   --xops-status-caution-tint: var(--xops-caution-200);
   --xops-status-caution-text: var(--xops-caution-800);
+
+  /* info's tint deliberately equals --xops-nav-background-active (both
+     var(--xops-brand-100)) — sourced from the sidebar's own selected-state
+     blue, not the general brand ramp, per explicit direction. No -text
+     token: nothing currently colors text by info status. */
+  --xops-status-info-solid: var(--xops-brand-500);
+  --xops-status-info-tint: var(--xops-brand-100);
 
   /* Semantic — button */
   --xops-button-radius: var(--xops-radius-6);
@@ -254,6 +279,10 @@
   --xops-font-family: 'Jost', system-ui, sans-serif;
   --xops-font-weight-regular: 400;
   --xops-font-weight-medium: 500;
+  --xops-font-weight-semibold: 600;
+
+  --xops-typography-body-11-font-size: 11px;
+  --xops-typography-body-11-line-height: 16px;
 
   --xops-typography-body-12-font-size: 12px;
   --xops-typography-body-12-line-height: 18px;

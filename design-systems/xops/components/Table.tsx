@@ -60,12 +60,17 @@ export type TableProps<T extends Record<string, unknown>> = {
   showChevron?: boolean;
   /** Column header label size. Defaults to "subheading-14". */
   headerLabelSize?: "subheading-14" | "subheading-12";
+  /** Header row background. Defaults to "none" (flush with body) — legacy screens pin "grey" to preserve their original look. TODO: test all current consumers before removing "grey" entirely. */
+  headerSurface?: "grey" | "none";
 };
 
-function colStyle(width: ColumnWidth): CSSProperties {
+// "flex" columns get an explicit equal percentage of the table's width — table-layout:auto
+// otherwise sizes them by content heuristics, not evenly, so two tables with different
+// content mixes render "flex" columns at visibly different widths for no real reason.
+function colStyle(width: ColumnWidth, flexColumnCount: number): CSSProperties {
   if (typeof width === "number") return { width, whiteSpace: "nowrap" };
   if (width === "auto") return { width: "1%", whiteSpace: "nowrap" };
-  return {};
+  return { width: `${100 / flexColumnCount}%` };
 }
 
 export function Table<T extends Record<string, unknown>>({
@@ -87,7 +92,9 @@ export function Table<T extends Record<string, unknown>>({
   scrollToX,
   showChevron = false,
   headerLabelSize = "subheading-14",
+  headerSurface = "none",
 }: TableProps<T>) {
+  const flexColumnCount = columns.filter((column) => column.width === "flex").length + (showChevron ? 1 : 0) || 1;
   const scrollRef = useRef<HTMLDivElement>(null);
   const paginationRef = useRef<HTMLDivElement>(null);
   const [showLeftFade, setShowLeftFade] = useState(false);
@@ -158,9 +165,9 @@ export function Table<T extends Record<string, unknown>>({
       <table className={styles.table}>
         <colgroup>
           {columns.map((column) => (
-            <col key={column.key} style={colStyle(column.width)} />
+            <col key={column.key} style={colStyle(column.width, flexColumnCount)} />
           ))}
-          {showChevron && <col style={{ width: 20, whiteSpace: "nowrap" }} />}
+          {showChevron && <col style={colStyle("flex", flexColumnCount)} />}
         </colgroup>
         <thead>
           <tr>
@@ -171,7 +178,11 @@ export function Table<T extends Record<string, unknown>>({
                 <th
                   key={column.key}
                   scope="col"
-                  className={[styles.headerCell, headerLabelSize === "subheading-12" && styles.headerCellSubheading12]
+                  className={[
+                    styles.headerCell,
+                    headerLabelSize === "subheading-12" && styles.headerCellSubheading12,
+                    headerSurface === "grey" && styles.headerCellGrey,
+                  ]
                     .filter(Boolean)
                     .join(" ")}
                   data-align={align}
@@ -224,7 +235,15 @@ export function Table<T extends Record<string, unknown>>({
                 </th>
               );
             })}
-            {showChevron && <th scope="col" className={styles.headerCell} data-width="fixed" />}
+            {showChevron && (
+              <th
+                scope="col"
+                className={[styles.headerCell, headerSurface === "grey" && styles.headerCellGrey]
+                  .filter(Boolean)
+                  .join(" ")}
+                data-width="fixed"
+              />
+            )}
           </tr>
         </thead>
         <tbody>
@@ -255,7 +274,7 @@ export function Table<T extends Record<string, unknown>>({
                 </td>
               ))}
               {showChevron && (
-                <td className={styles.bodyCell} data-align="center" data-width="fixed">
+                <td className={styles.bodyCell} data-align="right" data-width="flex">
                   <Button
                     iconOnly
                     size="small"

@@ -78,6 +78,13 @@ export interface WorkCaseStudyRowProps {
    * content inside a fixed viewport.
    */
   fixedVisualRatio?: boolean;
+  /**
+   * Rounds top corners only, flush against the row's bottom edge, instead
+   * of the default (all four corners round) — for a visual specifically
+   * designed to sit flush, e.g. Software Observability's embed. Independent
+   * of `fixedVisualRatio`: a fixed ratio doesn't by itself imply this.
+   */
+  flushBottomRadius?: boolean;
   /** Overrides the impact items' shared 108px height (see .impactItem in
    *  WorkCaseStudyRow.module.css) for this row only. */
   impactItemHeight?: number;
@@ -87,6 +94,7 @@ export default function WorkCaseStudyRow({
   intro,
   visual,
   fixedVisualRatio = false,
+  flushBottomRadius = false,
   impactItemHeight,
 }: WorkCaseStudyRowProps) {
   const { titleLines, description, meta, impact } = intro;
@@ -307,7 +315,13 @@ export default function WorkCaseStudyRow({
         </div>
         <div
           ref={embedRef}
-          className={`${styles.embedWrap}${fixedVisualRatio ? ` ${styles.embedWrapFixedRatio}` : ""}`}
+          className={[
+            styles.embedWrap,
+            fixedVisualRatio && styles.embedWrapFixedRatio,
+            flushBottomRadius && styles.embedWrapFlushBottom,
+          ]
+            .filter(Boolean)
+            .join(" ")}
         >
           {visual(entranceReady, visualSettled)}
         </div>
