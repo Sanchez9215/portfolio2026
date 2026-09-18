@@ -25,6 +25,10 @@ export interface CompanyLogo {
   nativeWidth: number;
   nativeHeight: number;
   alt: string;
+  /** Overrides the default height (--text-body-xs-lh) — per-logo, since
+   *  different wordmarks read as different visual weights at the same
+   *  literal height. */
+  height?: number;
 }
 
 export interface IntroImpactItem {
