@@ -24,10 +24,13 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import Image from "next/image";
 import Section from "@/components/Section";
 import Block from "@/components/Block";
 import Title from "@/components/Title";
 import TitleBlock from "@/components/TitleBlock";
+import Tooltip from "@/components/Tooltip";
+import CompanyLogo from "@/components/CompanyLogo";
 import type { CaseStudyIntro } from "@/components/case-studies/caseStudyIntro";
 import styles from "./WorkCaseStudyRow.module.css";
 
@@ -97,7 +100,7 @@ export default function WorkCaseStudyRow({
   flushBottomRadius = false,
   impactItemHeight,
 }: WorkCaseStudyRowProps) {
-  const { titleLines, description, meta, impact } = intro;
+  const { titleLines, description, meta, impact, companyLogo } = intro;
   // Passed to the `visual` render prop. Flips when this row's own embedWrap
   // fade-in *starts* (see the .call() below, fired at TIMING.embedStart) —
   // not finishes. A live embed's hidden pre-warm pass (fonts/images/
@@ -240,9 +243,9 @@ export default function WorkCaseStudyRow({
       <div className={styles.right}>
         <div ref={metaRef} className={styles.meta}>
           {meta.map((item) => {
-            // Company's body is split so everything after the company name
-            // (its first word) can be hidden at the ≤480px tier — see
-            // WorkCaseStudyRow.module.css's .companyRest.
+            // Company's value is the brand logo (CompanyLogo), not text —
+            // its meta.body is only the tooltip's content now, surfaced by
+            // hovering the info icon next to the "Company" label.
             if (item.label !== "Company") {
               return (
                 <TitleBlock
@@ -254,22 +257,25 @@ export default function WorkCaseStudyRow({
                 />
               );
             }
-            const [firstWord, ...rest] = item.body.split(" ");
             return (
               <TitleBlock
                 key={item.label}
                 size="xs"
                 titleColor="tertiary"
-                title={item.label}
-                body={
-                  <>
-                    {firstWord}
-                    <span className={styles.companyRest}>
-                      {" "}
-                      {rest.join(" ")}
-                    </span>
-                  </>
+                title={
+                  <span className={styles.companyLabel}>
+                    {item.label}
+                    <Tooltip content={item.body}>
+                      <Image
+                        src="/icons/InfoCircle.svg"
+                        alt=""
+                        width={18}
+                        height={18}
+                      />
+                    </Tooltip>
+                  </span>
                 }
+                body={<CompanyLogo {...companyLogo} />}
               />
             );
           })}

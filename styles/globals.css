@@ -200,6 +200,19 @@
   --icon-2xl: 64px;
 
   /* ----------------------------------------------------------
+     PRIMITIVES — Motion
+     First value in this system — formalizes Tooltip's hover-close grace
+     period rather than leaving it a bare number in the component. A JS
+     timing value (setTimeout), not a CSS transition, so it's mirrored as a
+     plain constant in Tooltip.tsx rather than read from this custom
+     property at runtime. Mirrors XOPS's own equivalent token
+     (--xops-motion-delay-tooltip-close) — kept separate per this
+     codebase's design-system isolation, not shared.
+     ---------------------------------------------------------- */
+
+  --motion-delay-tooltip-close: 250ms;
+
+  /* ----------------------------------------------------------
      SEMANTIC — Surface
      ---------------------------------------------------------- */
 
@@ -574,4 +587,10 @@
   grid-template-columns: repeat(12, 1fr);
   column-gap: var(--spacing-xl);
   padding-inline: var(--spacing-4xl);
+}
+
+@media (max-width: 900px) {
+  .cs-grid {
+    padding-inline: var(--spacing-xl);
+  }
 }

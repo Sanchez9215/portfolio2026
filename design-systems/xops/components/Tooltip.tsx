@@ -53,6 +53,9 @@ export type TooltipProps = {
 // Must match .panel's width in Tooltip.module.css — used to detect right-edge overflow before render.
 const PANEL_WIDTH = 336;
 const GAP = 4;
+// Mirrors --xops-motion-delay-tooltip-close (tokens.css) — kept as a plain
+// number here since setTimeout needs milliseconds, not a CSS value.
+const CLOSE_DELAY_MS = 250;
 
 type Position = { top: number; left: number };
 
@@ -171,7 +174,7 @@ export function Tooltip({
     hideTimeoutRef.current = setTimeout(() => {
       setHovered(false);
       if (!forceOpen) setPosition(null);
-    }, 250);
+    }, CLOSE_DELAY_MS);
   };
 
   return (

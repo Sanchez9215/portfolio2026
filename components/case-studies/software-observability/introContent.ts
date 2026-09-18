@@ -29,6 +29,13 @@ export const softwareObservabilityIntro: CaseStudyIntro = {
     },
   ],
 
+  companyLogo: {
+    src: "/SVG/XOPSLogo.svg",
+    nativeWidth: 68,
+    nativeHeight: 21,
+    alt: "XOPS",
+  },
+
   impact: [
     {
       badge: "0 → 1",

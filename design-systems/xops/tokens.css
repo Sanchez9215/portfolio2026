@@ -182,6 +182,11 @@
   --xops-motion-duration-default: 300ms;
   --xops-motion-duration-slow: 1500ms;
   --xops-motion-easing-default: ease-out;
+  /* Formalizes Tooltip's hover-close grace period (previously hardcoded
+     `250` in its setTimeout) — a JS timing value, not a CSS transition, so
+     it's mirrored as a plain constant in Tooltip.tsx rather than read from
+     this custom property at runtime. */
+  --xops-motion-delay-tooltip-close: 250ms;
 
   /* Semantic — state */
   --xops-state-hover-on-brand: var(--xops-brand-700);

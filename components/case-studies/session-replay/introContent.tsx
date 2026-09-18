@@ -14,18 +14,18 @@ export const sessionReplayIntro: CaseStudyIntro = {
 
   description: (
     <>
-      Redesigned{" "}
+      Transformed{" "}
       <a
         href="https://www.heap.io/platform/session-replay"
         target="_blank"
         rel="noopener noreferrer"
         className={styles.inlineLink}
       >
-        Heap&apos;s session player
+        Heap&apos;s player
       </a>{" "}
-      from a passive video experience into a diagnostic hub by introducing
-      searchable event logs, session details, and user history to accelerate
-      issue resolution.
+      from a passive experience into a diagnostic hub by introducing searchable
+      event logs, session details, and user history to accelerate issue
+      resolution.
     </>
   ),
 
@@ -44,10 +44,18 @@ export const sessionReplayIntro: CaseStudyIntro = {
     },
   ],
 
+  companyLogo: {
+    src: "/SVG/HeapLogo.svg",
+    nativeWidth: 65,
+    nativeHeight: 26,
+    alt: "Heap",
+    height: 28,
+  },
+
   impact: [
     {
       heading: "Competitive Retention & Acquisition",
-      body: "Helped close new deals and retain existing customers against competing replay tools, strengthening Heap's position ahead of its acquisition by Contentsquare.",
+      body: "The new player closed new deals and retained customers against competitors, strengthening Heap ahead of its Contentsquare acquisition.",
     },
     {
       heading: "10% Usage Growth",

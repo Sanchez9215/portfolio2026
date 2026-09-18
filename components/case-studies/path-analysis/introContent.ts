@@ -12,12 +12,12 @@ export const pathAnalysisIntro: CaseStudyIntro = {
   titleLines: ["Path Analysis"],
 
   description:
-    "A native user journey mapping experience that removed the platform's reliance on third party tools and made analysis self serve, integrating session replay and frustration signals to reveal actionable friction points.",
+    "A user journey mapping tool that integrated session replay, error identification and frustration signals to reveal actionable friction points for product teams.",
 
   meta: [
     {
       label: "Company",
-      body: "Auryc is a product analytics platform that helps teams understand user experience and product performance through session replay, analytics, and voice-of-customer feedback.",
+      body: "Auryc was a product analytics platform that helped teams understand user experience and product performance through session replay, analytics, and voice-of-customer feedback.",
     },
     {
       label: "Role",
@@ -28,6 +28,14 @@ export const pathAnalysisIntro: CaseStudyIntro = {
       body: "Q2 2021",
     },
   ],
+
+  companyLogo: {
+    src: "/SVG/AurycLogo.svg",
+    nativeWidth: 95,
+    nativeHeight: 24,
+    alt: "Auryc",
+    height: 25,
+  },
 
   impact: [
     {

@@ -1,7 +1,7 @@
 import { forwardRef } from 'react'
 import styles from './Block.module.css'
 
-export type BlockSize = 'xs' | 'sm' | 'md' | 'lg' | '2xl'
+export type BlockSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl'
 export type BlockColor = 'primary' | 'secondary' | 'tertiary' | 'inverse'
 
 interface BlockProps {

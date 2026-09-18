@@ -1,0 +1,18 @@
+/* Height matches the value text it replaces (body-xs's line-height) —
+   width follows from the logo's own real aspect ratio (aspect-ratio, set
+   inline per instance from its native SVG dimensions), not an invented
+   value. Color is set by whatever wraps it (currentColor) — TitleBlock's
+   Block already renders the Company value at --text-tertiary, same as the
+   label, so this inherits that without redeclaring it here. */
+.logo {
+  display: inline-block;
+  height: var(--text-body-xs-lh);
+  flex-shrink: 0;
+  background-color: currentColor;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: left center;
+  mask-position: left center;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+}

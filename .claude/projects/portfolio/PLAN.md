@@ -111,6 +111,8 @@ _Merged in from the former standalone `portfolio-shell` doc set._
 - Footer
 - About page (folded in from the former standalone `about` project — see `progress.md`)
 
-**Approach:** Home is being rebuilt from scratch. Old `HeroWithCanvas`/`HeroSection`/`BounceCanvas` are left in the codebase, unused, as reference rather than deleted. New `Hero.tsx` built from Figma (node 214:7415, "Portfolio Cleaning" file). The old Work-list section (case-study cards) is currently hidden pending the same treatment.
+**Approach:** Home is being rebuilt from scratch. Old `HeroWithCanvas`/`HeroSection`/`BounceCanvas` are left in the codebase, unused, as reference rather than deleted. New `Hero.tsx` built from Figma (node 214:7415, "Portfolio Cleaning" file).
+
+**Work section — one entry-point row per case study.** `WorkCaseStudyRow` (originally built SW-Obs-only, Figma node 641:7270 for layout only) is now content-driven — takes a `CaseStudyIntro` object plus a `visual` render prop, so every case study reuses the same row rather than a bespoke build per entry. Order on Home: Software Observability, Data Health Monitor, Session Replay, Path Analysis (Request Stepper / GitGraph optional, not started). Each row's visual is either a real live embed (SW Obs, DHM) or a real recorded video (Session Replay, Path Analysis) — no static screenshots. See `progress.md`'s Home Resume Context for the current build state and what's still unverified.
 
 **Shared design-system work done in service of this rebuild** (not shell-specific, but triggered by it): the global `Button` component was fully rebuilt to mirror XOPS's token/variant structure (see `components/built-components.md`'s `button` entry for current state) — this affects every portfolio page that uses `Button`, not just the shell.

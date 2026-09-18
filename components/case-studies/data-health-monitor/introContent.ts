@@ -16,8 +16,9 @@ export const dataHealthMonitorIntro: CaseStudyIntro = {
 
   meta: [
     {
-      // Same company sentence as Software Observability — same company, and
-      // the row hides everything after the first word at the ≤480px tier.
+      // Same company sentence as Software Observability — same company.
+      // Only surfaced via the Company info-icon tooltip now, not displayed
+      // directly (see companyLogo below).
       label: "Company",
       body: "XOPS enables autonomous IT operations for Fortune 500 organizations.",
     },
@@ -31,6 +32,13 @@ export const dataHealthMonitorIntro: CaseStudyIntro = {
     },
   ],
 
+  companyLogo: {
+    src: "/SVG/XOPSLogo.svg",
+    nativeWidth: 68,
+    nativeHeight: 21,
+    alt: "XOPS",
+  },
+
   impact: [
     {
       badge: "0 → 1",
@@ -39,7 +47,7 @@ export const dataHealthMonitorIntro: CaseStudyIntro = {
     },
     {
       heading: "99%+ Data Accuracy",
-      body: "DHM continuously validated contractor data accuracy for a pharmaceutical leader, driving employee data accuracy to 99%+ across a seasonal workforce of 3,000–5,000.",
+      body: "DHM continuously audited contractor data for a pharmaceutical leader, driving data accuracy to 99%+ across a seasonal workforce of 5,000.",
     },
   ],
 };

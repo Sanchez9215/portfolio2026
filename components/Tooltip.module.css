@@ -1,0 +1,40 @@
+/* ============================================================
+   Tooltip — hover card anchored to a trigger
+   Figma node 1102:144 ("Portfolio Cleaning" file)
+   ============================================================ */
+
+.root {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  line-height: 0;
+  cursor: pointer;
+}
+
+.panel {
+  position: fixed;
+  z-index: var(--z-overlay);
+  width: 200px;
+  padding: var(--spacing-sm-md);
+  background-color: var(--surface-card);
+  border: var(--border-card) solid var(--surface-card-border);
+  border-radius: var(--border-radius-sm);
+  font-family: var(--font-family-body);
+  font-weight: var(--font-weight-regular);
+  font-size: var(--text-body-xs-size);
+  line-height: var(--text-body-xs-lh);
+  letter-spacing: var(--text-body-xs-ls);
+  color: var(--text-secondary);
+  word-break: break-word;
+  text-align: left;
+}
