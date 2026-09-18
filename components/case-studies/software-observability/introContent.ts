@@ -33,15 +33,15 @@ export const softwareObservabilityIntro: CaseStudyIntro = {
     {
       badge: "0 → 1",
       heading: "Platform Expansion",
-      body: "Designed end-to-end software module experience, extending the platform's coverage from employees and devices into software.",
+      body: "Software unlocked a new layer of cross-system automation, opening a new revenue stream for XOPS beyond employee and device data.",
     },
     {
       heading: "Millions Reclaimed",
-      body: "Established foundation for automated software optimization enabling customers like Broadcom to surface and recover waste at scale.",
+      body: "Autonomous license optimization enabled customers like Broadcom to identify and recover millions of dollars in waste.",
     },
     {
       heading: "Revenue & Sales Driver",
-      body: "Software Observability became a consistent presence in enterprise sales demos, revealing the depth of XOPS' system of intelligence.",
+      body: "The new module became a consistent presence in enterprise sales demos, revealing the depth of XOPS' system of intelligence.",
     },
   ],
 };
