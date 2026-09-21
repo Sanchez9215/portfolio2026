@@ -41,7 +41,12 @@
    same for TIMING.titleStart/titleStagger. */
 .section {
   --hero-reveal-duration: 0.75s;
-  --hero-reveal-ease: cubic-bezier(0.25, 0.46, 0.45, 0.94); /* power2.out approximation */
+  --hero-reveal-ease: cubic-bezier(
+    0.25,
+    0.46,
+    0.45,
+    0.94
+  ); /* power2.out approximation */
   --hero-title-start: 0.25s;
   --hero-title-stagger: 0.25s;
 }
@@ -224,7 +229,7 @@
   animation: heroReveal var(--hero-reveal-duration) var(--hero-reveal-ease) both;
   /* TIMING.sublineStart (1.25s) + --hero-reveal-duration (0.75s) — starts
      once the subline's own reveal has fully finished, not alongside it. */
-  animation-delay: 2s;
+  animation-delay: 1.5s;
 }
 
 /* Entrance reveal only — the phrase-rotation loop has its own reduced-motion
