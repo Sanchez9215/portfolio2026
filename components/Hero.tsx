@@ -34,7 +34,6 @@ import gsap from "gsap";
 import Label from "./Label";
 import Title from "./Title";
 import Block from "./Block";
-import Button from "./Button";
 import TestButton from "./TestButton";
 import styles from "./Hero.module.css";
 
