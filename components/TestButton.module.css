@@ -1,0 +1,107 @@
+.button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: var(--surface-base);
+  border-radius: var(--button-radius);
+  padding: var(--spacing-md) var(--spacing-lg);
+  /* Transparent, same width as the border the SVG now draws — reserves the
+     same box size/position a real border would, without rendering a second
+     visible line alongside the SVG stroke. */
+  border: 1px solid transparent;
+}
+
+/* Three blurred radial glow blobs behind the label (Figma node 1207:3262's
+   settled hover state) — plain ellipses + filter:blur(), reproducing each
+   shape's real solid-color + Gaussian-blur export exactly (no SVG needed).
+   Sizes/positions are exact px conversions (16px root) of the real Figma
+   Dev Mode export. Colors: grey (#D9D9D9) has no matching token in this
+   system yet — raw, unresolved, like the rest of this experimental button;
+   blue resolves cleanly to --color-blue-500. */
+.blobGreySmall,
+.blobBlue,
+.blobGreyLarge {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.blobGreySmall {
+  width: 91.429px;
+  height: 46.857px;
+  left: 72px;
+  bottom: -40px;
+  background-color: #fff;
+  filter: blur(8px);
+}
+
+.blobBlue {
+  width: 182.857px;
+  height: 94.857px;
+  left: 26.286px;
+  bottom: -75.429px;
+  background-color: var(--color-blue-500);
+  filter: blur(16px);
+}
+
+.blobGreyLarge {
+  width: 236.571px;
+  height: 133.714px;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: -116px;
+  background-color: #d9d9d9;
+  filter: blur(20px);
+}
+
+.label {
+  position: relative;
+  font-family: var(--font-family-body);
+  font-weight: var(--font-weight-semibold);
+  font-size: 24px;
+  line-height: 24px;
+  color: var(--color-grey-50);
+  white-space: nowrap;
+}
+
+/* Inset blue glow, faded in via GSAP once the border finishes drawing
+   (Figma node 1132:3243's settled hover state) — a separate layer since
+   GSAP doesn't reliably tween box-shadow directly. */
+.glow {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 4px 25px 0 var(--accent-primary);
+  pointer-events: none;
+  opacity: 0;
+}
+
+/* The button's entire visible border — both the always-on grey resting
+   stroke and the animated blue hover stroke are drawn here, from identical
+   path geometry (see TestButton.tsx), so nothing can render as a second,
+   offset line. viewBox is kept 1:1 with real measured pixels. */
+.border {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.borderPathGrey,
+.borderPathBlue {
+  fill: none;
+  stroke-width: 1;
+}
+
+.borderPathGrey {
+  stroke: var(--color-grey-500);
+}
+
+.borderPathBlue {
+  stroke: var(--accent-primary);
+}

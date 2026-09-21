@@ -269,8 +269,8 @@ export default function WorkCaseStudyRow({
                       <Image
                         src="/icons/InfoCircle.svg"
                         alt=""
-                        width={18}
-                        height={18}
+                        width={16}
+                        height={16}
                       />
                     </Tooltip>
                   </span>

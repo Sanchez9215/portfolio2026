@@ -34,6 +34,8 @@ import gsap from "gsap";
 import Label from "./Label";
 import Title from "./Title";
 import Block from "./Block";
+import Button from "./Button";
+import TestButton from "./TestButton";
 import styles from "./Hero.module.css";
 
 const HEADLINE_LINES = [
@@ -292,49 +294,16 @@ export default function Hero() {
           <Button
             variant="primary"
             size="large"
-            href="/#work"
-            icon={
-              // Inlined from /icons/arrow_downward.svg (not <img src>) — currentColor
-              // resolves from the icon badge's own color, same convention as
-              // SoftwareExperienceEmbed's go-arrow CTA icon.
-              <svg
-                width="32"
-                height="32"
-                viewBox="0 0 32 32"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                aria-hidden="true"
-              >
-                <mask
-                  id="arrow-downward-mask"
-                  style={{ maskType: "alpha" }}
-                  maskUnits="userSpaceOnUse"
-                  x="0"
-                  y="0"
-                  width="32"
-                  height="32"
-                >
-                  <rect width="32" height="32" fill="#D9D9D9" />
-                </mask>
-                <g mask="url(#arrow-downward-mask)">
-                  <path
-                    d="M14.6663 5.33301V21.5663L7.19967 14.0997L5.33301 15.9997L15.9997 26.6663L26.6663 15.9997L24.7997 14.0997L17.333 21.5663V5.33301H14.6663Z"
-                    fill="currentColor"
-                  />
-                </g>
-              </svg>
-            }
+            href="mailto:hello@edgarsanchez.design"
           >
-            Work
-          </Button>
-          <Button
-            variant="secondary"
-            size="large"
-            href="mailto:edgar.sanchez9215@gmail.com"
-          >
-            Contact
+            Let&rsquo;s build together
           </Button>
         </div> */}
+        <div className={styles.buttonRow}>
+          <TestButton href="mailto:hello@edgarsanchez.design">
+            Let&rsquo;s build together
+          </TestButton>
+        </div>
       </div>
     </section>
   );
