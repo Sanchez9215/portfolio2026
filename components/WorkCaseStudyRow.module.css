@@ -8,6 +8,7 @@
 /* section.work — full-width row, top divider (Figma: border-t) */
 .work {
   position: relative;
+  overflow: hidden;
   border-top: var(--border-card) solid var(--surface-card-border);
   padding-bottom: var(--spacing-xl);
 
@@ -337,7 +338,7 @@
   .impact {
     grid-column: 1 / 13;
     order: 4;
-    margin-top: var(--spacing-3xl);
+    margin-top: var(--spacing-xl);
   }
 
   .embedWrap {
@@ -400,6 +401,7 @@
      empty space under a body-less item. */
   .impactItem {
     height: auto;
+    min-height: 0;
   }
 
   /* The 3-column filler slots (see WorkCaseStudyRow.tsx's IMPACT_SLOTS)
