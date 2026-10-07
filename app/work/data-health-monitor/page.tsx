@@ -62,7 +62,7 @@ export default function DataHealthMonitorPage() {
             body="XOPS saw a clear market gap. Enterprise customers needed a better answer to CMDB governance."
           />
           <Block size="lg" className={styles.detailBlock}>
-            I led the design for the XOPS' Data Health Monitor, a new module
+            I led the design for the XOPS&apos; Data Health Monitor, a new module
             that transformed reactive data cleanup into a continuous monitoring
             layer.
           </Block>
@@ -130,7 +130,7 @@ export default function DataHealthMonitorPage() {
             body="To build a data health monitoring system compatible with XOPS, I mapped the CMDB hierarchy to our existing Observability Framework."
           />
           <Block size="lg" className={styles.detailBlock}>
-            While the architectures were similar, this wasn't a simple 1:1
+            While the architectures were similar, this wasn&apos;t a simple 1:1
             mapping and would require adjustments for it to fit the platform
             logic XOPS was built on.
           </Block>

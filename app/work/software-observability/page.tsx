@@ -1,6 +1,5 @@
 import dynamic from "next/dynamic";
 import LazyMount from "@/components/LazyMount";
-import Nav from "@/components/Nav";
 import Section from "@/components/Section";
 import LabelBlock from "@/components/LabelBlock";
 import Block from "@/components/Block";
