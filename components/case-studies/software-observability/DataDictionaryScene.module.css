@@ -1,177 +1,241 @@
 /* ============================================================
-   DataDictionaryScene — pinned scaffold table build → real Data
-   Dictionary table. section.data-dictionary, Software Observability
-   case study
+   DataDictionaryScene — static section: connector line + display block +
+   an angled ("tabletop" tilt) card + table. Full rebuild, replaces the
+   old scroll-pinned scaffold-build scene (see progress.md/PLAN.md).
    ============================================================ */
 
-/* Scroll-track only. Height is set in JS to calc(100vh + RUNWAY) — one
-   viewport for the sticky .stage + the beats' runway. Same mechanism as
-   TheProblemPinnedScene/FrameworkScene: the stage sticks for exactly that
-   distance, then releases and scrolls away with no pin-spacer desync. */
 .scene {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-5xl);
+}
+
+/* ── Connector lines ──
+   Stroke color has no existing semantic token (grey-650 isn't mapped to
+   any --surface- or --text- token in the dark theme) — referencing the
+   primitive directly, same deliberate one-off as GhostCursor's shadow. */
+
+.tableConnector {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+/* Rake — sized/positioned to exactly cover .perspectiveWrap; overflow:
+   visible lets a line's endpoint render even past that box (the
+   convergence point sits to the left of the table, likely outside it).
+   Not transformed itself — each line's own endpoints (measured in the
+   .tsx) already land at the row's real on-screen position, post-tilt. */
+.rake {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+/* Each line is now a shared ProcessConnector (PLAN.md's "Process Diagram /
+   Connector System") instead of a bespoke <line>. Solid per request (was
+   dashed 6 4). */
+.rakeLine {
+}
+
+/* ── Display block ── */
+/* LabelBlock (label+body) + a sibling detail Block — same pattern as
+   BuildingBlocksIntro's header, not LabelBlock's own `support` slot. */
+
+.textBlock {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl);
+  padding: var(--spacing-3xl);
+}
+
+.dataDictionaryDetailBlock {
+  color: var(--text-primary);
+  max-width: 301px;
+}
+
+/* ── Perspective wrapper (card + table) ──
+   Shared `perspective` so the card and table recede toward the same
+   vanishing point. rotateX(-16deg) (not rotateY): "tilting like a
+   tabletop," not a turned page — -16deg is the same angle the original
+   skewX() attempt used, now done as real 3D perspective instead of a
+   flat shear. */
+
+.perspectiveWrap {
+  position: relative;
+  perspective: 2500px;
+  perspective-origin: right;
+  /* x, y — right/down positive, left/up negative. Repositions the whole
+     tilted group without disturbing .scene's flex gap or the rotateX
+     transforms on .card/.table inside it. */
+  transform: translate(500px, -164px);
+}
+
+.card {
+  position: absolute;
+  top: 0;
+  left: 0;
+  /* Explicit width (was right:0, stretching to fill .perspectiveWrap) —
+     edit directly to make the card narrower/wider than the table. */
+  width: 100%;
+  /* Base padding-top/left/right stays --spacing-lg on all sides; the
+     extra 72px on bottom only adds height below the content, so the
+     title/body stay pinned to the top instead of the block re-centering
+     inside a taller box. */
+  padding: var(--spacing-lg) var(--spacing-lg) calc(var(--spacing-lg) + 72px)
+    var(--spacing-lg);
+  /* translate (x, y — right/down positive) repositions the card;
+     rotateX/transform-origin keep it matched to .table's own tilt. */
+  transform: translate(0px, -64px) rotateX(24deg);
+  transform-origin: right;
+  border: var(--border-card) solid var(--color-grey-650);
+  border-radius: var(--radius-default);
+  /* z-index below .table — this card sits BEHIND the table, only its top
+     slice showing above the table's own top edge (matches the Figma
+     layer order: Document Intent card painted first, table painted over
+     it). */
+  z-index: 0;
+}
+
+.cardTitle {
+  font-family: var(--font-family-body);
+  font-weight: var(--font-weight-semibold);
+  /* Placeholder literal px (not a type-scale token) — this whole card +
+     table renders at a small, scaled-down size with no clean match in
+     the existing tier set; confirmed as a stand-in to tune later. */
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--text-subtle);
+  margin: 0 0 var(--spacing-xs) 0;
+}
+
+.cardBody {
+  font-family: var(--font-family-body);
+  font-weight: var(--font-weight-regular);
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--text-subtle);
+  margin: 0;
+}
+
+.table {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  width: 110%;
+  /* translate (x, y — right/down positive) repositions the table;
+     rotateX/transform-origin control its tilt, unaffected by this. */
+  transform: translate(-112px, -88px) rotateX(24deg);
+  transform-origin: bottom;
+  background: var(--surface-base);
+  border: var(--border-card) solid var(--color-grey-650);
+  border-radius: var(--radius-default);
+  overflow: hidden;
+  --table-grid-template: 0.8fr 1.4fr 1fr 1.2fr 1.6fr 0.9fr;
+}
+
+.headerRow,
+.bodyRow {
+  display: grid;
+  grid-template-columns: var(--table-grid-template);
+}
+
+/* Real DOM child of .table (see columnDividerMarker below), so its 6 zero-
+   size cells sit exactly on the body rows' own column boundaries — read in
+   JS to anchor the bottom column-divider fan to the table's TRUE rendered
+   column widths instead of a hand-measured guess. Zero height, flush to
+   the table's bottom edge. */
+.columnDividerRow {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 0;
+  display: grid;
+  grid-template-columns: var(--table-grid-template);
+  pointer-events: none;
+}
+
+.columnDividerMarker {
+  position: relative;
+  width: 0;
+  height: 0;
+}
+
+/* Nested inside .columnDividerMarker so its own BRANCH_WIDTH/SHOULDER_DY
+   offset (set inline per-column in the .tsx) is applied in the table's
+   LOCAL space, BEFORE .table's rotateX — same technique as .shoulderMarker
+   above, so the browser's own transform math gives the true
+   perspective-projected shoulder point instead of flat post-hoc math. */
+.columnShoulderMarker {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.headerRow {
+  background: var(--color-grey-1000);
+}
+
+.bodyRow:not(:last-child) {
+  border-bottom: var(--border-card) solid var(--surface-card-border);
+}
+
+/* Real DOM child of its row, so it's subject to the exact same table
+   transform (rotateX/perspective) as the row itself — measuring it in
+   JS gives the true perspective-projected position of a BRANCH_WIDTH
+   offset, including whatever depth-dependent foreshortening that row's
+   own position implies. Zero size; left:0/bottom:0 + the inline
+   translate (set per-row in the .tsx) place it exactly, never rendered
+   visually. */
+.bodyRow {
   position: relative;
 }
 
-.stage {
-  position:       sticky;
-  top:            0;
-  height:         100vh;
-  display:        grid;
-  align-items:    center;
-  justify-items:  center;
-  padding-top:    var(--nav-height);
-}
-
-/* Real DataGlossaryTable, mounted only to measure its actual rendered
-   header/row/column dimensions at this viewport width (see
-   DataDictionaryScene.tsx) — invisible and out of the grid flow so it
-   never affects .stage's layout or is seen. */
-.measureWrap {
-  position:       absolute;
-  top:            0;
-  left:           0;
-  width:          100%;
-  opacity:        0;
-  pointer-events: none;
-  z-index:        -1;
-}
-
-.tableWrap {
-  position:     relative;
-  width:        100%;
-  /* Breaks away from .stage's shared centering so the table shrinks/grows
-     anchored at its own top-left corner, not the viewport center. */
-  align-self:   start;
-  justify-self: start;
-}
-
-/* ── table ───────────────────────────────────────────────── */
-
-.table {
-  display:               grid;
-  grid-template-columns: 437px 1fr 1fr 0px 0px 0px;
-  grid-template-rows:    64px 176px 224px 224px 0px 0px 0px 0px;
-  width:                 100%;
-  border:                var(--border-card) solid var(--surface-card-border);
-  border-radius:         var(--radius-md);
-  overflow:              hidden;
-}
-
-.headerCell1,
-.headerCell2,
-.headerCell3,
-.headerCell4,
-.headerCell5,
-.headerCell6 {
-  position:      relative;
-  grid-row:      1;
-  border-bottom: var(--border-card) solid var(--surface-card-border);
-  display:       flex;
-  align-items:   center;
-  padding:       var(--spacing-md) var(--spacing-lg);
-  overflow:      hidden;
-}
-
-.headerCell1 { grid-column: 1; }
-.headerCell2 { grid-column: 2; }
-.headerCell3 { grid-column: 3; }
-.headerCell4 { grid-column: 4; }
-.headerCell5 { grid-column: 5; }
-.headerCell6 { grid-column: 6; }
-
-/* Absolutely-positioned fill, scaled in from the top by GSAP (scaleY,
-   transform-origin:top) — the header cell's own background lives here
-   rather than on the cell itself, so the wipe animates independently of
-   the label content sitting above it. */
-.headerFill {
-  position:   absolute;
-  inset:      0;
-  background: var(--surface-card);
-}
-
-/* Positioned to fill the cell's content box (inside its padding) so the old
-   placeholder label and the new real column-name label can sit exactly on
-   top of each other and cross-fade in place. */
-.headerContent {
-  position:    absolute;
-  inset:       0;
-  display:     flex;
-  align-items: center;
-  padding:     var(--spacing-md) var(--spacing-lg);
-  white-space: nowrap;
-}
-
-.realHeaderLabel {
-  font-family:    var(--font-family-display);
-  font-weight:    var(--font-weight-semibold);
-  font-size:      var(--text-heading-xs-size);
-  line-height:    var(--text-heading-xs-lh);
-  letter-spacing: var(--text-heading-xs-ls);
-  color:          var(--text-primary);
-  text-transform: uppercase;
-}
-
-/* Body cells — grid position set inline per cell (see .tsx: 7 rows × 6
-   columns, generated from real glossary data), border on every cell; the
-   coincident 1px line at the table's own outer edge is invisible overlap. */
-.bodyCell {
-  position:      relative;
-  border-right:  var(--border-card) solid var(--surface-card-border);
-  border-bottom: var(--border-card) solid var(--surface-card-border);
-  /* Matches DataGlossaryTable's real .bodyCell padding exactly — row
-     heights are measured from that real table, so a mismatched padding
-     here would wrap real content differently and clip it. */
-  padding:       var(--spacing-md);
-  overflow:      hidden;
-}
-
-/* Old scaffold placeholder text (fades up and out in phase 5) — sits inside
-   the same bodyCell as the incoming real text, absolutely positioned so
-   both can cross-fade in place without affecting cell layout. */
-.oldStatement {
+.shoulderMarker {
   position: absolute;
-  inset:    0;
-  padding:  var(--spacing-lg);
-  font-family:    var(--font-family-body);
-  font-weight:    var(--font-weight-semibold);
-  font-size:      var(--text-body-display-sm-size);
-  line-height:    var(--text-body-display-sm-lh);
-  letter-spacing: var(--text-body-display-sm-ls);
-  color:          var(--text-secondary);
+  left: 0;
+  bottom: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
 }
 
-/* nowrap: at mount the column is still its wide pre-shrink width while the
-   font is still display-sm-sized, so without this each authored line could
-   itself soft-wrap — 3+ rendered rows instead of exactly 2. Any overflow
-   this causes before the shrink catches up is clipped by .table's own
-   overflow:hidden. */
-.oldStatementLine {
-  margin:      0;
-  white-space: nowrap;
+.headerCell {
+  min-width: 0;
+  padding: var(--spacing-sm-md);
+  font-family: var(--font-family-display);
+  font-weight: var(--font-weight-semibold);
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--text-primary);
+  text-transform: uppercase;
+  border-right: var(--border-card) solid var(--surface-card-border);
 }
 
-.realBodyCellText {
-  margin:      0;
+.bodyCell {
+  min-width: 0;
+  padding: var(--spacing-sm-md);
   font-family: var(--font-family-body);
   font-weight: var(--font-weight-regular);
-  font-size:   var(--text-body-sm-size);
-  line-height: var(--text-body-sm-lh);
-  letter-spacing: var(--text-body-sm-ls);
-  color:       var(--text-secondary);
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+  border-right: var(--border-card) solid var(--surface-card-border);
 }
 
-/* Column divider lines — drawn in via stroke-dasharray/dashoffset, on top
-   of the table (which has its own static outer border + row borders via
-   CSS, unanimated). pointer-events:none so it never blocks table content. */
-.dividers {
-  position:       absolute;
-  top:            0;
-  left:           0;
-  pointer-events: none;
-}
-
-.dividerLine {
-  stroke:       var(--surface-card-border);
-  stroke-width: var(--border-width-sm);
-  fill:         none;
+.headerCell:last-child,
+.bodyCell:last-child {
+  border-right: none;
 }

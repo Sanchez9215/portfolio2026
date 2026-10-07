@@ -1,26 +1,21 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import Image from "next/image";
 import gsap from "gsap";
 import Block from "@/components/Block";
 import Title from "@/components/Title";
 import TitleBlock from "@/components/TitleBlock";
-import SoftwareExperienceEmbed from "./SoftwareExperienceEmbed";
-import { softwareObservabilityIntro } from "./introContent";
+import Tooltip from "@/components/Tooltip";
+import CompanyLogo from "@/components/CompanyLogo";
+import type { CaseStudyIntro } from "./caseStudyIntro";
 import styles from "./SectionIntroduction.module.css";
 
 // Entrance choreography, all landing within ~1s of mount:
 //   title rows (staggered) + description (together) — both start at 0
 //   meta row (all at once) — starts once title/description are underway
 //   impact row (all at once) — starts immediately after meta row finishes
-// The hero embed fades/translates in over its own longer 1.25s beat in
-// parallel — SoftwareExperienceEmbed uses that same window to pre-warm its
-// first scroll target while it's still not the visual focus (see its own
-// comments), then fades its cursor in and starts its scripted sequence at
-// the 1.5s mark once this section has fully settled.
-//
-// TIMING is a live-tweak surface for the intro (title/description) and
-// impact row beats only — edit and save to see changes via Fast Refresh.
+//   hero visual fades/translates up over its own longer 1.25s beat in parallel
 const TIMING = {
   titleStartDelay: 0.65,
   titleDuration: 0.75,
@@ -36,12 +31,31 @@ const TIMING = {
   heroTravelDistance: 500,
 };
 
-export default function SectionIntroduction() {
+// Impact row always lays out 3 columns — a study with fewer items gets
+// filler slots so column widths still match a full row (mirrors
+// WorkCaseStudyRow's own IMPACT_SLOTS on Home).
+const IMPACT_SLOTS = 3;
+
+export interface SectionIntroductionProps {
+  intro: CaseStudyIntro;
+  /** Same render-prop shape as `WorkCaseStudyRow`'s `visual` — `entranceReady`
+   *  flips when the hero visual's own fade-in starts, `settled` when it
+   *  finishes. A static/non-interactive visual can ignore both. */
+  visual: (entranceReady: boolean, settled: boolean) => ReactNode;
+}
+
+export default function SectionIntroduction({
+  intro,
+  visual,
+}: SectionIntroductionProps) {
   const titleRef = useRef<HTMLHeadingElement>(null);
   const descriptionRef = useRef<HTMLParagraphElement>(null);
   const metaRef = useRef<HTMLDivElement>(null);
   const impactRef = useRef<HTMLDivElement>(null);
   const heroEmbedRef = useRef<HTMLDivElement>(null);
+
+  const [entranceReady, setEntranceReady] = useState(false);
+  const [settled, setSettled] = useState(false);
 
   useEffect(() => {
     const titleEl = titleRef.current;
@@ -51,25 +65,6 @@ export default function SectionIntroduction() {
     const heroEmbedEl = heroEmbedRef.current;
     if (!titleEl || !descriptionEl || !metaEl || !impactEl || !heroEmbedEl)
       return;
-
-    // DIAGNOSTIC: watch the whole page-load window (not just one component's
-    // tween) for dropped frames, so we can see what's actually stalling the
-    // main thread and when — rather than guessing again.
-    const t0 = performance.now();
-    let lastFrame = t0;
-    let rafId: number;
-    const monitor = () => {
-      const now = performance.now();
-      const delta = now - lastFrame;
-      if (delta > 32) {
-        console.log(
-          `[frame-jank] +${(now - t0).toFixed(0)}ms stall of ${delta.toFixed(0)}ms`,
-        );
-      }
-      lastFrame = now;
-      if (now - t0 < 5000) rafId = requestAnimationFrame(monitor);
-    };
-    rafId = requestAnimationFrame(monitor);
 
     const ctx = gsap.context(() => {
       const titleRows = titleEl.querySelectorAll(`.${styles.titleRow}`);
@@ -106,6 +101,7 @@ export default function SectionIntroduction() {
           { opacity: 1, y: 0, duration: TIMING.impactDuration },
           TIMING.impactStart,
         )
+        .call(() => setEntranceReady(true), undefined, TIMING.heroStart)
         .fromTo(
           heroEmbedEl,
           { y: TIMING.heroTravelDistance },
@@ -113,13 +109,13 @@ export default function SectionIntroduction() {
             opacity: 1,
             y: 0,
             duration: TIMING.heroDuration,
+            onComplete: () => setSettled(true),
           },
           TIMING.heroStart,
         );
     });
 
     return () => {
-      cancelAnimationFrame(rafId);
       ctx.revert();
     };
   }, []);
@@ -129,7 +125,8 @@ export default function SectionIntroduction() {
     description: introDescription,
     meta: introMeta,
     impact: introImpact,
-  } = softwareObservabilityIntro;
+    companyLogo,
+  } = intro;
 
   return (
     <section className={`cs-grid ${styles.introduction}`}>
@@ -151,15 +148,40 @@ export default function SectionIntroduction() {
 
       <div className={styles.projectImpact}>
         <div ref={metaRef} className={styles.projectMeta}>
-          {introMeta.map((item) => (
-            <TitleBlock
-              key={item.label}
-              size="xs"
-              titleColor="tertiary"
-              title={item.label}
-              body={item.body}
-            />
-          ))}
+          {introMeta.map((item) => {
+            if (item.label !== "Company") {
+              return (
+                <TitleBlock
+                  key={item.label}
+                  size="xs"
+                  titleColor="tertiary"
+                  title={item.label}
+                  body={item.body}
+                />
+              );
+            }
+            return (
+              <TitleBlock
+                key={item.label}
+                size="xs"
+                titleColor="tertiary"
+                title={
+                  <span className={styles.companyLabel}>
+                    {item.label}
+                    <Tooltip content={item.body}>
+                      <Image
+                        src="/icons/InfoCircle.svg"
+                        alt=""
+                        width={16}
+                        height={16}
+                      />
+                    </Tooltip>
+                  </span>
+                }
+                body={<CompanyLogo {...companyLogo} />}
+              />
+            );
+          })}
         </div>
         <div ref={impactRef} className={styles.impactCards}>
           {introImpact.map((item) =>
@@ -182,12 +204,24 @@ export default function SectionIntroduction() {
               />
             ),
           )}
+          {/* Empty slots padding the row out to IMPACT_SLOTS, so a study with
+              fewer impact items keeps the same column widths as a full one —
+              matches WorkCaseStudyRow's own filler pattern on Home. */}
+          {Array.from({
+            length: Math.max(0, IMPACT_SLOTS - introImpact.length),
+          }).map((_, i) => (
+            <div
+              key={`filler-${i}`}
+              className={styles.impactFiller}
+              aria-hidden="true"
+            />
+          ))}
         </div>
       </div>
 
       <div className={styles.heroImage}>
         <div ref={heroEmbedRef} className={styles.heroEmbed}>
-          <SoftwareExperienceEmbed enableExpandedView />
+          {visual(entranceReady, settled)}
         </div>
       </div>
     </section>

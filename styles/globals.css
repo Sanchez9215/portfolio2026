@@ -193,8 +193,9 @@
      PRIMITIVES — Icon sizes
      ---------------------------------------------------------- */
 
-  --icon-sm:  16px;
-  --icon-md:  24px;
+  --icon-sm:    16px;
+  --icon-sm-md: 20px;  /* intermediate step, same naming convention as --spacing-sm-md */
+  --icon-md:    24px;
   --icon-lg:  32px;
   --icon-xl:  40px;
   --icon-2xl: 64px;

@@ -174,6 +174,158 @@ section.insightsGoals .insightsGoalsContext {
   overflow: hidden;
 }
 
+/* ── section.stakeholders-intro / section.stakeholders-cards ──
+   Flat sibling sections (split from one combined section) — the gap
+   between the header and the branch/cards visual is plain CSS margin on
+   stakeholdersCards, not a cross-component measurement. */
+
+section.stakeholdersIntro {
+  position: relative;
+  padding-bottom: 0;
+}
+
+.stakeholdersIntroSpineSvg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: visible;
+}
+
+section.stakeholdersCards {
+  position: relative;
+  padding-top: var(--spacing-5xl);
+  padding-bottom: var(--spacing-5xl);
+}
+
+.stakeholdersHeader {
+  grid-column: 7 / 13;
+  display: grid;
+  grid-template-columns: subgrid;
+  row-gap: var(--spacing-xl);
+  margin-top: var(--spacing-3xl);
+}
+
+.stakeholdersHeader > * {
+  grid-column: 1 / -1;
+}
+
+.stakeholdersDetailBlock {
+  grid-column: 1 / 4;
+}
+
+.stakeholdersCardsStack {
+  grid-column: 1 / -1;
+  position: relative;
+  /* Reserves real room for the fan-trapezoid connectors (BRANCH_HEIGHT,
+     components/buildFanTrapezoid.ts — matches --spacing-lg, 24px) drawn by
+     the absolutely-positioned .stakeholdersFanSvg overlay above/below the
+     row, replacing the old fixed-column-gap flex stack. */
+  padding-block: var(--spacing-lg);
+}
+
+.stakeholdersFanSvg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.stakeholdersRow {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  gap: var(--spacing-xl);
+}
+
+.stakeholdersItem {
+  flex: 0 0 320px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  align-items: center;
+  text-align: center;
+}
+
+.stakeholdersItemTitle {
+  font-family: var(--font-family-body);
+  font-weight: var(--font-weight-bold);
+  font-size: var(--text-heading-xs-size);
+  line-height: var(--text-heading-xs-lh);
+  letter-spacing: var(--text-heading-xs-ls);
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+/* ── section.building-blocks-intro / section.building-blocks-map ──
+   Flat sibling sections. building-blocks-intro's 64px gap up to
+   stakeholders-cards, and building-blocks-map's 96px gap down to the
+   header, are both plain CSS margin — no cross-component measurement. */
+
+section.buildingBlocksIntro {
+  position: relative;
+  padding-top: var(--spacing-5xl);
+  padding-bottom: var(--spacing-5xl);
+}
+
+section.buildingBlocksMap {
+  position: relative;
+  /* Not 100vh alone — the fixed nav sits on top of this section once it's
+     scrolled into full view, so a plain 100vh hides its own top nav-height
+     slice behind the nav bar. Same convention this codebase's other
+     full-viewport sections use (e.g. the sticky quote's own height:
+     calc(100vh - var(--nav-height))). */
+  height: calc(100vh - var(--nav-height));
+  padding-top: var(--spacing-5xl);
+  padding-bottom: var(--spacing-xl);
+}
+
+/* An absolutely-positioned child's containing block is the ancestor's
+   PADDING box, not its content box — inset:0 fills flush to the section's
+   border edge regardless of padding-top/padding-bottom, ignoring it
+   entirely (an earlier version of this comment claimed otherwise; that
+   was wrong, confirmed by the map's leaves rendering past the section's
+   own top padding). Matching top/bottom to the section's real
+   padding-top/padding-bottom values directly is what actually respects
+   them. Taken out of the grid entirely (not a grid-column placement)
+   since the map is a freeform diagram, not column-based content. */
+.buildingBlocksMapInner {
+  position: absolute;
+  top: var(--spacing-5xl);
+  bottom: var(--spacing-xl);
+  left: 0;
+  right: 0;
+}
+
+.buildingBlocksSpineSvg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.buildingBlocksHeader {
+  grid-column: 1 / 7;
+  display: grid;
+  grid-template-columns: subgrid;
+  row-gap: var(--spacing-xl);
+  text-align: right;
+}
+
+.buildingBlocksHeader > * {
+  grid-column: 1 / -1;
+}
+
+.buildingBlocksDetailBlock {
+  grid-column: 4 / 7;
+  color: var(--text-primary);
+}
+
 /* ── section.data ────────────────────────────────────────── */
 
 section.data {
@@ -228,13 +380,13 @@ section.data {
 
 /* ── section.framework-adaptation ──────────────────────────── */
 
-/* Wrapper spanning Framework Adaptation + Observability so one SVG overlay can
-   draw the funnel/spine/second-funnel as a single continuous line across both.
-   isolation:isolate makes it a stacking context so the overlay (z-index:2) can
-   sit above the blue blob (z-index:1) but behind the grey almond (z-index:3). */
+/* Plain wrapper around the two (independent again) Framework Adaptation /
+   Observability Sections — position:relative only, so FrameworkAdaptationEyes'
+   beam/mask layers (portaled here) have a positioned ancestor to size
+   (inset:0) and measure against. No isolation — that was only ever needed
+   for the now-abandoned FrameworkFunnelSpine mechanism. */
 .frameworkObservabilityWrap {
   position: relative;
-  isolation: isolate;
 }
 
 .frameworkFunnelSpineSvg {
@@ -247,14 +399,43 @@ section.data {
   overflow: visible;
 }
 
-.frameworkAdaptation {
-  min-height: 100vh;
+/* Framework Adaptation — its own independent Section again (un-merged).
+   padding-block:0 overrides Section's own default padding so the
+   explicit height below is the section's real total height. */
+.frameworkAdaptationSection {
+  position: relative;
+  height: 100vh;
+  padding-block: 0;
   align-content: center;
   row-gap: var(--spacing-xl);
 }
 
 .frameworkAdaptationTextBlock {
-  grid-column: 1 /9;
+  grid-column: 1 /7;
+}
+
+/* First pass (not yet visually confirmed) — height is a placeholder;
+   the grid row itself only auto-sizes to the text block's content height,
+   so this needs its own explicit height rather than inheriting one. */
+.frameworkAdaptationEyes {
+  grid-column: 7 / -1;
+  grid-row: 1;
+  height: 70vh;
+}
+
+/* Observability — its own independent Section again (un-merged).
+   padding-block:0 overrides Section's own default padding; padding-bottom
+   re-adds just the bottom inset the content actually wants. */
+.observabilitySection {
+  position: relative;
+  height: 100vh;
+  padding-block: 0;
+  align-content: center;
+}
+
+.stakeholderIntroTextBlock {
+  grid-column: 6 / -1;
+  justify-self: end;
 }
 
 /* ── section.observability-first (eye collage) ──────────────── */
@@ -319,15 +500,29 @@ section.observabilityEyes {
 }
 
 /* ── section.data-dictionary ─────────────────────────────────
-   Pinned scaffold-table build (see DataDictionaryScene.tsx) —
-   split out of the old section.prototype-validation. */
+   Static freeform scene (connector line + display block + angled card/
+   table, DataDictionaryScene.tsx) — full rebuild, replaces the old
+   scroll-pinned scaffold-build version. Padding matches Figma's own
+   Section.Data node (pt-128/pb-32/px-96), overriding Section's shared
+   padding-block/inline the same way section.buildingBlocksMap does. */
 
 section.dataDictionary {
+  /* position:relative — makes this section itself the containing block
+     for DataDictionaryScene's connector SVG, which is rendered as the
+     section's own direct grid child (no explicit grid-column/row), not
+     nested inside the narrower 7-column .dataDictionaryScene box. */
+  position: relative;
+  padding-top: var(--spacing-5xl);
+  padding-bottom: var(--spacing-xl);
+  padding-inline: var(--spacing-4xl);
   row-gap: 0;
 }
 
 .dataDictionaryScene {
-  grid-column: 1 / -1;
+  /* 7 of 12 columns — assumed to mean the whole scene (text block +
+     connector + table), the only grid-column-controlled element here;
+     flag if you meant just the table on its own. */
+  grid-column: 1 / 9;
 }
 
 /* ── section.prototype-validation ────────────────────────────
@@ -370,7 +565,7 @@ section.prototypeValidation {
    and no longer clips the embed itself — see AnnotationConnectorHotspot's
    tooltip-overflow comment in ImgCard.tsx. */
 .prototypeEmbedRounded {
-  border-radius: var(--radius-default);
+  border-radius: var(--border-radius-sm);
 }
 
 /* ── section.all-software-view ──────────────────────────────── */
@@ -391,16 +586,26 @@ section.prototypeValidation {
 
 /* ── section.gaps-identified ────────────────────────────────── */
 
-/* Freeform spatial composition (hexagon honeycomb) — confirmed departure
-   from cs-grid's column placement, same convention as section.framework.
-   The two "bleed" hexagons overflow above the stage on purpose, so nothing
-   here clips: no overflow:hidden anywhere in this section's ancestry. */
 section.gapsIdentified {
-  padding-block: 0;
+  min-height: 100vh;
+  align-content: center;
 }
 
-.gapsIdentifiedScene {
+.gapsIdentifiedWrapper {
   grid-column: 1 / -1;
+  justify-self: right;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-xl);
+}
+
+.gapsIdentifiedTextBlock {
+  width: 789px;
+}
+
+.gapsIdentifiedDetailBlock {
+  width: 320px;
 }
 
 /* ── section.parallel-prototyping ───────────────────────────── */
@@ -478,23 +683,26 @@ section.parallelPrototyping {
   border-radius: var(--radius-default);
 }
 
-/* ── section.overview-prototype-1 ──────────────────────────── */
-/* one-off, full-span layout — exploratory pass, not yet a SectionImg variant */
+/* ── section.all-software-prototype-1 — card player + Timeline sidebar,
+   same two-column split as section.prototypeValidation above (see
+   AllSoftwarePrototype1Section.tsx). ─────────────────────────────────── */
 
-section.overviewPrototype1 {
-  row-gap: var(--spacing-3xl);
+section.allSoftwarePrototype1 {
+  min-height: 100vh;
+  align-content: center;
+  row-gap: var(--spacing-5xl);
+  column-gap: var(--spacing-3xl);
 }
 
-.overviewPrototype1Embed {
-  grid-column: 1 / -1;
+.allSoftwarePrototype1Center {
+  grid-column: 1 / 10;
 }
 
-.overviewPrototype1CardsLeft {
-  grid-column: 1 / 7;
-}
-
-.overviewPrototype1CardsRight {
-  grid-column: 7 / 13;
+/* Timeline sidebar (see AllSoftwarePrototype1Section/Timeline.tsx) — the
+   last 3 of the grid's 12 columns, right-flush, matching
+   .prototypeValidationRight above. */
+.allSoftwarePrototype1Right {
+  grid-column: 10 / 13;
 }
 
 /* ── section.final-lifecycle-timeline — live-embed hotspot experience ─────── */

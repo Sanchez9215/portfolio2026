@@ -2,8 +2,13 @@
 
 import { useState } from "react";
 import LazyMount from "@/components/LazyMount";
-import OverviewPrototypeHotspots from "./OverviewPrototypeHotspots";
-import Timeline, { PlayerState, TimelineMilestone } from "./Timeline";
+import LiveEmbed from "@/components/LiveEmbed";
+import OverviewPrototypeHotspots, {
+  OVERVIEW_MILESTONES,
+  TimelineMilestone,
+} from "./OverviewPrototypeHotspots";
+import Timeline, { PlayerState } from "./Timeline";
+import { OverviewScreen } from "@/app/work/software-observability/xops-overview/OverviewScreen";
 import pageStyles from "@/app/work/software-observability/software-observability.module.css";
 
 // Wraps the card player + its Timeline sidebar together, since page.tsx is a
@@ -45,9 +50,24 @@ export default function OverviewPrototypeSection() {
       </div>
       <div className={pageStyles.prototypeValidationRight}>
         <Timeline
+          milestones={OVERVIEW_MILESTONES}
           activeMilestone={milestone}
-          onSelectMilestone={jumpTo}
-          onSelectPrototype2={() => jumpTo("decisions")}
+          onSelectMilestone={(key) => jumpTo(key as TimelineMilestone)}
+          preview={{
+            label: "Prototype 02",
+            onSelect: () => jumpTo("decisions"),
+            node: (
+              <LiveEmbed nativeWidth={1440} disableCanvasTransition>
+                <OverviewScreen
+                  showLogos={false}
+                  showUtilizationTags={false}
+                  showScrollFade={false}
+                  showOpportunity={false}
+                  lockTableScroll
+                />
+              </LiveEmbed>
+            ),
+          }}
           player={playerState ?? undefined}
         />
       </div>

@@ -1,0 +1,97 @@
+/* ============================================================
+   CmdbSystemMap — knowledge-graph-style 6-hub CMDB map. Each hub is a
+   small dot + label (not a content box); connectors are thin, dim lines
+   dot-edge-to-dot-edge, matching a flat 2D "knowledge graph" reference
+   look rather than a diagram of boxes.
+   ============================================================ */
+
+.container {
+  position: relative;
+  width: 100%;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  z-index: 0;
+}
+
+.hubDot {
+  fill: var(--text-primary);
+  cursor: grab;
+  touch-action: none;
+  pointer-events: auto;
+}
+
+.hubDot:active {
+  cursor: grabbing;
+}
+
+.hubLabel {
+  font-family: var(--font-family-body);
+  font-weight: var(--font-weight-bold);
+  font-size: var(--text-body-sm-size);
+  line-height: var(--text-body-sm-lh);
+  fill: var(--text-primary);
+  pointer-events: none;
+}
+
+.connector {
+  stroke: var(--color-blue-500);
+  stroke-width: 1;
+  stroke-linecap: round;
+  fill: none;
+  opacity: 0.5;
+}
+
+.arrowhead {
+  fill: var(--color-blue-500);
+  opacity: 0.5;
+}
+
+/* Leaf-level (hub-to-leaf) — visually distinct from hub-to-hub .connector
+   above: dashed and dimmer, same distinction ContentHub's own .spoke drew
+   against a solid hub-to-hub relationship. No arrowhead (leaves aren't
+   directional). */
+.leafDot {
+  fill: var(--text-secondary);
+  cursor: grab;
+  touch-action: none;
+}
+
+.leafDot:active {
+  cursor: grabbing;
+}
+
+.leafLabel {
+  font-family: var(--font-family-body);
+  font-weight: var(--font-weight-regular);
+  font-size: var(--text-body-xs-size);
+  line-height: var(--text-body-xs-lh);
+  fill: var(--text-secondary);
+  pointer-events: none;
+}
+
+.leafSpoke {
+  stroke: var(--color-yellow-500);
+  stroke-width: 0.5;
+  stroke-dasharray: 4 4;
+  stroke-linecap: round;
+  fill: none;
+  opacity: 0.5;
+}
+
+.connectorLabel {
+  font-family: var(--font-family-body);
+  font-weight: var(--font-weight-regular);
+  font-size: var(--text-body-sm-size);
+  line-height: var(--text-body-sm-lh);
+  fill: var(--text-secondary);
+}
+
+.connectorLabelBg {
+  fill: var(--surface-base);
+}

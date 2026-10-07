@@ -1,0 +1,273 @@
+/* ============================================================
+   CmdbSunburst — full sunburst (Category → Class → Type → CI).
+   Ring colors are local to this component only — illustrative
+   case-study content, not part of the shared token system (same
+   precedent as cmdbData.ts's own self-contained generator). Each
+   Category gets its own hue (see CATEGORY_RAMPS in CmdbSunburst.tsx);
+   every arc in its branch (Class/Type/CI) shares that hue, shaded by
+   depth, set via inline fill rather than a per-ring class — so
+   .arcSegment below only carries shared, color-independent styling.
+   ============================================================ */
+
+.sunburstWrap {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3xl);
+  width: 100%;
+  height: 100%;
+}
+
+/* Relationship connector lines (CI value → pill → target id) — same
+   mechanism as CmdbSystemMap's own .overlay/.connector/.arrowhead: an
+   absolutely-positioned, overflow-visible SVG spanning the whole wrap,
+   real DOM-measured straight lines, no scaling. Sits above the definitions
+   row (z-index) so lines draw over the row's own content. */
+.relationshipOverlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.connector {
+  stroke: var(--color-blue-500);
+  stroke-width: 1;
+  stroke-linecap: round;
+  fill: none;
+  opacity: 0.5;
+}
+
+.arrowhead {
+  fill: var(--color-blue-500);
+  opacity: 0.5;
+}
+
+.definitionsRow {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: var(--spacing-xl);
+  flex-shrink: 0;
+}
+
+.definitionItem {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.definitionTitle {
+  font-family: var(--font-family-body);
+  font-weight: var(--font-weight-bold);
+  font-size: var(--text-label-sm-size);
+  line-height: var(--text-label-sm-lh);
+  letter-spacing: var(--text-label-sm-ls);
+  color: var(--text-primary-strong);
+}
+
+.definitionText {
+  font-family: var(--font-family-body);
+  font-weight: var(--font-weight-regular);
+  font-size: var(--text-body-sm-size);
+  line-height: var(--text-body-sm-lh);
+  color: var(--color-grey-50);
+  margin: 0;
+}
+
+/* Live breadcrumb value for this layer (the hovered arc's ancestor at this
+   depth) — same weight as .definitionTitle, bumped to the label-sm (14px)
+   tier to match .definitionText's own size, color set inline per hover
+   (that layer's own category-ramp step). min-height reserves the label-sm
+   line-height always, so the row's height doesn't shift between
+   hovered/idle. */
+.definitionValue {
+  display: block;
+  /* .definitionItem is a column flex container, so its children stretch to
+     the full column width by default (align-items: stretch) — invisible
+     for plain text (still left-aligns), but it means getBoundingClientRect
+     on this element returns the WHOLE column's width, not the real text's
+     box. CmdbSunburst.tsx measures this element's right edge as the CI
+     relationship-connector line's start point, so it needs its true,
+     content-sized box — hence align-self: flex-start (shrink-to-fit)
+     instead of the default stretch. */
+  align-self: flex-start;
+  /* .definitionItem's own flex gap already accounts for --spacing-sm (8px)
+     of this — adding another --spacing-sm on top brings body→value to the
+     original --spacing-md (16px), while label→body (the flex gap alone)
+     is the new 8px. */
+  margin-top: var(--spacing-sm);
+  min-height: var(--text-label-sm-lh);
+  font-family: var(--font-family-body);
+  font-weight: var(--font-weight-bold);
+  font-size: var(--text-label-sm-size);
+  line-height: var(--text-label-sm-lh);
+  letter-spacing: var(--text-label-sm-ls);
+}
+
+/* Relationship rows for the hovered CI, shown in the Relationships column
+   in place of a breadcrumb value (it isn't a sunburst ring). Taken fully
+   out of flow (.relationshipAnchor is a zero-height, position:relative
+   placeholder — the same vertical spot .definitionValue would occupy) so
+   its content never affects .definitionItem's own height: the chart's
+   container measures its available height off .sunburstWrap's remaining
+   flex space, and this content can vary from 0 to 3 rows without ever
+   pushing on that measurement. Also allowed to overflow past this column's
+   own width horizontally, into the row's remaining space — no width
+   constraint, nowrap on each row. Pill/border styling is a first-pass
+   reuse of this file's own existing arc-hover .tooltip look (surface-base
+   + text-tertiary border), reshaped into a pill — not yet tuned against
+   the real chart in-browser. */
+.relationshipAnchor {
+  position: relative;
+  height: 0;
+}
+
+.relationshipRows {
+  position: absolute;
+  top: var(--spacing-md);
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.relationshipRow {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  white-space: nowrap;
+}
+
+.relationshipPill {
+  box-sizing: border-box;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-pill);
+  background: var(--surface-base);
+  border: 1px solid var(--text-tertiary);
+  font-family: var(--font-family-body);
+  font-weight: var(--font-weight-regular);
+  font-size: var(--text-body-xs-size);
+  line-height: var(--text-body-xs-lh);
+  color: var(--color-grey-50);
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* Off-screen row of one pill per possible relationship label — measured
+   once (see CmdbSunburst.tsx's mount-only useLayoutEffect) to find the
+   widest, so every real pill can share that one fixed width. Real DOM
+   nodes (not canvas/text-measurement APIs) so they pick up the exact same
+   font/padding as the pills actually shown, with zero risk of drift. */
+.pillMeasureRow {
+  position: absolute;
+  visibility: hidden;
+  pointer-events: none;
+  top: 0;
+  left: 0;
+}
+
+.relationshipTarget {
+  font-family: var(--font-family-body);
+  font-weight: var(--font-weight-bold);
+  font-size: var(--text-label-sm-size);
+  line-height: var(--text-label-sm-lh);
+  letter-spacing: var(--text-label-sm-ls);
+}
+
+.container {
+  /* Outline control — every segment's outer edge + slice-separator stroke
+     (.arcOuterStroke below) reads from this one value. */
+  --outline-width: 1px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+}
+
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  overflow: visible;
+}
+
+/* left/top set inline per-render (sunburstCx/sunburstCy — the chart's own
+   measured center point); this class only handles the centering offset and
+   recolor. Literal white — no white token exists in this palette. */
+.centerLogo {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  color: #ffffff;
+}
+
+.arcSegment {
+  transition: opacity 0.15s ease;
+}
+
+/* fill handled inline (see CmdbSunburst.tsx) — inline styles beat this
+   class's specificity, so only opacity belongs here. */
+.arcHovered {
+  opacity: 1;
+}
+
+/* Every edge of a segment's outline (outer curve, inner curve, radial
+   sides) — color set inline per arc (its own Category hue, from
+   CATEGORY_RAMPS) so a segment's whole outline reads as one consistent
+   color, not just its inner curve. */
+.arcStroke {
+  fill: none;
+  stroke-width: var(--outline-width);
+}
+
+.categoryLabel,
+.classLabel,
+.ciLabel {
+  font-family: var(--font-family-display);
+  font-size: 11px;
+  text-transform: uppercase;
+  /* Literal white — no white token exists in this palette (lightest is
+     --color-grey-100, #F7FAFF, not true white). */
+  fill: #ffffff;
+  pointer-events: none;
+}
+
+.categoryLabel,
+.classLabel {
+  font-weight: var(--font-weight-semibold);
+}
+
+.ciLabel {
+  font-weight: var(--font-weight-regular);
+}
+
+.tooltip {
+  position: absolute;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background: var(--surface-base);
+  border: 1px solid var(--text-tertiary);
+  border-radius: 4px;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.tooltipName {
+  font-family: var(--font-family-body);
+  font-weight: var(--font-weight-bold);
+  font-size: var(--text-body-xs-size);
+  color: var(--text-primary-strong);
+}
+
+.tooltipPath {
+  font-family: var(--font-family-body);
+  font-size: var(--text-body-xs-size);
+  color: var(--text-tertiary);
+}

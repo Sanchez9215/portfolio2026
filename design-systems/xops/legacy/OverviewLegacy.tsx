@@ -667,8 +667,8 @@ export default function OverviewLegacy({ forceAlertsOpen, alertsBoundsRef, showL
               <Card title="Usage" hotspotId="usage-overview">
                 <div style={{ display: "flex", flexDirection: "column", gap: "var(--xops-spacing-24)" }}>
                   <div style={{ display: "flex", gap: "var(--xops-spacing-8)" }}>
-                    <Stat label="Assigned Licenses" value={utilizationCard.assigned} meta={utilizationCard.assignedPct} hotspotId="assigned-licenses" />
-                    <Stat label="Unassigned Licenses" value={utilizationCard.unassigned} meta={utilizationCard.unassignedPct} />
+                    <Stat label="Assigned" value={utilizationCard.assigned} meta={utilizationCard.assignedPct} hotspotId="assigned-licenses" />
+                    <Stat label="Unassigned" value={utilizationCard.unassigned} meta={utilizationCard.unassignedPct} />
                   </div>
                   <p className={styles.licenseBlockLabel} data-hotspot="license-utilization">License Utilization</p>
                   <div style={{ display: "flex", justifyContent: "center" }}>

@@ -21,6 +21,7 @@
 | 5 | Stakes | unchanged | `section.support-metrics` | ~~stat source citation~~ (Nexthink 50%, Zylo $19.8M — replaced $45M) | ✅ |
 | 6 | Research | cut 3 empty xs labels | `section.research` | — | ✅ |
 | 7 | Insights & Goals | tighten Goal 2 body | `section.insights-and-goals` | — | ✅ |
+| 7a | Stakeholders (new beat) | new section, not in the original rewrite doc | `section.stakeholders` | — | 🔶 built this session (`StakeholdersContent`), sits right after Insights & Goals, before Observability First. Figma node `1288:220`. Renumbering beats 8–32 to close the gap is still open — not done yet. Blind pass, see progress.md |
 | 8 | Observability First | merge + promote to display beat, cut hedge line | `section.framework-adaptation`, `section.observability-first` | — | 🔶 framework-adaptation trimmed; observability-first is now the `ObservabilityEyes` collage; sections kept separate, joined by a funnel/spine transition motif (`FrameworkFunnelSpine`, blind pass — see progress.md) |
 | 9 | Data. Data. Data | unchanged | `section.data` | — | ✅ copy unchanged; reworked into a 100vh sticky-scroll scene (centred context + scroll-scrubbed hub column) — see progress.md |
 | 10 | **Designing for Data Uncertainty** (new labeled beat) | merge two one-liners into one thesis beat | `section.modular-design-approach` (absorbed `section.data-ops`) | ~~which data category fell through~~ (proof deferred to XOPS's planned interactive modularity toggle, `xops/PLAN.md` item 12) | ✅ merged + trimmed to one line each |
@@ -96,6 +97,30 @@ Not gating the copy/structure rewrite — tackle after content lands, or opportu
 
 Active mid-build or about-to-build state. Remove once folded into `progress.md`.
 
+### `SoftwareSystemMap` (beat 7a area) — 3D attempt tried and reverted this session, back to flat 2D
+Tried reversing the 2D-only decision `progress.md`'s `CmdbSystemMap` entry documents (3D explicitly ruled out there since its own references had no real depth): rebuilt as a three.js/react-three-fiber scene, iterated through several structures (flat disk → globe of hubs with directional leaf-fans → "molecule" globe with each hub's leaves on their own local sphere), plus per-frame front/back hemisphere color tinting, flat unlit materials, disabled zoom, and a `next/dynamic({ssr:false})` load in `BuildingBlocksMap.tsx` to keep the three.js/fiber/drei bundle out of the main page JS.
+
+**Reverted — back to the original flat 2D SVG circle-map**, at the user's direction (wanted full legibility for every node at all times; a rotating 3D layout with ~70 always-visible labels made that structurally impossible — front/back labels project onto the same screen space every rotation). `SoftwareSystemMap.tsx`/`.module.css` are back to their pre-3D content, `BuildingBlocksMap.tsx`'s import is back to static, and `three`/`@react-three/fiber`/`@react-three/drei`/`@types/three` have been uninstalled (nothing else in the codebase used them). The CmdbSystemMap 2D-only decision stands confirmed for both maps now — a 3D pass isn't ruled out forever, but this session's attempt didn't solve the legibility goal, so a future one would need a genuinely different approach (the "overview + detail on demand" idea discussed but not built) rather than another tuning pass on the same rotating-globe structure.
+
+**Still open, not part of the 3D detour:** the `data-dictionary` changes flagged at this Resume Context entry's last hand-off remain the actual next task — see progress.md's Software Observability section.
+
+### `section.data-dictionary` — full rebuild, built this session (blind pass, not yet visually confirmed)
+Old `DataDictionaryScene.tsx` (the pinned scaffold-to-real-table build, phases 2-5 of the original combined scene) scrapped entirely — none of its 4 open items (dynamic row count, mask-fade cutoff, phase timing, touch support) carried forward. `DataDictionaryScene.tsx`/`.module.css` fully replaced: a static section (no GSAP/ScrollTrigger, confirmed scope). `LabelBlock` (label="Driving Alignment", body="The data dictionary.") + a sibling detail `Block` (the intent paragraph — not `LabelBlock`'s own `support` slot, matches `BuildingBlocksIntro`'s header pattern). Figma: node `1715:6961`, "Portfolio Cleaning" file — structure/tokens pulled via `get_metadata`/`get_design_context`/`get_variable_defs`, no screenshot.
+
+**Table content — 10 rows, confirmed:** Total Purchased, Unassigned, Inactive, Auto-Renew Status, Renewal Date, Duplicate Assignment, Cost per License, Licensing Model, Total Annual Spend, Expired License — deliberately using `SoftwareSystemMap`'s own leaf names (not `DataGlossaryTable`'s differently-worded rows), picked for what a Fortune 500 SAM would consider load-bearing. Copy per row is a first-pass illustrative draft, not yet reviewed.
+
+**Perspective technique:** static CSS 3D (`perspective` + `rotateX` on both the card and table, sharing one `perspective` parent) — confirmed as "tilting like a tabletop," not `rotateY`, replacing the flat `skew()` Figma's own mock uses. Three.js stays flagged as a future experiment only if the design later wants actual interactive depth. `.card`/`.table`/`.perspectiveWrap` each carry their own `translate()` for live repositioning (user tunes these directly in the CSS module — perspective distance, rotateX degree, transform-origin, and x/y position are all separately tunable, documented inline).
+
+**Connector lines:** two real exported assets (`public/SVG/TableConnector.svg`, wraps from the section's top edge to the perspective wrapper; the user's own replacement `TableBranch.svg` was in turn superseded by the rake below) — raw paths inlined (not `<img>`) so stroke references `--color-grey-650` (no semantic token covers that color in the dark theme; flagged, not resolved). `TableConnector`'s own positioning (`left`/`top`/`width:50%`) is relative to `section.dataDictionary` itself, not the narrower 7-column `.scene` box — it's rendered as a sibling of `.scene`, not nested inside it, which required `position:relative` on the section (an abs-positioned grid child with no explicit `grid-column` uses the grid container's own padding box as its containing block, per spec).
+
+**Rake (replaces the static TableBranch.svg) — real fan-out trapezoid, same shape vocabulary as `DataCertificationTriggers`' branch** (see `components/built-components.md`'s `process-connector` entry), rotated 90° since our targets stack vertically down the table instead of sharing one row. Built via the `process-diagram-builder` skill. Confirmed values: `LEG_ANGLE_DEG`=30°, `BRANCH_WIDTH`=32px (same as the reference, for consistency). Composed from shared `ProcessConnector` `"straight"` segments (`gap:0`, pre-computed insets) — last row excluded from the fan per the user's own ask.
+
+**Load-bearing fix, don't revert:** the shoulder/stub points are NOT flat 2D math on top of the table's already-projected screen coordinates — each row gets a real, invisible `.shoulderMarker` child div (zero-size, positioned via an inline `translate(-BRANCH_WIDTH, verticalOffset)` in LOCAL/untransformed table space), so measuring that marker's `getBoundingClientRect()` gives the TRUE perspective-projected point, including the depth-dependent foreshortening a flat pixel offset can't reproduce (rows further down the tilted table sit deeper in Z, so the same local offset must project to fewer screen px — only the browser's own transform math gets this right). The lead-in to the shoulder attaches to whichever row sits nearest vertical center, via that row's own real marker — not an interpolated midpoint (interpolating two already-projected points isn't the same as projecting the true 3D midpoint).
+
+**Explicitly deferred, not resolved:** header/body/card text sizes are a literal placeholder `11px` (no existing type-scale token matched Figma's scaled-down values cleanly) — confirmed by the user as a stand-in to tune later, not a final value. This whole section also has no responsive/mobile pass yet — every positioning value here is fixed px, first-pass desktop only (flagged directly to the user mid-session).
+
+**Next session starts here:** blind pass, nothing visually confirmed yet — check the rake's trapezoid shape actually reads as perspective-correct now (the whole point of this session's last fix), the connector/branch assets align where intended, the card/table tilt and position, and the 11px placeholder text before deciding on a real token. Scale/responsive pass for smaller screens is the explicitly agreed next step after this.
+
 ### Beat 8 (observability-first)
 Framework-adaptation trimmed/de-hedged; observability-first is the `ObservabilityEyes` collage. Sections stay separate, joined by the `FrameworkFunnelSpine` funnel/spine transition motif (built, blind pass — full mechanism + verify checklist in `progress.md` Resume Context).
 
@@ -116,3 +141,55 @@ _Merged in from the former standalone `portfolio-shell` doc set._
 **Work section — one entry-point row per case study.** `WorkCaseStudyRow` (originally built SW-Obs-only, Figma node 641:7270 for layout only) is now content-driven — takes a `CaseStudyIntro` object plus a `visual` render prop, so every case study reuses the same row rather than a bespoke build per entry. Order on Home: Software Observability, Data Health Monitor, Session Replay, Path Analysis (Request Stepper / GitGraph optional, not started). Each row's visual is either a real live embed (SW Obs, DHM) or a real recorded video (Session Replay, Path Analysis) — no static screenshots. See `progress.md`'s Home Resume Context for the current build state and what's still unverified.
 
 **Shared design-system work done in service of this rebuild** (not shell-specific, but triggered by it): the global `Button` component was fully rebuilt to mirror XOPS's token/variant structure (see `components/built-components.md`'s `button` entry for current state) — this affects every portfolio page that uses `Button`, not just the shell.
+
+---
+
+## Data Health Monitor (case study)
+
+**Route:** `app/work/data-health-monitor/page.tsx` — scaffolded, 8 sections in so far (see `progress.md`'s Resume Context for current build state). The final-design prototype embedded/linked from here lives separately at `app/work/data-health-monitor/prototype/`, tracked in its own doc set (`.claude/projects/data-health-monitor/`) since it's the XOPS design-system build, not narrative content.
+
+**Source doc:** `ReviewDoc/Rewritten/data-health-monitor-web.md` — spec for copy/structure per beat, 23 sections below. **Superseded in practice**: the user gave copy/structure directly in conversation instead, so the actual built page's section names and order no longer match this table 1:1 — treat this table as historical intent, not a build checklist; see `progress.md` for what's actually built.
+
+**Status legend:** ⬜ not started · 🔶 in progress · ✅ done
+
+| # | Beat | 🔍 Needs you | Status |
+|---|------|---------------|--------|
+| 1 | Intro | Team, Year (`introContent.ts` has Company/Role/Timeline filled; Team blank) · verify impact-stat attribution (2 of 3 impact blocks' sourcing needs confirming per the rewrite doc) | ⬜ |
+| 2 | The Brief | — | ⬜ |
+| 3 | Translating the CMDB Framework | — | ⬜ |
+| 4 | The Problem | — | ⬜ |
+| 5 | Research → Goals | who first drew the three-way pillar split | ⬜ |
+| 6 | A Layered Approach | — | ⬜ |
+| 7 | Kicking Off Design | — | ⬜ |
+| 8 | The 3 Pillars of Data Health | — | ⬜ |
+| 9 | Secondary Optimization Targets | — | ⬜ |
+| 10 | Whose Standard Counts? | — | ⬜ |
+| 11 | Designing for Density & Scale | — | ⬜ |
+| 12 | Health by Domain — Final | — | ⬜ |
+| 13 | Health Status Logic | — | ⬜ |
+| 14 | Defining a Failure Analysis Model | — | ⬜ |
+| 15 | The Fundamental Logic Flaw (centerpiece) | which schema fact broke the models, in the engineering conversation | ⬜ |
+| 16 | Validation Failures by Category | — | ⬜ |
+| 17 | Certification, Unified | — | ⬜ |
+| 18 | Domain-Focused Views | — | ⬜ |
+| 19 | From Analysis to Action | — | ⬜ |
+| 20 | The Workspace Decisions | real example of the Projected Healthy Records forecast influencing a call | ⬜ |
+| 21 | Progress Tracking + Implementation Realities | did user define the Batch ID concept, or engineering | ⬜ |
+| 22 | Product & Business Impact | 17-sources mechanism, ServiceNow integration fate, post-pivot afterlife of Layers 2–3 | ⬜ |
+| 23 | Reflection (new — study has none) | — | ⬜ |
+
+**Visual storytelling (build priority order, per rewrite doc):** logic-flaw model diagram (beat 15) → CMDB→XOPS mapping diagram (beat 3) → three-layer architecture w/ "shipped" badge (beat 6) → threshold-band diagram (beat 10) → tiles-vs-rows before/after (beat 11) → layout decision tree (beat 20) → pillars triptych with real formulas (beat 8).
+
+---
+
+## Process Diagram / Connector System (cross-cutting, reused across case studies)
+
+**Scope — explicitly excludes system maps.** `CmdbSystemMap`/`SoftwareSystemMap` are a different category — organic, hub-and-spoke "mental maps" (knowledge-graph style, not process-ordered) — and are **not** touched, refactored, or built from by this system. This system is for diagrams showing a **process or framework** specifically (ordered steps, branches, dependencies) — the Data Certification pain-point diagram is the first case.
+
+**Why:** `StakeholdersCards`' `Branch Top`/`Branch Bottom` SVG assets hand-solved this once, for one diagram, as a static fixed-shape asset. Goal: a shared, rule-driven (not asset-based) connector system so future rough Figma process/framework sketches build consistently without re-deciding geometry each time.
+
+**Approach:** `StakeholdersCards`' branch shapes are reference only — approximate context for what a branch connector roughly looks like, not something this system builds from or reuses as an asset. `DataCertificationTriggers.tsx` is the proven first diagram (trapezoid fan-out + single-branch pain-point connectors, both composed from `ProcessConnector`'s `"straight"` segments with manually derived geometry).
+
+**The full ruleset (angle, gap model, anchor rules, shape vocabulary, never-do-this list) now lives in the `process-diagram-builder` skill** (`.claude/skills/process-diagram-builder/SKILL.md`), not here — PLAN.md tracks rationale/decisions, not a technical spec. Use that skill for any future process/framework diagram; update it (not this file) when a new rule gets confirmed.
+
+**Confirmed next-phase decision (not started):** `DataCertificationTriggers.tsx` is still one bespoke component per diagram — every ref/anchor/effect hand-written. The actual goal of this system is a reusable personal tool: describe a diagram as data (steps, forks, merges, pain branches, directions, colors) and a shared generic renderer computes the geometry, instead of hand-wiring new refs/effects per diagram. Scope this properly (data shape for nodes/edges, how per-value confirmation with the user still works once structure is declarative, what stays manual vs. generated) once the current Data Certification diagram is finished — not folded into finishing it.

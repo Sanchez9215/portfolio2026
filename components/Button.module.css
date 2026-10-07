@@ -65,6 +65,16 @@
   --button-padding-x: var(--button-padding-x-medium);
 }
 
+/* --button-label-size/-lh/-ls let a specific consumer override just the
+   label's typography without switching size (same var-with-fallback pattern
+   as .m .label/.xsmall .label below) — falls back to medium's own default
+   (the base .label rule's label-xl, 24px) otherwise. */
+.medium .label {
+  font-size: var(--button-label-size, var(--text-label-xl-size));
+  line-height: var(--button-label-lh, var(--text-label-xl-lh));
+  letter-spacing: var(--button-label-ls, var(--text-label-xl-ls));
+}
+
 /* size="m" — 40px, between medium and small, from the button-set
    Figma reference (789:912). */
 .m {

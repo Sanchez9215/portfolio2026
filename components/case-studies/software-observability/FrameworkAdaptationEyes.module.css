@@ -1,0 +1,169 @@
+/* First pass (not yet visually confirmed) — every size/position/rotation
+   value below is a placeholder, tune directly. */
+
+.wrap {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.connectors {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Separate layer (not .connectors, which sits at z-index:0 behind the
+   eyes) so the beam reads as shooting out over them instead of being
+   hidden behind bigEye and anything it overlaps. Plain HTML div (not
+   <svg>) clipped to the frustum/caps shape via an inline clip-path — an
+   <svg> root composites its contents before the page blends them in, so
+   mix-blend-mode set on SVG children can't reach the real HTML (the
+   Observability text) behind it; a blended HTML div can. */
+.beamLayer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 2;
+  background: var(--color-grey-500);
+  mix-blend-mode: difference;
+}
+
+/* Black-text mask overlay — a clone of the Observability text, clipped to
+   the same shape as .beamLayer but positioned at the real text's measured
+   box (not inset:0 like .beamLayer) and painted ABOVE it (z-index) so the
+   solid black glyphs read on top of the diffed beam wherever they overlap. */
+.textOverlay {
+  position: absolute;
+  pointer-events: none;
+  z-index: 3;
+  color: #000;
+}
+
+/* Doubled class to beat Label's/.statement's own single-class color rule
+   on specificity without !important (two equal selectors tie, and the
+   cascade order between separate CSS modules isn't guaranteed). */
+.forceBlack.forceBlack {
+  color: #000;
+}
+
+.eyeInner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+/* overflow:visible overrides the <svg> UA default of overflow:hidden —
+   the Almond path's top/bottom vertices sit exactly at the viewBox's
+   y=0/y=372 edges, so the stroke was getting clipped right there. */
+.eyeShape {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+/* Hollow outline circle (not ObservabilityEyes' solid-filled pupil) —
+   size is a first-pass placeholder, same 30%-of-width convention. */
+.pupil {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 30%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  border: 1px solid var(--color-grey-500);
+}
+
+.hub {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 44%;
+  aspect-ratio: 900 / 372;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+}
+
+.satelliteA {
+  position: absolute;
+  left: 8%;
+  top: 18%;
+  width: 28%;
+  aspect-ratio: 900 / 372;
+  transform: rotate(-8deg);
+  z-index: 1;
+  cursor: grab;
+  touch-action: none;
+}
+
+.satelliteB {
+  position: absolute;
+  right: 6%;
+  bottom: 14%;
+  width: 28%;
+  aspect-ratio: 900 / 372;
+  transform: rotate(14deg);
+  z-index: 1;
+  cursor: grab;
+  touch-action: none;
+}
+
+/* 1.5x the hub's own size (44% * 1.5 = 66%), upright (confirmed: no
+   rotation) — arbitrary placeholder starting spot, meant to be dragged
+   into place like every other child. */
+.bigEye {
+  position: absolute;
+  left: 4%;
+  top: 55%;
+  width: 66%;
+  aspect-ratio: 900 / 372;
+  z-index: 1;
+  cursor: grab;
+  touch-action: none;
+}
+
+.satelliteA:active,
+.satelliteB:active,
+.bigEye:active {
+  cursor: grabbing;
+}
+
+/* 4 draggable scatter eyes — width/transform (scale + rotation) are set
+   per-instance inline (randomized, see randomScatterStyle); left/top start
+   as arbitrary placeholder spots and switch to dragged px position once
+   moved. cursor/touch-action make the manual-tuning drag feel right. */
+.scatterEye {
+  position: absolute;
+  aspect-ratio: 900 / 372;
+  z-index: 1;
+  cursor: grab;
+  touch-action: none;
+}
+
+.scatterEye:active {
+  cursor: grabbing;
+}
+
+/* 5 draggable leaf eyes hanging off a random satellite/scatter eye — width
+   and rotation are set per-instance inline (randomized, see
+   randomLeafConfig); left/top are computed from the parent's real position
+   (see the measure() effect) and switch to dragged px position once moved. */
+.leafEye {
+  position: absolute;
+  aspect-ratio: 900 / 372;
+  z-index: 1;
+  cursor: grab;
+  touch-action: none;
+}
+
+.leafEye:active {
+  cursor: grabbing;
+}

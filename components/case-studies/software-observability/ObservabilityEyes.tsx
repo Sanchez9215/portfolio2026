@@ -35,12 +35,28 @@ const EYES: Eye[] = [
   { id: "big", pupil: 37.8, text: true },
 ];
 
-function Almond({ className }: { className?: string }) {
+export function Almond({
+  className,
+  fill = "currentColor",
+  stroke,
+  strokeWidth,
+  strokeDasharray,
+}: {
+  className?: string;
+  fill?: string;
+  stroke?: string;
+  strokeWidth?: number;
+  strokeDasharray?: string;
+}) {
   return (
     <svg className={className} viewBox="0 0 900 372" fill="none" aria-hidden>
       <path
         d="M0 186L115.06 105.518C213.247 36.8365 330.175 0 450 0C569.825 0 686.753 36.8365 784.94 105.518L900 186L784.94 266.482C686.753 335.164 569.825 372 450 372C330.175 372 213.247 335.164 115.06 266.482L0 186Z"
-        fill="currentColor"
+        fill={fill}
+        stroke={stroke}
+        strokeWidth={strokeWidth}
+        strokeDasharray={strokeDasharray}
+        vectorEffect={stroke ? "non-scaling-stroke" : undefined}
       />
     </svg>
   );

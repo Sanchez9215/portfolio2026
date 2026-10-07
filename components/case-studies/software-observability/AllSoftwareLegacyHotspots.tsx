@@ -1,5 +1,12 @@
 "use client";
 
+// SUPERSEDED — section.all-software-prototype-1 now renders
+// AllSoftwarePrototype1Section (card player + Timeline sidebar, same
+// countdown/Play/Pause/Resume/Replay pattern as Overview Prototype 1/2)
+// instead of this scroll-pin HotspotOverlay version. Kept as reference only,
+// not imported anywhere — its HOTSPOTS copy is what
+// AllSoftwarePrototype1Hotspots.tsx's data was ported from.
+
 import { useEffect, useRef, useState } from "react";
 import ImgCard from "@/components/ImgCard";
 import LiveEmbed from "@/components/LiveEmbed";

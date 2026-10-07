@@ -20,12 +20,16 @@
 
 /* Countdown/Start Now/shortcuts block (Figma node 991:207) — its own
    16px padding on all sides (per-section, not inherited from a parent),
-   matching the frame's own 16px gap between its 3 stacked pieces. */
+   matching the frame's own 16px gap between its 3 stacked pieces. Bottom
+   padding stepped up to 32px (--spacing-xl) to give the hairline divider
+   below more breathing room from the shortcuts list above it. */
 .player {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-md);
   padding: var(--spacing-md);
+  padding-bottom: var(--spacing-xl);
+  border-bottom: 1px solid var(--color-grey-1000);
 }
 
 /* Ported as-is from the old ImgCard embed-header implementation (same
@@ -49,43 +53,63 @@
   margin-left: var(--spacing-sm);
 }
 
-/* Reverted to the secondary + headerButtonIcon-style treatment this button
-   used before the primary/medium redesign (per user request), on size="m"
-   (40px height, per later user request — was xsmall/32px) — 8px left/right
-   padding (overrides m's own 16px --button-padding-x), 8px icon-to-label
-   gap, 16px label (text-label-md-size) instead of m's default 18px, default
-   6px corners — stretched full-width (Figma node 991:200 spans the
-   sidebar's full width). Gap/label overrides go through Button's own
-   --button-gap/--button-label-size/-lh/-ls vars (see Button.module.css's .m
-   .label) since CSS Modules hash classnames per-file — a bare `.label`
-   selector here can't reach Button.module.css's actual .label class. */
-.playerButton {
+/* Double-button set (Figma node 1052:822) — primary+secondary pair per
+   player state (Play Now/Skip, Pause/Leave, Play/Leave, Replay alone).
+   Row: two buttons, equal width, 16px gap. Shared type/gap/padding overrides
+   live here (not repeated on .playerButtonSecondary below) since CSS custom
+   properties inherit through the DOM regardless of module scoping — same
+   convention as elsewhere in this codebase (a bare `.label` selector can't
+   reach Button.module.css's real class, but a var can); the primary slot
+   (TestButton, see Timeline.tsx) picks these same var names up automatically
+   too, no class of its own needed. Icon size 20px has no matching step in
+   the icon scale (16/24 neighbors) — new --icon-sm-md token added to
+   globals.css for it. */
+.playerButtonRow {
+  display: flex;
+  gap: var(--spacing-md);
+  width: 100%;
   --button-gap:         var(--spacing-sm);
+  --button-icon-size:   var(--icon-sm-md);
   --button-label-size:  var(--text-label-md-size);
   --button-label-lh:    var(--text-label-md-lh);
   --button-label-ls:    var(--text-label-md-ls);
   --button-padding-x:   var(--spacing-sm);
+}
+
+/* Wraps each button (rather than sizing the <Button> itself) so the primary
+   slot has a stable element to measure/animate for the smooth grow/shrink
+   transition between its two widths (100% alone vs. 50% next to a
+   secondary) — see Timeline.tsx's primarySlotRef effect. */
+.playerButtonSlot {
+  flex: 1;
+  min-width: 0;
+}
+
+.playerButtonSlot > * {
   width: 100%;
 }
 
-/* Overrides Button's own base .btn justify-content:center — needs the
-   `button` element qualifier for higher specificity than `.btn` (same
-   cross-module cascade-order collision hit when this rule first existed on
-   ImgCard's .headerButtonIcon). */
-button.playerButton {
-  justify-content: flex-start;
+/* Secondary (Skip/Leave) — dark face, matches --surface-card/grey-500 text
+   exactly; no override needed beyond what .secondary's own base already
+   renders correctly by coincidence... except --button-bg-secondary/
+   --button-border-secondary default to grey-200 (a different light value),
+   so both still need setting explicitly here alongside the text color. */
+.playerButtonSecondary {
+  --button-bg-secondary:      var(--color-grey-1000);
+  --button-border-secondary:  var(--color-grey-1000);
+  --button-text-on-secondary: var(--color-grey-500);
 }
 
-/* PlayerButtonContent's wrapper — rendered as the single persistent
-   .playerButton's `children`, so it lands inside Button's own .label span
-   (no second button box ever mounts). The current icon+label layer sets the
-   stack's real size (normal flow); the outgoing layer overlays it exactly
-   (absolute, inset 0) for the duration of its exit tween, then unmounts.
-   overflow:hidden clips both layers' vertical slide so neither spills above/
-   below the button's own box. vertical-align:middle since this sits as an
-   inline-flex child inside Button's own (non-flex) .label span — without it,
-   the stack follows normal baseline alignment within that span's line box
-   instead of sitting centered in it. */
+/* PlayerButtonContent's wrapper — rendered as the persistent button's
+   `children`, so it lands inside Button's own .label span (no second button
+   box ever mounts). The current icon+label layer sets the stack's real size
+   (normal flow); the outgoing layer overlays it exactly (absolute, inset 0)
+   for the duration of its exit tween, then unmounts. overflow:hidden clips
+   both layers' vertical slide so neither spills above/below the button's own
+   box. vertical-align:middle since this sits as an inline-flex child inside
+   Button's own (non-flex) .label span — without it, the stack follows normal
+   baseline alignment within that span's line box instead of sitting centered
+   in it. */
 .playerButtonContentStack {
   position: relative;
   display: inline-flex;

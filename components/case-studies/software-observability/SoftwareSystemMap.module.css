@@ -1,0 +1,176 @@
+/* ============================================================
+   SoftwareSystemMap — knowledge-graph-style hub map for the software
+   asset management data model. Ported 1:1 from CmdbSystemMap (Data Health
+   Monitor) — same visual mechanism, different hub/leaf/connection data.
+   A hub's own outlined circle (.hubHitArea, sized to hubRadius in the
+   .tsx) doubles as both the invisible-until-outlined clearance radius
+   around its title AND its drag/hover hit-area — no separate fill, just a
+   thin stroke ring. Hubs are further distinguished from leaves by
+   typography (bold + larger + --text-primary vs a leaf's regular +
+   smaller + --text-secondary). Leaves stay small dots with labels beside
+   them. Connectors are thin, dim lines dot-edge-to-dot-edge, matching a
+   flat 2D "knowledge graph" reference look rather than a diagram of
+   boxes.
+   ============================================================ */
+
+.container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  z-index: 0;
+}
+
+.hubHitArea {
+  fill: transparent;
+  stroke: var(--text-secondary);
+  stroke-width: 1;
+  cursor: grab;
+  touch-action: none;
+  pointer-events: auto;
+  transition: stroke 150ms ease-out;
+}
+
+.hubHitArea:active {
+  cursor: grabbing;
+}
+
+.hubHitArea.active {
+  stroke: var(--text-primary-strong);
+}
+
+.hubLabel {
+  font-family: var(--font-family-body);
+  font-weight: var(--font-weight-bold);
+  font-size: var(--text-body-sm-size);
+  line-height: var(--text-body-sm-lh);
+  fill: var(--text-subtle);
+  /* auto (not none): hovering/dragging the label itself, not just its
+     dot's hit area, should also work. */
+  pointer-events: auto;
+  cursor: grab;
+  touch-action: none;
+  transition: fill 150ms ease-out;
+}
+
+.hubLabel:active {
+  cursor: grabbing;
+}
+
+/* Connection-focus: the hovered/pinned hub or leaf, its ego-network
+   (hub-to-hub) or ancestor-path (hub-to-leaf) neighbors, brighten to
+   --text-primary-strong; everything else stays at the dim baseline above. */
+.hubLabel.active {
+  fill: var(--text-primary-strong);
+}
+
+/* Everything NOT part of the active hub/leaf's highlight set dims further
+   while something is hovered/pinned, so the highlighted path/network
+   reads clearly against the rest. */
+.hubLabel.dimmed {
+  fill: var(--color-grey-900);
+}
+
+.connector {
+  stroke: var(--text-secondary);
+  stroke-width: 1;
+  stroke-linecap: round;
+  fill: none;
+  opacity: 0.5;
+  transition: stroke 150ms ease-out, opacity 150ms ease-out;
+}
+
+/* Arrowheads intentionally do NOT get a .active variant — they stay dim
+   always, per the connection-focus interaction's confirmed scope. */
+.connector.active {
+  stroke: var(--text-primary-strong);
+  opacity: 1;
+}
+
+.arrowhead {
+  fill: var(--text-secondary);
+  opacity: 0.5;
+}
+
+/* Leaf-level (hub-to-leaf) — visually distinct from hub-to-hub .connector
+   above: dashed and dimmer, same distinction ContentHub's own .spoke drew
+   against a solid hub-to-hub relationship. No arrowhead (leaves aren't
+   directional). */
+.leafDot {
+  fill: var(--text-subtle);
+  cursor: grab;
+  touch-action: none;
+  transition: fill 150ms ease-out;
+}
+
+.leafDot:active {
+  cursor: grabbing;
+}
+
+.leafDot.active {
+  fill: var(--text-primary-strong);
+}
+
+.leafDot.dimmed {
+  fill: var(--color-grey-900);
+}
+
+.leafLabel {
+  font-family: var(--font-family-body);
+  font-weight: var(--font-weight-regular);
+  font-size: var(--text-body-xs-size);
+  line-height: var(--text-body-xs-lh);
+  fill: var(--text-subtle);
+  /* auto (not none): hovering/dragging the label itself, not just its
+     dot, should also work. */
+  pointer-events: auto;
+  cursor: grab;
+  touch-action: none;
+  transition: fill 150ms ease-out;
+}
+
+.leafLabel:active {
+  cursor: grabbing;
+}
+
+.leafLabel.active {
+  fill: var(--text-primary-strong);
+}
+
+.leafLabel.dimmed {
+  fill: var(--color-grey-900);
+}
+
+.leafSpoke {
+  stroke: var(--text-secondary);
+  stroke-width: 0.5;
+  stroke-dasharray: 4 4;
+  stroke-linecap: round;
+  fill: none;
+  opacity: 0.5;
+  transition: stroke 150ms ease-out, opacity 150ms ease-out;
+}
+
+.leafSpoke.active {
+  stroke: var(--text-primary-strong);
+  opacity: 1;
+}
+
+.connectorLabel {
+  font-family: var(--font-family-body);
+  font-weight: var(--font-weight-regular);
+  font-size: var(--text-body-sm-size);
+  line-height: var(--text-body-sm-lh);
+  fill: var(--text-secondary);
+}
+
+.connectorLabelBg {
+  fill: var(--surface-base);
+}

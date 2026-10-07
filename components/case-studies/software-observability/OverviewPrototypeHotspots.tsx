@@ -10,12 +10,34 @@ import HotspotOverlay, { Hotspot } from "@/components/HotspotOverlay";
 // trying the AnnotationConnectorHotspot style instead (see below).
 import AnnotationConnectorHotspot, {
   AnnotationHotspotData,
+  groupBySpotlight,
 } from "./AnnotationConnectorHotspot";
 import OverviewLegacy from "@/design-systems/xops/legacy/OverviewLegacy";
 import { OverviewScreen } from "@/app/work/software-observability/xops-overview/OverviewScreen";
-import { PlayerState, TimelineMilestone } from "./Timeline";
+import { PlayerState, TimelineMilestoneRow } from "./Timeline";
 import { useScrollHotspotSequence } from "@/hooks/useScrollHotspotSequence";
+import { useCountdown } from "@/hooks/useCountdown";
 import pageStyles from "@/app/work/software-observability/software-observability.module.css";
+
+// This experience's own 5 milestones — Timeline.tsx is generic (any card
+// player supplies its own milestone keys/labels via a plain
+// {key,label}[] prop), this union is the concrete vocabulary Overview
+// itself uses for phase/cardStep → milestone mapping (see `milestone`
+// below) and Timeline jump targets (jumpTarget prop).
+export type TimelineMilestone =
+  | "prototype1"
+  | "intent"
+  | "insights"
+  | "prototype2"
+  | "decisions";
+
+export const OVERVIEW_MILESTONES: TimelineMilestoneRow[] = [
+  { key: "prototype1", label: "Prototype 01" },
+  { key: "intent", label: "Early Assumptions" },
+  { key: "insights", label: "Learnings" },
+  { key: "prototype2", label: "Prototype 02" },
+  { key: "decisions", label: "Decisions" },
+];
 
 // Hotspot copy: final Assumption/Insight lines from the user (see
 // .claude/projects/software-observability/PLAN.md, "Hotspot Annotation System").
@@ -27,7 +49,7 @@ const HOTSPOTS: Hotspot[] = [
     label: "Assumption",
     body: "When operational events point to a specific region or org unit, filters let stakeholders focus on the software and vendors driving exposure.",
     insight:
-      "Compliance and usage terms vary by region. Without a legal foundation, regional data can mislead teams.",
+      "Compliance and usage terms vary by region. Without legal expertise and full visibility into those differences, regional filtering could mislead teams.",
     placement: "right-top",
   },
   {
@@ -36,7 +58,7 @@ const HOTSPOTS: Hotspot[] = [
     label: "Assumption",
     body: "Commercial vs. Open Source licenses would provide stakeholders with an informative split of their portfolio due to clear distinction in cost and compliance.",
     insight:
-      "Enterprise software relies on multi-year contracts. Analyzing risk required key licensing models I had missed (enterprise agreements, subscriptions, perpetual, and consumption-based terms).",
+      "Enterprise software relies on multi-year contracts. Analyzing risk required visibility into key licensing models I had missed (enterprise agreements, subscriptions, perpetual, and consumption-based terms).",
   },
   {
     id: "expiring-licenses",
@@ -99,6 +121,10 @@ const CARD_DURATION_MS = 3000;
 // How long the embed holds on Prototype 02 with no tooltip after switching,
 // before Decisions cards start.
 const SWITCH_HOLD_MS = 3000;
+// Pre-walkthrough countdown length, in ms — also drives the header progress
+// track's single-segment fill during the countdown (see the track prop
+// computation below), so the two always agree.
+const COUNTDOWN_DURATION_MS = 8000;
 
 // AnnotationConnectorHotspot data, derived once from HOTSPOTS above (module-level,
 // so it's a stable reference — an inline .map() in the render would recreate the
@@ -191,77 +217,19 @@ const ALERT_BUTTON_ANNOTATION_HOTSPOT: AnnotationHotspotData = {
   cutoutOnly: true,
 };
 
-// Two hotspots pointing at Assigned Licenses and License Utilization — share
-// the Usage card's existing usage-overview spotlight cutout, same as
-// inactivity-threshold above. Usage card hidden for now (see filter above);
-// kept here, unrendered, data untouched.
-const USAGE_ANNOTATION_HOTSPOTS: AnnotationHotspotData[] = [
-  {
-    targetId: "assigned-licenses",
-    title: "Assigned vs. Unassigned",
-    label: "Assumption",
-    body: "A breakdown of purchased licenses to identify how many have been distributed vs. remaining on the shelf, helping highlight excess purchasing or slow assignment rates.",
-    insightLabel: "Insight",
-    insight: "",
-    spotlightId: "usage-overview",
-    flip: true,
-  },
-  {
-    targetId: "license-utilization",
-    title: "License Utilization",
-    label: "Assumption",
-    body: "Visualizes the breakdown of assigned licenses into active vs. inactive states, in the context of those left unassigned, letting operators understand the proportion of waste and reclamation opportunity at a glance.",
-    insightLabel: "Insight",
-    insight: "",
-    spotlightId: "usage-overview",
-  },
-];
+// Usage card's hotspots — both Assigned vs. Unassigned and Utilization Chart
+// removed per user request (no content). Empty array kept (rather than
+// deleted) since CARD_GROUPS/ANNOTATION_HOTSPOTS still spread it in — a no-op
+// if the Usage card ever needs a hotspot again.
+const USAGE_ANNOTATION_HOTSPOTS: AnnotationHotspotData[] = [];
 
-// Two placeholder hotspots (lorem ipsum copy, not yet real content) pointing at
-// the Spend card's Total Annual Spend + Est. Renewals stats (one shared anchor,
-// grouped by their existing wrapper div), and its Top Spend By Vendor table.
-// Both share the Spend card's own spend-overview spotlight cutout.
-const SPEND_ANNOTATION_HOTSPOTS: AnnotationHotspotData[] = [
-  {
-    targetId: "spend-stats",
-    title: "Spend & Renewal",
-    label: "Assumption",
-    body: "Total spend baseline alongside estimated renewal amount in next 90 days gives stakeholders enough time to act and negotiate.",
-    insightLabel: "Insight",
-    insight: "",
-    spotlightId: "spend-overview",
-    // No inset padding, radius matches the card's own --xops-radius-12, same
-    // convention as License Overview/Usage/Compliance.
-    spotlightPadding: 0,
-    spotlightRadius: 12,
-  },
-  {
-    targetId: "top-spend-vendor",
-    title: "Top 10 Vendors",
-    label: "Assumption",
-    body: "Reflects Chief Product Officer guidance (former Fortune 500 CIO), that a small number of vendors usually drive 60–80% of total spend. We settled on top 10.",
-    insightLabel: "Insight",
-    insight: "",
-    spotlightId: "spend-overview",
-    flip: true,
-  },
-];
+// One hotspot pointing at the Spend card's Total Annual Spend + Est. Renewals
+// Spend card's hotspots — both Spend & Renewal and Top 10 Vendors
+// (top-spend-vendor) removed per user request (no content/spotlight).
+const SPEND_ANNOTATION_HOTSPOTS: AnnotationHotspotData[] = [];
 
-// Placeholder hotspot (lorem ipsum copy, not yet real content) for the Top
-// Non-Compliant Software card — shares no cutout with compliance-granularity
-// (a separate card), so no spotlightId override needed.
-const TOP_NON_COMPLIANT_ANNOTATION_HOTSPOT: AnnotationHotspotData = {
-  targetId: "top-non-compliant",
-  title: "Non-Compliance Concentration",
-  label: "Assumption",
-  body: "Showing where non-compliant instances concentrate helped stakeholders see exactly which titles were driving exposure, instead of guessing where to start.",
-  insightLabel: "Insight",
-  insight: "",
-  spotlightPadding: 0,
-  spotlightRadius: 12,
-  // Attached to the card's right corner (default, unflipped) — Compliance's
-  // own pie-chart card is flipped to the left, per user request.
-};
+// Non-Compliance Concentration (Top Non-Compliant Software card) removed per
+// user request (no content).
 
 // All hotspots visible at once, except stage-level-alerting (its own
 // connector/tooltip targets the alert modal, hidden for now — the alert
@@ -274,42 +242,19 @@ const ANNOTATION_HOTSPOTS: AnnotationHotspotData[] = [
   ALERT_BUTTON_ANNOTATION_HOTSPOT,
   ...USAGE_ANNOTATION_HOTSPOTS,
   ...SPEND_ANNOTATION_HOTSPOTS,
-  TOP_NON_COMPLIANT_ANNOTATION_HOTSPOT,
 ];
 
-// Groups a flat hotspot list into steps by shared spotlight (spotlightId,
-// falling back to targetId) — one step per unique key, in first-appearance
-// order, showing every tooltip in that group simultaneously under one
-// spotlight. Shared by both CARD_GROUPS and DECISION_CARD_GROUPS below.
-function groupBySpotlight(
-  flat: AnnotationHotspotData[],
-): AnnotationHotspotData[][] {
-  const order: string[] = [];
-  const groups = new Map<string, AnnotationHotspotData[]>();
-  flat.forEach((h) => {
-    const key = h.spotlightId ?? h.targetId;
-    if (!groups.has(key)) {
-      groups.set(key, []);
-      order.push(key);
-    }
-    groups.get(key)!.push(h);
-  });
-  return order.map((key) => groups.get(key)!);
-}
-
-// Card-by-card player groups hotspots that share a spotlight (e.g. Licensing
-// Model Breakdown + Expiring Licenses both point at the License Overview
-// card) into a single step, showing all of that group's tooltips at once —
-// generalized off spotlightId/targetId rather than hardcoded to License
-// Overview specifically, so any other current or future shared-card group
-// gets the same treatment automatically. Usage/Spend/Non-Compliant (each
+// groupBySpotlight (from AnnotationConnectorHotspot.tsx) groups hotspots that
+// share a spotlight (e.g. Licensing Model Breakdown + Expiring Licenses both
+// point at the License Overview card) into a single step, showing all of
+// that group's tooltips at once. Usage/Spend/Non-Compliant (each
 // written but previously unwired, see ANNOTATION_HOTSPOTS above) are spliced
 // in here at their card's real position in the dashboard's own layout
-// (License Overview / Usage / Spend row, then Compliance / Top Non-Compliant
-// row — see OverviewLegacy.tsx's own "Card row 1"/"Card row 2" comments) —
-// Usage's two entries land right after inactivity-threshold and merge into
-// its existing usage-overview group (one spotlight, all three tooltips at
-// once); Spend and Non-Compliant are brand new groups/steps.
+// (License Overview / Usage / Spend row — see OverviewLegacy.tsx's own "Card
+// row 1" comment) — Usage's entry lands right after inactivity-threshold and
+// merges into its existing usage-overview group (one spotlight, both
+// tooltips at once); Spend is a brand new group/step. Compliance row's
+// Top Non-Compliant Software step removed per user request (no content).
 const CARD_GROUPS: AnnotationHotspotData[][] = groupBySpotlight(
   (() => {
     const flat: AnnotationHotspotData[] = [];
@@ -317,9 +262,6 @@ const CARD_GROUPS: AnnotationHotspotData[][] = groupBySpotlight(
       flat.push(h);
       if (h.targetId === "inactivity-threshold") {
         flat.push(...USAGE_ANNOTATION_HOTSPOTS, ...SPEND_ANNOTATION_HOTSPOTS);
-      }
-      if (h.targetId === "compliance-granularity") {
-        flat.push(TOP_NON_COMPLIANT_ANNOTATION_HOTSPOT);
       }
     });
     return flat;
@@ -472,16 +414,39 @@ export default function OverviewPrototypeHotspots({
   const active =
     !disableHotspots && activeIndex !== null ? HOTSPOTS[activeIndex] : null;
 
+  // Paused via Space (see keyboard controls below) — freezes auto-advance,
+  // the countdown tick (see below), and the switching hold alike; resuming
+  // restarts the current card's full duration rather than tracking remaining
+  // time (simplification for this first pass). Declared above the countdown
+  // state since that effect now depends on it.
+  const [paused, setPaused] = useState(false);
+  const handleTogglePause = () => setPaused((p) => !p);
+
   // Pre-walkthrough countdown (embed variant only) — starts once the fade-in
-  // ScrollTrigger below fires (not on mount), ticks 3 → 0 once, then holds at
-  // 0 until the card-by-card advance logic (not built yet) takes over. No
-  // segments are filled during the countdown itself.
-  const [countdown, setCountdown] = useState<number | null>(null);
-  useEffect(() => {
-    if (!disableHotspots || countdown === null || countdown <= 0) return;
-    const timer = setTimeout(() => setCountdown((c) => (c ?? 0) - 1), 1000);
-    return () => clearTimeout(timer);
-  }, [disableHotspots, countdown]);
+  // ScrollTrigger below fires (not on mount), ticks down from
+  // COUNTDOWN_DURATION_MS/1000 once, then holds at 0 until the card-by-card
+  // advance logic takes over. The header progress track renders as one
+  // continuous segment filling over COUNTDOWN_DURATION_MS while this runs
+  // (see the track prop computation below). Gated on `paused` below — but
+  // only actually reachable while `paused` is true once `started` is true
+  // too (see `started` below), since the genuine first-visit countdown (no
+  // Pause button shown, see Timeline.tsx) never lets `paused` become true in
+  // the first place — the Space shortcut is itself gated on `started`.
+  // Note: resuming from a pause here inherits the same "restarts the full
+  // duration rather than tracking remaining time" simplification the card
+  // auto-advance effect below already has — the real countdown *number*
+  // correctly resumes from wherever it was (only the setTimeout is gated),
+  // but ImgCard's segment-fill tween (driven by activeStepDurationMs, always
+  // the full COUNTDOWN_DURATION_MS) restarts its visual fill from empty on
+  // resume, so the bar can briefly read behind the number after a pause.
+  const [countdown, setCountdown] = useCountdown(disableHotspots, paused);
+
+  // True once the countdown has been used up once, by any path (ran out
+  // naturally, or was skipped/started-early) — a "first-visit only" get-ready
+  // beat, not something to replay every time a Timeline row jumps back to
+  // Prototype 01. Blocks the jump-to-"prototype1" handler below from
+  // restarting it a second time.
+  const [countdownUsed, setCountdownUsed] = useState(false);
 
   // Card-by-card reveal (embed variant only) — starts once the countdown
   // above hits 0. -1 = no active card (countdown still running/hasn't fired,
@@ -500,6 +465,7 @@ export default function OverviewPrototypeHotspots({
   useEffect(() => {
     if (disableHotspots && phase === "intent" && countdown === 0 && cardStep === -1) {
       setCardStep(0);
+      setCountdownUsed(true);
     }
   }, [disableHotspots, phase, countdown, cardStep]);
 
@@ -511,6 +477,12 @@ export default function OverviewPrototypeHotspots({
     if (phase === "switching") return [];
     return CARD_GROUPS;
   }, [phase]);
+
+  // Tooltip connector line + progress-segment fill color, per phase — yellow
+  // for Early Assumptions (intent), blue for Learnings (insights) and
+  // Decisions alike.
+  const phaseAccentColor =
+    phase === "intent" ? "var(--color-yellow-500)" : "var(--color-blue-500)";
 
   // Timeline milestone — "prototype1" covers both the pre-walkthrough
   // countdown and the very start of "intent" (cardStep -1), matching the
@@ -526,24 +498,74 @@ export default function OverviewPrototypeHotspots({
     onMilestoneChange?.(milestone);
   }, [milestone, onMilestoneChange]);
 
-  // Paused via Space (see keyboard controls below) — freezes auto-advance;
-  // resuming restarts the current card's full duration rather than tracking
-  // remaining time (simplification for this first pass).
-  const [paused, setPaused] = useState(false);
+  // True once actively playing — real cards (or the switching hold) running,
+  // *or* a countdown-tail silently ticking after the first visit (Replay, or
+  // a Timeline jump back to Prototype 01). The genuine first-visit countdown
+  // (before countdownUsed) is deliberately excluded — that's the "up next"
+  // hint state (Play Now/Skip only, no Pause), not yet "started". Gates the
+  // Pause/Leave button pair and the Escape/Space shortcuts in Timeline.tsx +
+  // the keyboard effect below.
+  const started =
+    cardStep >= 0 || phase === "switching" || (countdownUsed && countdown !== null);
+  // True once the walkthrough has actually played through to Decisions' last
+  // card and is holding there (see the auto-advance effect below, which
+  // stops advancing at exactly this point) — distinguishes a genuine
+  // "watched the whole thing" exit from any other exit, so the free-view
+  // button can read "Replay" (reset to the top) only in this one case —
+  // every other exit reads "Resume" (continue from wherever it is).
+  const completed =
+    phase === "decisions" && cardStep >= DECISION_CARD_GROUPS.length - 1;
 
   // Exit/Start Walkthrough (see ImgCard's embed header) — exited shows the
-  // bare free-view state (no overlay/tooltips, no auto-advance). Starting
-  // again restarts from the top (card 0) rather than resuming where it left
-  // off, but jumps straight in — no countdown replay, since the countdown
-  // is a first-visit "get ready" beat, not something to repeat every time
-  // someone re-enters after exiting.
+  // bare free-view state (no overlay/tooltips, no auto-advance). Jumping the
+  // Timeline while exited (see the jump effect below) moves phase/cardStep
+  // but deliberately leaves `exited` true and `countdown` null — it must NOT
+  // auto-play; the resulting position just sits there until Resume/Replay is
+  // actually clicked.
   const [exited, setExited] = useState(false);
-  const handleExitWalkthrough = () => setExited(true);
+  // True once a Timeline row has been clicked while already exited — lets
+  // that one jumped-to position show its tooltip even though playback stays
+  // paused/exited (a deliberate "preview this part" exception), while a
+  // plain Leave with no jump still shows the fully bare embed. Reset on every
+  // fresh Leave so the next exit starts bare again.
+  const [jumpedWhileExited, setJumpedWhileExited] = useState(false);
+  const handleExitWalkthrough = () => {
+    setExited(true);
+    setJumpedWhileExited(false);
+  };
+  // Replay — always resets fully to the top and starts playing from there.
+  // Only ever shown once `completed` (see Timeline.tsx).
   const handleStartWalkthrough = () => {
     setExited(false);
+    // A pause held over from a prior run must not carry into the new one (it
+    // froze auto-advance there; left set, the restarted walkthrough would
+    // silently never advance either).
+    setPaused(false);
     setPhase("intent");
-    setCardStep(0);
-    setCountdown(null);
+    // Re-runs the real countdown (cardStep -1, countdown ticking) rather than
+    // jumping straight to card 0, so the header's single-segment progress
+    // track fills over the full COUNTDOWN_DURATION_MS again. countdownUsed is
+    // intentionally left `true` (already was, from the first run) — that's
+    // what makes `started` true immediately (see above), so Timeline shows
+    // Pause+Leave right away instead of the first-visit countdown text/
+    // Play Now/Skip pair, while this ticks silently in the background.
+    setCardStep(-1);
+    setCountdown(COUNTDOWN_DURATION_MS / 1000);
+  };
+  // Resume — un-exits and starts playing from wherever phase/cardStep already
+  // are (frozen since Leave/Skip/a Timeline jump-while-exited, none of which
+  // touch them — see those call sites). The one exception: if that position
+  // is the Prototype 01 "countdown" spot (cardStep -1, phase intent), there's
+  // no card to resume into, so this kicks off a fresh real countdown-tail
+  // there instead, same mechanic handleStartWalkthrough uses — covers both a
+  // Skip and a jump-while-exited back to Prototype 01 with the same logic,
+  // since both land on that identical position.
+  const handleResume = () => {
+    setExited(false);
+    setPaused(false);
+    if (cardStep < 0 && phase === "intent") {
+      setCountdown(COUNTDOWN_DURATION_MS / 1000);
+    }
   };
   // Start Now — skips the rest of the countdown, jumps straight to card 0.
   // Same "jump to 0, clear countdown" mechanic as handleStartWalkthrough,
@@ -553,25 +575,42 @@ export default function OverviewPrototypeHotspots({
     setPhase("intent");
     setCardStep(0);
     setCountdown(null);
+    setCountdownUsed(true);
+  };
+  // Skip — declines the walkthrough entirely during the countdown, straight
+  // to free-view (same end state as Leave). Must also clear the countdown:
+  // left running, it would independently reach 0 and fire the "very first
+  // kickoff" effect above (phase "intent", cardStep -1), silently un-skipping
+  // the user back into the walkthrough they just declined.
+  const handleSkip = () => {
+    setExited(true);
+    setCountdown(null);
+    setCountdownUsed(true);
   };
 
-  // Reports countdown/exited/started (+ the 3 handlers above, whose identity
-  // changes every render since they're plain closures, not memoized — fine
-  // here, this just means the parent's player-state object is a fresh
-  // reference each time, not a stale-closure hazard) up to
+  // Reports countdown/exited/started/paused/completed (+ the handlers above,
+  // whose identity changes every render since they're plain closures, not
+  // memoized — fine here, this just means the parent's player-state object
+  // is a fresh reference each time, not a stale-closure hazard) up to
   // OverviewPrototypeSection so the sidebar can render/drive them — same
   // onMilestoneChange pattern already used for the milestone prop.
   useEffect(() => {
     onPlayerStateChange?.({
       countdown,
       exited,
-      started: cardStep >= 0,
+      started,
+      paused,
+      countdownUsed,
+      completed,
       onStartNow: handleStartNow,
       onExitWalkthrough: handleExitWalkthrough,
       onStartWalkthrough: handleStartWalkthrough,
+      onResume: handleResume,
+      onTogglePause: handleTogglePause,
+      onSkip: handleSkip,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [countdown, exited, cardStep, onPlayerStateChange]);
+  }, [countdown, exited, started, paused, countdownUsed, completed, onPlayerStateChange]);
 
   // Jump straight to any milestone — e.g. clicking one of the Timeline's
   // rows, or its Prototype 02 thumbnail (always targets "decisions"). Skips
@@ -589,11 +628,9 @@ export default function OverviewPrototypeHotspots({
       return;
     }
     lastJumpToken.current = jumpToken;
-    setExited(false);
-    setPaused(false);
-    setCountdown(null);
     // Mirrors the milestone → phase/cardStep mapping the `milestone` const
-    // above derives, in reverse.
+    // above derives, in reverse. Applies regardless of `exited` — only what
+    // happens to `exited`/`countdown` themselves differs below.
     switch (jumpTarget) {
       case "prototype1":
         setPhase("intent");
@@ -616,6 +653,31 @@ export default function OverviewPrototypeHotspots({
         setCardStep(0);
         break;
     }
+    if (exited) {
+      // Jumping the Timeline while already exited just moves the frozen
+      // position — it must NOT auto-play (surprising otherwise: "I already
+      // left, why is this playing"). `exited` stays true (no setExited call
+      // needed) and `countdown` stays null — no silent background tick.
+      // Resume/Replay is what actually starts it, see handleResume above.
+      // `jumpedWhileExited` flips on though — lets the landed-on position's
+      // tooltip show as a "preview" (see the render below) even though
+      // nothing's actually playing.
+      setJumpedWhileExited(true);
+      setCountdown(null);
+      return;
+    }
+    // Actively playing or paused — a genuine scrub, not a play/pause action:
+    // `paused` is deliberately left untouched (jumping while playing keeps
+    // playing at the new position, jumping while paused lands there and
+    // stays paused). Jumping to "prototype1" always (re-)enters a real,
+    // ticking 8s countdown-tail — same as Replay — rather than a static
+    // no-countdown view; `started` already covers the countdownUsed case
+    // (see above), so this reads as "playing" (Pause+Leave) right away, not
+    // the first-visit hint UI. Every other target always lands mid/post-
+    // walkthrough, where no countdown should ever show, so those clear it.
+    setCountdown(
+      jumpTarget === "prototype1" ? COUNTDOWN_DURATION_MS / 1000 : null,
+    );
   }, [jumpToken, jumpTarget]);
 
   // Per-card duration: flat 3s for every card, regardless of content length
@@ -696,9 +758,11 @@ export default function OverviewPrototypeHotspots({
   // first; insights' first card back → intent's last; etc.) — no manual
   // stepping through the "switching" hold itself, matching a video player's
   // convention of not scrubbing through a forced transition. Space
-  // pauses/resumes. Global (no need to click into the embed first), gated to
-  // this section being in view. No-ops before the sequence has started
-  // (cardStep -1, still counting down).
+  // pauses/resumes, Escape leaves — both gated on `started` (matching
+  // Timeline.tsx's Pause/Leave buttons, which only show once `started`) so
+  // neither does anything during the genuine first-visit countdown, where
+  // Play Now/Skip are the only controls. Global (no need to click into the
+  // embed first), gated to this section being in view.
   useEffect(() => {
     if (!disableHotspots || !sectionInView || exited) return;
     const onKeyDown = (e: KeyboardEvent) => {
@@ -727,13 +791,31 @@ export default function OverviewPrototypeHotspots({
           setCardStep(CARD_GROUPS.length - 1);
         }
       } else if (e.code === "Space") {
+        if (!started) return;
         e.preventDefault();
-        setPaused((p) => !p);
+        handleTogglePause();
+      } else if (e.key === "Escape") {
+        // Also gated on `!completed` — once the walkthrough has played
+        // through to the end, Timeline no longer offers a Leave button (see
+        // its primaryConfig), so Escape shouldn't be able to silently set
+        // `exited` either — that would hide the held final card's own
+        // annotation, which should keep showing until Replay is clicked.
+        if (!started || completed) return;
+        e.preventDefault();
+        handleExitWalkthrough();
       }
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [disableHotspots, sectionInView, exited, phase, cardStep, currentGroups.length]);
+  }, [
+    disableHotspots,
+    sectionInView,
+    exited,
+    started,
+    phase,
+    cardStep,
+    currentGroups.length,
+  ]);
 
   // The active group's hotspots (1+ — e.g. License Overview's 2), fed
   // straight to AnnotationConnectorHotspot's existing all-at-once rendering
@@ -764,6 +846,13 @@ export default function OverviewPrototypeHotspots({
     );
     if (!container || !labelBlock) return;
 
+    // Tracks whether the entrance lock below is currently applied, so the
+    // effect's own cleanup can release it as a safety net (see there) — a
+    // plain outer-scope flag, not React state, since it's read/written only
+    // by GSAP callbacks and the cleanup function, never rendered.
+    let overflowLocked = false;
+    let prevOverflow = "";
+
     const ctx = gsap.context(() => {
       const mm = gsap.matchMedia();
       mm.add("(prefers-reduced-motion: no-preference)", () => {
@@ -777,8 +866,9 @@ export default function OverviewPrototypeHotspots({
             // this, a fast scroll can outrun the 1s tween and the header +
             // embed (a single non-sticky unit — see ImgCard's .embedHeader)
             // arrive out of sync with the rest of the page.
-            const prevOverflow = document.documentElement.style.overflow;
+            prevOverflow = document.documentElement.style.overflow;
             document.documentElement.style.overflow = "hidden";
+            overflowLocked = true;
             gsap.to(container, {
               opacity: 1,
               y: 0,
@@ -786,9 +876,10 @@ export default function OverviewPrototypeHotspots({
               ease: "power2.out",
               onComplete: () => {
                 document.documentElement.style.overflow = prevOverflow;
+                overflowLocked = false;
               },
             });
-            setCountdown(8);
+            setCountdown(COUNTDOWN_DURATION_MS / 1000);
           },
         });
       });
@@ -798,12 +889,23 @@ export default function OverviewPrototypeHotspots({
           trigger: labelBlock,
           start: "bottom top",
           once: true,
-          onEnter: () => setCountdown(8),
+          onEnter: () => setCountdown(COUNTDOWN_DURATION_MS / 1000),
         });
       });
     });
 
-    return () => ctx.revert();
+    return () => {
+      ctx.revert();
+      // Safety net: ctx.revert() kills the entrance tween outright if the
+      // component unmounts mid-animation (e.g. LazyMount's IntersectionObserver
+      // gate toggling the section out of view), which skips the tween's own
+      // onComplete — leaving document.documentElement.style.overflow stuck on
+      // "hidden" and the whole page permanently unable to scroll. Restore it
+      // here unconditionally whenever the lock was left engaged.
+      if (overflowLocked) {
+        document.documentElement.style.overflow = prevOverflow;
+      }
+    };
   }, [disableHotspots]);
 
   // Fills the space below the nav, minus whatever height ImgCard's own chrome
@@ -876,6 +978,49 @@ export default function OverviewPrototypeHotspots({
   // there through "decisions" — intent/insights stay on Prototype 01.
   const showPrototype2 = disableHotspots && (phase === "switching" || phase === "decisions");
 
+  // Header progress track — reused for three distinct waits so it's never
+  // blank while the walkthrough is live: the pre-walkthrough countdown and
+  // the Prototype 02 "switching" hold each render as one continuous segment
+  // (progressSteps=1) filling over their own fixed duration; once a phase's
+  // cards are actually stepping (cardStep >= 0), it reverts to the familiar
+  // per-hotspot segmented track. None of this is reset on `exited` — with no
+  // `!exited` gate, the track just stops updating and stays frozen at
+  // whatever position it last held, so it stays visible in free-view too
+  // instead of disappearing.
+  // `cardStep < 0` (not just `countdown !== null`) is required here — once
+  // the countdown finishes naturally it lingers at 0 rather than resetting to
+  // null (only the explicit Start Now/Skip/Replay paths null it out), so
+  // `countdown !== null` alone would stay true even after cardStep has
+  // already advanced to 0 and the walkthrough has genuinely started.
+  const isCountdown =
+    disableHotspots && cardStep < 0 && phase === "intent" && countdown !== null;
+  const isSwitchingHold = disableHotspots && phase === "switching";
+  const trackProgressSteps = disableHotspots
+    ? isCountdown || isSwitchingHold
+      ? 1
+      : currentGroups.length
+    : undefined;
+  const trackActiveStep = disableHotspots
+    ? isCountdown || isSwitchingHold
+      ? 0
+      : cardStep
+    : undefined;
+  const trackActiveStepDurationMs = disableHotspots
+    ? isCountdown
+      ? COUNTDOWN_DURATION_MS
+      : activeStepDurationMs
+    : undefined;
+  // The countdown effect above now respects `paused` too (it's only ever
+  // true here once `started` is true — the genuine first-visit countdown has
+  // no Pause control at all), so this can just forward `paused` uniformly
+  // instead of special-casing the countdown segment. `exited` counts as
+  // paused here too — Leave doesn't touch phase/cardStep/paused itself
+  // (deliberately, so the position stays frozen for Resume), but without
+  // this, any tween ImgCard had mid-flight at the moment of Leave (e.g. a
+  // card's segment filling toward its next auto-advance) would keep
+  // animating to completion in the background instead of actually freezing.
+  const trackPaused = disableHotspots ? paused || exited : undefined;
+
   return (
     <div
       ref={pinRef}
@@ -885,18 +1030,11 @@ export default function OverviewPrototypeHotspots({
         variant={disableHotspots ? "embed" : "bare"}
         caption={showPrototype2 ? "Overview Prototype 02" : "Overview Prototype 01"}
         allowOverflow={disableHotspots}
-        progressSteps={
-          disableHotspots && !exited && phase !== "switching"
-            ? currentGroups.length
-            : undefined
-        }
-        activeStep={
-          disableHotspots && !exited && phase !== "switching"
-            ? cardStep
-            : undefined
-        }
-        activeStepDurationMs={disableHotspots ? activeStepDurationMs : undefined}
-        paused={disableHotspots ? paused : undefined}
+        progressSteps={trackProgressSteps}
+        activeStep={trackActiveStep}
+        activeStepDurationMs={trackActiveStepDurationMs}
+        paused={trackPaused}
+        progressColor={disableHotspots ? phaseAccentColor : undefined}
       >
         <div ref={embedWrapperRef} style={{ position: "relative" }}>
           <LiveEmbed
@@ -935,12 +1073,15 @@ export default function OverviewPrototypeHotspots({
               nativeWidth={1440}
             />
           )}
-          {disableHotspots && !exited && activeCardHotspots.length > 0 && (
+          {disableHotspots &&
+            (!exited || jumpedWhileExited) &&
+            activeCardHotspots.length > 0 && (
             <AnnotationConnectorHotspot
               containerRef={embedWrapperRef}
               nativeWidth={1440}
               hotspots={activeCardHotspots}
               showInsight={showInsight}
+              accentColor={phaseAccentColor}
             />
           )}
         </div>

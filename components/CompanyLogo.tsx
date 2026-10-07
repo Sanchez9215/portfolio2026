@@ -19,6 +19,7 @@
  * its actual SVG viewBox) via `aspect-ratio` so nothing is eyeballed.
  */
 
+import type { CSSProperties } from "react";
 import styles from "./CompanyLogo.module.css";
 
 export interface CompanyLogoProps {
@@ -29,6 +30,8 @@ export interface CompanyLogoProps {
   /** Overrides the default height (--text-body-xs-lh). */
   height?: number;
   className?: string;
+  /** Extra inline styles merged in after the mask/sizing styles below (e.g. positioning). */
+  style?: CSSProperties;
 }
 
 export default function CompanyLogo({
@@ -38,6 +41,7 @@ export default function CompanyLogo({
   alt,
   height,
   className,
+  style,
 }: CompanyLogoProps) {
   return (
     <span
@@ -49,6 +53,7 @@ export default function CompanyLogo({
         maskImage: `url(${src})`,
         aspectRatio: `${nativeWidth} / ${nativeHeight}`,
         height: height !== undefined ? `${height}px` : undefined,
+        ...style,
       }}
     />
   );

@@ -57,12 +57,21 @@
   filter: blur(20px);
 }
 
+/* font-size/line-height/letter-spacing read the same --button-label-* var-
+   with-fallback pattern Button.module.css's .medium/.m/.xsmall .label rules
+   already use — falls back to this button's own original 24px/24px/normal
+   (the only size that's existed so far) when nothing overrides them, so
+   Hero's usage is unaffected; a consumer nesting this inside a wrapper that
+   sets those vars (e.g. Timeline.module.css's .playerButtonRow, already set
+   up with the same var names for the Button-based player buttons) gets a
+   smaller label for free, no new prop needed. */
 .label {
   position: relative;
   font-family: var(--font-family-body);
   font-weight: var(--font-weight-semibold);
-  font-size: 24px;
-  line-height: 24px;
+  font-size: var(--button-label-size, 24px);
+  line-height: var(--button-label-lh, 24px);
+  letter-spacing: var(--button-label-ls, normal);
   color: var(--color-grey-50);
   white-space: nowrap;
 }

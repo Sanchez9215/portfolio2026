@@ -16,7 +16,7 @@ const DIAGONAL_SIZE = 32;
 const STROKE_WIDTH = 2;
 // Tooltip's fixed card width (unscaled, matches the Figma spec) — the connector's
 // horizontal run is sized to reach exactly this far so it spans the card edge to edge.
-const TOOLTIP_WIDTH = 200;
+const TOOLTIP_WIDTH = 232;
 // Padding added around the measured target rect on each side, so the cutout
 // reads as +4px taller/wider than the element itself, not a bare-tight crop.
 const RECT_PADDING = 4;
@@ -38,6 +38,12 @@ export interface AnnotationHotspotData {
   /** Attaches to the target's top-left corner with the connector/tooltip running
    *  out to the left, instead of the default top-right corner running right. */
   flip?: boolean;
+  /** Mirrors the diagonal vertically — attaches to the target's bottom corner
+   *  instead of top, with the elbow landing below it instead of above, so the
+   *  diagonal descends instead of rising (e.g. combined with `flip`, reads
+   *  "_/" — flat then rising — instead of the default "/‾"). Independent of
+   *  `flip`, which only mirrors left/right. */
+  flipVertical?: boolean;
   /** `data-hotspot` id for the spotlight cutout, when it should differ from
    *  `targetId` — e.g. multiple hotspots pointing into the same card share one
    *  cutout (the card) via a common `spotlightId`, while each keeps its own
@@ -78,6 +84,28 @@ export interface AnnotationHotspotData {
   documentScoped?: boolean;
 }
 
+// Card-by-card players group hotspots that share a spotlight (e.g. Licensing
+// Model Breakdown + Expiring Licenses both point at the License Overview
+// card) into a single step, showing all of that group's tooltips at once —
+// generalized off spotlightId/targetId rather than hardcoded to any one
+// card, so any hotspot set can use it. A hotspot with no spotlightId (the
+// common case) becomes its own singleton group.
+export function groupBySpotlight(
+  flat: AnnotationHotspotData[],
+): AnnotationHotspotData[][] {
+  const order: string[] = [];
+  const groups = new Map<string, AnnotationHotspotData[]>();
+  flat.forEach((h) => {
+    const key = h.spotlightId ?? h.targetId;
+    if (!groups.has(key)) {
+      groups.set(key, []);
+      order.push(key);
+    }
+    groups.get(key)!.push(h);
+  });
+  return order.map((key) => groups.get(key)!);
+}
+
 interface AnnotationConnectorHotspotProps {
   containerRef: React.RefObject<HTMLElement>;
   /** The embed's own reference width (LiveEmbed's `nativeWidth`) — same scale
@@ -89,6 +117,11 @@ interface AnnotationConnectorHotspotProps {
    *  Insights pass of the card player re-walks the identical hotspots/groups
    *  as the Intent pass, swapping which field shows. */
   showInsight?: boolean;
+  /** Overrides the connector line's color (defaults to
+   *  --annotation-connector-color's own fallback, blue-500) — e.g. the card
+   *  player swapping it per phase (yellow-500 for Early Assumptions,
+   *  blue-500 for Learnings/Decisions). */
+  accentColor?: string;
 }
 
 interface Rect {
@@ -120,6 +153,7 @@ export default function AnnotationConnectorHotspot({
   nativeWidth,
   hotspots,
   showInsight = false,
+  accentColor,
 }: AnnotationConnectorHotspotProps) {
   const maskId = useId();
   // What's actually measured/rendered right now — decoupled from the `hotspots`
@@ -311,7 +345,16 @@ export default function AnnotationConnectorHotspot({
   if (!containerSize) return null;
 
   return (
-    <div className={styles.overlay}>
+    <div
+      className={styles.overlay}
+      style={
+        accentColor
+          ? ({
+              "--annotation-connector-color": accentColor,
+            } as React.CSSProperties)
+          : undefined
+      }
+    >
       <svg className={styles.spotlightMask}>
         <defs>
           <mask
@@ -474,29 +517,44 @@ function ConnectorTooltip({
   }, [hotspot.title]);
 
   // Attach corner — the target's top-right by default, or top-left when flipped
-  // (the diagonal's lower end lands here either way).
+  // (the diagonal's lower end lands here either way). flipVertical attaches to
+  // the bottom edge instead of the top, so the diagonal descends to its elbow
+  // rather than rising to it.
   const cornerX = hotspot.flip ? rect.left : rect.left + rect.width;
-  const cornerY = rect.top;
+  const cornerY = hotspot.flipVertical ? rect.top + rect.height : rect.top;
   const diagonalWidth = DIAGONAL_SIZE * scale;
   const diagonalHeight = DIAGONAL_SIZE * scale;
-  // The elbow (diagonal's top end) is fixed relative to the corner (native size,
-  // just scaled — never stretched), which fixes where the tooltip itself must sit
-  // so its title/content gap lines up exactly with the connector's horizontal run.
-  // Flipped runs the elbow (and everything after it) to the left instead of right.
-  const elbowY = cornerY - diagonalHeight;
+  // The elbow is fixed relative to the corner (native size, just scaled — never
+  // stretched), which fixes where the tooltip itself must sit so its title/
+  // content gap lines up exactly with the connector's horizontal run. Flipped
+  // runs the elbow (and everything after it) to the left instead of right;
+  // flipVertical lands it below the corner instead of above.
+  const elbowY = hotspot.flipVertical
+    ? cornerY + diagonalHeight
+    : cornerY - diagonalHeight;
   const elbowX = hotspot.flip
     ? cornerX - diagonalWidth
     : cornerX + diagonalWidth;
   const tooltipLeft = hotspot.flip ? elbowX - TOOLTIP_WIDTH : elbowX;
   const tooltipTop = lineOffsetY != null ? elbowY - lineOffsetY : elbowY;
+  // SVG box's own page-space top — whichever of corner/elbow is higher
+  // (smaller y). Matches elbowY in the default (rising) orientation; matches
+  // cornerY when flipVertical descends the diagonal instead.
+  const svgTop = hotspot.flipVertical ? cornerY : elbowY;
+  // Local y-coordinates (within the 0..DIAGONAL_SIZE viewBox) for the corner
+  // and elbow ends of the diagonal — swapped top/bottom when flipVertical, so
+  // the path descends instead of rises.
+  const localCornerY = hotspot.flipVertical ? 0 : DIAGONAL_SIZE;
+  const localElbowY = hotspot.flipVertical ? DIAGONAL_SIZE : 0;
 
   // One continuous path, same native unit space throughout (never non-uniformly
-  // stretched): diagonal from (0, DIAGONAL_SIZE) up to the elbow at (DIAGONAL_SIZE, 0),
-  // then horizontal out to (DIAGONAL_SIZE + horizontalRun, 0) — sized so that run,
-  // once scaled, reaches exactly the tooltip's full width.
+  // stretched): diagonal from the corner up (or, flipVertical, down) to the
+  // elbow, then horizontal out to (DIAGONAL_SIZE + horizontalRun) at the
+  // elbow's own height — sized so that run, once scaled, reaches exactly the
+  // tooltip's full width.
   const horizontalRun = TOOLTIP_WIDTH / scale;
   const pathWidth = DIAGONAL_SIZE + horizontalRun;
-  const connectorPath = `M0 ${DIAGONAL_SIZE}L${DIAGONAL_SIZE} 0H${pathWidth}`;
+  const connectorPath = `M0 ${localCornerY}L${DIAGONAL_SIZE} ${localElbowY}H${pathWidth}`;
 
   // Fades this card's tooltip + connector in on its own mount (the shared
   // spotlight scrim in the parent component is never remounted, so it stays
@@ -552,7 +610,7 @@ function ConnectorTooltip({
         className={styles.connector}
         style={{
           left: cornerX,
-          top: elbowY,
+          top: svgTop,
           width: pathWidth * scale,
           height: diagonalHeight,
           transform: hotspot.flip ? "scaleX(-1)" : undefined,

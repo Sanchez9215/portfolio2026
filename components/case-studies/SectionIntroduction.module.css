@@ -1,5 +1,5 @@
 /* ============================================================
-   SectionIntroduction — case study intro section
+   SectionIntroduction — shared case-study intro section
    Grid: cs-grid (12-col, column-gap --spacing-xl, padding-inline --spacing-xl)
    All values resolve through CSS custom properties → tokens.json.
    ============================================================ */
@@ -26,9 +26,9 @@
   transform: translateY(24px);
 }
 
-/* live software experience — 80% width, full window height, scrolls internally.
-   Radius/clip live on SoftwareExperienceEmbed's own .wrapper instead — this
-   rule only sizes it. */
+/* live hero visual — 80% width, full window height, scrolls internally.
+   Radius/clip live on the visual's own wrapper instead — this rule only
+   sizes it. */
 .heroEmbed > * {
   width: 80%;
   height: 100%;
@@ -96,7 +96,15 @@
   transform: translateY(24px);
 }
 
-/* div.impact-cards — Platform Expansion / Millions Reclaimed / Revenue */
+/* "Company" label + info-icon tooltip trigger, matches WorkCaseStudyRow's
+   own .companyLabel treatment on Home */
+.companyLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* div.impact-cards */
 .impactCards {
   display: flex;
   gap: var(--spacing-xl);
@@ -104,9 +112,17 @@
 
 .impactCards > * {
   flex: 1;
+  min-width: 0;
   /* entrance-animation hidden state */
   opacity: 0;
   transform: translateY(24px);
+}
+
+/* Holds width in the row for a study with fewer than IMPACT_SLOTS items —
+   see SectionIntroduction.tsx's filler-slot rendering. */
+.impactFiller {
+  flex: 1;
+  min-width: 0;
 }
 
 .impactItem {

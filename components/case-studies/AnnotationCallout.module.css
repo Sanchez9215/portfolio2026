@@ -1,0 +1,48 @@
+/* ============================================================
+   AnnotationCallout — standalone leader-line annotation (card +
+   diagonal-then-elbow connector), extracted from
+   AnnotationConnectorHotspot for always-on use with no spotlight
+   scrim. Transparent card — relies on its own section's
+   --surface-base background, not a dimmed backdrop, for contrast.
+   ============================================================ */
+
+.callout {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.connector {
+  position: absolute;
+  overflow: visible;
+  color: var(--annotation-connector-color, #0f8fff);
+}
+
+.tooltip {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  /* width set inline per-instance — see AnnotationCallout's tooltipWidth prop */
+  box-sizing: border-box;
+  padding: 12px;
+}
+
+.title {
+  font-family: var(--font-family-body);
+  font-weight: var(--font-weight-bold);
+  font-size: var(--text-label-xs-size);
+  line-height: var(--text-label-xs-lh);
+  letter-spacing: var(--text-label-xs-ls);
+  color: var(--text-primary-strong);
+}
+
+.text {
+  font-family: var(--font-family-body);
+  font-weight: var(--font-weight-regular);
+  font-size: var(--text-body-xs-size);
+  line-height: var(--text-body-xs-lh);
+  color: var(--color-grey-50);
+  margin: 0;
+}

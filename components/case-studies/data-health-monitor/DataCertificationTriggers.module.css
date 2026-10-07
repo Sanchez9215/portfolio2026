@@ -1,0 +1,500 @@
+/* ============================================================
+   DataCertificationTriggers — first real build against PLAN.md's
+   "Process Diagram / Connector System" ruleset. Grid spans are placed on
+   this page's own 12-col grid (NOT copied from Figma's px positions, which
+   use a different 96px side padding than this page's real --spacing-xl).
+   ============================================================ */
+
+.wrap {
+  position: relative;
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: subgrid;
+  grid-template-rows: auto auto auto auto auto auto auto auto auto auto auto auto auto auto;
+  /* Triggers → row is a plain straight-line fan-out now (no corner/elbow),
+     so it only needs modest visual breathing room, not geometry-driven
+     clearance. The row → pain-card gap is different (see .painCard's own
+     margin-top) — that one IS an elbow connector and needs real room for
+     a visible straight drop before it curves. */
+  row-gap: var(--spacing-xl);
+}
+
+.triggersLabel {
+  /* Matches .triggerRow's own area (4/10, the grid's true center-6-column
+     span) rather than a wider/different span — both need to center on the
+     exact same point (grid line 7) or the vertical center line between
+     them reads as angled instead of straight. */
+  grid-column: 4 / 10;
+  grid-row: 1;
+  justify-self: center;
+  /* On top of .wrap's row-gap (--spacing-xl, 32px) — real structure is
+     Label > CONNECTOR_LENGTH lead-in stub > shoulder line > BRANCH_HEIGHT >
+     cards, so the label-to-card-row space needs CONNECTOR_LENGTH + CARD_GAP
+     (the stub's own real-anchor inset — see buildFanTrapezoid). Both are
+     set as CSS custom properties from the component (--connector-length,
+     --spacing-sm doubling as CARD_GAP), so this stays correct if either
+     value ever changes. */
+  margin-bottom: calc(var(--connector-length) + var(--spacing-sm));
+  font-family: var(--font-family-body);
+  font-weight: var(--font-weight-bold);
+  font-size: var(--text-label-sm-size);
+  line-height: var(--text-label-sm-lh);
+  letter-spacing: var(--text-label-sm-ls);
+  color: var(--color-grey-500);
+}
+
+.triggerRow {
+  /* Spans the center 6 of 12 columns — an even split (3 columns of padding
+     on each side) centers exactly on the grid's true midpoint, unlike the
+     old 3-card-specific column spans (2/5, 5/8, 8/11) which needed a
+     narrowing hack on Scheduled to fake a visual center. A flex row
+     (not grid) lets each card size to its own content and centers the
+     group as a whole, rather than snapping each card to a column line. */
+  grid-column: 4 / 10;
+  grid-row: 2;
+  display: flex;
+  justify-content: center;
+  gap: var(--spacing-xl);
+  /* On top of .wrap's row-gap (--spacing-xl, 32px) — the mirrored
+     trapezoid below these cards needs the same total space as the upper
+     trapezoid has above Triggers (see .triggersLabel's comment). */
+  margin-bottom: calc(var(--connector-length) + var(--spacing-sm));
+}
+
+/* Shared by every card in this diagram's process chain — the 3 trigger
+   cards (Upcoming Audit/Scheduled/Event) and every main-chain step
+   (Asset Prioritization, Easy Clean-Up First, ...). Width is a single
+   controlled, confirmed value (301px, matching Figma's own frame width
+   for all of these cards) — change it here, not per-instance. */
+.stepCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  text-align: center;
+  width: 301px;
+}
+
+.cardTitle {
+  /* Hugs its own text width instead of stretching to the flex column's
+     full width (the default for a flex item in a column container) — the
+     pain-branch connector anchors to this element's real left/right edge,
+     which only means anything if the edge is the text's own edge. */
+  align-self: center;
+  font-family: var(--font-family-body);
+  font-weight: var(--font-weight-bold);
+  font-size: var(--text-label-sm-size);
+  line-height: var(--text-label-sm-lh);
+  letter-spacing: var(--text-label-sm-ls);
+  color: var(--color-grey-500);
+}
+
+.cardBody {
+  font-family: var(--font-family-body);
+  font-weight: var(--font-weight-regular);
+  font-size: var(--text-body-sm-size);
+  line-height: var(--text-body-sm-lh);
+  color: var(--color-grey-500);
+  margin: 0;
+}
+
+.painCard {
+  grid-row: 2;
+  align-self: end;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  text-align: center;
+  width: 230px;
+}
+
+/* Every pain card now positions horizontally via a JS-measured transform
+   (painCardOffsets, see the component) rather than a fixed grid-edge
+   column — CONNECTOR_LENGTH is the one shared, tunable distance each
+   card's lead travels out from its own label. grid-column: 4/10 +
+   justify-self: center is just the shared natural starting point every
+   other centered row in this diagram uses; the transform does the real
+   positioning from there. */
+.reactiveRush {
+  grid-column: 4 / 10;
+  justify-self: center;
+}
+
+.thingsGoUnnoticed {
+  grid-column: 4 / 10;
+  justify-self: center;
+}
+
+.painCardTitle {
+  font-family: var(--font-family-body);
+  font-weight: var(--font-weight-bold);
+  font-size: var(--text-label-sm-size);
+  line-height: var(--text-label-sm-lh);
+  letter-spacing: var(--text-label-sm-ls);
+  color: var(--accent-warning);
+}
+
+.painCardBody {
+  font-family: var(--font-family-body);
+  font-weight: var(--font-weight-regular);
+  font-size: var(--text-body-sm-size);
+  line-height: var(--text-body-sm-lh);
+  color: var(--accent-warning);
+  margin: 0;
+}
+
+/* Main certification flow (Figma node 1766:7651). Built incrementally, one
+   step at a time. Own dedicated row (4), decoupled from .painCard's row 3
+   (reactiveRush/thingsGoUnnoticed) — the lower trapezoid now anchors
+   directly to this element's real measured position (see the component's
+   buildFanTrapezoid call), so it no longer needs to share a row with those
+   pain cards to "land" correctly. Sharing used to matter under the old
+   dangling-apex model; keeping it would size this row to whichever of the
+   three siblings is tallest, breaking the controlled gap to the next step. */
+.flowStep {
+  grid-column: 4 / 10;
+  grid-row: 3;
+  justify-self: center;
+}
+
+.flowStepTitle {
+  align-self: center;
+  font-family: var(--font-family-body);
+  font-weight: var(--font-weight-bold);
+  font-size: var(--text-label-sm-size);
+  line-height: var(--text-label-sm-lh);
+  letter-spacing: var(--text-label-sm-ls);
+  color: var(--color-grey-500);
+}
+
+.flowStepBody {
+  font-family: var(--font-family-body);
+  font-weight: var(--font-weight-regular);
+  font-size: var(--text-body-sm-size);
+  line-height: var(--text-body-sm-lh);
+  color: var(--color-grey-500);
+  margin: 0;
+}
+
+.oftenOverScoped {
+  grid-column: 4 / 10;
+  grid-row: 4;
+  justify-self: center;
+}
+
+/* Shares row 5 with .oftenOverScoped so only one row-gap (not an
+   intervening row's own height) separates it from .flowStep — the
+   Asset Prioritization→Easy Clean-Up connector needs a controlled,
+   predictable real gap. Total space needed is CONNECTOR_LENGTH + CARD_GAP
+   x2 real-anchor breathing room; .wrap's own row-gap already supplies
+   --spacing-xl of that, so margin-top only adds the remainder. */
+.flowStep2 {
+  grid-column: 4 / 10;
+  grid-row: 4;
+  justify-self: center;
+  margin-top: calc(
+    var(--connector-length) + (var(--spacing-sm) * 2) - var(--spacing-xl)
+  );
+}
+
+.cleanUpDoesntHappen {
+  grid-column: 4 / 10;
+  grid-row: 5;
+  justify-self: center;
+}
+
+/* Shares row 5 with .cleanUpDoesntHappen, same pattern as .flowStep2. */
+.flowStep3 {
+  grid-column: 4 / 10;
+  grid-row: 5;
+  justify-self: center;
+  margin-top: calc(
+    var(--connector-length) + (var(--spacing-sm) * 2) - var(--spacing-xl)
+  );
+}
+
+.tasksGoNowhere {
+  grid-column: 4 / 10;
+  grid-row: 6;
+  justify-self: center;
+}
+
+/* Shares row 6 with .tasksGoNowhere, same pattern as .flowStep2/.flowStep3. */
+.flowStep4 {
+  grid-column: 4 / 10;
+  grid-row: 6;
+  justify-self: center;
+  margin-top: calc(
+    var(--connector-length) + (var(--spacing-sm) * 2) - var(--spacing-xl)
+  );
+}
+
+.assetsGoUnchecked {
+  grid-column: 4 / 10;
+  grid-row: 7;
+  justify-self: center;
+}
+
+/* First 2-way fork (Figma node 1771:7737) — "Did Owner Respond by
+   Deadline?" shares row 7 with .assetsGoUnchecked, same pattern as every
+   other step. Styled like .triggersLabel (bare label, not a card). */
+.decisionLabel {
+  grid-column: 4 / 10;
+  grid-row: 7;
+  justify-self: center;
+  margin-top: calc(
+    var(--connector-length) + (var(--spacing-sm) * 2) - var(--spacing-xl)
+  );
+  /* On top of .wrap's row-gap (--spacing-xl, 32px) to row 8 — the fork
+     below needs the same total space as the Triggers label has above its
+     own fan, or the lead-in connector collapses to zero length. */
+  margin-bottom: calc(var(--connector-length) + var(--spacing-sm));
+  font-family: var(--font-family-body);
+  font-weight: var(--font-weight-bold);
+  font-size: var(--text-label-sm-size);
+  line-height: var(--text-label-sm-lh);
+  letter-spacing: var(--text-label-sm-ls);
+  color: var(--color-grey-500);
+}
+
+/* Yes/No, side by side like .triggerRow — same gap token. Yes's cell is
+   naturally taller than No's card now that it holds the nested
+   "What did they say" continuation (see .forkLabel/.yesContinuation). */
+.forkRow {
+  grid-column: 4 / 10;
+  grid-row: 8;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: var(--spacing-xl);
+}
+
+/* 3-way fork outcomes (Correct / Wrong / No Longer Exists) — back on a
+   normal grid row (see .outcomesRow) now that "What did they say" is a
+   real nested anchor rather than an absolute synthetic point. Measured
+   against Figma, this fork's own real extent is the same scale as every
+   other row's 4/10 span, not wider — so it reuses that span rather than
+   widening it.
+   Centering this row on the span's own center would NOT align it under
+   "What did they say" — that label sits inside Yes's cell, which (as the
+   left member of the centered Yes/No pair in .forkRow) is offset left of
+   the span's center. The exact shift is computed in JS (measured against
+   "What did they say"'s real position, not derived via calc() — two
+   differently-structured rows can't be assumed to share an X just because
+   both are centered) and applied as an inline transform.
+   Each outcome reuses .forkLabel with the standard --spacing-xl gap, but
+   its width is overridden inline from a JS measurement of the trigger
+   cards' own real rendered width (see the component's measurement
+   effect) rather than .forkLabel's coded 301px — 3 cards of 301px don't
+   actually fit this span, so the trigger row itself already renders
+   narrower than 301px via the browser's own flex-shrink. Measuring that
+   real value and reusing it directly (instead of assuming a coded width
+   renders as coded) is the only way this row and .resolutionRow reliably
+   end up with the exact same per-item width. Matching width + gap means
+   adjacent items on both rows land the same distance apart, so Implement
+   Fix/Record is Retired can't overlap without any extra computation. */
+.outcomesRow {
+  grid-column: 4 / 10;
+  grid-row: 9;
+  display: flex;
+  justify-content: center;
+  gap: var(--spacing-xl);
+}
+
+/* Wrong → Implement Fix, No Longer Exists → Record is Retired — Correct's
+   own downstream isn't built yet. Neutral grey (.stepCard/.flowStepTitle
+   defaults), confirmed by the user, despite continuing from the
+   warning-red outcomes above. Width overridden inline to the same
+   measured trigger-card width as .outcomesRow (see its comment) — a
+   single row-level JS-computed shift (not per-card) aligns Record is
+   Retired under No Longer Exists; since both rows share identical item
+   width + gap, Implement Fix lands under Wrong automatically. */
+.resolutionRow {
+  grid-column: 4 / 10;
+  grid-row: 10;
+  display: flex;
+  justify-content: center;
+  gap: var(--spacing-xl);
+  margin-top: calc(
+    var(--connector-length) + (var(--spacing-sm) * 2) - var(--spacing-xl)
+  );
+}
+
+/* Double-Check Answers' own pain branch. Positioned the same generic way
+   every pain card now is — painCardOffsets (JS-measured, see the
+   component) pulls it to sit STEP_PAIN_GAP/STEP_PAIN_VERTICAL_GAP from
+   Double-Check Answers' own real edges via translate(). Taken fully out
+   of grid flow (position: absolute, relative to .wrap) rather than given
+   a dedicated grid row — a real grid cell was still consuming vertical
+   space (its own margin + content height + row-gap) between Double-Check
+   Answers and the Match/Don't Match fork below even though its visual
+   position had moved entirely to JS-driven transforms, inflating that
+   gap for no reason. */
+.nothingIsDoubleChecked {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+/* Third fork (Match/Don't Match), off Double-Check Answers — a fan lead-in
+   case (one real anchor feeding a synthetic shoulder), same margin formula
+   as .triggersLabel/.decisionLabel/.doubleCheckAnswers (CONNECTOR_LENGTH +
+   CARD_GAP, no row-gap subtraction — that subtraction only applies to a
+   simple two-real-anchor stub like .flowStep2/.resolutionRow). Centers
+   under Double-Check Answers' real x via matchDontMatchOffset (JS-measured,
+   not grid centering — same technique as .outcomesRow/.resolutionRow), not
+   this span's own center. */
+.forkRow3 {
+  grid-column: 4 / 10;
+  grid-row: 12;
+  display: flex;
+  justify-content: center;
+  gap: var(--spacing-xl);
+  margin-top: calc(var(--connector-length) + var(--spacing-sm));
+}
+
+/* Don't Match → Mismatches Are Investigated — a plain two-real-anchor
+   simple stub, same margin formula as .flowStep2/.resolutionRow (total
+   space = CONNECTOR_LENGTH + CARD_GAP x2; .wrap's row-gap already
+   supplies --spacing-xl of that). Aligns under Don't Match's own real x
+   via mismatchesAreInvestigatedOffset (JS-measured), not grid centering. */
+.mismatchesAreInvestigated {
+  grid-column: 4 / 10;
+  grid-row: 13;
+  justify-self: center;
+  margin-top: calc(
+    var(--connector-length) + (var(--spacing-sm) * 2) - var(--spacing-xl)
+  );
+}
+
+/* Match + Mismatches Are Investigated merge into this (Figma node
+   1776:7929/7930/7931) — own dedicated row (14), same fan-lead-in margin
+   formula as .doubleCheckAnswers/.forkRow3 (CONNECTOR_LENGTH + CARD_GAP,
+   no row-gap subtraction). Aligns to the same finalTargetCenterX spine
+   every upstream step (Record is Retired → Double-Check Answers) has
+   been aligning to (JS-measured, see certificationCycleClosesOffset),
+   not plain grid centering. */
+.certificationCycleCloses {
+  grid-column: 4 / 10;
+  grid-row: 14;
+  justify-self: center;
+  margin-top: calc(var(--connector-length) + var(--spacing-sm));
+}
+
+/* Certification Cycle Closes' own 2 pain branches — same generic
+   painCardOffsets mechanism as every other pain card (one step, two
+   cards instead of one this time; both share this row and diverge
+   outward via their own direction, same precedent as
+   .reactiveRush/.thingsGoUnnoticed sharing one row off two different
+   steps). */
+.dataIsConstantlyDecaying {
+  grid-column: 4 / 10;
+  grid-row: 14;
+  justify-self: center;
+}
+
+.auditScramble {
+  grid-column: 4 / 10;
+  grid-row: 14;
+  justify-self: center;
+}
+
+/* Scoped to this row only (not .stepCard generally, which is shared
+   broadly elsewhere in this diagram with different sizing needs) — locks
+   in the inline-measured width above so it can't shrink further. */
+.resolutionRow > .stepCard {
+  flex-shrink: 0;
+}
+
+/* Implement Fix's own pain branch — own dedicated row for now (not yet
+   row-shared with a "next step," since Correct/Implement Fix/Record is
+   Retired's downstream merge into Double-Check Answers isn't built yet;
+   revisit per the row-sharing pattern once that's added). Connects the
+   same way as every other pain branch: diagonal lead off the title
+   label's own right edge, growing outward. */
+.issuesGoUnfixed {
+  grid-column: 4 / 10;
+  grid-row: 11;
+  justify-self: center;
+}
+
+/* Fed by the upward fan below Record is Retired/Implement Fix (see the
+   component's fan-building comment). Shares row 11 with .issuesGoUnfixed,
+   same row-sharing pattern as every other step. Sits directly below
+   Record is Retired — a JS-measured transform (see
+   doubleCheckAnswersOffset), not plain grid centering, since that's a
+   specific real target to align to, not this span's center. Width is the
+   same measured trigger-card width as every other card in this fork area
+   (see .outcomesRow's comment), not .stepCard's coded 301px. */
+.doubleCheckAnswers {
+  grid-column: 4 / 10;
+  grid-row: 11;
+  justify-self: center;
+  margin-top: calc(var(--connector-length) + var(--spacing-sm));
+}
+
+/* Same 301px width footprint as .stepCard (not the class itself — no card
+   chrome/gap needed for a bare label) so "Yes"'s real anchor is symmetric
+   with "No"'s, keeping the fork's shoulder centered under the decision
+   label above (see buildFanTrapezoid's centerX comment). flex-column
+   because this cell now also holds the nested "What did they say"
+   continuation (see .yesContinuation) — matches Figma's own structure
+   (Yes + a connector + the continuation stacked in one column), making
+   this cell legitimately taller than "No"'s card rather than needing to
+   be force-stretched to match it.
+   The coded 301px here is .forkRow's own value (Yes/No, 2 items, still
+   fits) — .outcomesRow's 3 outcome labels override this width inline
+   with a JS-measured value instead (see .outcomesRow's comment), since 3
+   of them at 301px wouldn't actually render at 301px (flex-shrink). */
+.forkLabel {
+  width: 301px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* .outcomesRow holds 3 of these — more total content than .forkRow's 2
+     ever needed, so it can exceed the available grid-column width and get
+     shrunk by the default flex-shrink:1, silently breaking the
+     matching-width-and-gap relationship .resolutionRow's alignment relies
+     on (see .outcomesRow's comment). Same failure mode as the earlier
+     wrapping bug on the old .outcomeLabel class. */
+  flex-shrink: 0;
+}
+
+/* Connector stub from "Yes" down to "What did they say" — both ends are
+   real anchors now (see buildLeadConnector/buildFanTrapezoid calls), so
+   this is a standard simple-stub gap, just expressed as margin within one
+   flex column instead of across a wrap grid-row. No row-gap to subtract
+   here (unlike .flowStep2 etc.), so both ends get the full real-anchor
+   inset: margin-top is CONNECTOR_LENGTH + CARD_GAP x2, margin-bottom is
+   CONNECTOR_LENGTH + CARD_GAP (same calc as .triggersLabel/.decisionLabel,
+   leading into a fan). */
+.yesContinuation {
+  margin-top: calc(var(--connector-length) + (var(--spacing-sm) * 2));
+  margin-bottom: calc(var(--connector-length) + var(--spacing-sm));
+}
+
+/* Matches .painCardTitle/.painCardBody's warning color, for "No"'s own
+   text (the failure-side outcome of the Yes/No fork). */
+.warningText {
+  color: var(--accent-warning);
+}
+
+/* Positioned at the half-circle loop connector's own computed center
+   point (JS-driven, like .overlay) — centered on that point since it's a
+   single point, not an edge. */
+.loopLabel {
+  position: absolute;
+  z-index: 1;
+  transform: translate(-50%, -50%);
+  white-space: nowrap;
+  background-color: var(--surface-base);
+  padding: var(--spacing-sm);
+}
+
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  overflow: visible;
+  pointer-events: none;
+}

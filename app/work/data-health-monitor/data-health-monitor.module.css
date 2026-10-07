@@ -1,0 +1,198 @@
+/* ============================================================
+   Data Health Monitor — case study layout
+   Grid: cs-grid (12-col, column-gap --spacing-xl, padding-inline --spacing-xl)
+   All values resolve through CSS custom properties → tokens.json.
+   ============================================================ */
+
+/* ── section.brief ──────────────────────────────────────────── */
+
+.brief {
+  min-height: 100vh;
+  align-content: center;
+}
+
+.briefContent {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: subgrid;
+  row-gap: var(--spacing-xl);
+}
+
+.briefContent > * {
+  grid-column: 1 / -1;
+}
+
+/* Shared width for every detail Block on this page (Brief, Opportunity,
+   CMDB Framework, CMDB-to-XOPS, ...) — not scoped to one section. */
+.detailBlock {
+  grid-column: 1 / 4;
+  color: var(--text-primary);
+}
+
+/* ── section.slower-time-to-value ──────────────────────────────── */
+
+.slowerTimeToValue {
+  min-height: 100vh;
+  align-content: center;
+}
+
+.slowerTimeToValueTextBlock {
+  grid-column: 1 / -1;
+}
+
+/* ── section.root-cause ──────────────────────────────────────── */
+
+.rootCause {
+  min-height: 100vh;
+  align-content: center;
+}
+
+.rootCauseTextBlock {
+  grid-column: 1 / -1;
+}
+
+/* ── section.opportunity ─────────────────────────────────────── */
+
+.opportunity {
+  min-height: 100vh;
+  align-content: center;
+  row-gap: var(--spacing-xl);
+}
+
+.opportunityTextBlock {
+  grid-column: 1 / 8;
+}
+
+/* ── section.domain-immersion ─────────────────────────────────── */
+
+.domainImmersion {
+  /* Content (the label block + the 6-hub system map below) is allowed to
+     exceed one viewport — height hugs its real content instead of being
+     forced to fit/center within 100vh like the other display-beat sections. */
+}
+
+.domainImmersionContent {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: subgrid;
+  row-gap: var(--spacing-3xl);
+}
+
+.domainImmersionContent > * {
+  grid-column: 1 / -1;
+}
+
+/* ── section.cmdb-framework ───────────────────────────────────── */
+
+section.cmdbFramework {
+  /* Hugs its real content height instead of the other display-beat
+     sections' min-height:100vh (matches .domainImmersion's own
+     hug-content convention above). */
+  row-gap: var(--spacing-xl);
+  /* Element-qualified to win the specificity fight against Section.module
+     .css's own .section padding-block (same convention as section.cmdb
+     Sunburst below). */
+  padding-bottom: var(--spacing-3xl);
+}
+
+.cmdbFrameworkTextBlock {
+  grid-column: 1 / 9;
+}
+
+/* ── section.cmdb-sunburst ────────────────────────────────────── */
+
+section.cmdbSunburst {
+  padding-block: var(--spacing-xl);
+  padding-top: var(--spacing-3xl);
+  padding-bottom: var(--spacing-5xl);
+}
+
+.cmdbSunburstContent {
+  grid-column: 1 / -1;
+  /* Originally 100vh (matching .cmdbFramework's own min-height: 100vh
+     convention above) instead of aspect-ratio: 1/1 — CmdbSunburst derives
+     its radius from min(width, height)/2, so this height cap is what makes
+     the whole chart scale down to fit rather than growing as tall as the
+     full-width column would otherwise force it to. Grown to ~111vh
+     (728/656, the same ratio BASELINE_INNER grew the chart's
+     BASELINE_TOTAL by) when the center hole was doubled to fit the
+     ServiceNow mark — keeps that same 100vh's worth of real space for
+     Category/Class/Type/CI, with the extra ~11vh going entirely to the
+     hole. */
+  height: 111vh;
+}
+
+/* ── section.data-certification ─────────────────────────────── */
+
+.dataCertification {
+  /* Hugs its real content height instead of the other display-beat
+     sections' min-height:100vh (same hug-content convention as
+     .cmdbFramework/.domainImmersion above). */
+  row-gap: var(--spacing-xl);
+}
+
+/* Element-qualified to out-specificity Section.module.css's shared
+   `.section` padding-block shorthand (equal class-specificity otherwise,
+   so source order — not intent — would decide the winner). Tightens the
+   gap into the diagram immediately below. */
+section.dataCertification {
+  padding-bottom: var(--spacing-3xl);
+}
+
+.dataCertificationTextBlock {
+  grid-column: 1 / 11;
+}
+
+/* ── section.data-certification-triggers ───────────────────── */
+
+.dataCertificationTriggers {
+  /* Hugs its real content height (matches .cmdbFramework's/.domainImmersion's
+     own hug-content convention) rather than a fixed min-height:100vh. */
+  padding-block: var(--spacing-4xl);
+}
+
+/* Element-qualified for the same specificity reason as
+   `section.dataCertification` above. Tightens the gap from
+   .dataCertification above, matching its own reduced bottom padding. */
+section.dataCertificationTriggers {
+  padding-top: var(--spacing-3xl);
+}
+
+/* ── section.xops-transition ──────────────────────────────────── */
+
+.xopsTransition {
+  min-height: 100vh;
+  align-content: center;
+}
+
+.xopsTransitionTextBlock {
+  grid-column: 4 / 10;
+  text-align: center;
+}
+
+/* ── section.cmdb-to-xops ─────────────────────────────────────── */
+
+.cmdbToXops {
+  min-height: 100vh;
+  align-content: center;
+  row-gap: var(--spacing-xl);
+}
+
+.cmdbToXopsTextBlock {
+  /* Flush-left — anchored to the grid's own left edge (column 1), not
+     centered in a middle column range. */
+  grid-column: 1/10;
+}
+
+/* ── section.framework-shape-sorter ──────────────────────────── */
+
+.frameworkShapeSorter {
+  min-height: 100vh;
+  align-content: center;
+}
+
+.frameworkShapeSorter > * {
+  /* Freeform/spatial content (FrameworkShapeSorter centers itself) —
+     full-bleed, not column-placed. */
+  grid-column: 1 / -1;
+}

@@ -18,6 +18,29 @@ export interface HubNode {
 interface Props {
   title: string
   nodes: HubNode[]
+  // Opt-in smaller type tier (hub/leaf/intermediate all → 14px, label-sm /
+  // body-sm) — default (unset) keeps every existing consumer's current
+  // sizing (label-xl hub / body-lg leaf / body-xs intermediate) unchanged.
+  compact?: boolean
+  // Locks top-level nodes' own position (not just their descendants') to a
+  // fixed angle straight out from the hub center. Without this, a
+  // childrenAngleDeg set on a top-level node only locks ITS children — the
+  // top-level node itself is still placed by the general physics
+  // simulation and can land anywhere (including near the hub label),
+  // making the "locked" chain below it start from an uncontrolled point
+  // instead of growing cleanly outward. Default (unset) preserves every
+  // existing consumer's current physics-placed top-level spoke behavior.
+  rootAngleDeg?: number
+  // Renders just the hub title, no leaf/spoke content — for tuning
+  // hub-to-hub connections in isolation without leaf-level visual noise.
+  // Default (unset) renders every existing consumer's leaves as normal.
+  hideLeaves?: boolean
+  // Reports the hub title's real rendered size (in this instance's own
+  // local SVG coordinate space) once painted — lets a parent anchor its own
+  // connections to the actual visible text instead of this component's
+  // full container box. Default (unset) reports nothing, no behavior change
+  // for existing consumers.
+  onHubTextSize?: (size: { width: number; height: number }) => void
 }
 
 interface SimNode extends SimulationNodeDatum {
@@ -30,7 +53,7 @@ interface SimNode extends SimulationNodeDatum {
 
 type SimLink = SimulationLinkDatum<SimNode>
 
-function buildGraph(title: string, nodes: HubNode[]) {
+function buildGraph(title: string, nodes: HubNode[], rootAngleDeg?: number) {
   const simNodes: SimNode[] = [
     { id: '__hub__', name: title, isHub: true, isIntermediate: false },
   ]
@@ -47,7 +70,7 @@ function buildGraph(title: string, nodes: HubNode[]) {
     }
   }
 
-  for (const node of nodes) traverse(node, '__hub__', undefined)
+  for (const node of nodes) traverse(node, '__hub__', rootAngleDeg)
   return { simNodes, rawLinks }
 }
 
@@ -83,7 +106,7 @@ function bboxEdge(box: DOMRect, dx: number, dy: number, pad = 0): { x: number; y
 const NS = 'http://www.w3.org/2000/svg'
 const el = (tag: string) => document.createElementNS(NS, tag)
 
-export default function ContentHub({ title, nodes }: Props) {
+export default function ContentHub({ title, nodes, compact = false, rootAngleDeg, hideLeaves = false, onHubTextSize }: Props) {
   const containerRef = useRef<HTMLDivElement>(null)
   const svgRef = useRef<SVGSVGElement>(null)
 
@@ -100,7 +123,7 @@ export default function ContentHub({ title, nodes }: Props) {
       const cx = W / 2
       const cy = H / 2
 
-      const { simNodes, rawLinks } = buildGraph(title, nodes)
+      const { simNodes, rawLinks } = buildGraph(title, hideLeaves ? [] : nodes, rootAngleDeg)
       const leafCount = simNodes.filter(n => !n.isHub).length
 
       const hub = simNodes.find(n => n.isHub)!
@@ -200,16 +223,21 @@ export default function ContentHub({ title, nodes }: Props) {
           const y = node.y!
 
           if (node.isHub) {
-            const words = node.name.split(' ')
-            const lineH = 30 // --text-label-xl-lh, matches the enlarged hub type
+            // Wrapped by real character width (same wrapWords heuristic as
+            // leaf labels below), not one word per line — a multi-word
+            // title like "Maintenance & Data Health" was stacking 4 lines
+            // tall instead of wrapping into 2.
+            const lines = wrapWords(node.name, 18)
+            // --text-label-xl-lh (30) default, --text-label-sm-lh (20) compact
+            const lineH = compact ? 20 : 30
             const g = el('g') as SVGGElement
-            words.forEach((word, i) => {
+            lines.forEach((lineText, i) => {
               const t = el('text') as SVGTextElement
               t.setAttribute('x', String(cx))
-              t.setAttribute('y', String(cy + (i - (words.length - 1) / 2) * lineH))
-              t.setAttribute('class', styles.hubText)
+              t.setAttribute('y', String(cy + (i - (lines.length - 1) / 2) * lineH))
+              t.setAttribute('class', compact ? styles.hubTextCompact : styles.hubText)
               t.setAttribute('dominant-baseline', 'middle')
-              t.textContent = word
+              t.textContent = lineText
               g.appendChild(t)
             })
             labelGroup.appendChild(g)
@@ -219,12 +247,18 @@ export default function ContentHub({ title, nodes }: Props) {
             const anchor = isLeft ? 'end' : 'start'
             const offsetX = isLeft ? -10 : 10
             const lines = wrapWords(node.name, 18)
-            const lineH = 24 // --text-body-lg-lh, matches the enlarged leaf type
+            // --text-body-lg-lh (24) default, --text-body-sm-lh (20) compact
+            const lineH = compact ? 20 : 24
             const totalH = (lines.length - 1) * lineH
 
             const t = el('text') as SVGTextElement
             t.setAttribute('text-anchor', anchor)
-            t.setAttribute('class', node.isIntermediate ? styles.intermediateText : styles.leafText)
+            t.setAttribute(
+              'class',
+              node.isIntermediate
+                ? (compact ? styles.intermediateTextCompact : styles.intermediateText)
+                : (compact ? styles.leafTextCompact : styles.leafText),
+            )
 
             lines.forEach((lineText, i) => {
               const ts = el('tspan') as SVGTSpanElement
@@ -286,6 +320,14 @@ export default function ContentHub({ title, nodes }: Props) {
       const INSET = 32
       const nodeEls = paint(svg)
 
+      // Hub label position/size never changes between this paint and any
+      // rescale below (only non-hub node positions get scaled) — safe to
+      // measure and report here regardless of whether a rescale follows.
+      if (onHubTextSize) {
+        const hubBox = (nodeEls.get('__hub__') as SVGGraphicsElement).getBBox()
+        onHubTextSize({ width: hubBox.width, height: hubBox.height })
+      }
+
       let sx = Infinity; let sy = Infinity
       for (const node of simNodes) {
         if (node.isHub) continue
@@ -319,7 +361,7 @@ export default function ContentHub({ title, nodes }: Props) {
     const ro = new ResizeObserver(render)
     if (containerRef.current) ro.observe(containerRef.current)
     return () => ro.disconnect()
-  }, [title, nodes])
+  }, [title, nodes, compact, rootAngleDeg, hideLeaves, onHubTextSize])
 
   return (
     <div ref={containerRef} className={styles.container}>

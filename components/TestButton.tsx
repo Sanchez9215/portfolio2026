@@ -250,14 +250,40 @@ export default function TestButton({
       const resizeObserver = new ResizeObserver(layout);
       resizeObserver.observe(root);
 
-      const handleEnter = () => tl?.play();
-      const handleLeave = () => tl?.reverse();
+      // `mouseenter` alone isn't trustworthy here — a sibling element
+      // disappearing (e.g. Timeline's Leave button, when this one grows to
+      // fill the freed space via GSAP) can leave this button newly sitting
+      // under an otherwise-stationary cursor. Browsers recompute which
+      // element is topmost at the pointer's position when the DOM mutates
+      // like that and fire a real `mouseenter` for it even though the mouse
+      // never actually moved — playing the hover animation on a button nobody
+      // meant to hover, and one that then never gets a `mouseleave` either
+      // (the cursor truly isn't moving), so it stays stuck on. Deferring the
+      // play to the next genuine `mousemove` — which only fires on actual
+      // physical movement — filters that phantom case out while leaving real
+      // hovering (including a slight jitter after the cursor lands there)
+      // completely normal.
+      let awaitingRealMove = false;
+      const handleEnter = () => {
+        awaitingRealMove = true;
+      };
+      const handleMove = () => {
+        if (!awaitingRealMove) return;
+        awaitingRealMove = false;
+        tl?.play();
+      };
+      const handleLeave = () => {
+        awaitingRealMove = false;
+        tl?.reverse();
+      };
       root.addEventListener("mouseenter", handleEnter);
+      root.addEventListener("mousemove", handleMove);
       root.addEventListener("mouseleave", handleLeave);
 
       return () => {
         resizeObserver.disconnect();
         root.removeEventListener("mouseenter", handleEnter);
+        root.removeEventListener("mousemove", handleMove);
         root.removeEventListener("mouseleave", handleLeave);
       };
     });

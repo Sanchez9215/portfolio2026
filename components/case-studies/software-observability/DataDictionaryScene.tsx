@@ -1,796 +1,774 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-import Label from "@/components/Label";
-import DataGlossaryTable, {
-  glossaryColumns,
-  glossaryRows,
-} from "@/components/case-studies/software-observability/DataGlossaryTable";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import {
+  EYES_HUB_UPDATED,
+  FAN_DROP_LINE_UPDATED,
+} from "./frameworkAdaptationSync";
+import Block from "@/components/Block";
+import LabelBlock from "@/components/LabelBlock";
+import ProcessConnector from "@/components/ProcessConnector";
 import styles from "./DataDictionaryScene.module.css";
-import { scheduleScrollTriggerRefresh } from "./scrollTriggerRefresh";
 
-gsap.registerPlugin(ScrollTrigger);
+// Full rebuild (old pinned scaffold-build scene scrapped, see progress.md/
+// PLAN.md) — a static section: an SVG connector line runs from the
+// section's top edge, wraps around the display block, and attaches to a
+// table rendered at a fixed angle (a "tabletop" tilt, via CSS 3D
+// perspective — not the flat skew() the Figma mock uses, see PLAN.md for
+// why). Figma node 1715:6961, "Portfolio Cleaning" file — structure/tokens
+// only, no screenshot pulled.
 
-// How long (px) the phase-2 structural build (header wipes → divider draws
-// → cell text) takes to complete, starting the instant the scene pins.
-const PHASE2_BUILD_LENGTH = 900;
-// How long (px), once phase 2's scaffold finishes, the scaffold takes to
-// shrink into the real table's actual corner dimensions — text, column
-// widths, and row heights all reduce together to match the real
-// DataGlossaryTable's own measured geometry (not a crossfade to a second,
-// separate table element).
-const PHASE3_TRANSITION_LENGTH = 500;
-// How long (px), once the corner has settled, columns 4–6 take to wipe in
-// one by one (like phase 2), growing the table back out to full width.
-const PHASE4_BUILD_LENGTH = 700;
+interface DictionaryRow {
+  term: string;
+  definition: string;
+  criticality: string;
+  calculation: string;
+  painPointsSolved: string;
+  source: string;
+}
 
-const COLUMN_COUNT = 6;
-
-// All timeline positions/durations below are in the SAME unit as RUNWAY
-// (raw scroll px) — not normalized 0–1 fractions. A scrubbed ScrollTrigger
-// maps scroll progress to timeline progress (0 → tl.duration()), so mixing
-// units (e.g. a 0–1 fraction alongside a small arbitrary "seconds" value)
-// desyncs the two scales. Matches TheProblemPinnedScene's convention of
-// using its px constants directly as timeline position/duration values.
-//
-// Each column's own beats (header wipe → divider draw → text fade) run
-// sequentially, and each column only starts once the previous one has
-// fully completed. The 3 columns' total must fit within PHASE2_BUILD_LENGTH.
-const HEADER_WIPE_DURATION = 120;
-const DIVIDER_DRAW_DURATION = 120;
-const CELL_TEXT_FADE_DURATION = 90;
-// Phase 3: how long the shrink-to-corner takes (text scale, column widths,
-// row heights all tween together) — within PHASE3_TRANSITION_LENGTH.
-const SHRINK_DURATION = 450;
-// Phase 4: each of columns 4–6 grows the table width + wipes its header fill
-// + draws its left divider — sequentially, same pattern as phase 2.
-const COLUMN_GROW_DURATION = 150;
-// Phase 5: the old scaffold content (header label + 3 diagonal statements)
-// fades up out of sight; the table grows however many more real, measured
-// rows fit in one viewport; then each column's real header label + those
-// row values fade up top to bottom, one column fully finishing before the
-// next starts. Once the pin releases, the remaining rows (that didn't fit)
-// continue below in normal scroll — no entrance animation, since they're
-// only reachable already scrolled into place.
-const PHASE5_FADE_OUT_DURATION = 150;
-const PHASE5_ROW_GROW_DURATION = 300;
-const CONTENT_ITEM_DURATION = 40;
-
-// Explicitly authored (not auto-wrapped) — same reasoning as
-// TheProblemPinnedScene's PROBLEM_BODY_LINES: this cell's width changes
-// continuously via scrub, so a layout-detected wrap would measure a stale
-// width mid-animation.
-const STATEMENT_CELL1_LINES = ["To align on terminology", "and concepts..."];
-const STATEMENT_CELL2_LINES = [
-  "I always paired the latest",
-  "prototype with a living",
-  "document...",
-];
-const STATEMENT_CELL3_LINES = [
-  "...covering definitions,",
-  "calculations and intent",
-  "behind each data point.",
+const COLUMNS: { key: keyof DictionaryRow; label: string }[] = [
+  { key: "term", label: "Data Point" },
+  { key: "definition", label: "Definition" },
+  { key: "criticality", label: "Criticality" },
+  { key: "calculation", label: "Calculation" },
+  { key: "painPointsSolved", label: "Pain Points Solved" },
+  { key: "source", label: "Source" },
 ];
 
-// Fixed row heights (px) — sum defines the table/divider-SVG height. Static
-// (not measured) since grid-template-rows below hardcodes the same values.
-// Each row height = its tallest cell's real content: N lines at
-// --text-body-display-sm-lh (1.2 x 40px font) + .oldStatement's own padding
-// (--spacing-lg x2) + .bodyCell's padding (--spacing-md x2). Row 2 (col 1,
-// 2 lines) = 2x48 + 48 + 32 = 176. Rows 3/4 (col 2/3, 3 lines each) =
-// 3x48 + 48 + 32 = 224.
-const TABLE_HEIGHT = 64 + 176 + 224 + 224;
-// Column 1's fixed width — matches grid-template-columns below. Columns 2/3
-// split the remainder evenly (1fr 1fr), so their shared boundary is measured
-// at mount from the table's real rendered width.
-const COL1_WIDTH = 437;
+// 10 terms, deliberately using SoftwareSystemMap's own leaf names (not
+// DataGlossaryTable's differently-worded rows) so this table reads as an
+// excerpt of the actual system map — chosen for what a Fortune 500
+// software asset manager would consider load-bearing: baseline
+// entitlement, reclaimable spend, the reclaim thesis, renewal urgency,
+// and audit/compliance risk. Copy is a first-pass illustrative draft
+// (some reused/reworded from DataGlossaryTable's closest equivalent row,
+// some authored fresh where no equivalent exists) — not yet reviewed.
+const ROWS: DictionaryRow[] = [
+  {
+    term: "Total Purchased",
+    definition: "The total number of licenses legally owned under contract.",
+    criticality:
+      "Critical: establishes the baseline every other utilization and compliance figure is measured against.",
+    calculation:
+      "Direct value from procurement/vendor entitlement (no calculation)",
+    painPointsSolved:
+      "Eliminates entitlement uncertainty for SAM and enables accurate budgeting for Finance.",
+    source: "Procurement, Vendor portal",
+  },
+  {
+    term: "Unassigned",
+    definition: "Licenses remaining to assign.",
+    criticality:
+      "Critical: prevents onboarding delays and unnecessary spending.",
+    calculation: "Total Purchased − Assigned",
+    painPointsSolved:
+      "Removes onboarding blockers and avoids unnecessary purchasing.",
+    source: "Derived",
+  },
+  {
+    term: "Inactive",
+    definition:
+      "Licenses assigned to a user with no activity within a defined period (30/60/90 days).",
+    criticality:
+      "Critical: establishes the reclaim opportunity baseline — this case study's core thesis.",
+    calculation: "Users with no activity > 30 / 60 / 90 days",
+    painPointsSolved:
+      "Enables reclaiming unused licenses and improves spend efficiency.",
+    source: "Telemetry, Analytics",
+  },
+  {
+    term: "Auto-Renew Status",
+    definition:
+      "Whether the contract renews automatically or requires manual action at term end.",
+    criticality: "Critical: determines urgency of the renewal review.",
+    calculation: "Direct value from contract terms (no calculation)",
+    painPointsSolved:
+      "Flags contracts needing proactive negotiation before spend continues passively.",
+    source: "Procurement",
+  },
+  {
+    term: "Renewal Date",
+    definition:
+      "Contract expiration date and the cancel-by deadline before auto-renewal locks in.",
+    criticality: "Critical: prevents unwanted auto-renewal spend.",
+    calculation: "Contract Expiration Date − Notice Period Deadline",
+    painPointsSolved:
+      "Avoids surprise renewals and creates negotiation lead time.",
+    source: "Procurement",
+  },
+  {
+    term: "Duplicate Assignment",
+    definition:
+      "The same license assigned to more than one active user or device at once.",
+    criticality:
+      "Critical: signals a provisioning error that inflates assigned-seat counts and risks audit exposure.",
+    calculation: "Count(assignments) > 1 per license instance",
+    painPointsSolved:
+      "Surfaces provisioning errors before an audit does and corrects inflated utilization figures.",
+    source: "Identity provisioning, Config",
+  },
+  {
+    term: "Cost per License",
+    definition: "Per-seat spend.",
+    criticality: "High: enables pricing validation and negotiation leverage.",
+    calculation: "Total Contract Cost ÷ Total Purchased",
+    painPointsSolved:
+      "Informs pricing negotiations for Procurement and helps Finance evaluate spend efficiency.",
+    source: "Procurement",
+  },
+  {
+    term: "Licensing Model",
+    definition:
+      "How the software is licensed: enterprise, perpetual, open-source, or consumption.",
+    criticality:
+      "Critical: determines which cost and utilization calculations apply.",
+    calculation: "Direct value from procurement record (no calculation)",
+    painPointsSolved:
+      "Routes each title through the correct governance model and prevents misapplied cost formulas.",
+    source: "Procurement",
+  },
+  {
+    term: "Total Annual Spend",
+    definition:
+      "Total software spend attributed to a title over a 12-month period.",
+    criticality:
+      "High: the number Finance actually budgets and forecasts against.",
+    calculation: "Sum(invoiced spend) over trailing 12 months",
+    painPointsSolved:
+      "Gives Finance a normalized figure comparable across titles with different contract terms.",
+    source: "Procurement, Billing",
+  },
+  {
+    term: "Expired License",
+    definition:
+      "A license instance still showing as assigned or active after its contract term has ended.",
+    criticality: "Critical: direct audit and compliance exposure.",
+    calculation:
+      "Contract Expiration Date < Today AND Assignment Status = Active",
+    painPointsSolved:
+      "Flags accounts that must be deprovisioned immediately to avoid unlicensed use.",
+    source: "Procurement + Identity",
+  },
+];
+
+interface Point {
+  x: number;
+  y: number;
+}
+
+interface RakeSegment {
+  from: Point;
+  to: Point;
+}
+
+// Corner radius for the connector's rounded joints — confirmed 32px.
+const CONNECTOR_RADIUS = 32;
+
+// Builds ONE continuous path through a polyline's points, rounding each
+// internal joint with a quadratic curve (same technique ProcessConnector's
+// own "elbow" shape uses for its single corner) — needed because the
+// connector is 4 straight segments sharing exact joint coordinates, not a
+// single shape ProcessConnector already knows how to round across 3 corners.
+function buildRoundedPolylinePath(points: Point[], radius: number): string {
+  if (points.length < 2) return "";
+  const commands = [`M${points[0].x},${points[0].y}`];
+  for (let i = 1; i < points.length - 1; i++) {
+    const prev = points[i - 1];
+    const curr = points[i];
+    const next = points[i + 1];
+    const d1 = Math.hypot(curr.x - prev.x, curr.y - prev.y) || 1;
+    const d2 = Math.hypot(next.x - curr.x, next.y - curr.y) || 1;
+    const r = Math.min(radius, d1 / 2, d2 / 2);
+    const before = {
+      x: curr.x + ((prev.x - curr.x) / d1) * r,
+      y: curr.y + ((prev.y - curr.y) / d1) * r,
+    };
+    const after = {
+      x: curr.x + ((next.x - curr.x) / d2) * r,
+      y: curr.y + ((next.y - curr.y) / d2) * r,
+    };
+    commands.push(`L${before.x},${before.y}`, `Q${curr.x},${curr.y} ${after.x},${after.y}`);
+  }
+  const last = points[points.length - 1];
+  commands.push(`L${last.x},${last.y}`);
+  return commands.join(" ");
+}
+
+// Same fixed-angle trapezoid shape as DataCertificationTriggers'
+// buildFanTrapezoid (PLAN.md's "Process Diagram / Connector System"),
+// rotated 90°: that diagram's targets share one Y (a horizontal row of
+// cards) with a horizontal shoulder bar above/below them; ours stack at
+// different Y down the table, so the shoulder bar runs VERTICAL instead,
+// offset horizontally (BRANCH_WIDTH) from the targets, with each
+// diagonal leg still built at the same fixed LEG_ANGLE_DEG (now measured
+// from vertical instead of horizontal). Confirmed values: 30deg / 32px,
+// matching the reference diagram for visual consistency.
+const LEG_ANGLE_DEG = 30;
+const LEG_ANGLE_RAD = (LEG_ANGLE_DEG * Math.PI) / 180;
+const LEG_TAN = Math.tan(LEG_ANGLE_RAD);
+const LEG_SIN = Math.sin(LEG_ANGLE_RAD);
+const BRANCH_WIDTH = 64;
+// Real breathing-room clearance at every real anchor (a row's own corner,
+// or the lead-in point) — same CARD_GAP convention as the reference.
+const CARD_GAP = 8;
+const CARD_GAP_ALONG_LINE = CARD_GAP / LEG_SIN;
+// Vertical run (in LOCAL/untransformed table space) each outer row's own
+// shoulder marker is shifted toward center by, on top of its horizontal
+// BRANCH_WIDTH offset — applied BEFORE the table's transform so the
+// browser's own perspective math projects the resulting diagonal
+// correctly, rather than this component hand-computing it in flat
+// screen space afterward.
+const SHOULDER_DY = BRANCH_WIDTH / LEG_TAN;
+
+// Moves `to` toward `from` by `amount` px along their line — gives a
+// segment breathing room at ONE real end while leaving its other end (a
+// synthetic joint shared with another segment) exact.
+function insetEnd(from: Point, to: Point, amount: number): Point {
+  const dx = from.x - to.x;
+  const dy = from.y - to.y;
+  const len = Math.hypot(dx, dy) || 1;
+  return { x: to.x + (dx / len) * amount, y: to.y + (dy / len) * amount };
+}
 
 export default function DataDictionaryScene({
   className,
 }: {
   className?: string;
 }) {
-  const sceneRef = useRef<HTMLDivElement>(null);
-  const stageRef = useRef<HTMLDivElement>(null);
-  const tableWrapRef = useRef<HTMLDivElement>(null);
+  const perspectiveWrapRef = useRef<HTMLDivElement>(null);
   const tableRef = useRef<HTMLDivElement>(null);
-  const headerFill1Ref = useRef<HTMLDivElement>(null);
-  const headerFill2Ref = useRef<HTMLDivElement>(null);
-  const headerFill3Ref = useRef<HTMLDivElement>(null);
-  const headerFill4Ref = useRef<HTMLDivElement>(null);
-  const headerFill5Ref = useRef<HTMLDivElement>(null);
-  const headerFill6Ref = useRef<HTMLDivElement>(null);
-  const divider1Ref = useRef<SVGLineElement>(null);
-  const divider2Ref = useRef<SVGLineElement>(null);
-  const divider3Ref = useRef<SVGLineElement>(null);
-  const divider4Ref = useRef<SVGLineElement>(null);
-  const divider5Ref = useRef<SVGLineElement>(null);
-  const statementCell1Ref = useRef<HTMLDivElement>(null);
-  const statementCell2Ref = useRef<HTMLParagraphElement>(null);
-  const statementCell3Ref = useRef<HTMLParagraphElement>(null);
-  const headerLabelRef = useRef<HTMLSpanElement>(null);
-  // Real DataGlossaryTable mounted invisibly (opacity:0, out of flow) purely
-  // to measure its actual rendered header/row/column dimensions at this
-  // viewport width — the scaffold shrinks/grows to match these exactly.
-  const measureRef = useRef<HTMLDivElement>(null);
-  // Phase 5's incoming real content — 6 header labels, N×6 body-cell values.
-  const realHeaderLabelRefs = useRef<Array<HTMLSpanElement | null>>([]);
-  const realBodyCellRefs = useRef<Array<HTMLParagraphElement | null>>([]);
+  const textBlockRef = useRef<HTMLDivElement>(null);
+  const connectorSvgRef = useRef<SVGSVGElement>(null);
+  const [connectorPoints, setConnectorPoints] = useState<Point[]>([]);
+  const [fanDropSegment, setFanDropSegment] = useState<RakeSegment | null>(
+    null,
+  );
+  const fanDropSegmentRef = useRef<RakeSegment | null>(null);
+  const rowRefs = useRef<(HTMLDivElement | null)[]>([]);
+  // One invisible marker per row, a real DOM child of that row — so
+  // measuring it gives the TRUE perspective-projected position of a
+  // BRANCH_WIDTH-offset point on the table's own tilted plane, instead of
+  // a flat 2D pixel offset applied after the fact (which ignored that
+  // rotateX makes farther-down rows sit deeper in Z, so the same local
+  // offset should project to FEWER screen px the further down the table
+  // it is — flat math can't reproduce that, only the browser's own
+  // transform math can).
+  const shoulderMarkerRefs = useRef<(HTMLDivElement | null)[]>([]);
+  // One zero-size marker per column boundary (6 total, one per column's
+  // own grid cell) — reads the table's TRUE rendered column widths for the
+  // bottom column-divider fan, same measured-not-guessed approach as
+  // shoulderMarkerRefs above.
+  const columnDividerMarkerRefs = useRef<(HTMLDivElement | null)[]>([]);
+  // Nested inside each columnDividerMarker — its inline transform offset
+  // (BRANCH_WIDTH down, ±SHOULDER_DY for the two outer dividers) is applied
+  // pre-transform, same real-perspective technique as shoulderMarkerRefs.
+  const columnShoulderMarkerRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const [rakeSegments, setRakeSegments] = useState<RakeSegment[]>([]);
 
-  // How many of the real 20 rows fit in one viewport — measured, not
-  // guessed. Null until measured; nothing body-row-related renders before
-  // then, since we don't yet know how many cells/refs to create.
-  const [visibleRowCount, setVisibleRowCount] = useState<number | null>(null);
+  // Rake geometry is MEASURED (each row's real on-screen bottom-left
+  // corner via getBoundingClientRect, which reflects the table's actual
+  // rendered position — including whatever rotateX/perspective is
+  // currently dialed in on .table) rather than hand-drawn — so it always
+  // attaches exactly to each row's border-bottom no matter how the
+  // perspective gets tuned afterward. Re-measures on mount and on window
+  // resize; a pure CSS edit to the tilt (no JS state change) won't
+  // retrigger this on its own — reload the page after tuning
+  // rotateX/perspective to see the rake re-align.
+  useLayoutEffect(() => {
+    function measure() {
+      const wrapEl = perspectiveWrapRef.current;
+      const tableEl = tableRef.current;
+      if (!wrapEl || !tableEl) return;
 
-  // Phase A: measure how many real rows fit in one viewport (100vh minus
-  // nav clearance minus the header row's own height), using the always-
-  // mounted hidden measureEl. Runs once; visibleRowCount then drives the
-  // second render pass that creates the actual animated row cells.
-  useEffect(() => {
-    const measureEl = measureRef.current;
-    if (!measureEl) return;
-
-    const realRows = Array.from(
-      measureEl.querySelectorAll<HTMLElement>('[role="row"]'),
-    );
-    const realHeaderRow = realRows[0];
-    const realBodyRows = realRows.slice(1);
-    const headerHeight = realHeaderRow.getBoundingClientRect().height;
-    const navHeightPx =
-      parseFloat(
-        getComputedStyle(document.documentElement).getPropertyValue(
-          "--nav-height",
-        ),
-      ) || 80;
-    const availableHeight = window.innerHeight - navHeightPx - headerHeight;
-
-    let cumulative = 0;
-    let count = 0;
-    for (const row of realBodyRows) {
-      const rowHeight = row.getBoundingClientRect().height;
-      if (cumulative + rowHeight > availableHeight) break;
-      cumulative += rowHeight;
-      count++;
-    }
-
-    setVisibleRowCount(Math.min(Math.max(count, 3), glossaryRows.length));
-  }, []);
-
-  const visibleRows =
-    visibleRowCount !== null ? glossaryRows.slice(0, visibleRowCount) : [];
-
-  useEffect(() => {
-    if (visibleRowCount === null) return;
-
-    const sceneEl = sceneRef.current;
-    const stageEl = stageRef.current;
-    const tableWrapEl = tableWrapRef.current;
-    const tableEl = tableRef.current;
-    const headerFill1El = headerFill1Ref.current;
-    const headerFill2El = headerFill2Ref.current;
-    const headerFill3El = headerFill3Ref.current;
-    const headerFill4El = headerFill4Ref.current;
-    const headerFill5El = headerFill5Ref.current;
-    const headerFill6El = headerFill6Ref.current;
-    const divider1El = divider1Ref.current;
-    const divider2El = divider2Ref.current;
-    const divider3El = divider3Ref.current;
-    const divider4El = divider4Ref.current;
-    const divider5El = divider5Ref.current;
-    const statementCell1El = statementCell1Ref.current;
-    const statementCell2El = statementCell2Ref.current;
-    const statementCell3El = statementCell3Ref.current;
-    const headerLabelEl = headerLabelRef.current;
-    const measureEl = measureRef.current;
-    const realHeaderLabelEls = realHeaderLabelRefs.current;
-    const realBodyCellEls = realBodyCellRefs.current;
-    if (
-      !sceneEl ||
-      !stageEl ||
-      !tableWrapEl ||
-      !tableEl ||
-      !headerFill1El ||
-      !headerFill2El ||
-      !headerFill3El ||
-      !headerFill4El ||
-      !headerFill5El ||
-      !headerFill6El ||
-      !divider1El ||
-      !divider2El ||
-      !divider3El ||
-      !divider4El ||
-      !divider5El ||
-      !statementCell1El ||
-      !statementCell2El ||
-      !statementCell3El ||
-      !headerLabelEl ||
-      !measureEl ||
-      realHeaderLabelEls.length !== COLUMN_COUNT ||
-      realHeaderLabelEls.some((el) => !el) ||
-      realBodyCellEls.length !== visibleRowCount * COLUMN_COUNT ||
-      realBodyCellEls.some((el) => !el)
-    )
-      return;
-
-    const PHASE5_CONTENT_LENGTH =
-      COLUMN_COUNT * (1 + visibleRowCount) * CONTENT_ITEM_DURATION;
-    const PHASE5_LENGTH =
-      PHASE5_FADE_OUT_DURATION + PHASE5_ROW_GROW_DURATION + PHASE5_CONTENT_LENGTH;
-    const RUNWAY =
-      PHASE2_BUILD_LENGTH + PHASE3_TRANSITION_LENGTH + PHASE4_BUILD_LENGTH + PHASE5_LENGTH;
-
-    sceneEl.style.height = `calc(100vh + ${RUNWAY}px)`;
-
-    const ctx = gsap.context(() => {
-      const tableWidth = tableEl.getBoundingClientRect().width;
-      const remainingWidth = tableWidth - COL1_WIDTH;
-      const col2Width = remainingWidth / 2;
-      const dividerX1 = COL1_WIDTH;
-      const dividerX2 = COL1_WIDTH + col2Width;
-
-      gsap.set(divider1El, { attr: { x1: dividerX1, x2: dividerX1, y1: 0, y2: TABLE_HEIGHT } });
-      gsap.set(divider2El, { attr: { x1: dividerX2, x2: dividerX2, y1: 0, y2: TABLE_HEIGHT } });
-      gsap.set([divider1El, divider2El], {
-        strokeDasharray: TABLE_HEIGHT,
-        strokeDashoffset: TABLE_HEIGHT,
+      const wrapRect = wrapEl.getBoundingClientRect();
+      const toLocal = (x: number, y: number) => ({
+        x: x - wrapRect.left,
+        y: y - wrapRect.top,
       });
 
-      gsap.set(
-        [
-          headerFill1El,
-          headerFill2El,
-          headerFill3El,
-          headerFill4El,
-          headerFill5El,
-          headerFill6El,
-        ],
-        { scaleY: 0, transformOrigin: "top" },
+      // Last row excluded — no rake line drawn to it (per earlier ask).
+      // Each entry pairs a row's real bottom-left corner with its own
+      // shoulder marker's real measured position — both are actual DOM
+      // points under the table's transform, so their relationship (a
+      // straight line between them) is the correct perspective-projected
+      // version of whatever offset the marker was given in LOCAL space.
+      const rows = rowRefs.current
+        .slice(0, -1)
+        .map((rowEl, i) => {
+          const markerEl = shoulderMarkerRefs.current[i];
+          if (!rowEl || !markerEl) return null;
+          const r = rowEl.getBoundingClientRect();
+          const m = markerEl.getBoundingClientRect();
+          return {
+            target: toLocal(r.left, r.bottom),
+            shoulder: toLocal(m.left, m.top),
+          };
+        })
+        .filter((p): p is { target: Point; shoulder: Point } => p !== null);
+
+      if (rows.length < 2) return;
+
+      const top = rows[0];
+      const bottom = rows[rows.length - 1];
+
+      // The bar must bound EVERY row's shoulder point, not just the two
+      // outer (pulled-in) ones — a mid row's un-shifted shoulder can sit
+      // past top.shoulder/bottom.shoulder once SHOULDER_DY pulls those two
+      // inward, which would leave its stub attaching outside the drawn bar
+      // and crossing the outer diagonal leg. Extend the bar's endpoints to
+      // the real min/max across all rows when that happens.
+      const topY = Math.min(top.shoulder.y, ...rows.map((r) => r.shoulder.y));
+      const bottomY = Math.max(
+        bottom.shoulder.y,
+        ...rows.map((r) => r.shoulder.y),
       );
-      gsap.set([statementCell1El, statementCell2El, statementCell3El], {
-        opacity: 0,
-        y: 12,
-      });
-      gsap.set(realHeaderLabelEls, { opacity: 0, y: 12 });
-      gsap.set(realBodyCellEls, { opacity: 0, y: 12 });
+      // The bar's SLOPE is fit from two representative mid rows (not raw
+      // top/bottom) — top/bottom are pulled in by SHOULDER_DY before the
+      // table's 3D transform, which can project them as outliers far off
+      // every other row's actual x, dragging the whole bar (and anything
+      // anchored to it, e.g. the lead-in) into a stray diagonal. Falls back
+      // to top/bottom only when there aren't enough distinct mid rows.
+      const refA = rows.length > 3 ? rows[1] : top;
+      const refB = rows.length > 3 ? rows[rows.length - 2] : bottom;
+      const lineXAt = (y: number) => {
+        const t = (y - refA.shoulder.y) / (refB.shoulder.y - refA.shoulder.y || 1);
+        return refA.shoulder.x + t * (refB.shoulder.x - refA.shoulder.x);
+      };
+      const barTop = { x: lineXAt(topY), y: topY };
+      const barBottom = { x: lineXAt(bottomY), y: bottomY };
+      // Point on the bar's own straight line at a given y — used to anchor
+      // every stub exactly ON the bar, since a mid row's real shoulder.x
+      // (perspective-projected) drifts off the bar's 2-point line the
+      // farther it sits from barTop/barBottom.
+      const barPointAt = (y: number) => {
+        const t = (y - barTop.y) / (barBottom.y - barTop.y || 1);
+        return { x: barTop.x + t * (barBottom.x - barTop.x), y };
+      };
 
-      // Resolve the real table's body-sm type scale from the token itself
-      // (not hardcoded px) so the shrink target always tracks globals.css.
-      const rootStyle = getComputedStyle(document.documentElement);
-      const bodySmSize = rootStyle.getPropertyValue("--text-body-sm-size").trim();
-      const bodySmLh = rootStyle.getPropertyValue("--text-body-sm-lh").trim();
-      // The real table's header cells use heading-xs, not body-sm.
-      const headingXsSize = rootStyle
-        .getPropertyValue("--text-heading-xs-size")
-        .trim();
-      const headingXsLh = rootStyle.getPropertyValue("--text-heading-xs-lh").trim();
-      const headingXsLetterSpacing = rootStyle
-        .getPropertyValue("--text-heading-xs-ls")
-        .trim();
-
-      // Measure the real, hidden DataGlossaryTable's actual rendered corner
-      // — header row height, first N body-row heights, and all 6 header
-      // cells' widths — at this viewport width, so the scaffold shrinks/
-      // grows to its real target geometry instead of a guessed value.
-      const realRows = Array.from(
-        measureEl.querySelectorAll<HTMLElement>('[role="row"]'),
-      );
-      const realHeaderRow = realRows[0];
-      const realBodyRows = realRows.slice(1, 1 + visibleRowCount);
-      const realHeaderCells = Array.from(
-        realHeaderRow.querySelectorAll<HTMLElement>('[role="columnheader"]'),
-      );
-      const realColWidths = realHeaderCells.map(
-        (el) => el.getBoundingClientRect().width,
-      );
-      const cornerColWidths = realColWidths.slice(0, 3);
-      const remainingColWidths = realColWidths.slice(3, 6);
-
-      // Column 1's shrink target isn't the real table's measured column —
-      // this diagonal placeholder statement is decorative, different text
-      // entirely from the real cell content. Its 2 lines are explicitly
-      // authored (STATEMENT_CELL1_LINES, not auto-wrapped — same reasoning
-      // as TheProblemPinnedScene's PROBLEM_BODY_LINES: a width that changes
-      // continuously via scrub makes layout-detected wraps measure a stale
-      // width). Size the column to the wider of the 2 real authored lines
-      // (plus the cell's own padding) so it always hugs them exactly, never
-      // clipping or leaving excess space.
-      const probeEl = document.createElement("span");
-      probeEl.style.position = "absolute";
-      probeEl.style.visibility = "hidden";
-      probeEl.style.whiteSpace = "nowrap";
-      probeEl.style.fontFamily = getComputedStyle(statementCell1El).fontFamily;
-      probeEl.style.fontWeight = getComputedStyle(statementCell1El).fontWeight;
-      probeEl.style.fontSize = bodySmSize;
-      probeEl.style.lineHeight = bodySmLh;
-      document.body.appendChild(probeEl);
-      const lineWidths = STATEMENT_CELL1_LINES.map((line) => {
-        probeEl.textContent = line;
-        return probeEl.getBoundingClientRect().width;
-      });
-      const widestStatementLine = Math.max(...lineWidths);
-      const rootStyleForSpacing = getComputedStyle(document.documentElement);
-      const bodyCellPaddingX =
-        2 * parseFloat(rootStyleForSpacing.getPropertyValue("--spacing-md"));
-      const statementRequiredWidth = Math.ceil(widestStatementLine) + bodyCellPaddingX;
-
-      // The header label ("The Data Dictionary" → "Data Point") must also
-      // fit without clipping — measure it at its own target style (heading-xs,
-      // uppercase, the header's own wider horizontal padding) and use
-      // whichever of the two (header label vs. statement lines) is wider.
-      const headerLabelStyle = getComputedStyle(headerLabelEl);
-      probeEl.style.fontFamily = headerLabelStyle.fontFamily;
-      probeEl.style.fontWeight = headerLabelStyle.fontWeight;
-      probeEl.style.textTransform = headerLabelStyle.textTransform;
-      probeEl.style.letterSpacing = headingXsLetterSpacing;
-      probeEl.style.fontSize = headingXsSize;
-      probeEl.style.lineHeight = headingXsLh;
-      probeEl.textContent = headerLabelEl.textContent ?? "";
-      const headerLabelWidth = probeEl.getBoundingClientRect().width;
-      probeEl.remove();
-      const headerCellPaddingX =
-        2 * parseFloat(rootStyleForSpacing.getPropertyValue("--spacing-lg"));
-      const headerRequiredWidth = Math.ceil(headerLabelWidth) + headerCellPaddingX;
-
-      cornerColWidths[0] = Math.max(statementRequiredWidth, headerRequiredWidth);
-      const allRowHeights = [
-        realHeaderRow.getBoundingClientRect().height,
-        ...realBodyRows.map((el) => el.getBoundingClientRect().height),
+      const segments: RakeSegment[] = [
+        // The shoulder bar itself — spans the full extent of every row's
+        // shoulder marker (see barTop/barBottom above), not just the two
+        // outer rows' pulled-in points.
+        { from: barTop, to: barBottom },
+        // Diagonal legs to the two outermost real rows — must start from
+        // the bar's actual drawn endpoint (barTop/barBottom), not the
+        // pulled-in top.shoulder/bottom.shoulder, or they'd leave a gap
+        // where the bar was just extended past that point.
+        {
+          from: barTop,
+          to: insetEnd(top.shoulder, top.target, CARD_GAP_ALONG_LINE),
+        },
+        {
+          from: barBottom,
+          to: insetEnd(bottom.shoulder, bottom.target, CARD_GAP_ALONG_LINE),
+        },
       ];
-      const cornerRowHeights = allRowHeights.slice(0, 4);
-      const cornerHeight = cornerRowHeights.reduce((a, b) => a + b, 0);
-      const cornerRowsCss = cornerRowHeights.map((h) => `${h}px`).join(" ");
-      const extraRowsCount = allRowHeights.length - 4;
-      const fullRowsCss = `${allRowHeights.map((h) => `${h}px`).join(" ")}`;
 
-      // End state: rather than continuing into a second table for the rows
-      // that didn't fit, the bottom 3 (real, measured) rows fade into the
-      // section background — implying the table continues beyond what's
-      // shown, without actually rendering/animating more rows.
-      const totalTableHeight = allRowHeights.reduce((a, b) => a + b, 0);
-      const bottomThreeHeight = allRowHeights.slice(-3).reduce((a, b) => a + b, 0);
-      const fadeStartPercent =
-        ((totalTableHeight - bottomThreeHeight) / totalTableHeight) * 100;
-      const fadeMaskImage = `linear-gradient(to bottom, black 0%, black ${fadeStartPercent}%, transparent 100%)`;
-
-      // Dividers 3–5 only draw in during phase 4, by which point the table
-      // has already shrunk to cornerHeight (phase 3) — target that, not the
-      // scaffold's original pre-shrink TABLE_HEIGHT, or they'd extend past
-      // the table's actual (now much shorter) bottom edge.
-      gsap.set([divider3El, divider4El, divider5El], {
-        attr: { x1: tableWidth, x2: tableWidth, y1: 0, y2: cornerHeight },
-        strokeDasharray: cornerHeight,
-        strokeDashoffset: cornerHeight,
-      });
-
-      // Scaffold's current geometry, resolved to explicit px (matching what's
-      // already visually rendered) so the shrink tween has a same-unit start
-      // — grid-template-columns mixes "437px 1fr 1fr" otherwise, which GSAP
-      // can't interpolate against a target px string. Columns 4–6 start at
-      // 0 width — present in the DOM, invisible, grown in during phase 4.
-      // The extra rows beyond the initial 4 start at 0 height, grown in
-      // phase 5.
-      gsap.set(tableEl, {
-        width: tableWidth,
-        gridTemplateColumns: `${COL1_WIDTH}px ${col2Width}px ${col2Width}px 0px 0px 0px`,
-        gridTemplateRows: `64px 176px 224px 224px ${Array(extraRowsCount).fill("0px").join(" ")}`,
-      });
-
-      void sceneEl.offsetHeight;
-      scheduleScrollTriggerRefresh();
-
-      const tl = gsap.timeline({
-        scrollTrigger: {
-          trigger: sceneEl,
-          start: "top top",
-          end: `+=${RUNWAY}`,
-          scrub: true,
-        },
-      });
-
-      // All positions below are raw px along RUNWAY (see constants above).
-      const phase2Start = 0;
-      const phase3Start = phase2Start + PHASE2_BUILD_LENGTH;
-      const phase4Start = phase3Start + PHASE3_TRANSITION_LENGTH;
-      const phase5Start = phase4Start + PHASE4_BUILD_LENGTH;
-
-      // Phase 2: one column completes fully — header fill wipe, then (for
-      // columns 2/3) the divider bordering its left edge draws in, then its
-      // statement fades in — before the next column starts. Sequential, not
-      // overlapping: each .to() with no position arg inserts right after the
-      // previous one ends.
-      tl.addLabel("col1", phase2Start)
-        .to(headerFill1El, {
-          scaleY: 1,
-          duration: HEADER_WIPE_DURATION,
-          ease: "none",
-        })
-        .to(statementCell1El, {
-          opacity: 1,
-          y: 0,
-          duration: CELL_TEXT_FADE_DURATION,
-          ease: "none",
-        })
-        .addLabel("col2")
-        .to(headerFill2El, {
-          scaleY: 1,
-          duration: HEADER_WIPE_DURATION,
-          ease: "none",
-        })
-        .to(divider1El, {
-          strokeDashoffset: 0,
-          duration: DIVIDER_DRAW_DURATION,
-          ease: "none",
-        })
-        .to(statementCell2El, {
-          opacity: 1,
-          y: 0,
-          duration: CELL_TEXT_FADE_DURATION,
-          ease: "none",
-        })
-        .addLabel("col3")
-        .to(headerFill3El, {
-          scaleY: 1,
-          duration: HEADER_WIPE_DURATION,
-          ease: "none",
-        })
-        .to(divider2El, {
-          strokeDashoffset: 0,
-          duration: DIVIDER_DRAW_DURATION,
-          ease: "none",
-        })
-        .to(statementCell3El, {
-          opacity: 1,
-          y: 0,
-          duration: CELL_TEXT_FADE_DURATION,
-          ease: "none",
+      // Plain stub for every row BETWEEN the two outer ones.
+      for (const mid of rows.slice(1, -1)) {
+        segments.push({
+          from: barPointAt(mid.shoulder.y),
+          to: insetEnd(mid.shoulder, mid.target, CARD_GAP),
         });
+      }
 
-      // Phase 3: the scaffold itself shrinks to the real table's corner,
-      // anchored top-left (see .tableWrap's align-self/justify-self:start)
-      // — text, column widths, and row heights all reduce together to the
-      // measured target. No second table, no crossfade.
-      tl.to(
-        [statementCell1El, statementCell2El, statementCell3El],
-        {
-          fontSize: bodySmSize,
-          lineHeight: bodySmLh,
-          duration: SHRINK_DURATION,
-          ease: "none",
-        },
-        phase3Start,
-      )
-        .to(
-          headerLabelEl,
-          {
-            fontSize: headingXsSize,
-            lineHeight: headingXsLh,
-            duration: SHRINK_DURATION,
-            ease: "none",
-          },
-          phase3Start,
-        )
-        .to(
-          tableEl,
-          {
-            width: cornerColWidths[0] + cornerColWidths[1] + cornerColWidths[2],
-            gridTemplateColumns: `${cornerColWidths[0]}px ${cornerColWidths[1]}px ${cornerColWidths[2]}px 0px 0px 0px`,
-            gridTemplateRows: `${cornerRowsCss} ${Array(extraRowsCount).fill("0px").join(" ")}`,
-            duration: SHRINK_DURATION,
-            ease: "none",
-          },
-          phase3Start,
-        )
-        .to(
-          divider1El,
-          {
-            attr: { x1: cornerColWidths[0], x2: cornerColWidths[0], y2: cornerHeight },
-            duration: SHRINK_DURATION,
-            ease: "none",
-          },
-          phase3Start,
-        )
-        .to(
-          divider2El,
-          {
-            attr: {
-              x1: cornerColWidths[0] + cornerColWidths[1],
-              x2: cornerColWidths[0] + cornerColWidths[1],
-              y2: cornerHeight,
-            },
-            duration: SHRINK_DURATION,
-            ease: "none",
-          },
-          phase3Start,
+      // Set below once the fan's bar geometry is known — the wrap-local
+      // point where the CENTER mid stub (the true center divider) meets the
+      // bar, used to anchor the section-bottom vertical connector built in
+      // the Connector block further down.
+      let columnFanCenterBarPoint: Point | null = null;
+
+      // Bottom column-divider fan — same trapezoid shape as the row rake
+      // above (shoulder bar + fixed-angle diagonal legs + straight mid
+      // stubs), but in buildFanTrapezoid's un-rotated "up" orientation
+      // (PLAN.md/DataCertificationTriggers): shoulder bar BELOW the table's
+      // bottom edge, legs/stubs reaching UP into the 5 real inner
+      // column-divider points. Ends at the bar — no further lead-out yet.
+      // Shoulder points come from columnShoulderMarkerRefs (a real marker
+      // offset BRANCH_WIDTH/SHOULDER_DY pre-transform, same technique as
+      // the row rake's own shoulderMarkerRefs) — NOT flat post-hoc math —
+      // so the bar/legs pick up the table's true perspective distortion.
+      const dividerTargets = columnDividerMarkerRefs.current
+        .slice(1)
+        .map((el) => {
+          if (!el) return null;
+          const r = el.getBoundingClientRect();
+          return toLocal(r.left, r.bottom);
+        })
+        .filter((p): p is Point => p !== null);
+      const dividerShoulders = columnShoulderMarkerRefs.current
+        .slice(1)
+        .map((el) => {
+          if (!el) return null;
+          const r = el.getBoundingClientRect();
+          return toLocal(r.left, r.top);
+        })
+        .filter((p): p is Point => p !== null);
+
+      if (
+        dividerTargets.length >= 2 &&
+        dividerShoulders.length === dividerTargets.length
+      ) {
+        const dOuterLeftShoulder = dividerShoulders[0];
+        const dOuterRightShoulder =
+          dividerShoulders[dividerShoulders.length - 1];
+        const dMidShoulders = dividerShoulders.slice(1, -1);
+        const dOuterLeft = dividerTargets[0];
+        const dOuterRight = dividerTargets[dividerTargets.length - 1];
+        const dMids = dividerTargets.slice(1, -1);
+
+        const barLeftX = Math.min(
+          dOuterLeftShoulder.x,
+          ...dividerShoulders.map((s) => s.x),
         );
-
-      // Phase 4: columns 4, 5, 6 wipe in one by one — same header-fill-wipe
-      // pattern as phase 2 — each growing the table's width by its own real
-      // measured width, until the table is back to full width.
-      const col4Width = cornerColWidths[0] + cornerColWidths[1] + cornerColWidths[2] + remainingColWidths[0];
-      const col5Width = col4Width + remainingColWidths[1];
-      const col6Width = col5Width + remainingColWidths[2];
-      const dividerX3 = cornerColWidths[0] + cornerColWidths[1] + cornerColWidths[2];
-      const dividerX4 = col4Width;
-      const dividerX5 = col5Width;
-
-      tl.addLabel("col4", phase4Start)
-        .to(
-          tableEl,
-          {
-            width: col4Width,
-            gridTemplateColumns: `${cornerColWidths[0]}px ${cornerColWidths[1]}px ${cornerColWidths[2]}px ${remainingColWidths[0]}px 0px 0px`,
-            duration: COLUMN_GROW_DURATION,
-            ease: "none",
-          },
-          "col4",
-        )
-        .to(
-          divider3El,
-          {
-            attr: { x1: dividerX3, x2: dividerX3 },
-            strokeDashoffset: 0,
-            duration: COLUMN_GROW_DURATION,
-            ease: "none",
-          },
-          "col4",
-        )
-        .to(
-          headerFill4El,
-          { scaleY: 1, duration: COLUMN_GROW_DURATION, ease: "none" },
-          "col4",
-        )
-        .addLabel("col5", `col4+=${COLUMN_GROW_DURATION}`)
-        .to(
-          tableEl,
-          {
-            width: col5Width,
-            gridTemplateColumns: `${cornerColWidths[0]}px ${cornerColWidths[1]}px ${cornerColWidths[2]}px ${remainingColWidths[0]}px ${remainingColWidths[1]}px 0px`,
-            duration: COLUMN_GROW_DURATION,
-            ease: "none",
-          },
-          "col5",
-        )
-        .to(
-          divider4El,
-          {
-            attr: { x1: dividerX4, x2: dividerX4 },
-            strokeDashoffset: 0,
-            duration: COLUMN_GROW_DURATION,
-            ease: "none",
-          },
-          "col5",
-        )
-        .to(
-          headerFill5El,
-          { scaleY: 1, duration: COLUMN_GROW_DURATION, ease: "none" },
-          "col5",
-        )
-        .addLabel("col6", `col5+=${COLUMN_GROW_DURATION}`)
-        .to(
-          tableEl,
-          {
-            width: col6Width,
-            gridTemplateColumns: `${cornerColWidths[0]}px ${cornerColWidths[1]}px ${cornerColWidths[2]}px ${remainingColWidths[0]}px ${remainingColWidths[1]}px ${remainingColWidths[2]}px`,
-            duration: COLUMN_GROW_DURATION,
-            ease: "none",
-          },
-          "col6",
-        )
-        .to(
-          divider5El,
-          {
-            attr: { x1: dividerX5, x2: dividerX5 },
-            strokeDashoffset: 0,
-            duration: COLUMN_GROW_DURATION,
-            ease: "none",
-          },
-          "col6",
-        )
-        .to(
-          headerFill6El,
-          { scaleY: 1, duration: COLUMN_GROW_DURATION, ease: "none" },
-          "col6",
+        const barRightX = Math.max(
+          dOuterRightShoulder.x,
+          ...dividerShoulders.map((s) => s.x),
         );
+        // Fit the bar's slope from representative mid shoulder markers (not
+        // the raw outer two) — same reasoning as barTop/barBottom above:
+        // the outer two are pulled in by SHOULDER_DY before the table's 3D
+        // transform, which can project them as outliers and drag the
+        // whole bar off.
+        const dRefA =
+          dividerShoulders.length > 3
+            ? dividerShoulders[1]
+            : dOuterLeftShoulder;
+        const dRefB =
+          dividerShoulders.length > 3
+            ? dividerShoulders[dividerShoulders.length - 2]
+            : dOuterRightShoulder;
+        const lineYAt = (x: number) => {
+          const t = (x - dRefA.x) / (dRefB.x - dRefA.x || 1);
+          return dRefA.y + t * (dRefB.y - dRefA.y);
+        };
+        const dBarLeft = { x: barLeftX, y: lineYAt(barLeftX) };
+        const dBarRight = { x: barRightX, y: lineYAt(barRightX) };
+        const barPointAtX = (x: number) => {
+          const t = (x - dBarLeft.x) / (dBarRight.x - dBarLeft.x || 1);
+          return { x, y: dBarLeft.y + t * (dBarRight.y - dBarLeft.y) };
+        };
 
-      // Phase 5a: the old scaffold content (header label + 3 diagonal
-      // statements) fades up out of sight, together.
-      tl.addLabel("phase5FadeOut", phase5Start).to(
-        [headerLabelEl, statementCell1El, statementCell2El, statementCell3El],
-        {
-          opacity: 0,
-          y: -12,
-          duration: PHASE5_FADE_OUT_DURATION,
-          ease: "none",
-        },
-        "phase5FadeOut",
-      );
-
-      // Phase 5b: the table grows however many more real, measured rows fit
-      // in one viewport (extraRowsCount, i.e. visibleRowCount - 3).
-      tl.addLabel(
-        "phase5RowGrow",
-        `phase5FadeOut+=${PHASE5_FADE_OUT_DURATION}`,
-      ).to(
-        tableEl,
-        {
-          gridTemplateRows: fullRowsCss,
-          duration: PHASE5_ROW_GROW_DURATION,
-          ease: "none",
-        },
-        "phase5RowGrow",
-      );
-
-      // Once rows have grown to full height, the bottom 3 start fading into
-      // the section background — the scene's end state, implying the table
-      // continues beyond what's shown without rendering/animating more rows.
-      tl.set(
-        tableWrapEl,
-        {
-          maskImage: fadeMaskImage,
-          webkitMaskImage: fadeMaskImage,
-        },
-        `phase5RowGrow+=${PHASE5_ROW_GROW_DURATION}`,
-      );
-
-      // Phase 5c: column by column, each column's real header label then its
-      // visibleRowCount real row values fade up top to bottom — sequential,
-      // one column fully finishing before the next starts (each .to() below
-      // has no position arg, so it inserts right after the previous ends).
-      for (let col = 0; col < COLUMN_COUNT; col++) {
-        tl.to(realHeaderLabelEls[col], {
-          opacity: 1,
-          y: 0,
-          duration: CONTENT_ITEM_DURATION,
-          ease: "none",
-        });
-        for (let row = 0; row < visibleRowCount; row++) {
-          tl.to(realBodyCellEls[row * COLUMN_COUNT + col], {
-            opacity: 1,
-            y: 0,
-            duration: CONTENT_ITEM_DURATION,
-            ease: "none",
+        segments.push(
+          { from: dBarLeft, to: dBarRight },
+          {
+            from: dBarLeft,
+            to: insetEnd(dOuterLeftShoulder, dOuterLeft, CARD_GAP_ALONG_LINE),
+          },
+          {
+            from: dBarRight,
+            to: insetEnd(
+              dOuterRightShoulder,
+              dOuterRight,
+              CARD_GAP_ALONG_LINE,
+            ),
+          },
+        );
+        dMids.forEach((mid, i) => {
+          const shoulder = dMidShoulders[i];
+          segments.push({
+            from: barPointAtX(shoulder.x),
+            to: insetEnd(shoulder, mid, CARD_GAP),
           });
+        });
+
+        // Drop point is the Calculation column's own right edge (not the
+        // table's center divider anymore, per request) — its real target
+        // point (the table's own bottom edge), not the bar, so the drop
+        // line below starts flush against the table instead of at the
+        // (now-hidden) fan's bar distance away from it. dividerTargets[k]
+        // is marker k+1's real position (slice(1) above dropped marker 0,
+        // term's own left edge) — marker k+1 sits at column (k+1)'s LEFT
+        // edge, i.e. column k's right edge, so the Calculation column's
+        // (index 3) right edge is dividerTargets[3].
+        const calculationColIndex = COLUMNS.findIndex(
+          (c) => c.key === "calculation",
+        );
+        columnFanCenterBarPoint =
+          dividerTargets[calculationColIndex] ??
+          dMids[Math.floor(dMids.length / 2)];
+      }
+
+      setRakeSegments(segments);
+
+      // Connector — a sharp-cornered "C": center-top down through the
+      // section's own top padding, left along its inner top-padding edge,
+      // down along its inner left-padding edge past the text block, then
+      // right to meet the table's own real left edge (flush — the rake
+      // that used to carry the last stretch is now hidden) at that same
+      // height. Computed from real measurements (section padding, text
+      // block height, the row's own target point) instead of a traced
+      // SVG asset, so it always matches whatever the section/table/text
+      // actually measure as.
+      const connectorSvgEl = connectorSvgRef.current;
+      const textBlockEl = textBlockRef.current;
+      const sectionEl = connectorSvgEl?.parentElement;
+      if (connectorSvgEl && textBlockEl && sectionEl) {
+        const svgRect = connectorSvgEl.getBoundingClientRect();
+        const sectionStyle = getComputedStyle(sectionEl);
+        const topPad = parseFloat(sectionStyle.paddingTop) || 0;
+        const leftPad = parseFloat(sectionStyle.paddingLeft) || 0;
+        const centerX = svgRect.width / 2;
+
+        // Segment 3/4's bottom turn lands level with the Renewal Date
+        // row's own real left edge (not the fan's bar, now hidden) — same
+        // row index used by the rake's own mid-row loop above, so this
+        // reuses its exact target point for a flush connection straight
+        // onto the table.
+        const renewalDateIndex = ROWS.findIndex(
+          (r) => r.term === "Renewal Date",
+        );
+        const landingRow = rows[renewalDateIndex];
+        const rowTargetLocal = {
+          x: landingRow.target.x + wrapRect.left - svgRect.left,
+          y: landingRow.target.y + wrapRect.top - svgRect.top,
+        };
+        const landingLocal = {
+          x: leftPad,
+          y: rowTargetLocal.y,
+        };
+
+        setConnectorPoints([
+          { x: centerX, y: 0 },
+          { x: centerX, y: topPad },
+          { x: leftPad, y: topPad },
+          landingLocal,
+          rowTargetLocal,
+        ]);
+
+        // Vertical connector flush to the table's own real bottom edge —
+        // starts at the center column divider's real target point (the
+        // fan that used to carry this stretch is now hidden), grows
+        // straight down past this section's own bottom edge, stopping
+        // flush at the TOP of FrameworkAdaptationEyes' hub eye (its own
+        // data-eyes-hub marker — that eye's x is in turn pinned to this
+        // same line, see FrameworkAdaptationEyes.tsx) rather than at the
+        // section's bottom.
+        if (columnFanCenterBarPoint) {
+          const dropX =
+            columnFanCenterBarPoint.x + wrapRect.left - svgRect.left;
+          const dropStartY =
+            columnFanCenterBarPoint.y + wrapRect.top - svgRect.top;
+          const hubEl = document.querySelector("[data-eyes-hub]");
+          const dropEndY = hubEl
+            ? hubEl.getBoundingClientRect().top - svgRect.top
+            : svgRect.height;
+          const nextSegment = {
+            from: { x: dropX, y: dropStartY },
+            to: { x: dropX, y: dropEndY },
+          };
+          const prevSegment = fanDropSegmentRef.current;
+          const changed =
+            !prevSegment ||
+            prevSegment.from.x !== nextSegment.from.x ||
+            prevSegment.from.y !== nextSegment.from.y ||
+            prevSegment.to.x !== nextSegment.to.x ||
+            prevSegment.to.y !== nextSegment.to.y;
+          if (changed) {
+            fanDropSegmentRef.current = nextSegment;
+            setFanDropSegment(nextSegment);
+          }
         }
       }
-    }, sceneEl);
+    }
 
-    return () => ctx.revert();
-  }, [visibleRowCount]);
+    measure();
+    // The hub's position (read above via [data-eyes-hub]) is pinned by
+    // FrameworkAdaptationEyes' own layout effect, which settles and
+    // announces itself via EYES_HUB_UPDATED — re-measure in response
+    // instead of guessing how many frames that takes. document.fonts.ready
+    // covers a webfont swap reflowing the table/fan after first paint.
+    window.addEventListener("resize", measure);
+    window.addEventListener(EYES_HUB_UPDATED, measure);
+    document.fonts?.ready?.then(measure);
+    return () => {
+      window.removeEventListener("resize", measure);
+      window.removeEventListener(EYES_HUB_UPDATED, measure);
+    };
+  }, []);
+
+  // Announce the drop-line's settled position only once it's actually
+  // committed and painted (plain useEffect runs after paint, unlike the
+  // layout effect above) — FrameworkAdaptationEyes' hub reads this line's
+  // real x for its own position, so dispatching any earlier would hand it
+  // a position that isn't on screen yet.
+  useEffect(() => {
+    if (fanDropSegment) window.dispatchEvent(new Event(FAN_DROP_LINE_UPDATED));
+  }, [fanDropSegment]);
 
   return (
-    <div
-      className={`${styles.scene}${className ? ` ${className}` : ""}`}
-      ref={sceneRef}
-    >
-      <div className={styles.stage} ref={stageRef}>
-        <div className={styles.tableWrap} ref={tableWrapRef}>
+    <>
+      {/* Connector — computed sharp-cornered "C" (see the measure() effect
+          above), not a traced SVG asset. Rendered as a SIBLING of .scene
+          (not nested inside it) so its absolute positioning resolves
+          against the section's own padding box, not .scene's narrower
+          7-column box — an abs-positioned grid child with no explicit
+          grid-column/row uses the grid CONTAINER's padding box as its
+          containing block, per spec. */}
+      <svg
+        ref={connectorSvgRef}
+        className={styles.tableConnector}
+        fill="none"
+        aria-hidden="true"
+      >
+        {connectorPoints.length > 0 && (
+          <path
+            d={buildRoundedPolylinePath(connectorPoints, CONNECTOR_RADIUS)}
+            stroke="var(--color-grey-650)"
+            strokeWidth={1}
+            className={styles.rakeLine}
+          />
+        )}
+        {fanDropSegment && (
+          <path
+            data-fan-drop-line="true"
+            d={`M${fanDropSegment.from.x},${fanDropSegment.from.y} L${fanDropSegment.to.x},${fanDropSegment.to.y}`}
+            stroke="var(--color-grey-650)"
+            strokeWidth={1}
+            className={styles.rakeLine}
+          />
+        )}
+      </svg>
+
+      <div className={`${styles.scene}${className ? ` ${className}` : ""}`}>
+        <div className={styles.textBlock} ref={textBlockRef}>
+          <LabelBlock
+            size="display"
+            label="Driving Alignment"
+            body="The data dictionary."
+          />
+          <Block
+            size="lg"
+            color="secondary"
+            className={styles.dataDictionaryDetailBlock}
+          >
+            I created a living document containing term and data point
+            definitions along with possible calculations and data sources to get
+            my team up to speed.
+          </Block>
+        </div>
+
+        <div className={styles.perspectiveWrap} ref={perspectiveWrapRef}>
+          {/* Rake — a real fan-out trapezoid (shoulder bar + fixed-angle
+            diagonal legs + straight mid-row stubs), same shape vocabulary
+            as DataCertificationTriggers' branch, rotated 90° since our
+            targets stack vertically instead of sharing one Y. See the
+            measurement effect above.
+            Hidden for now (both the row rake / "side" fan and the bottom
+            column-divider fan render through this one combined segment
+            list) — per request, table/card/connector-C/drop-line stay. */}
+          {false && (
+          <svg className={styles.rake} aria-hidden="true">
+            {rakeSegments.map((seg, i) => (
+              <ProcessConnector
+                key={i}
+                from={seg.from}
+                to={seg.to}
+                shape="straight"
+                gap={0}
+                color="var(--color-grey-650)"
+                className={styles.rakeLine}
+              />
+            ))}
+          </svg>
+          )}
+
+          <div className={styles.card}>
+            <p className={styles.cardTitle}>Document Intent</p>
+            <p className={styles.cardBody}>
+              This document introduces the core pain points in software
+              lifecycle management and establishes shared terminology,
+              best-practice definitions, and the data elements needed to support
+              the Overview, Software Portfolio, and Software Asset Profile
+              experiences. Its goal is to align teams around the calculations,
+              system sources, and decision-driving insights that power Software
+              Observability.
+            </p>
+          </div>
+
           <div className={styles.table} role="table" ref={tableRef}>
-            <div className={styles.headerCell1} role="columnheader">
-              <div className={styles.headerFill} ref={headerFill1Ref} />
-              <div className={styles.headerContent}>
-                <Label ref={headerLabelRef} size="xl">
-                  The Data Dictionary
-                </Label>
-              </div>
-              <div className={styles.headerContent}>
-                <span
-                  className={styles.realHeaderLabel}
-                  ref={(el) => {
-                    realHeaderLabelRefs.current[0] = el;
-                  }}
-                >
-                  {glossaryColumns[0].label}
-                </span>
-              </div>
-            </div>
-            {[1, 2, 3, 4, 5].map((colIndex) => {
-              const headerFillRefs = [
-                headerFill2Ref,
-                headerFill3Ref,
-                headerFill4Ref,
-                headerFill5Ref,
-                headerFill6Ref,
-              ];
-              return (
+            <div className={styles.headerRow} role="row">
+              {COLUMNS.map((col) => (
                 <div
-                  key={`header-${colIndex}`}
-                  className={styles[`headerCell${colIndex + 1}`]}
+                  key={col.key}
+                  className={styles.headerCell}
                   role="columnheader"
                 >
+                  {col.label}
+                </div>
+              ))}
+            </div>
+            {ROWS.map((row, i) => {
+              // The rake excludes the last row entirely (per earlier ask),
+              // so "top"/"bottom" of the fan are index 0 and ROWS.length-2.
+              const isTopRow = i === 0;
+              const isBottomRow = i === ROWS.length - 2;
+              const verticalOffset = isTopRow
+                ? SHOULDER_DY
+                : isBottomRow
+                  ? -SHOULDER_DY
+                  : 0;
+              return (
+                <div
+                  key={row.term}
+                  className={styles.bodyRow}
+                  role="row"
+                  ref={(el) => {
+                    rowRefs.current[i] = el;
+                  }}
+                >
+                  {COLUMNS.map((col) => (
+                    <div key={col.key} className={styles.bodyCell} role="cell">
+                      {row[col.key]}
+                    </div>
+                  ))}
                   <div
-                    className={styles.headerFill}
-                    ref={headerFillRefs[colIndex - 1]}
+                    className={styles.shoulderMarker}
+                    aria-hidden="true"
+                    ref={(el) => {
+                      shoulderMarkerRefs.current[i] = el;
+                    }}
+                    style={{
+                      transform: `translate(-${BRANCH_WIDTH}px, ${verticalOffset}px)`,
+                    }}
                   />
-                  <div className={styles.headerContent}>
-                    <span
-                      className={styles.realHeaderLabel}
-                      ref={(el) => {
-                        realHeaderLabelRefs.current[colIndex] = el;
-                      }}
-                    >
-                      {glossaryColumns[colIndex].label}
-                    </span>
-                  </div>
                 </div>
               );
             })}
-
-            {visibleRowCount !== null &&
-              Array.from({ length: visibleRowCount }).map((_, rowIndex) =>
-                Array.from({ length: COLUMN_COUNT }).map((_, colIndex) => {
-                  const isOld1 = rowIndex === 0 && colIndex === 0;
-                  const isOld2 = rowIndex === 1 && colIndex === 1;
-                  const isOld3 = rowIndex === 2 && colIndex === 2;
-                  const columnKey = glossaryColumns[colIndex].key;
-                  const cellValue = visibleRows[rowIndex][columnKey];
-                  return (
+            <div className={styles.columnDividerRow} aria-hidden="true">
+              {COLUMNS.map((col, i) => {
+                const isOuterLeftDivider = i === 1;
+                const isOuterRightDivider = i === COLUMNS.length - 1;
+                const shoulderOffsetX = isOuterLeftDivider
+                  ? SHOULDER_DY
+                  : isOuterRightDivider
+                    ? -SHOULDER_DY
+                    : 0;
+                return (
+                  <div
+                    key={col.key}
+                    className={styles.columnDividerMarker}
+                    ref={(el) => {
+                      columnDividerMarkerRefs.current[i] = el;
+                    }}
+                  >
                     <div
-                      key={`cell-${rowIndex}-${colIndex}`}
-                      className={styles.bodyCell}
-                      style={{ gridRow: rowIndex + 2, gridColumn: colIndex + 1 }}
-                      role="cell"
-                    >
-                      {isOld1 && (
-                        <div className={styles.oldStatement} ref={statementCell1Ref}>
-                          {STATEMENT_CELL1_LINES.map((line) => (
-                            <p key={line} className={styles.oldStatementLine}>
-                              {line}
-                            </p>
-                          ))}
-                        </div>
-                      )}
-                      {isOld2 && (
-                        <div className={styles.oldStatement} ref={statementCell2Ref}>
-                          {STATEMENT_CELL2_LINES.map((line) => (
-                            <p key={line} className={styles.oldStatementLine}>
-                              {line}
-                            </p>
-                          ))}
-                        </div>
-                      )}
-                      {isOld3 && (
-                        <div className={styles.oldStatement} ref={statementCell3Ref}>
-                          {STATEMENT_CELL3_LINES.map((line) => (
-                            <p key={line} className={styles.oldStatementLine}>
-                              {line}
-                            </p>
-                          ))}
-                        </div>
-                      )}
-                      <p
-                        className={styles.realBodyCellText}
-                        ref={(el) => {
-                          realBodyCellRefs.current[rowIndex * COLUMN_COUNT + colIndex] = el;
-                        }}
-                      >
-                        {cellValue}
-                      </p>
-                    </div>
-                  );
-                }),
-              )}
+                      className={styles.columnShoulderMarker}
+                      ref={(el) => {
+                        columnShoulderMarkerRefs.current[i] = el;
+                      }}
+                      style={{
+                        transform: `translate(${shoulderOffsetX}px, ${BRANCH_WIDTH}px)`,
+                      }}
+                    />
+                  </div>
+                );
+              })}
+            </div>
           </div>
-
-          <svg
-            className={styles.dividers}
-            width="100%"
-            height={TABLE_HEIGHT}
-            aria-hidden="true"
-          >
-            <line className={styles.dividerLine} ref={divider1Ref} />
-            <line className={styles.dividerLine} ref={divider2Ref} />
-            <line className={styles.dividerLine} ref={divider3Ref} />
-            <line className={styles.dividerLine} ref={divider4Ref} />
-            <line className={styles.dividerLine} ref={divider5Ref} />
-          </svg>
-        </div>
-
-        <div className={styles.measureWrap} ref={measureRef} aria-hidden="true">
-          <DataGlossaryTable />
         </div>
       </div>
-    </div>
+    </>
   );
 }

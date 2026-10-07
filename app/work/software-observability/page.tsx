@@ -5,25 +5,30 @@ import Section from "@/components/Section";
 import LabelBlock from "@/components/LabelBlock";
 import Block from "@/components/Block";
 import Card from "@/components/Card";
-import SectionIntroduction from "@/components/case-studies/software-observability/SectionIntroduction";
+import SectionIntroductionEntry from "@/components/case-studies/software-observability/SectionIntroductionEntry";
 import ContextBlock from "@/components/ContextBlock";
 import TheProblemPinnedScene from "@/components/case-studies/software-observability/TheProblemPinnedScene";
 import QuoteBlock from "@/components/QuoteBlock";
-import ContentHub from "@/components/ContentHub";
+// import ContentHub from "@/components/ContentHub"; — hidden, see section.data
 import ImgCard from "@/components/ImgCard";
-// import GapsIdentifiedHexScene from "@/components/case-studies/software-observability/GapsIdentifiedHexScene";
+// import GapsIdentifiedHexScene from "@/components/case-studies/software-observability/GapsIdentifiedHexScene"; — hidden, see section.gaps-identified (reverted to original LabelBlock version)
 import SoftwareProfileIssuesHotspots from "@/components/case-studies/software-observability/SoftwareProfileIssuesHotspots";
 import InsightsGoalsContent from "@/components/case-studies/software-observability/InsightsGoalsContent";
+import StakeholdersIntro from "@/components/case-studies/software-observability/StakeholdersIntro";
+import StakeholdersCards from "@/components/case-studies/software-observability/StakeholdersCards";
+import BuildingBlocksIntro from "@/components/case-studies/software-observability/BuildingBlocksIntro";
+import BuildingBlocksMap from "@/components/case-studies/software-observability/BuildingBlocksMap";
 import CardRow from "@/components/CardRow";
 import CardColumn from "@/components/CardColumn";
 import SectionImg from "@/components/SectionImg";
 // import DataGlossaryTable from "@/components/case-studies/software-observability/DataGlossaryTable"; — hidden, see section.data-dictionary
-// import DataDictionaryScene from "@/components/case-studies/software-observability/DataDictionaryScene"; — hidden along with section.data-dictionary below
-import ObservabilityEyes from "@/components/case-studies/software-observability/ObservabilityEyes";
-import FrameworkFunnelSpine from "@/components/case-studies/software-observability/FrameworkFunnelSpine";
+import DataDictionaryScene from "@/components/case-studies/software-observability/DataDictionaryScene";
+import FrameworkAdaptationEyes from "@/components/case-studies/software-observability/FrameworkAdaptationEyes";
+// import ObservabilityEyes from "@/components/case-studies/software-observability/ObservabilityEyes"; — hidden, see section.observability-eyes below
+// import FrameworkFunnelSpine from "@/components/case-studies/software-observability/FrameworkFunnelSpine"; — hidden, see section.framework-adaptation
 import FrameworkScene from "@/components/case-studies/software-observability/FrameworkScene";
 import DataScrollController from "@/components/case-studies/software-observability/DataScrollController";
-import DataIntroText from "@/components/case-studies/software-observability/DataIntroText";
+// import DataIntroText from "@/components/case-studies/software-observability/DataIntroText"; — hidden, see section.data
 import LifecycleTimelineScene from "@/components/case-studies/software-observability/LifecycleTimelineScene";
 import InactiveLicenseDistributionHotspots from "@/components/case-studies/software-observability/InactiveLicenseDistributionHotspots";
 import GeneratingEventsContent from "@/components/case-studies/software-observability/GeneratingEventsContent";
@@ -46,9 +51,9 @@ const OverviewPrototypeSection = dynamic(
   () =>
     import("@/components/case-studies/software-observability/OverviewPrototypeSection"),
 );
-const AllSoftwareLegacyHotspots = dynamic(
+const AllSoftwarePrototype1Section = dynamic(
   () =>
-    import("@/components/case-studies/software-observability/AllSoftwareLegacyHotspots"),
+    import("@/components/case-studies/software-observability/AllSoftwarePrototype1Section"),
 );
 const AllSoftwareDirectionIssuesHotspots = dynamic(
   () =>
@@ -90,9 +95,9 @@ const RowAnatomyHotspots = dynamic(
 export default function SoftwareObservabilityPage() {
   return (
     <>
-      <Nav />
+      {/* <Nav /> — hidden for now, not deleted */}
       <main style={{ paddingTop: "var(--nav-height)" }}>
-        <SectionIntroduction />
+        <SectionIntroductionEntry />
 
         <Section>
           <LabelBlock
@@ -128,27 +133,111 @@ export default function SoftwareObservabilityPage() {
           <InsightsGoalsContent />
         </Section>
 
-        <div className={styles.frameworkObservabilityWrap}>
-          <FrameworkFunnelSpine />
-          <Section className={styles.frameworkAdaptation}>
-            <LabelBlock
-              className={styles.frameworkAdaptationTextBlock}
-              size="display"
-              label="Framework Adaptation & Data Requirements"
-              body="To integrate software lifecycle management into the platform, I began by mapping it into our observability framework."
+        <Section className={styles.stakeholdersIntro}>
+          <StakeholdersIntro />
+        </Section>
+
+        <Section className={styles.stakeholdersCards}>
+          <StakeholdersCards />
+        </Section>
+
+        <Section className={styles.buildingBlocksIntro}>
+          <BuildingBlocksIntro />
+        </Section>
+
+        <Section className={styles.buildingBlocksMap}>
+          <BuildingBlocksMap />
+        </Section>
+
+        <Section className={styles.dataDictionary}>
+          <DataDictionaryScene className={styles.dataDictionaryScene} />
+          {/* <DataGlossaryTable /> — hidden while the pinned scene above
+              (scaffold build → real data-dictionary table) is being built;
+              see PLAN.md beat 12 / progress.md. */}
+        </Section>
+
+        {/* data-framework-observability-wrap marks this wrap for
+            FrameworkAdaptationEyes' light-beam layer, which is portaled here
+            (not rendered inside its own local .wrap) so it can paint across
+            both rows — a div's background/clip-path can't extend beyond its
+            own box the way an <svg overflow="visible"> could, so the beam's
+            paint surface has to actually be sized to the full wrap. */}
+        <div
+          className={styles.frameworkObservabilityWrap}
+          data-framework-observability-wrap="true"
+        >
+          {/* <FrameworkFunnelSpine /> — hidden, see section.framework-adaptation */}
+          {/* Framework Adaptation + Observability are two independent
+              Sections again (un-merged) — the merge existed only for the
+              now-abandoned FrameworkFunnelSpine mechanism. The beam/mask
+              system doesn't need a shared stacking context, only this
+              wrap's own position:relative to portal/measure against. */}
+          {/* data-eyes-row marks this Section for FrameworkAdaptationEyes'
+              own hub-y pin ("flush with this section's bottom"). */}
+          <Section
+            className={styles.frameworkAdaptationSection}
+            data-eyes-row="true"
+          >
+            {/* data-framework-adaptation-text-block marks this block's
+                real bottom edge — FrameworkAdaptationEyes' beam only
+                starts tracking the mouse once the cursor passes below it.
+                display:contents so the marker div has no box of its own. */}
+            <div
+              data-framework-adaptation-text-block="true"
+              style={{ display: "contents" }}
+            >
+              <LabelBlock
+                className={styles.frameworkAdaptationTextBlock}
+                size="display"
+                label="Framework Adaptation"
+                body="To integrating software into the platform I mapped it to XOPS’ observability framework."
+              />
+            </div>
+            <FrameworkAdaptationEyes
+              className={styles.frameworkAdaptationEyes}
+              beamTextOverlayLabel="Observability"
+              beamTextOverlayBody="Full visibility into enterprise assets, asset relationships, and end-to-end operations by unifying data across HR, IT, financial, and third-party systems."
             />
           </Section>
 
-          <Section className={styles.observabilityEyes}>
-            <ObservabilityEyes />
+          <Section
+            className={styles.observabilitySection}
+            data-observability-row="true"
+          >
+            {/* data-observability-text-block marks the real text box for
+                FrameworkAdaptationEyes' black-text mask overlay — it
+                measures this box's real position/size to lay its cloned
+                (solid black, clip-path-revealed) copy exactly on top.
+                display:contents so the marker div itself has no box of
+                its own and doesn't affect the grid layout. */}
+            <div
+              data-observability-text-block="true"
+              style={{ display: "contents" }}
+            >
+              <LabelBlock
+                className={styles.stakeholderIntroTextBlock}
+                size="display"
+                label="Observability"
+                body="Full visibility into enterprise assets, asset relationships, and end-to-end operations by unifying data across HR, IT, financial, and third-party systems."
+              />
+            </div>
           </Section>
+
+          {/* <Section className={styles.observabilityEyes}>
+            <ObservabilityEyes />
+          </Section> — hidden while Framework Adaptation's own eyes collage
+          is being reworked, see progress.md */}
         </div>
 
         <Section className={styles.framework}>
           <FrameworkScene className={styles.frameworkScene} />
         </Section>
 
-        <DataScrollController fadeIn centerFade>
+        {/* section.data (old ContentHub-based hub-and-spoke version) hidden
+            — superseded by section.building-blocks-map's SoftwareSystemMap
+            (BuildingBlocksIntro + BuildingBlocksMap), see progress.md.
+            Component + data untouched, not rendered. */}
+        {/* <DataScrollController fadeIn centerFade>
           <Section className={styles.data}>
             <ContextBlock side="none" className={styles.dataContext}>
               <DataIntroText />
@@ -233,7 +322,7 @@ export default function SoftwareObservabilityPage() {
               </div>
             </div>
           </Section>
-        </DataScrollController>
+        </DataScrollController> */}
 
         {/* <Section>
           <LabelBlock
@@ -245,24 +334,21 @@ export default function SoftwareObservabilityPage() {
           />
         </Section> */}
 
-        {/* section.parallel-prototyping hidden for now per user request —
-            component + data untouched, not rendered. */}
+        {/* ── section.parallel-prototyping ── */}
         {/* <DataScrollController fadeIn>
           <Section className={styles.parallelPrototyping}>
             <div className={styles.parallelPrototypingLeft}>
               <LabelBlock
                 size="display"
                 label="Parallel Prototyping"
-                body="I kicked off design with module's entry point: the Overview page.
-                This established the core metrics, visual language, and data groupings that subsequent layers would inherit."
+                body="I kicked off with the module's entry point, the Overview page, to establish the core metrics and visual language downstream layers would inherit."
               />
               <Block
                 size="lg"
                 className={styles.parallelPrototypingDetailBlock}
               >
-                I generated a set of parallel prototypes in both Claude and
-                Figma Make to identify where outputs converged, validate logical
-                data groupings, and pressure-test the information architecture
+                Using Claude and Figma Make, I generated prototypes to evaluate
+                output convergence, logical data groupings, and IA patterns
                 before committing to a direction.
               </Block>
             </div>
@@ -301,15 +387,6 @@ export default function SoftwareObservabilityPage() {
           </Section>
         </DataScrollController> */}
 
-        {/* section.data-dictionary hidden for now per user request — component
-            + data untouched, not rendered. */}
-        {/* <Section className={styles.dataDictionary}>
-          <DataDictionaryScene className={styles.dataDictionaryScene} />
-          {/* <DataGlossaryTable /> — hidden while the pinned scene above
-              (scaffold build → real data-dictionary table) is being built;
-              see PLAN.md beat 12 / progress.md. * /}
-        </Section> */}
-
         {/* ── section.prototype-validation ── */}
         {/* Card player walks Intent → Insights → Prototype 02 switch →
             Decisions in one sequence; Timeline sidebar (right column) tracks
@@ -325,10 +402,21 @@ export default function SoftwareObservabilityPage() {
           <OverviewPrototypeSection />
         </Section>
 
-        {/* Gaps Identified section hidden per user request. */}
-        {/* <Section className={styles.gapsIdentified}>
-          <GapsIdentifiedHexScene className={styles.gapsIdentifiedScene} />
-        </Section> */}
+        {/* ── section.gaps-identified ── */}
+        <Section className={styles.gapsIdentified}>
+          <div className={styles.gapsIdentifiedWrapper}>
+            <LabelBlock
+              className={styles.gapsIdentifiedTextBlock}
+              size="display"
+              body="With gaps identified and alignment forming, I had the confidence to start design work for the rest of the software experience."
+              support=""
+            />
+            {/* <Block size="lg" className={styles.gapsIdentifiedDetailBlock}>
+              As I finalized the Overview page designs, I kicked off designs for
+              the All Software view and Software Profiles.
+            </Block> */}
+          </div>
+        </Section>
 
         <Section className={styles.allSoftwareView}>
           <LabelBlock
@@ -354,14 +442,11 @@ export default function SoftwareObservabilityPage() {
         </Section> */}
 
         {/* ── section.all-software-prototype-1 ── */}
-        {/* Static Assumption cards + image hidden while the hotspot annotation
-            system is applied here — see AllSoftwareLegacyHotspots.tsx. */}
-        <Section className={styles.overviewPrototype1}>
-          <div className={styles.overviewPrototype1Embed}>
-            <LazyMount>
-              <AllSoftwareLegacyHotspots />
-            </LazyMount>
-          </div>
+        {/* Card player + Timeline sidebar, same pattern as
+            section.prototype-validation above — see
+            AllSoftwarePrototype1Section.tsx (own internal LazyMount). */}
+        <Section className={styles.allSoftwarePrototype1}>
+          <AllSoftwarePrototype1Section />
         </Section>
 
         <Section className={styles.softwareProfile}>

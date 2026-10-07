@@ -38,6 +38,11 @@ interface ImgCardProps {
   /** variant="embed" only — freezes the active segment's fill tween in place
    *  without resetting it (mirrors the auto-advance timer's own pause). */
   paused?: boolean
+  /** variant="embed" only — overrides the progress segment fill's color
+   *  (defaults to --text-accent, blue-500) — e.g. the card player swapping it
+   *  per phase (yellow-500 for Early Assumptions, blue-500 for
+   *  Learnings/Decisions). */
+  progressColor?: string
 }
 
 export default function ImgCard({
@@ -55,6 +60,7 @@ export default function ImgCard({
   activeStep,
   activeStepDurationMs,
   paused,
+  progressColor,
 }: ImgCardProps) {
   const captionClassName = `${styles.caption}${inverse ? ` ${styles.inverse}` : ''}`
   const imgWrapperClassName = `${styles.imgWrapper}${allowOverflow ? ` ${styles.imgWrapperOverflowVisible}` : ''}`
@@ -120,7 +126,14 @@ export default function ImgCard({
         <div className={styles.embedHeader}>
           {caption && <span className={captionClassName}>{caption}</span>}
           {progressSteps != null && progressSteps > 0 && (
-            <div className={styles.progressTrack}>
+            <div
+              className={styles.progressTrack}
+              style={
+                progressColor
+                  ? ({ "--progress-fill-color": progressColor } as React.CSSProperties)
+                  : undefined
+              }
+            >
               {Array.from({ length: progressSteps }).map((_, i) => (
                 <span key={i} className={styles.progressSegment}>
                   <span

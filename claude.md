@@ -2,7 +2,7 @@
 
 ## Agent Behaviour
 
-- **Do not auto-invoke skills** unless the user explicitly asks for one by name (e.g. `/run`, `/component-builder`). Execute tasks directly with available tools.
+- **Do not auto-invoke skills** unless the user explicitly asks for one by name (e.g. `/run`, `/component-builder`). Execute tasks directly with available tools. Exception: "build/add a new section" (or equivalent phrasing describing adding a section to a case study page) auto-invokes `section-builder` — no need to ask or wait for the literal `/section-builder` command.
 - **Never build or make code changes until explicitly asked to.** Always ask clarifying questions first to verify alignment on intent and expected outcome before writing any code.
 - **Every concrete token value requires explicit confirmation before being written — not just new token categories.** Proposing *that* a dimension needs a token (e.g. a new spacing step, a state-color layer) is a structural conversation. Choosing *which* value fills it (a specific ramp step, a px number, an opacity, a duration) is an equally real decision and must be proposed with brief reasoning and confirmed before it's written — never assumed as an "obvious default," even something as small as "one step darker on the ramp" or a raw number copied straight from a Figma layer. This applies in any design-system project (portfolio's own, XOPS, or future ones).
 

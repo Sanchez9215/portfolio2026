@@ -1,0 +1,33 @@
+/* Shape-sorter test (square, triangle, circle) — see
+   FrameworkShapeSorter.tsx for the full mechanism. All real sizing
+   (FRONT_SIZE/PEG_GAP/CUBE_DEPTH/ELLIPSE_SQUASH) lives in the component as
+   computed SVG geometry; this file only styles the shared polygon kinds. */
+
+.wrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-xl);
+}
+
+.scene {
+  overflow: visible;
+}
+
+.socket {
+  fill: none;
+  stroke: var(--color-grey-500);
+  stroke-width: 1px;
+}
+
+.face {
+  fill: var(--surface-base);
+  stroke: var(--color-grey-500);
+  stroke-width: 1px;
+  stroke-dasharray: 6 4;
+}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { SplitText } from "gsap/SplitText";
@@ -18,7 +18,7 @@ const LABEL_LEAD = 0.08;
 type SizedProps = {
   size: "xs" | "sm" | "md" | "lg";
   label?: string;
-  body?: string;
+  body?: ReactNode;
   support?: never;
   inverse?: boolean;
   labelColor?: "secondary" | "tertiary";
@@ -28,7 +28,7 @@ type SizedProps = {
 type DisplayProps = {
   size: "display";
   label?: string;
-  body?: string;
+  body?: ReactNode;
   support?: string;
   inverse?: boolean;
   className?: string;

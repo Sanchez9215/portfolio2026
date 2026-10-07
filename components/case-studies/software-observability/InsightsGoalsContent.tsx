@@ -338,12 +338,15 @@ export default function InsightsGoalsContent() {
           ease: "none",
         });
 
-      // Phase 2 — spine grows continuously and stops exactly at each
-      // badge's top edge; that badge must be FULLY revealed by the time the
-      // spine's tip arrives, not just starting then — so each badge's tween
-      // is scheduled to end, not start, at its measured scroll fraction.
-      const lastBadgeTopY = m.badgeTopYs[m.badgeTopYs.length - 1];
-      const spineTravel = lastBadgeTopY - spineStartY;
+      // Phase 2 — spine grows continuously past each badge's top edge; that
+      // badge must be FULLY revealed by the time the spine's tip arrives,
+      // not just starting then — so each badge's tween is scheduled to end,
+      // not start, at its measured scroll fraction. Unlike the badges, the
+      // spine itself doesn't stop at the last one — it keeps growing all the
+      // way to the section's own bottom edge, so it reads as one continuous
+      // line into the next section's own spine (section.stakeholders),
+      // which picks up at its own section's top edge.
+      const spineTravel = m.height - spineStartY;
       const totalPhaseLength = spineTravel + SPINE_END_BUFFER;
       const badgeRevealDuration = 0.06;
 
@@ -359,7 +362,7 @@ export default function InsightsGoalsContent() {
       revealTl.to(
         spineEl,
         {
-          attr: { y2: lastBadgeTopY },
+          attr: { y2: m.height },
           duration: spineTravel / totalPhaseLength,
           ease: "none",
         },

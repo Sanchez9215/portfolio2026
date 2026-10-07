@@ -58,3 +58,35 @@
   line-height: var(--text-body-xs-lh);
   fill: var(--text-secondary);
 }
+
+/* Compact (14px) tier — opt-in via ContentHub's `compact` prop, unifies
+   hub/leaf/intermediate text to label-sm / body-sm for a denser diagram
+   (e.g. CmdbSystemMap's 6-hub layout). Default (non-compact) sizing above
+   is unchanged for every other consumer. */
+.hubTextCompact {
+  font-family: var(--font-family-display);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--text-label-sm-size);
+  line-height: var(--text-label-sm-lh);
+  letter-spacing: var(--text-label-sm-ls);
+  text-transform: uppercase;
+  word-spacing: var(--word-spacing-display);
+  fill: var(--text-primary);
+  text-anchor: middle;
+}
+
+.leafTextCompact {
+  font-family: var(--font-family-body);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--text-body-sm-size);
+  line-height: var(--text-body-sm-lh);
+  fill: var(--text-primary);
+}
+
+.intermediateTextCompact {
+  font-family: var(--font-family-body);
+  font-weight: var(--font-weight-regular);
+  font-size: var(--text-body-sm-size);
+  line-height: var(--text-body-sm-lh);
+  fill: var(--text-secondary);
+}
