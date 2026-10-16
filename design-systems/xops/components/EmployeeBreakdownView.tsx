@@ -83,7 +83,7 @@ export function EmployeeBreakdownView({
       render: (row) => (row.daysInactive === null ? "Never signed in" : `${row.daysInactive} days`),
     },
     { key: "lastActivity", label: "Last Activity", width: "flex", sortable: true },
-    { key: "status", label: "Employment Status", width: "flex", sortable: true },
+    { key: "status", label: "Status", width: "flex", sortable: true },
   ];
 
   const terminatedColumns: Column<TerminatedEmployeeRow>[] = [
@@ -102,7 +102,12 @@ export function EmployeeBreakdownView({
   return (
     <div className={styles.view}>
       <div className={styles.topBar}>
-        <Button variant="text" icon={<Icon name="chevron_backward" color="var(--xops-text-secondary)" />} onClick={onBack}>
+        <Button
+          variant="text"
+          className={styles.backButton}
+          icon={<Icon name="chevron_backward" color="var(--xops-text-secondary)" />}
+          onClick={onBack}
+        >
           Back to Profile
         </Button>
         <Button variant="primary" icon={<Icon name="download" color="var(--xops-white)" />} onClick={onExportCsv}>

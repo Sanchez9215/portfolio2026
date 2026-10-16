@@ -31,6 +31,11 @@ type DisplayProps = {
   body?: ReactNode;
   support?: string;
   inverse?: boolean;
+  /** Default true. False skips the scroll-scrubbed label fade + word-by-word
+   *  color reveal entirely — text renders in its resolved CSS color from the
+   *  start (needed on a section whose background the reveal's grey pair
+   *  doesn't suit, e.g. the coral Opportunity section). */
+  animate?: boolean;
   className?: string;
 };
 
@@ -44,7 +49,7 @@ export default function LabelBlock(props: LabelBlockProps) {
   const supportRef = useRef<HTMLParagraphElement>(null);
 
   useEffect(() => {
-    if (props.size !== "display") return;
+    if (props.size !== "display" || props.animate === false) return;
 
     const containerEl = containerRef.current;
     const labelEl = labelRef.current;
@@ -145,7 +150,8 @@ export default function LabelBlock(props: LabelBlockProps) {
       statementSplit?.revert();
       supportSplit?.revert();
     };
-  }, [props.size]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [props.size, props.size === "display" ? props.animate : undefined]);
 
   if (props.size === "display") {
     const { support, inverse = false } = props;

@@ -57,8 +57,8 @@
 .title {
   font-family: var(--font-family-body);
   font-weight: var(--font-weight-bold);
-  font-size: var(--text-label-sm-size);
-  line-height: var(--text-label-sm-lh);
+  font-size: var(--text-body-xs-size);
+  line-height: var(--text-body-xs-lh);
   letter-spacing: var(--text-label-sm-ls);
   color: var(--text-primary-strong);
 }
@@ -85,9 +85,64 @@
 
 .text {
   font-family: var(--font-family-body);
-  font-weight: var(--font-weight-regular);
+  font-weight: var(--font-weight-semibold);
   font-size: var(--text-body-xs-size);
   line-height: var(--text-body-xs-lh);
   color: var(--color-grey-50);
   margin: 0;
+}
+
+/* Branch connector — absolute-coordinate path (container px), so the svg just
+   fills the overlay; same color token as the primary connector. */
+.branch {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  color: var(--annotation-connector-color, #0f8fff);
+}
+
+/* Role-tag layout (opt-in via hotspot.role): title, 8px, tag, then the
+   connector's run (measured 8px under the tag), then the description 8px below
+   it — the 16px tag→description gap keeps the line centered between them. */
+.tooltipRole {
+  gap: 0;
+  align-items: flex-start;
+}
+
+.tooltipRole .roleTag,
+.tooltipRole .roleTags {
+  margin-top: var(--spacing-sm);
+}
+
+/* Multiple roles on one question: pills side by side. */
+.roleTags {
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
+.tooltipRole .roleTags .roleTag {
+  margin-top: 0;
+}
+
+.tooltipRole .sections {
+  margin-top: var(--spacing-md);
+}
+
+/* Same pill pattern as SectionIntroduction's "0 → 1" badge. */
+.roleTag {
+  display: inline-flex;
+  align-items: center;
+  border-radius: var(--radius-pill);
+  background: var(--surface-card);
+  color: var(--badge-text);
+  font-family: var(--font-family-display);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--text-label-2xs-size);
+  line-height: var(--text-label-2xs-lh);
+  letter-spacing: var(--text-label-2xs-ls);
+  padding-inline: var(--spacing-sm);
+  padding-block: var(--spacing-xs);
+  white-space: nowrap;
 }

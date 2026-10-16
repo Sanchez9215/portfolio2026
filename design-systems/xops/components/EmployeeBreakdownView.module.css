@@ -6,6 +6,9 @@
   width: 100%;
   gap: var(--xops-spacing-24);
   overflow-y: auto;
+  /* Top-up so the space above the toolbar totals 32px: the panel chrome around
+     this view (SidePanel / the embed's wrapper) already supplies 16px. */
+  padding-top: var(--xops-spacing-16);
 }
 
 .topBar {
@@ -13,6 +16,21 @@
   align-items: center;
   justify-content: space-between;
   width: 100%;
+  /* 64px to the heading below — the view's own 24px gap plus this top-up. */
+  margin-bottom: calc(var(--xops-spacing-64) - var(--xops-spacing-24));
+}
+
+/* Back to Profile: no side padding (icon sits flush with the view's inner padding)
+   and no hover/active background. `button.` qualifier beats Button.module.css's own
+   single-class .text rules — classnames are hashed per module, so a bare selector
+   here couldn't reach them by name, only win on specificity. */
+button.backButton {
+  padding-inline: 0;
+}
+
+button.backButton:hover,
+button.backButton:active {
+  background-color: transparent;
 }
 
 .heading {

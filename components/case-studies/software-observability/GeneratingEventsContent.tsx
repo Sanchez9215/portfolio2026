@@ -274,10 +274,10 @@ export default function GeneratingEventsContent() {
             alt="Claude Output — lifecycle events"
           />
         </ImgCard>
-        <ImgCard caption="Timeline Prototype" inverse>
+        <ImgCard caption="Timeline Draft" inverse>
           <img
             src="/images/software-observability/timeline-prototype-1.jpg"
-            alt="Timeline Prototype"
+            alt="Timeline Draft"
           />
         </ImgCard>
       </div>

@@ -122,7 +122,7 @@ export default function ImgCard({
     </div>
   ) : (
     <div className={`${styles.inner}${isEmbed ? ` ${styles.innerEmbed}` : ''}`}>
-      {isEmbed && (
+      {isEmbed && (caption || (progressSteps != null && progressSteps > 0)) && (
         <div className={styles.embedHeader}>
           {caption && <span className={captionClassName}>{caption}</span>}
           {progressSteps != null && progressSteps > 0 && (

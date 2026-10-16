@@ -52,14 +52,29 @@
 .textBlock {
   position: relative;
   display: flex;
-  flex-direction: column;
-  gap: var(--spacing-xl);
+  /* Full-width row: label + display statement (stacked) at the left, detail
+     block pushed to the right end, above the dictionary image. */
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: flex-start;
+  width: 100%;
+  gap: var(--spacing-5xl);
   padding: var(--spacing-3xl);
 }
 
+/* The label + display statement keep their own width; the detail text takes all
+   the remaining width of the row. */
+.textBlock > :first-child {
+  flex: none;
+}
+
+/* Detail text: 32px detail block (Block 2xl, 1.2 line height — see .brief in the
+   page stylesheet) filling the rest of the header row. */
 .dataDictionaryDetailBlock {
+  flex: 1 1 0;
+  min-width: 0;
   color: var(--text-primary);
-  max-width: 301px;
+  line-height: 1.2;
 }
 
 /* ── Perspective wrapper (card + table) ──
@@ -71,12 +86,16 @@
 
 .perspectiveWrap {
   position: relative;
+  /* Same width the table had when the whole scene spanned 8 of 12 columns
+     (8 column widths + 7 gutters, gutter = --spacing-xl) — the scene itself now
+     spans all 12 so the header row can. */
+  width: calc((100% - 11 * var(--spacing-xl)) / 12 * 8 + 7 * var(--spacing-xl));
   perspective: 2500px;
   perspective-origin: right;
   /* x, y — right/down positive, left/up negative. Repositions the whole
      tilted group without disturbing .scene's flex gap or the rotateX
      transforms on .card/.table inside it. */
-  transform: translate(500px, -164px);
+  transform: translate(500px, 0px);
 }
 
 .card {

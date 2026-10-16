@@ -627,6 +627,10 @@ export default function DataDictionaryScene({
             stroke="var(--color-grey-650)"
             strokeWidth={1}
             className={styles.rakeLine}
+            // Hidden (not removed): FrameworkAdaptationEyes still measures this
+            // element's x to pin its hub, and getBoundingClientRect works on a
+            // visibility:hidden path.
+            style={{ visibility: "hidden" }}
           />
         )}
       </svg>
@@ -639,13 +643,13 @@ export default function DataDictionaryScene({
             body="The data dictionary."
           />
           <Block
-            size="lg"
+            size="2xl"
             color="secondary"
             className={styles.dataDictionaryDetailBlock}
           >
-            I created a living document containing term and data point
-            definitions along with possible calculations and data sources to get
-            my team up to speed.
+            Based on API documentation and further research using Claude, I
+            created a living document with the data points, their definitions,
+            calculations and sources that were required to achieve our goals.
           </Block>
         </div>
 

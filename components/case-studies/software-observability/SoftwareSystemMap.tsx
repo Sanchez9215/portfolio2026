@@ -8,6 +8,7 @@ import {
   type PointerEvent as ReactPointerEvent,
 } from "react";
 import type { HubNode } from "@/components/ContentHub";
+import Label from "@/components/Label";
 import styles from "./SoftwareSystemMap.module.css";
 
 interface Hub {
@@ -247,7 +248,30 @@ const PARALLEL_CONNECTOR_OFFSET = 8;
 // Toggled off for now — hub-to-hub connector lines/labels hidden while
 // the map is worked on without them. Code kept intact, not deleted, same
 // convention as Nav's SHOW_MENU_TOGGLE / CmdbSunburst's SHOW_CALLOUTS.
-const SHOW_CONNECTIONS = false;
+const SHOW_CONNECTIONS = true;
+
+// The four fundamental questions shown as a row above the map. Hovering one
+// keeps only the hubs that answer it (and their leaves/connectors) white
+// and dims the rest. Hub indices follow the HUBS numbering above.
+// Governance & Ownership (6) and Trend & History (7) apply to every
+// question.
+export const QUESTION_LABELS = [
+  "What do we own?",
+  "What does it cost?",
+  "How is it used?",
+  "Are we compliant?",
+] as const;
+
+const QUESTION_HUBS: number[][] = [
+  [0, 1, 5, 6, 7],
+  [3, 2, 6, 7],
+  [2, 5, 6, 7],
+  [4, 1, 5, 6, 7],
+];
+
+const QUESTIONS: { label: string; hubs: number[] }[] = QUESTION_LABELS.map(
+  (label, i) => ({ label, hubs: QUESTION_HUBS[i] }),
+);
 
 const CONNECTIONS: {
   from: number;
@@ -385,6 +409,15 @@ export default function SoftwareSystemMap() {
   // tapped again or the background is tapped.
   const [hoverKey, setHoverKey] = useState<string | null>(null);
   const [pinnedKey, setPinnedKey] = useState<string | null>(null);
+  // Index into QUESTIONS of the hovered question, or null — everything is
+  // white while null.
+  const [questionIndex, setQuestionIndex] = useState<number | null>(null);
+  const litHubs = useMemo(
+    () =>
+      questionIndex === null ? null : new Set(QUESTIONS[questionIndex].hubs),
+    [questionIndex],
+  );
+  const hubQuestionDim = (i: number) => !!litHubs && !litHubs.has(i);
   const activeKey = pinnedKey ?? hoverKey;
   // Keyed by leaf key, each value is an (x, y) OFFSET from the leaf's own
   // parent position at the moment of drag — not an absolute page
@@ -872,7 +905,27 @@ export default function SoftwareSystemMap() {
   }, [activeKey, leafPositions]);
 
   return (
-    <div ref={containerRef} className={styles.container}>
+    <div className={styles.root}>
+      <div className={styles.questionRow}>
+        {QUESTIONS.map((q, qi) => (
+          <button
+            key={q.label}
+            type="button"
+            className={styles.question}
+            onPointerEnter={() => setQuestionIndex(qi)}
+            onPointerLeave={() =>
+              setQuestionIndex((prev) => (prev === qi ? null : prev))
+            }
+            onFocus={() => setQuestionIndex(qi)}
+            onBlur={() =>
+              setQuestionIndex((prev) => (prev === qi ? null : prev))
+            }
+          >
+            <Label size="lg">{q.label}</Label>
+          </button>
+        ))}
+      </div>
+      <div ref={containerRef} className={styles.container}>
       <svg
         className={styles.overlay}
         viewBox={`0 0 ${containerSize.width} ${containerSize.height}`}
@@ -906,6 +959,9 @@ export default function SoftwareSystemMap() {
                 className={cx(
                   styles.connector,
                   highlight.connectors.has(i) && styles.active,
+                  (hubQuestionDim(CONNECTIONS[i].from) ||
+                    hubQuestionDim(CONNECTIONS[i].to)) &&
+                    styles.questionDim,
                 )}
                 markerEnd="url(#software-map-connector-arrow)"
               />
@@ -969,6 +1025,7 @@ export default function SoftwareSystemMap() {
             leaf.parentPos.x,
             leaf.parentPos.y,
           );
+          const leafQuestionDim = hubQuestionDim(Number(leaf.key.split("-")[0]));
           const leafActive = highlight.leaves.has(leaf.key);
           const leafDimmed = !!activeKey && !leafActive;
           return (
@@ -978,7 +1035,11 @@ export default function SoftwareSystemMap() {
                 y1={p1.y}
                 x2={p2.x}
                 y2={p2.y}
-                className={cx(styles.leafSpoke, leafActive && styles.active)}
+                className={cx(
+                  styles.leafSpoke,
+                  leafActive && styles.active,
+                  leafQuestionDim && styles.questionDim,
+                )}
               />
               <circle
                 cx={leaf.x}
@@ -988,6 +1049,7 @@ export default function SoftwareSystemMap() {
                   styles.leafDot,
                   leafActive && styles.active,
                   leafDimmed && styles.dimmed,
+                  leafQuestionDim && styles.questionDim,
                 )}
                 onPointerDown={(e) =>
                   handleLeafPointerDown(leaf.key, leaf.parentPos, e)
@@ -1006,6 +1068,7 @@ export default function SoftwareSystemMap() {
                   styles.leafLabel,
                   leafActive && styles.active,
                   leafDimmed && styles.dimmed,
+                  leafQuestionDim && styles.questionDim,
                 )}
                 onPointerDown={(e) =>
                   handleLeafPointerDown(leaf.key, leaf.parentPos, e)
@@ -1066,6 +1129,7 @@ export default function SoftwareSystemMap() {
                     styles.hubLabel,
                     hubActive && styles.active,
                     hubDimmed && styles.dimmed,
+                    hubQuestionDim(i) && styles.questionDim,
                   )}
                   onPointerDown={(e) => handleHubPointerDown(i, e)}
                   onPointerEnter={() => setHoverKey(`hub-${i}`)}
@@ -1118,6 +1182,7 @@ export default function SoftwareSystemMap() {
           })}
         </g>
       </svg>
+      </div>
     </div>
   );
 }

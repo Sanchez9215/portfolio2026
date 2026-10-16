@@ -104,6 +104,10 @@ export type SoftwareProfileProps = {
   onViewByChange: (viewBy: string) => void;
   onViewInactiveEmployees?: (context: EmployeeBreakdownContext) => void;
   onViewTerminatedEmployees?: (context: EmployeeBreakdownContext) => void;
+  /** Case study only: renders just the Inactive License Distribution section
+   *  (as if the panel were scrolled down to it), dropping the header and the
+   *  opportunity/licenses/utilization cards above it. */
+  distributionOnly?: boolean;
 };
 
 export function SoftwareProfile({
@@ -155,6 +159,7 @@ export function SoftwareProfile({
   onViewByChange,
   onViewInactiveEmployees,
   onViewTerminatedEmployees,
+  distributionOnly,
 }: SoftwareProfileProps) {
   const [metric, setMetric] = useState<"count" | "opportunity">("count");
 
@@ -176,6 +181,7 @@ export function SoftwareProfile({
 
   return (
     <div className={styles.profile}>
+      {!distributionOnly && (
       <div className={styles.headerSection}>
         <div className={styles.appHeader}>
           <div className={styles.identity}>
@@ -224,7 +230,10 @@ export function SoftwareProfile({
         {/* Hidden until all 40 authored descriptions are in */}
         {/* <p className={styles.description}>{description}</p> */}
       </div>
+      )}
       <div className={styles.content}>
+        {!distributionOnly && (
+        <>
         <div data-hotspot="opportunity-summary">
           <MagicSurface className={styles.summaryCard}>
             <div className={styles.summaryCardContent}>
@@ -324,6 +333,8 @@ export function SoftwareProfile({
             </div>
           </div>
         </div>
+        </>
+        )}
         <div className={styles.detailContainer}>
           <div className={styles.detailHeader}>
             <div className={styles.summaryCardTitleRow}>

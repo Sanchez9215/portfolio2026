@@ -14,7 +14,7 @@ import type {
   LicenseModel,
 } from "./types";
 import { PRODUCT_CATALOG, logoFor } from "./catalog";
-import { AS_OF, ownersForSku, vendorContactForSku } from "./generate";
+import { AS_OF, ownersForSku, resellerForSku, vendorContactForSku } from "./generate";
 
 const DAY_MS = 86_400_000;
 const ACTIVE_WINDOW_DAYS = 90;
@@ -403,6 +403,7 @@ export type EvaluationSummary = {
   sku: string;
   name: string;
   publisher: string;
+  reseller: string;
   logo: string | null;
   edition: string;
   licensesRequested: number;
@@ -415,6 +416,7 @@ export function evaluationProducts(ds: Dataset): EvaluationSummary[] {
     sku: e.productSku,
     name: e.productName,
     publisher: e.publisher,
+    reseller: resellerForSku(e.productSku),
     logo: logoFor(e.publisher),
     edition: e.edition,
     licensesRequested: e.licensesRequested,

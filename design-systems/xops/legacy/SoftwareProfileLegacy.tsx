@@ -29,6 +29,8 @@ export type SoftwareProfileLegacyProps = {
   assignedTooltip: StatusTooltip;
   inactiveTooltip: StatusTooltip;
   unassignedTooltip: StatusTooltip;
+  /** Hides the detail tab strip + tab body (Lifecycle etc.). Defaults to shown. */
+  showDetail?: boolean;
 };
 
 const detailTabs: FilterTabOption[] = [
@@ -45,6 +47,7 @@ export function SoftwareProfileLegacy({
   assignedTooltip,
   inactiveTooltip,
   unassignedTooltip,
+  showDetail = true,
 }: SoftwareProfileLegacyProps) {
   const [tab, setTab] = useState("lifecycle");
   const headerRef = useRef<HTMLDivElement>(null);
@@ -107,14 +110,14 @@ export function SoftwareProfileLegacy({
           </div>
 
           <div className={styles.filledPanel}>
-            <div className={styles.panelRow}>
+            <div className={styles.panelRow} data-hotspot="total-annual-spend">
               <span className={styles.panelLabel}>Total Annual Spend</span>
               <span className={styles.panelValueGroup}>
                 <span className={styles.panelValue}>{formatCurrency(row.annualCost)}</span>
                 <span className={styles.panelUnit}>/year</span>
               </span>
             </div>
-            <div className={styles.panelRow}>
+            <div className={styles.panelRow} data-hotspot="cost-per-license">
               <span className={styles.panelLabel}>Cost per License</span>
               <span className={styles.panelValueGroup}>
                 <span className={styles.panelValue}>{formatCurrency(costPerLicenseMonthly)}</span>
@@ -139,6 +142,7 @@ export function SoftwareProfileLegacy({
                 items={[
                   {
                     label: "Active",
+                    hotspotId: "legend-active",
                     value: formatCount(row.active),
                     meta: ofPurchased(row.active),
                     color: "var(--xops-status-success-solid)",
@@ -146,6 +150,7 @@ export function SoftwareProfileLegacy({
                   },
                   {
                     label: "Total Assigned",
+                    hotspotId: "legend-assigned",
                     value: formatCount(row.assigned),
                     meta: ofPurchased(row.assigned),
                     // opacity-0 dot in the Figma — a transparent swatch reproduces it via Legend as-is
@@ -154,7 +159,7 @@ export function SoftwareProfileLegacy({
                   },
                 ]}
               />
-              <div className={styles.costTile}>
+              <div className={styles.costTile} data-hotspot="cost-per-active-license">
                 <span className={styles.costLabelGroup}>
                   <span className={styles.panelLabel}>Cost per Active License</span>
                   <Icon name="InfoCircle" color="var(--xops-text-secondary)" className={styles.infoIcon} />
@@ -171,6 +176,7 @@ export function SoftwareProfileLegacy({
                 items={[
                   {
                     label: "Inactive",
+                    hotspotId: "legend-inactive",
                     value: formatCount(row.inactive),
                     meta: ofPurchased(row.inactive),
                     color: "var(--xops-status-warning-solid)",
@@ -178,6 +184,7 @@ export function SoftwareProfileLegacy({
                   },
                   {
                     label: "Unassigned",
+                    hotspotId: "legend-unassigned",
                     value: formatCount(row.unassigned),
                     meta: ofPurchased(row.unassigned),
                     color: "var(--xops-grey-500)",
@@ -199,6 +206,7 @@ export function SoftwareProfileLegacy({
           </div>
         </div>
 
+        {showDetail && (
         <div className={styles.detailContainer} data-hotspot="lifecycle-timeline">
           <div className={styles.tabStripSticky} style={{ top: headerHeight }}>
             <FilterTabs
@@ -214,6 +222,7 @@ export function SoftwareProfileLegacy({
             <div className={styles.tabPlaceholder}>Not built yet.</div>
           )}
         </div>
+        )}
       </div>
     </div>
   );

@@ -39,7 +39,7 @@ import styles from "./OverviewLegacy.module.css";
 // real design system's existing components; every net-new visual piece is a one-off
 // scoped to this file or design-systems/xops/legacy/, never the shared components tree.
 
-type StageValue = "procurement" | "provisioning" | "active" | "renewal";
+export type StageValue = "procurement" | "provisioning" | "active" | "renewal";
 
 // Decorative alert content — not backed by real computed alert logic (this pass's
 // explicit scope). Related software ties into real catalog product names so the
@@ -188,9 +188,12 @@ export interface OverviewLegacyProps {
    *  OverviewScreen/AllSoftwareScreen) — lets a connected embed switch to All Software
    *  in place instead of leaving the Sidebar inert. */
   onNavigate?: (screen: SoftwareSubKey) => void;
+  /** Case study only: reports the active lifecycle stage tab (and its initial value on
+   *  mount) so a surrounding overlay can follow which stage the visitor is viewing. */
+  onStageChange?: (stage: StageValue) => void;
 }
 
-export default function OverviewLegacy({ forceAlertsOpen, alertsBoundsRef, showLogos = true, onNavigate }: OverviewLegacyProps = {}) {
+export default function OverviewLegacy({ forceAlertsOpen, alertsBoundsRef, showLogos = true, onNavigate, onStageChange }: OverviewLegacyProps = {}) {
   const ds = useMemo(() => getDataset(), []);
   const allProducts = useMemo(() => productSummaries(ds), [ds]);
   const openSourceRows = useMemo(() => openSourceProducts(ds), [ds]);
@@ -354,6 +357,11 @@ export default function OverviewLegacy({ forceAlertsOpen, alertsBoundsRef, showL
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
 
+  useEffect(() => {
+    onStageChange?.(stage);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stage]);
+
   const stageChange = (next: StageValue) => {
     setStage(next);
     setPage(1);
@@ -385,7 +393,7 @@ export default function OverviewLegacy({ forceAlertsOpen, alertsBoundsRef, showL
     },
     { key: "publisher", label: "Publisher", width: "auto" },
     // No reseller/vendor field exists pre-purchase (no PO yet) — flagged, not invented.
-    { key: "vendor", label: "Vendor", width: "auto", render: () => "—" },
+    { key: "reseller", label: "Vendor", width: "auto" },
     {
       key: "licensesRequested",
       label: "Licenses Requested",
@@ -426,7 +434,7 @@ export default function OverviewLegacy({ forceAlertsOpen, alertsBoundsRef, showL
     },
     {
       key: "assigned",
-      label: "Total Licenses Assigned",
+      label: "Assigned",
       width: "auto",
       align: "right",
       render: (row) => (row.seatBased ? formatCount(row.assigned) : "—"),
@@ -620,7 +628,7 @@ export default function OverviewLegacy({ forceAlertsOpen, alertsBoundsRef, showL
                   />
                 </div>
 
-                <div className={styles.licenseBlock}>
+                <div className={styles.licenseBlock} data-hotspot="total-licenses-owned">
                   <div className={styles.licenseBlockHeader}>
                     <span className={styles.licenseBlockLabel}>Total Licenses Owned</span>
                     <span className={styles.licenseBlockValue}>{formatCount(licenseOverview.totalOwned)}</span>
@@ -792,6 +800,7 @@ export default function OverviewLegacy({ forceAlertsOpen, alertsBoundsRef, showL
                       value: formatCount(s.value, { compact: true }),
                       meta: formatPercent(s.value, compliance.totalAssessed),
                       color: s.color,
+                      hotspotId: s.label === "Compliant" ? "compliant-legend" : undefined,
                     }))}
                   />
                 </div>

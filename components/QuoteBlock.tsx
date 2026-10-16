@@ -4,6 +4,10 @@ interface QuoteBlockProps {
   quote: string
   emphasis?: string
   attribution?: string
+  /** "compact": the smaller stacked layout from Figma node 1:63 — 24px quote
+   *  (530px wide) with the 24px uppercase emphasis below it instead of beside
+   *  it, smaller quote mark. Default layout unchanged. */
+  variant?: 'default' | 'compact'
   className?: string
   markRef?: (el: HTMLImageElement | null) => void
   quoteTextRef?: (el: HTMLParagraphElement | null) => void
@@ -15,6 +19,7 @@ export default function QuoteBlock({
   quote,
   emphasis,
   attribution,
+  variant = 'default',
   className,
   markRef,
   quoteTextRef,
@@ -22,7 +27,9 @@ export default function QuoteBlock({
   attributionRef,
 }: QuoteBlockProps) {
   return (
-    <div className={`${styles.quoteBlock}${className ? ` ${className}` : ''}`}>
+    <div
+      className={`${styles.quoteBlock}${variant === 'compact' ? ` ${styles.compact}` : ''}${className ? ` ${className}` : ''}`}
+    >
       <div className={styles.quoteRow}>
         <div className={styles.quoteContent}>
           <img

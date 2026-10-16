@@ -7,8 +7,428 @@
 
 /* ── section.brief ──────────────────────────────────────────── */
 
-.briefTextBlock {
+section.brief {
+  min-height: 100vh;
+  align-content: center;
+  row-gap: var(--spacing-xl);
+}
+
+.brief > * {
+  grid-column: 1 / 9;
+}
+
+/* Detail block (32px): 1.2, the display-text ratio — body-2xl's own 24px line
+   height is for the Hero's single line and collapses wrapped paragraphs. */
+.brief > :nth-child(2) {
+  line-height: 1.2;
+}
+
+/* No balanced wrapping on the display statement — fill each line, wrap only at the
+   column edge (overrides LabelBlock's `text-wrap: balance`). */
+.brief > :first-child p {
+  text-wrap: wrap;
+}
+
+/* ── section.execution-risk ─────────────────────────────────── */
+
+section.executionRisk {
+  min-height: 100vh;
+  align-content: center;
+  row-gap: var(--spacing-xl);
+}
+
+.executionRisk > * {
+  grid-column: 1 / 9;
+}
+
+/* Detail block (32px): 1.2, the display-text ratio — body-2xl's own 24px line
+   height is for the Hero's single line and collapses wrapped paragraphs. */
+.executionRisk > :nth-child(2) {
+  line-height: 1.2;
+}
+
+/* No balanced wrapping on the display statement — fill each line, wrap only at the
+   column edge (overrides LabelBlock's `text-wrap: balance`). */
+.executionRisk > :first-child p {
+  text-wrap: wrap;
+}
+
+/* ── section.business-opportunity ───────────────────────────── */
+
+section.businessOpportunity {
+  min-height: 100vh;
+  align-content: center;
+  row-gap: var(--spacing-xl);
+}
+
+.businessOpportunity > * {
+  grid-column: 1 / 9;
+}
+
+/* Detail block (32px): 1.2, the display-text ratio — body-2xl's own 24px line
+   height is for the Hero's single line and collapses wrapped paragraphs. */
+.businessOpportunity > :nth-child(2) {
+  line-height: 1.2;
+}
+
+/* No balanced wrapping on the display statement — fill each line, wrap only at the
+   column edge (overrides LabelBlock's `text-wrap: balance`). */
+.businessOpportunity > :first-child p {
+  text-wrap: wrap;
+}
+
+/* ── section.birds-eye-goal ─────────────────────────────────── */
+
+section.birdsEyeGoal {
+  min-height: 100vh;
+  align-content: center;
+  row-gap: var(--spacing-xl);
+}
+
+.birdsEyeGoal > * {
+  grid-column: 1 / 9;
+}
+
+/* Detail block (32px): 1.2, the display-text ratio — body-2xl's own 24px line
+   height is for the Hero's single line and collapses wrapped paragraphs. */
+.birdsEyeGoal > :nth-child(2) {
+  line-height: 1.2;
+}
+
+/* No balanced wrapping on the display statement — fill each line, wrap only at the
+   column edge (overrides LabelBlock's `text-wrap: balance`). */
+.birdsEyeGoal > :first-child p {
+  text-wrap: wrap;
+}
+
+/* ── section.working-backwards ──────────────────────────────── */
+/* Figma node 1:92: intro (label + 32px detail block) pinned to the top, the
+   "Fundamental questions" title + 2x2 question grid pinned to the bottom of a
+   100vh section. Rows: label, detail block, flexible gap (title sits at its
+   bottom, align-self:end), grid. */
+
+section.workingBackwards {
+  min-height: 100vh;
+  grid-template-rows: auto auto 1fr auto;
+  row-gap: var(--spacing-md);
+}
+
+.workingBackwards > :nth-child(1),
+.workingBackwards > :nth-child(2) {
+  grid-column: 1 / 9;
+}
+
+/* Detail block (32px): 1.2 — see .brief above. */
+.workingBackwards > :nth-child(2) {
+  line-height: 1.2;
+}
+
+.workingBackwards > :nth-child(3) {
   grid-column: 1 / -1;
+  align-self: end;
+  justify-self: center;
+  padding-block: var(--spacing-sm);
+}
+
+.workingBackwards > :nth-child(4) {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.workingBackwards > :nth-child(4) > * {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-xl);
+}
+
+/* Rules on the grid's inner edges only: under the top row, and between the two
+   columns (right edge of the left cells) — together a centered cross. */
+.workingBackwards > :nth-child(4) > :nth-child(-n+2) {
+  border-bottom: 1px solid var(--color-grey-500);
+}
+
+.workingBackwards > :nth-child(4) > :nth-child(odd) {
+  border-right: 1px solid var(--color-grey-500);
+}
+
+/* ── section.navigating-ambiguity ───────────────────────────── */
+/* Figma node 1:111: left = 32px detail block over an outlined "0%", right =
+   display block, vertically centered together in a 100vh section. */
+
+section.navigatingAmbiguity {
+  min-height: 100vh;
+  align-content: center;
+  row-gap: var(--spacing-xl);
+}
+
+.navigatingAmbiguity > :nth-child(1),
+.navigatingAmbiguity > :nth-child(2) {
+  grid-column: 1 / 6;
+}
+
+/* Detail block (32px): 1.2 — see .brief above. */
+.navigatingAmbiguity > :nth-child(1) {
+  line-height: 1.2;
+}
+
+/* Outlined (transparent-fill) numeral. 224px is a one-off value for this
+   graphic — no text token goes that large. */
+.navigatingAmbiguity > :nth-child(2) {
+  margin: 0;
+  font-family: var(--font-family-display);
+  font-weight: var(--font-weight-semibold);
+  font-size: 224px;
+  line-height: 1;
+  letter-spacing: -0.2376px;
+  color: transparent;
+  -webkit-text-stroke: 1px var(--color-grey-500);
+}
+
+.navigatingAmbiguity > :nth-child(3) {
+  grid-column: 7 / 13;
+  grid-row: 1 / 3;
+  align-self: center;
+}
+
+.navigatingAmbiguity > :nth-child(3) p {
+  text-wrap: wrap;
+}
+
+/* ── section.system-map ─────────────────────────────────────── */
+/* Figma node 1:118: display block + 32px detail block (8 columns), the
+   four-question row, then the system-map circle image. */
+
+section.systemMap {
+  row-gap: var(--spacing-xl);
+}
+
+.systemMap > * {
+  grid-column: 1 / 9;
+}
+
+.systemMap > :first-child p {
+  text-wrap: wrap;
+}
+
+/* Detail block (32px): 1.2 — see .brief above. */
+.systemMap > :nth-child(2) {
+  line-height: 1.2;
+}
+
+/* The question row spans the full width: 128px below the text above it (32px
+   row-gap + 96px margin) and 64px above the image (32px + 32px). Overrides the
+   shared .questionRow's own bottom margin, made for the embeds it sits above. */
+.systemMap > :nth-child(3) {
+  grid-column: 1 / -1;
+  margin-top: calc(var(--spacing-xl) + var(--spacing-3xl)); /* 128px from the text above */
+  margin-bottom: var(--spacing-xl);
+}
+
+/* 75% of the content width (25% narrower than full), centered. */
+.systemMap > :nth-child(4) {
+  grid-column: 1 / -1;
+  width: 75%;
+  height: auto;
+  justify-self: center;
+}
+
+/* ── section.starting-design / section.data-limitations ─────── */
+/* Figma nodes 1:33 / 1:37: text-section recipe (8 columns), no min-height — the
+   frames hug their content. */
+
+.startingDesign > *,
+.dataLimitations > * {
+  grid-column: 1 / 9;
+}
+
+.startingDesign > :first-child p,
+.dataLimitations > :first-child p {
+  text-wrap: wrap;
+}
+
+/* Detail block (32px): 1.2 — see .brief above. (The integrations line below is a
+   regular 18px detail block and keeps its own line height.) */
+.dataLimitations > :nth-child(2) {
+  line-height: 1.2;
+}
+
+/* The integrations list: the original 18px detail block (Block lg), in subtle
+   text (--text-subtle, grey-700) instead of the default secondary. */
+.dataLimitations > :nth-child(3) {
+  color: var(--text-subtle);
+}
+
+section.startingDesign,
+section.dataLimitations {
+  row-gap: var(--spacing-xl);
+}
+
+/* ── section.success ────────────────────────────────────────── */
+/* Figma node 1:26: label + display statement only — no min-height (the frame
+   hugs its content, 510px at 1440). */
+
+.success > * {
+  grid-column: 1 / 9;
+}
+
+.success > :first-child p {
+  text-wrap: wrap;
+}
+
+/* ── section.role-lens ──────────────────────────────────────── */
+/* Figma node 1:150: display block + 32px detail block (8 columns), then the
+   stacked per-category question cards as an image, same width as the system
+   map's. */
+
+section.roleLens {
+  row-gap: var(--spacing-xl);
+}
+
+.roleLens > * {
+  grid-column: 1 / 9;
+}
+
+.roleLens > :first-child p {
+  text-wrap: wrap;
+}
+
+/* Detail block (32px): 1.2 — see .brief above. */
+.roleLens > :nth-child(2) {
+  line-height: 1.2;
+}
+
+/* 75% of the content width, centered — same as .systemMap's image. 64px from the
+   text above (32px row-gap + 32px margin). */
+.roleLens > :nth-child(3) {
+  grid-column: 1 / -1;
+  width: 75%;
+  height: auto;
+  justify-self: center;
+  margin-top: var(--spacing-xl);
+  /* Fades out into the page background over the lower half — Figma's overlay
+     gradient (transparent → 43% → solid bg), expressed as a mask so it works on
+     whatever the page background is. Stops mapped from the Figma overlay onto the
+     image's own height: opaque to 40%, ~57% at 56%, fully gone by 85%. */
+  -webkit-mask-image: linear-gradient(to bottom, #000 40%, rgba(0, 0, 0, 0.57) 56%, transparent 85%);
+  mask-image: linear-gradient(to bottom, #000 40%, rgba(0, 0, 0, 0.57) 56%, transparent 85%);
+}
+
+/* ── section.our-target ─────────────────────────────────────── */
+/* Figma node 1:134: display block + 32px detail block (8 columns), then a
+   3-role row 128px below. */
+
+section.ourTarget {
+  row-gap: var(--spacing-xl);
+}
+
+.ourTarget > * {
+  grid-column: 1 / 9;
+}
+
+.ourTarget > :first-child p {
+  text-wrap: wrap;
+}
+
+/* Detail block (32px): 1.2 — see .brief above. */
+.ourTarget > :nth-child(2) {
+  line-height: 1.2;
+}
+
+/* Role row: 3 equal columns, 64px apart, full width; 128px from the text above
+   (32px row-gap + 96px margin). */
+.ourTarget > :nth-child(3) {
+  grid-column: 1 / -1;
+  margin-top: calc(var(--spacing-xl) + var(--spacing-3xl));
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  column-gap: var(--spacing-3xl);
+}
+
+.ourTarget > :nth-child(3) > * {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+/* Role title: bold at the body-xl tier (24/29) — Title tops out at 18px (lg).
+   Child + :first-child selectors out-specify Title's own single-class size. */
+.ourTarget > :nth-child(3) > * > :first-child {
+  font-size: var(--text-body-xl-size);
+  line-height: var(--text-body-xl-lh);
+  letter-spacing: var(--text-body-xl-ls);
+}
+
+/* ── section.the-opportunity ────────────────────────────────── */
+/* Static coral section (Figma node 1:63): left column = display text block +
+   detail line + quote block, right column = 3 metric cards. Text recolored to
+   the dark display token via scoped overrides — same technique as
+   TheProblemPinnedScene's .messageCard — so shared components keep their
+   defaults everywhere else. */
+
+section.theOpportunity {
+  min-height: 100vh;
+  align-content: center;
+  background-color: var(--accent-warning);
+  --text-primary:                var(--text-dark-display);
+  --text-body-display-statement: var(--text-dark-display);
+  --text-tertiary:               var(--text-dark-display);
+  --text-secondary:              var(--text-dark-display);
+  --text-subtle:                 var(--text-dark-display);
+  --quote-mark-filter:           brightness(0);
+}
+
+.theOpportunityLeft {
+  grid-column: 1 / 9;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3xl);
+}
+
+.theOpportunityText {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+/* Detail block (32px): 1.2, the display-text ratio — see .brief above. */
+.theOpportunityText > :nth-child(2) {
+  line-height: 1.2;
+}
+
+.theOpportunityText > :first-child p {
+  text-wrap: wrap;
+}
+
+.theOpportunityMetrics {
+  grid-column: 10 / 13;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl);
+}
+
+/* MetricCard as drawn in Figma: left-aligned, 72/79 value (the display-lg
+   tier, via MetricCard's own size vars), 18px regular label, 64px/16px
+   padding, 32px radius. Child selectors (.x > :nth-child) out-specify
+   MetricCard.module.css's single-class rules — its hashed class names can't
+   be reached by name from here. */
+.theOpportunityMetric {
+  --text-display-metric-size: var(--text-display-lg-size);
+  --text-display-metric-lh:   var(--text-display-lg-lh);
+  align-items: flex-start;
+  padding: var(--spacing-3xl) var(--spacing-md);
+  border-radius: var(--border-radius-lg);
+}
+
+/* First card (50%) sits flush with the top of the column. */
+.theOpportunityMetric:first-child {
+  padding-top: 0;
+}
+
+.theOpportunityMetric > :nth-child(2) {
+  text-align: left;
+  font-weight: var(--font-weight-regular);
 }
 
 /* ── section.the-problem ────────────────────────────────────── */
@@ -499,6 +919,93 @@ section.observabilityEyes {
   max-width: 907px;
 }
 
+/* ── section.overview-prototype-1 ──────────────────────────── */
+
+.overviewPrototype1 {
+  row-gap: var(--spacing-xl);
+}
+
+.overviewPrototype1TextBlock {
+  grid-column: 1 / -1;
+  max-width: 907px;
+}
+
+.overviewPrototype1DetailBlock {
+  grid-column: 1 / 4;
+}
+
+/* ── section.overview-prototype-1-questions ──────────────────
+   Static, no-player annotation map over the legacy Overview embed —
+   reuses AnnotationConnectorHotspot's always-on mode (see
+   OverviewPrototype1QuestionsMap.tsx). Full-width, no Timeline sidebar. */
+
+section.overviewPrototype1Questions {
+  padding-bottom: var(--spacing-3xl);
+}
+
+.overviewPrototype1Questions > * {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: subgrid;
+}
+
+/* Embed card: center 10 columns. */
+.overviewPrototype1Questions > * > * {
+  grid-column: 2 / 12;
+}
+
+/* Question row: all 12 columns. */
+.overviewPrototype1Questions > * > :first-child {
+  grid-column: 1 / -1;
+}
+
+/* ── section.overview-prototype-1-limitations ── */
+
+section.overviewPrototype1Limitations {
+  min-height: 100vh;
+  align-content: center;
+}
+
+.overviewPrototype1LimitationsTextBlock {
+  grid-column: 1 / -1;
+  max-width: 939px;
+}
+
+/* ── section.overview-prototype-1-learnings ── */
+
+.overviewPrototype1Learnings > * {
+  grid-column: 2 / 12;
+}
+
+/* ── section.overview-prototype-2-decisions ── */
+
+section.overviewPrototype2Intro {
+  min-height: 100vh;
+  align-content: center;
+}
+
+.overviewPrototype2IntroTextBlock {
+  grid-column: 1 / -1;
+  max-width: 939px;
+}
+
+/* Tooltip trigger as inline text: dashed underline, inherits body type. */
+.overviewPrototype2IntroQuestions button {
+  display: inline;
+  font: inherit;
+  letter-spacing: inherit;
+  color: inherit;
+  line-height: inherit;
+  text-align: inherit;
+  text-decoration: underline dashed;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
+}
+
+.overviewPrototype2Decisions > * {
+  grid-column: 2 / 12;
+}
+
 /* ── section.data-dictionary ─────────────────────────────────
    Static freeform scene (connector line + display block + angled card/
    table, DataDictionaryScene.tsx) — full rebuild, replaces the old
@@ -519,10 +1026,10 @@ section.dataDictionary {
 }
 
 .dataDictionaryScene {
-  /* 7 of 12 columns — assumed to mean the whole scene (text block +
-     connector + table), the only grid-column-controlled element here;
-     flag if you meant just the table on its own. */
-  grid-column: 1 / 9;
+  /* All 12 columns, so the header row (DataDictionaryScene's .textBlock) spans the
+     full width. The table group keeps its previous 8-column width — see
+     DataDictionaryScene.module.css's .perspectiveWrap. */
+  grid-column: 1 / -1;
 }
 
 /* ── section.prototype-validation ────────────────────────────
@@ -694,6 +1201,11 @@ section.allSoftwarePrototype1 {
   column-gap: var(--spacing-3xl);
 }
 
+/* Bare Prototype 01 embed (AllSoftwarePrototype1Map) is full-width. */
+.allSoftwarePrototype1 > * {
+  grid-column: 1 / -1;
+}
+
 .allSoftwarePrototype1Center {
   grid-column: 1 / 10;
 }
@@ -711,17 +1223,23 @@ section.finalLifecycleTimeline {
   row-gap: var(--spacing-3xl);
 }
 
-.finalLifecycleTimelineEmbed {
+.finalLifecycleTimelineTextBlock {
   grid-column: 1 / -1;
+  max-width: 907px;
 }
 
-/* ── section.direction-issue-annotations — live-embed hotspot experience ──── */
+/* Center 6 columns, same as .profilePrototype1's embed. */
+.finalLifecycleTimelineEmbed {
+  grid-column: 4 / 10;
+}
 
-section.directionIssueAnnotations {
+/* ── section.all-software-issues-embed — static tooltip embed (AllSoftwareIssuesMap) ── */
+
+section.allSoftwareIssuesEmbed {
   row-gap: var(--spacing-3xl);
 }
 
-.directionIssueAnnotationsEmbed {
+.allSoftwareIssuesEmbed > * {
   grid-column: 1 / -1;
 }
 
@@ -745,24 +1263,22 @@ section.experienceIssueAnnotations {
    visible next to the embed for the whole pinned hotspot sequence, rather
    than being centered inside what would otherwise be one huge grid row. */
 
-.profilePrototype1Quote {
-  grid-column: 1 / 7;
-  align-self: start;
-  position: sticky;
-  top: var(--nav-height);
-  height: calc(100vh - var(--nav-height));
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: var(--spacing-xl);
+/* Question row + embed card, centered — same subgrid wrapper trick as
+   .overviewPrototype1Questions (LazyMount's wrapper is the only child). */
+.profilePrototype1 > * {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: subgrid;
 }
 
-.softwareProfileQuoteDetailBlock {
-  width: 320px;
+/* Embed card: center 6 columns. */
+.profilePrototype1 > * > * {
+  grid-column: 4 / 10;
 }
 
-.profilePrototype1Embed {
-  grid-column: 7 / 13;
+/* Question row: all 12 columns. */
+.profilePrototype1 > * > :first-child {
+  grid-column: 1 / -1;
 }
 
 /* ── section.core-attribute-intent ─────────────────────────── */
@@ -970,11 +1486,6 @@ section.unifyingSystems {
 
 .unifyingSystemsLeft > * {
   grid-column: 1 / -1;
-}
-
-.unifyingSystemsDetailBlock {
-  grid-column: 1 / 4;
-  color: var(--text-primary);
 }
 
 .unifyingSystemsScroll {
@@ -1225,10 +1736,24 @@ section.twoTrackValidation {
 
 section.inactiveLicenseDistributionEmbed {
   row-gap: var(--spacing-3xl);
+  /* The two embeds (different chart heights) center on each other. */
+  align-items: center;
 }
 
-.inactiveLicenseDistributionEmbedInner {
-  grid-column: 4 / 10;
+/* Two embeds side by side in the center (By Department | By Cost Center) —
+   tooltips run outward from each one's outer edge (allowOverflow). */
+.inactiveLicenseDistributionLeft {
+  grid-column: 3 / 7;
+  /* By Department embed with the employee drill-down stacked directly below. */
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3xl);
+  align-self: start;
+}
+
+.inactiveLicenseDistributionRight {
+  grid-column: 7 / 11;
+  align-self: start;
 }
 
 /* ── section.overview-revisit ── */

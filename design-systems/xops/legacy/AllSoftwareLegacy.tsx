@@ -152,13 +152,26 @@ export interface AllSoftwareLegacyProps {
   /** Case study only: scripted horizontal auto-scroll for the hotspot sequence,
    *  revealing the trailing columns before they're spotlighted. */
   scrollToX?: "start" | "end";
+  /** Case study only: hides the region FilterTabs (Global/NA/EMEA/…), leaving the
+   *  Filter button. */
+  hideRegionFilter?: boolean;
+  /** Case study only: renders just the table (no Sidebar, header, toolbar or
+   *  profile panel), capped to its first rows, with no scrolling in either axis. */
+  tableOnly?: boolean;
+  /** Case study only: hides the left Sidebar so the table gets the full width. */
+  hideSidebar?: boolean;
 }
+
+const TABLE_ONLY_ROWS = 3;
 
 export default function AllSoftwareLegacy({
   onNavigate,
   disableVerticalScroll,
   disableHorizontalScroll,
   scrollToX,
+  hideRegionFilter,
+  tableOnly,
+  hideSidebar,
 }: AllSoftwareLegacyProps = {}) {
   const ds = useMemo(() => getDataset(), []);
   const summaries = useMemo(() => productSummaries(ds), [ds]);
@@ -188,6 +201,22 @@ export default function AllSoftwareLegacy({
     }
   };
 
+  if (tableOnly) {
+    return (
+      <div className={styles.tableWrapper}>
+        <Table
+          columns={columns}
+          data={summaries.slice(0, TABLE_ONLY_ROWS)}
+          rowKey={(row) => row.sku}
+          disableVerticalScroll
+          disableHorizontalScroll
+          headerSurface="grey"
+          scrollFade={false}
+        />
+      </div>
+    );
+  }
+
   return (
     <div
       style={{
@@ -197,7 +226,7 @@ export default function AllSoftwareLegacy({
         backgroundColor: "var(--xops-grey-50)",
       }}
     >
-      <Sidebar activeSoftwareItem="all-software" onNavigate={onNavigate} />
+      {!hideSidebar && <Sidebar activeSoftwareItem="all-software" onNavigate={onNavigate} />}
       <div
         style={{
           display: "flex",
@@ -228,14 +257,16 @@ export default function AllSoftwareLegacy({
             />
           </div>
           <div className={styles.toolbarRow}>
-            <div className={styles.regionGroup}>
-              <FilterTabs
-                options={regionOptions}
-                value={region}
-                onChange={setRegion}
-                ariaLabel="Filter by region"
-              />
-            </div>
+            {!hideRegionFilter && (
+              <div className={styles.regionGroup}>
+                <FilterTabs
+                  options={regionOptions}
+                  value={region}
+                  onChange={setRegion}
+                  ariaLabel="Filter by region"
+                />
+              </div>
+            )}
             <Button iconOnly icon={<Icon name="Filter" color="var(--xops-text-secondary)" />} ariaLabel="Filter" />
           </div>
           <Grid style={{ flex: 1, minHeight: 0, gridAutoRows: "1fr" }}>

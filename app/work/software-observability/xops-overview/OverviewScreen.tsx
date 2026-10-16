@@ -425,6 +425,21 @@ const licenseModelOptions: FilterTabOption[] = [
 // Lifecycle Stage tables
 // ---------------------------------------------------------------------------
 
+type SkuOwnerMap = Map<string, string>;
+
+// B.U Owner — resolved from the catalog's real `affinity` field (the department a
+// product's usage concentrates in), same as OverviewLegacy.
+const buildSkuOwner = (ds: ReturnType<typeof getDataset>): SkuOwnerMap => {
+  const map: SkuOwnerMap = new Map();
+  for (const entry of ds.catalog) {
+    const deptId = entry.affinity?.[0];
+    if (!deptId) continue;
+    const dept = ds.config.departments.find((d) => d.departmentId === deptId);
+    if (dept) map.set(entry.sku, dept.departmentName);
+  }
+  return map;
+};
+
 const makeInEvaluationColumns = (
   showLogos: boolean,
 ): Column<EvaluationSummary>[] => [
@@ -435,7 +450,8 @@ const makeInEvaluationColumns = (
     sortable: true,
     render: (row) => softwareCell(row.name, row.logo, showLogos),
   },
-  { key: "publisher", label: "Vendor", width: "auto", sortable: true },
+  { key: "publisher", label: "Publisher", width: "auto", sortable: true },
+  { key: "reseller", label: "Vendor", width: "auto", sortable: true },
   { key: "edition", label: "Version", width: "auto", sortable: true },
   {
     key: "licensesRequested",
@@ -447,7 +463,7 @@ const makeInEvaluationColumns = (
   },
   {
     key: "estimatedAnnualCost",
-    label: "Estimated Annual Cost",
+    label: "Est. Annual Cost",
     width: "auto",
     align: "right",
     sortable: true,
@@ -458,6 +474,7 @@ const makeInEvaluationColumns = (
 const makeRolloutColumns = (
   showLogos: boolean,
   showTags: boolean,
+  skuOwner: SkuOwnerMap,
 ): Column<ProductSummary>[] => [
   {
     key: "name",
@@ -466,11 +483,20 @@ const makeRolloutColumns = (
     sortable: true,
     render: (row) => softwareCell(row.name, row.logo, showLogos),
   },
-  { key: "publisher", label: "Vendor", width: "auto", sortable: true },
+  { key: "publisher", label: "Publisher", width: "auto", sortable: true },
+  { key: "reseller", label: "Vendor", width: "auto", sortable: true },
   { key: "edition", label: "Version", width: "auto", sortable: true },
+  { key: "category", label: "Category", width: "auto", sortable: true },
+  {
+    key: "owner",
+    label: "B.U Owner",
+    width: "auto",
+    sortable: true,
+    render: (row) => skuOwner.get(row.sku) ?? "—",
+  },
   {
     key: "annualCost",
-    label: "Total Cost",
+    label: "Total Spend",
     width: "auto",
     align: "right",
     sortable: true,
@@ -542,6 +568,7 @@ const makeOperationalColumns = (
   showLogos: boolean,
   showTags: boolean,
   showOpportunity: boolean,
+  skuOwner: SkuOwnerMap,
 ): Column<ProductSummary>[] => {
   const columns: Column<ProductSummary>[] = [
     {
@@ -551,8 +578,25 @@ const makeOperationalColumns = (
       sortable: true,
       render: (row) => softwareCell(row.name, row.logo, showLogos),
     },
-    { key: "publisher", label: "Vendor", width: "auto", sortable: true },
+    { key: "publisher", label: "Publisher", width: "auto", sortable: true },
+    { key: "reseller", label: "Vendor", width: "auto", sortable: true },
     { key: "edition", label: "Version", width: "auto", sortable: true },
+    { key: "category", label: "Category", width: "auto", sortable: true },
+    {
+      key: "owner",
+      label: "B.U Owner",
+      width: "auto",
+      sortable: true,
+      render: (row) => skuOwner.get(row.sku) ?? "—",
+    },
+    {
+      key: "totalSpend",
+      label: "Total Spend",
+      width: "auto",
+      align: "right",
+      sortable: true,
+      render: (row) => formatCurrency(row.totalSpend),
+    },
     {
       key: "purchased",
       label: "Licenses Purchased",
@@ -631,6 +675,7 @@ const makeRenewalColumns = (
   showLogos: boolean,
   showTags: boolean,
   showOpportunity: boolean,
+  skuOwner: SkuOwnerMap,
 ): Column<ProductSummary>[] => {
   const columns: Column<ProductSummary>[] = [
     {
@@ -640,8 +685,17 @@ const makeRenewalColumns = (
       sortable: true,
       render: (row) => softwareCell(row.name, row.logo, showLogos),
     },
-    { key: "publisher", label: "Vendor", width: "auto", sortable: true },
+    { key: "publisher", label: "Publisher", width: "auto", sortable: true },
+    { key: "reseller", label: "Vendor", width: "auto", sortable: true },
     { key: "edition", label: "Version", width: "auto", sortable: true },
+    { key: "category", label: "Category", width: "auto", sortable: true },
+    {
+      key: "owner",
+      label: "B.U Owner",
+      width: "auto",
+      sortable: true,
+      render: (row) => skuOwner.get(row.sku) ?? "—",
+    },
     {
       key: "contractExpirationDate",
       label: "Renewal Date",
@@ -657,6 +711,14 @@ const makeRenewalColumns = (
       align: "right",
       sortable: true,
       render: (row) => `${row.renewalDays} days`,
+    },
+    {
+      key: "totalSpend",
+      label: "Total Spend",
+      width: "auto",
+      align: "right",
+      sortable: true,
+      render: (row) => formatCurrency(row.totalSpend),
     },
     {
       key: "purchased",
@@ -733,6 +795,7 @@ export function OverviewScreen({
   forceInactiveTooltip,
   lockTableScroll = false,
   showSecondaryCards = true,
+  initialLifecycleStage = "in-evaluation",
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   embedded = false,
 }: {
@@ -763,6 +826,9 @@ export function OverviewScreen({
    *  Compliance cards below the Top Spend table (case study's cards-hidden
    *  Overview embed). On everywhere else. */
   showSecondaryCards?: boolean;
+  /** Lifecycle stage tab selected on first render (case study's Prototype 2
+   *  decisions embed opens on "renewal"). Defaults to "in-evaluation". */
+  initialLifecycleStage?: string;
 }) {
   const ds = useMemo(() => getDataset(), []);
 
@@ -778,17 +844,18 @@ export function OverviewScreen({
     () => makeInEvaluationColumns(showLogos),
     [showLogos],
   );
+  const skuOwner = useMemo(() => buildSkuOwner(ds), [ds]);
   const rolloutColumns = useMemo(
-    () => makeRolloutColumns(showLogos, showUtilizationTags),
-    [showLogos, showUtilizationTags],
+    () => makeRolloutColumns(showLogos, showUtilizationTags, skuOwner),
+    [showLogos, showUtilizationTags, skuOwner],
   );
   const operationalColumns = useMemo(
-    () => makeOperationalColumns(showLogos, showUtilizationTags, showOpportunity),
-    [showLogos, showUtilizationTags, showOpportunity],
+    () => makeOperationalColumns(showLogos, showUtilizationTags, showOpportunity, skuOwner),
+    [showLogos, showUtilizationTags, showOpportunity, skuOwner],
   );
   const renewalColumns = useMemo(
-    () => makeRenewalColumns(showLogos, showUtilizationTags, showOpportunity),
-    [showLogos, showUtilizationTags, showOpportunity],
+    () => makeRenewalColumns(showLogos, showUtilizationTags, showOpportunity, skuOwner),
+    [showLogos, showUtilizationTags, showOpportunity, skuOwner],
   );
   const nonCompliantColumns = useMemo(
     () => makeNonCompliantColumns(showLogos),
@@ -898,7 +965,7 @@ export function OverviewScreen({
     return () => observer.disconnect();
   }, []);
 
-  const [lifecycleStage, setLifecycleStage] = useState("in-evaluation");
+  const [lifecycleStage, setLifecycleStage] = useState(initialLifecycleStage);
   const [lifecycleSortKey, setLifecycleSortKey] = useState<string | undefined>(
     undefined,
   );
@@ -1148,7 +1215,7 @@ export function OverviewScreen({
                         hotspotId:
                           forceInactiveTooltip !== undefined
                             ? "inactivity-threshold-tooltip"
-                            : undefined,
+                            : "inactive-legend",
                       },
                       {
                         label: "Unassigned",

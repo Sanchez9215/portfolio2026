@@ -13,10 +13,33 @@
    boxes.
    ============================================================ */
 
+.root {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+}
+
+.questionRow {
+  display: flex;
+  justify-content: center;
+  gap: var(--spacing-4xl);
+  position: relative;
+  z-index: 1;
+}
+
+.question {
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: default;
+}
+
 .container {
   position: relative;
   width: 100%;
-  height: 100%;
+  flex: 1;
+  min-height: 0;
 }
 
 .overlay {
@@ -30,20 +53,14 @@
 
 .hubHitArea {
   fill: transparent;
-  stroke: var(--text-secondary);
-  stroke-width: 1;
+  stroke: none;
   cursor: grab;
   touch-action: none;
   pointer-events: auto;
-  transition: stroke 150ms ease-out;
 }
 
 .hubHitArea:active {
   cursor: grabbing;
-}
-
-.hubHitArea.active {
-  stroke: var(--text-primary-strong);
 }
 
 .hubLabel {
@@ -51,7 +68,7 @@
   font-weight: var(--font-weight-bold);
   font-size: var(--text-body-sm-size);
   line-height: var(--text-body-sm-lh);
-  fill: var(--text-subtle);
+  fill: var(--text-primary-strong);
   /* auto (not none): hovering/dragging the label itself, not just its
      dot's hit area, should also work. */
   pointer-events: auto;
@@ -79,11 +96,11 @@
 }
 
 .connector {
-  stroke: var(--text-secondary);
+  stroke: var(--text-primary-strong);
   stroke-width: 1;
   stroke-linecap: round;
   fill: none;
-  opacity: 0.5;
+  opacity: 1;
   transition: stroke 150ms ease-out, opacity 150ms ease-out;
 }
 
@@ -95,8 +112,7 @@
 }
 
 .arrowhead {
-  fill: var(--text-secondary);
-  opacity: 0.5;
+  fill: context-stroke;
 }
 
 /* Leaf-level (hub-to-leaf) — visually distinct from hub-to-hub .connector
@@ -104,7 +120,7 @@
    against a solid hub-to-hub relationship. No arrowhead (leaves aren't
    directional). */
 .leafDot {
-  fill: var(--text-subtle);
+  fill: var(--text-primary-strong);
   cursor: grab;
   touch-action: none;
   transition: fill 150ms ease-out;
@@ -127,7 +143,7 @@
   font-weight: var(--font-weight-regular);
   font-size: var(--text-body-xs-size);
   line-height: var(--text-body-xs-lh);
-  fill: var(--text-subtle);
+  fill: var(--text-primary-strong);
   /* auto (not none): hovering/dragging the label itself, not just its
      dot, should also work. */
   pointer-events: auto;
@@ -149,12 +165,12 @@
 }
 
 .leafSpoke {
-  stroke: var(--text-secondary);
+  stroke: var(--text-primary-strong);
   stroke-width: 0.5;
   stroke-dasharray: 4 4;
   stroke-linecap: round;
   fill: none;
-  opacity: 0.5;
+  opacity: 1;
   transition: stroke 150ms ease-out, opacity 150ms ease-out;
 }
 
@@ -173,4 +189,17 @@
 
 .connectorLabelBg {
   fill: var(--surface-base);
+}
+
+/* Question hover: hubs/leaves/connectors NOT answering the hovered
+   question dim to --color-grey-650 (#96A0B2); everything else stays at the
+   white baseline above. Declared last, element-qualified so it beats the
+   base rules without !important. */
+text.questionDim,
+circle.questionDim {
+  fill: var(--color-grey-650);
+}
+
+line.questionDim {
+  stroke: var(--color-grey-650);
 }

@@ -37,7 +37,7 @@ const RUNWAY =
 
 const LIFECYCLE_TIMELINE_LABEL = "Lifecycle Timeline";
 const LIFECYCLE_TIMELINE_BODY =
-  "A single source of truth for key events across an asset's operational life, giving teams visibility into...";
+  "A single source of truth for key events across an asset's operational life.";
 const WHO_DESCRIPTION =
   "...without needing to piece together data from disconnected systems.";
 
@@ -55,7 +55,12 @@ export default function LifecycleTimelineScene({
 
   useEffect(() => {
     const sceneEl = sceneRef.current;
-    const wordEls = [whatRef.current, whenRef.current, whyRef.current, whoRef.current];
+    const wordEls = [
+      whatRef.current,
+      whenRef.current,
+      whyRef.current,
+      whoRef.current,
+    ];
     const whoDescEl = whoDescRef.current;
     if (!sceneEl || wordEls.some((el) => !el) || !whoDescEl) return;
 
@@ -105,7 +110,10 @@ export default function LifecycleTimelineScene({
   }, []);
 
   return (
-    <div className={`${styles.scene}${className ? ` ${className}` : ""}`} ref={sceneRef}>
+    <div
+      className={`${styles.scene}${className ? ` ${className}` : ""}`}
+      ref={sceneRef}
+    >
       <div className={styles.stage}>
         <LabelBlock
           className={styles.textBlock}
@@ -113,7 +121,8 @@ export default function LifecycleTimelineScene({
           label={LIFECYCLE_TIMELINE_LABEL}
           body={LIFECYCLE_TIMELINE_BODY}
         />
-        <div className={styles.wordsWrapper}>
+        {/* Hidden for now (not removed) — refs/animation stay wired so it can be re-enabled */}
+        <div className={styles.wordsWrapper} style={{ display: "none" }}>
           <div className={styles.item}>
             <p className={styles.word} ref={whatRef}>
               What?

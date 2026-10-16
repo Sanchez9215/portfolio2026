@@ -125,7 +125,7 @@ export const inactiveTooltip: Omit<TooltipProps, "children" | "className"> = {
     "Assigned licenses that have recorded zero user activity within the last 90 days, making them primary targets for cost-saving reclamation.",
 };
 
-const inactiveLicensesMetricTooltip: Omit<TooltipProps, "children" | "className"> = {
+export const inactiveLicensesMetricTooltip: Omit<TooltipProps, "children" | "className"> = {
   title: "Inactive Licenses",
   description:
     "The count of this organizational unit's assigned licenses with zero user activity within the last 90 days.",

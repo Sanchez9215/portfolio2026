@@ -271,6 +271,13 @@ export function vendorContactForSku(
   };
 }
 
+// Reseller for a request that has no contract/procurement record yet (In Evaluation rows
+// carry no supplier). Derived from the SKU on its own hash — never the shared rng — so the
+// rest of the seeded dataset doesn't shift. Same product → same reseller every run.
+export function resellerForSku(sku: string): string {
+  return RESELLERS[hashString(sku + "|reseller") % RESELLERS.length];
+}
+
 // Assignment reach as a fraction of the relevant population (affinity depts if set, else org).
 const REACH: Record<ProductCatalogEntry["adoption"], [number, number]> = {
   universal: [0.8, 0.98],

@@ -75,6 +75,48 @@
   text-transform: uppercase;
 }
 
+/* variant="compact" — Figma node 1:63: quote group (36x24 mark + 24px quote) in a
+   530px column with the 24px uppercase Clash emphasis stacked below it, 16px
+   between each, 32px block padding. Descendant selectors out-specify the single-
+   class base rules above. */
+.compact {
+  padding-block: var(--spacing-xl);
+}
+
+.compact .quoteRow {
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.compact .quoteContent {
+  flex: none;
+  width: 530px;
+  max-width: 100%;
+  gap: var(--spacing-md);
+}
+
+.compact .quoteMark {
+  width: 36px;
+  height: 24px;
+}
+
+.compact .bodyDisplay {
+  font-size: var(--text-body-xl-size);
+  line-height: var(--text-body-xl-lh);
+  letter-spacing: var(--text-body-xl-ls);
+}
+
+.compact .quoteEmphasis {
+  flex: none;
+  padding-top: 0;
+}
+
+.compact .displayLg {
+  font-size: var(--text-label-xl-size);
+  line-height: var(--text-label-xl-lh);
+  letter-spacing: var(--text-label-xl-ls);
+}
+
 @media (max-width: 393px) {
   .quoteRow {
     flex-direction: column;

@@ -2,21 +2,26 @@ import dynamic from "next/dynamic";
 import LazyMount from "@/components/LazyMount";
 import Section from "@/components/Section";
 import LabelBlock from "@/components/LabelBlock";
+import Tooltip from "@/components/Tooltip";
 import Block from "@/components/Block";
 import Card from "@/components/Card";
 import SectionIntroductionEntry from "@/components/case-studies/software-observability/SectionIntroductionEntry";
-import ContextBlock from "@/components/ContextBlock";
-import TheProblemPinnedScene from "@/components/case-studies/software-observability/TheProblemPinnedScene";
+// import ContextBlock from "@/components/ContextBlock"; — unused while section.research / stakeholders are hidden
+// import TheProblemPinnedScene from "@/components/case-studies/software-observability/TheProblemPinnedScene"; — section.the-problem removed
 import QuoteBlock from "@/components/QuoteBlock";
+import MetricCard from "@/components/MetricCard";
+import Label from "@/components/Label";
+import Title from "@/components/Title";
+import SystemMapQuestionRow from "@/components/case-studies/software-observability/SystemMapQuestionRow";
 // import ContentHub from "@/components/ContentHub"; — hidden, see section.data
 import ImgCard from "@/components/ImgCard";
 // import GapsIdentifiedHexScene from "@/components/case-studies/software-observability/GapsIdentifiedHexScene"; — hidden, see section.gaps-identified (reverted to original LabelBlock version)
-import SoftwareProfileIssuesHotspots from "@/components/case-studies/software-observability/SoftwareProfileIssuesHotspots";
+// import SoftwareProfileIssuesHotspots from "@/components/case-studies/software-observability/SoftwareProfileIssuesHotspots"; — replaced by SoftwareProfileIssuesMap in section.profile-issue-annotations
 import InsightsGoalsContent from "@/components/case-studies/software-observability/InsightsGoalsContent";
-import StakeholdersIntro from "@/components/case-studies/software-observability/StakeholdersIntro";
-import StakeholdersCards from "@/components/case-studies/software-observability/StakeholdersCards";
-import BuildingBlocksIntro from "@/components/case-studies/software-observability/BuildingBlocksIntro";
-import BuildingBlocksMap from "@/components/case-studies/software-observability/BuildingBlocksMap";
+// import StakeholdersIntro from "@/components/case-studies/software-observability/StakeholdersIntro"; — unused while section.research / stakeholders are hidden
+// import StakeholdersCards from "@/components/case-studies/software-observability/StakeholdersCards"; — unused while section.research / stakeholders are hidden
+// import BuildingBlocksIntro from "@/components/case-studies/software-observability/BuildingBlocksIntro"; — unused while section.building-blocks-intro is hidden
+// import BuildingBlocksMap from "@/components/case-studies/software-observability/BuildingBlocksMap"; — unused while section.building-blocks-map is hidden
 import CardRow from "@/components/CardRow";
 import CardColumn from "@/components/CardColumn";
 import SectionImg from "@/components/SectionImg";
@@ -29,7 +34,8 @@ import FrameworkScene from "@/components/case-studies/software-observability/Fra
 import DataScrollController from "@/components/case-studies/software-observability/DataScrollController";
 // import DataIntroText from "@/components/case-studies/software-observability/DataIntroText"; — hidden, see section.data
 import LifecycleTimelineScene from "@/components/case-studies/software-observability/LifecycleTimelineScene";
-import InactiveLicenseDistributionHotspots from "@/components/case-studies/software-observability/InactiveLicenseDistributionHotspots";
+// import InactiveLicenseDistributionHotspots from "@/components/case-studies/software-observability/InactiveLicenseDistributionHotspots"; — replaced by InactiveLicenseDistributionMap in section.distribution-overview
+import InactiveLicenseDistributionMap from "@/components/case-studies/software-observability/InactiveLicenseDistributionMap";
 import GeneratingEventsContent from "@/components/case-studies/software-observability/GeneratingEventsContent";
 import ToolTipsImages from "@/components/case-studies/software-observability/ToolTipsImages";
 import styles from "./software-observability.module.css";
@@ -46,33 +52,62 @@ import styles from "./software-observability.module.css";
 // milestone state). OverviewPrototype2Hotspots.tsx is left unreferenced/kept
 // for reference — its own "Decision" hotspot data was migrated into
 // OverviewPrototypeHotspots.tsx's DECISION_ANNOTATION_HOTSPOTS instead.
-const OverviewPrototypeSection = dynamic(
+// TEMP: hidden — restore with the section.prototype-validation block below.
+// const OverviewPrototypeSection = dynamic(
+//   () =>
+//     import("@/components/case-studies/software-observability/OverviewPrototypeSection"),
+// );
+const OverviewPrototype1QuestionsMap = dynamic(
   () =>
-    import("@/components/case-studies/software-observability/OverviewPrototypeSection"),
+    import("@/components/case-studies/software-observability/OverviewPrototype1QuestionsMap"),
 );
-const AllSoftwarePrototype1Section = dynamic(
+const OverviewPrototype1LearningsMap = dynamic(
   () =>
-    import("@/components/case-studies/software-observability/AllSoftwarePrototype1Section"),
+    import("@/components/case-studies/software-observability/OverviewPrototype1LearningsMap"),
 );
-const AllSoftwareDirectionIssuesHotspots = dynamic(
+const OverviewPrototype2DecisionsMap = dynamic(
   () =>
-    import("@/components/case-studies/software-observability/AllSoftwareDirectionIssuesHotspots"),
+    import("@/components/case-studies/software-observability/OverviewPrototype2DecisionsMap"),
+);
+// const AllSoftwarePrototype1Map = dynamic(
+//   () =>
+//     import("@/components/case-studies/software-observability/AllSoftwarePrototype1Map"),
+// ); — unused while section.all-software-prototype-1 is hidden
+const SoftwareProfileIssuesMap = dynamic(
+  () =>
+    import("@/components/case-studies/software-observability/SoftwareProfileIssuesMap"),
+);
+const AllSoftwareIssuesMap = dynamic(
+  () =>
+    import("@/components/case-studies/software-observability/AllSoftwareIssuesMap"),
 );
 const AllSoftwareExperienceIssuesHotspots = dynamic(
   () =>
     import("@/components/case-studies/software-observability/AllSoftwareExperienceIssuesHotspots"),
 );
-const SoftwareProfileLegacyHotspots = dynamic(
+// const SoftwareProfileLegacyHotspots = dynamic(
+//   () =>
+//     import("@/components/case-studies/software-observability/SoftwareProfileLegacyHotspots"),
+// ); — replaced by SoftwareProfilePrototype1Map in section.profile-prototype-1
+const SoftwareProfilePrototype1Map = dynamic(
   () =>
-    import("@/components/case-studies/software-observability/SoftwareProfileLegacyHotspots"),
+    import("@/components/case-studies/software-observability/SoftwareProfilePrototype1Map"),
 );
-const SoftwareProfileFinalHotspots = dynamic(
+// const SoftwareProfileFinalHotspots = dynamic(
+//   () =>
+//     import("@/components/case-studies/software-observability/SoftwareProfileFinalHotspots"),
+// ); — replaced by SoftwareProfileFinalMap in section.profile-final-design
+const SoftwareProfileFinalMap = dynamic(
   () =>
-    import("@/components/case-studies/software-observability/SoftwareProfileFinalHotspots"),
+    import("@/components/case-studies/software-observability/SoftwareProfileFinalMap"),
 );
-const LifecycleTimelineHotspots = dynamic(
+// const LifecycleTimelineHotspots = dynamic(
+//   () =>
+//     import("@/components/case-studies/software-observability/LifecycleTimelineHotspots"),
+// ); — replaced by LifecycleTimelinePrototypeMap in section.final-lifecycle-timeline
+const LifecycleTimelinePrototypeMap = dynamic(
   () =>
-    import("@/components/case-studies/software-observability/LifecycleTimelineHotspots"),
+    import("@/components/case-studies/software-observability/LifecycleTimelinePrototypeMap"),
 );
 const LegacyExperienceEmbed = dynamic(
   () =>
@@ -86,9 +121,13 @@ const OverviewSpendLifecycleEmbed = dynamic(
   () =>
     import("@/components/case-studies/software-observability/OverviewSpendLifecycleEmbed"),
 );
-const RowAnatomyHotspots = dynamic(
+// const RowAnatomyHotspots = dynamic(
+//   () =>
+//     import("@/components/case-studies/software-observability/RowAnatomyHotspots"),
+// ); — replaced by RowAnatomyMap in section.table-anatomy
+const RowAnatomyMap = dynamic(
   () =>
-    import("@/components/case-studies/software-observability/RowAnatomyHotspots"),
+    import("@/components/case-studies/software-observability/RowAnatomyMap"),
 );
 
 export default function SoftwareObservabilityPage() {
@@ -98,61 +137,223 @@ export default function SoftwareObservabilityPage() {
       <main style={{ paddingTop: "var(--nav-height)" }}>
         <SectionIntroductionEntry />
 
-        <Section>
+        <Section className={styles.brief}>
           <LabelBlock
-            className={styles.briefTextBlock}
             size="display"
-            label="Brief"
-            body="When a startup is at full velocity, high-priority initiatives don't always begin with a formal spec."
-            support="They come from white-boarding sessions, hallway conversations, an after-hours slack ping."
+            label="Context"
+            body={
+              <>
+                When a startup is at full velocity,
+                <br />
+                everything is urgent.
+              </>
+            }
+          />
+          <Block size="2xl">
+            High-priority initiatives fall through the cracks.
+          </Block>
+        </Section>
+
+        {/* ── section.execution-risk ── */}
+        <Section className={styles.executionRisk}>
+          <LabelBlock
+            size="display"
+            label="An Execution Risk"
+            body="Software Observability lived through word-of-mouth, with no roadmap placement and zero momentum."
+          />
+          <Block size="2xl">
+            I took the initiative to drive it forward between projects.
+          </Block>
+        </Section>
+
+        {/* ── section.business-opportunity ── */}
+        <Section className={styles.businessOpportunity}>
+          <LabelBlock
+            size="display"
+            label="The Business Opportunity"
+            body="Software telemetry would unlock a new revenue line in Software Spend Governance and Optimization."
+          />
+          <Block size="2xl">
+            While scaling XOPS’ provisioning beyond device hardware to complete
+            the employee stack.
+          </Block>
+        </Section>
+
+        {/* ── section.the-opportunity ── */}
+        <Section className={styles.theOpportunity}>
+          <div className={styles.theOpportunityLeft}>
+            <div className={styles.theOpportunityText}>
+              <LabelBlock
+                size="display"
+                label="The Opportunity"
+                animate={false}
+                body="Enterprise software data is spread across disconnected systems."
+              />
+              <Block size="2xl">
+                Lack of a shared view leads IT &amp; Finance teams to waste
+                millions on unused licenses and compliance fines.
+              </Block>
+            </div>
+            <QuoteBlock
+              quote="Making aligned, confident decisions on spend, compliance and allocation..."
+              emphasis="nearly impossible."
+              variant="compact"
+            />
+          </div>
+          <div className={styles.theOpportunityMetrics}>
+            <MetricCard
+              className={styles.theOpportunityMetric}
+              value="50%"
+              label="Of all software licenses go unused or underutilized."
+            />
+            <MetricCard
+              className={styles.theOpportunityMetric}
+              value="$45M"
+              label="Average company cost in wasted spend."
+            />
+            <MetricCard
+              className={styles.theOpportunityMetric}
+              value="#"
+              label="Non Compliance Metric"
+            />
+          </div>
+        </Section>
+
+        {/* ── section.birds-eye-goal ── */}
+        <Section className={styles.birdsEyeGoal}>
+          <LabelBlock
+            size="display"
+            label="Birds Eye Goal"
+            body="At a high level, the objective was clear."
+          />
+          <Block size="2xl">
+            Identify unused licenses. Reclaim them for employees who will
+            actually use them. Understand how many are needed in time to
+            negotiate contracts or avoid penalties.
+          </Block>
+        </Section>
+
+        {/* ── section.working-backwards ── */}
+        <Section className={styles.workingBackwards}>
+          <LabelBlock size="display" label="Working Backwards" />
+          <Block size="2xl">
+            What must we know to guarantee
+            <br />
+            zero waste, total compliance, and
+            <br />
+            optimized spend?
+          </Block>
+          <Label size="xl">The Fundamental questions</Label>
+          <div>
+            <Label size="xl" color="secondary">What do we own?</Label>
+            <Label size="xl" color="secondary">What does it cost?</Label>
+            <Label size="xl" color="secondary">How is it used?</Label>
+            <Label size="xl" color="secondary">Are we compliant?</Label>
+          </div>
+        </Section>
+
+        {/* ── section.navigating-ambiguity ── */}
+        <Section className={styles.navigatingAmbiguity}>
+          <Block size="2xl">
+            What did I know about
+            <br />
+            software asset management?
+          </Block>
+          <p>0%</p>
+          <LabelBlock
+            size="display"
+            label="Navigating Ambiguity"
+            body="Using the questions as guidelines, I used Claude and Chat GPT to ramp up on the problem space."
           />
         </Section>
 
-        <Section className={styles.theProblem}>
-          <TheProblemPinnedScene className={styles.theProblemPinnedScene} />
+        {/* ── section.system-map ── */}
+        <Section className={styles.systemMap}>
+          <LabelBlock
+            size="display"
+            label="Building A Mental Map"
+            body="I approached the problem by getting familiar with concepts and terminology."
+          />
+          <Block size="2xl">
+            What do I need to understand to answer these questions?
+          </Block>
+          <SystemMapQuestionRow />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/images/software-observability/system-map.png"
+            alt="System map: the concepts and terminology behind the four fundamental questions"
+          />
         </Section>
 
-        <Section className={styles.research}>
-          <ContextBlock side="left" className={styles.researchContextBlock}>
-            <Block size="lg">
-              What did I know about software asset management?
-            </Block>
-            <p className={styles.researchContextStat}>0%</p>
-          </ContextBlock>
-          <div className={styles.researchContent}>
-            <LabelBlock
-              size="display"
-              label="Research"
-              body="Before setting time with experts who had dealt with these pain points, I used Claude and ChatGPT to ramp up on the problem space."
-            />
+        {/* ── section.our-target ── */}
+        <Section className={styles.ourTarget}>
+          <LabelBlock
+            size="display"
+            label="Our Target"
+            body="Whose struggles to answer these questions on the daily?"
+          />
+          <Block size="2xl">
+            3 roles at the core of the software
+            <br />
+            asset management ecosystem.
+          </Block>
+          <div>
+            <div>
+              <Title size="lg">Software Asset Manager (SAM)</Title>
+              <Block size="xl">
+                Responsible for inventory, vendor compliance, and license
+                optimization, and defending the organization during vendor
+                audits.
+              </Block>
+            </div>
+            <div>
+              <Title size="lg">Financial Specialist</Title>
+              <Block size="xl">
+                Controls spend and budgets across departments and cost centers,
+                pushes to ensure max return on investments.
+              </Block>
+            </div>
+            <div>
+              <Title size="lg">IT Operations Manager</Title>
+              <Block size="xl">
+                Deploys, maintains, and retires software, while providing the
+                data SAM and Finance depend on.
+              </Block>
+            </div>
           </div>
+        </Section>
+
+        {/* ── section.role-lens ── */}
+        {/* Figma node 1:150. The label ("{Title}" in Figma) is still a
+            placeholder there — omitted until a title is supplied. */}
+        <Section className={styles.roleLens}>
+          <LabelBlock
+            size="display"
+            body="Building a unified and actionable solution meant understanding the core questions through each role's distinct lens."
+          />
+          <Block size="2xl">
+            I collected questions for each role across the 4 categories and set
+            up a kick off call. The goal was to work closely with experts and
+            filter out the critical ones that would define our MVP.
+          </Block>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/images/software-observability/lens%20research.png"
+            alt="Questions collected for each role across the four categories: what do we own, how is it used, what does it cost, are we compliant"
+          />
         </Section>
 
         <Section className={styles.insightsGoals}>
           <InsightsGoalsContent />
         </Section>
 
-        <Section className={styles.stakeholdersIntro}>
-          <StakeholdersIntro />
-        </Section>
-
-        <Section className={styles.stakeholdersCards}>
-          <StakeholdersCards />
-        </Section>
-
-        <Section className={styles.buildingBlocksIntro}>
-          <BuildingBlocksIntro />
-        </Section>
-
-        <Section className={styles.buildingBlocksMap}>
-          <BuildingBlocksMap />
-        </Section>
-
-        <Section className={styles.dataDictionary}>
-          <DataDictionaryScene className={styles.dataDictionaryScene} />
-          {/* <DataGlossaryTable /> — hidden while the pinned scene above
-              (scaffold build → real data-dictionary table) is being built;
-              see PLAN.md beat 12 / progress.md. */}
+        {/* ── section.success ── */}
+        <Section className={styles.success}>
+          <LabelBlock
+            size="display"
+            label="What does success look like?"
+            body="Stakeholders can identify unused software, what it’s costing them and where inactive licenses are concentrated to prioritize reclamation."
+          />
         </Section>
 
         {/* data-framework-observability-wrap marks this wrap for
@@ -189,7 +390,7 @@ export default function SoftwareObservabilityPage() {
                 className={styles.frameworkAdaptationTextBlock}
                 size="display"
                 label="Framework Adaptation"
-                body="To integrating software into the platform I mapped it to XOPS’ observability framework."
+                body="To incorporate software into the platform I mapped it to XOPS’ observability framework."
               />
             </div>
             <FrameworkAdaptationEyes
@@ -230,6 +431,89 @@ export default function SoftwareObservabilityPage() {
 
         <Section className={styles.framework}>
           <FrameworkScene className={styles.frameworkScene} />
+        </Section>
+
+        {/* ── section.starting-design ── */}
+        <Section className={styles.startingDesign}>
+          <LabelBlock
+            size="display"
+            label="Starting Design"
+            body={
+              <>
+                I kicked off with the Software Overview.
+                <br />
+                The modules entry point.
+              </>
+            }
+          />
+        </Section>
+
+        {/* ── section.data-limitations ── */}
+        <Section className={styles.dataLimitations}>
+          <LabelBlock
+            size="display"
+            label="Data Limitations"
+            body="Due to higher priorities, our Data Ops team had not started integration work for software."
+          />
+          <Block size="2xl">
+            I was in the dark in terms of the data we could count on. I reached
+            out to our director of engineering for insight on what integrations
+            would power this solution.
+          </Block>
+          <Block size="lg">
+            SAP Ariba Microsoft Entra Flexera Okta (Publisher Portals-Microsoft)
+          </Block>
+        </Section>
+
+        {/* ── section.the-problem ── removed (animated pinned scene)
+        <Section className={styles.theProblem}>
+          <TheProblemPinnedScene className={styles.theProblemPinnedScene} />
+        </Section>
+        */}
+
+        {/* ── section.research / section.stakeholders-intro / section.stakeholders-cards ── hidden
+        <Section className={styles.research}>
+          <ContextBlock side="left" className={styles.researchContextBlock}>
+            <Block size="lg">
+              What did I know about software asset management?
+            </Block>
+            <p className={styles.researchContextStat}>0%</p>
+          </ContextBlock>
+          <div className={styles.researchContent}>
+            <LabelBlock
+              size="display"
+              label="Research"
+              body="Before setting time with experts who had dealt with these pain points, I used Claude and ChatGPT to ramp up on the problem space."
+            />
+          </div>
+        </Section>
+
+        <Section className={styles.stakeholdersIntro}>
+          <StakeholdersIntro />
+        </Section>
+
+        <Section className={styles.stakeholdersCards}>
+          <StakeholdersCards />
+        </Section>
+        */}
+
+        {/* ── section.building-blocks-intro ── hidden
+        <Section className={styles.buildingBlocksIntro}>
+          <BuildingBlocksIntro />
+        </Section>
+        */}
+
+        {/* ── section.building-blocks-map ── hidden
+        <Section className={styles.buildingBlocksMap}>
+          <BuildingBlocksMap />
+        </Section>
+        */}
+
+        <Section className={styles.dataDictionary}>
+          <DataDictionaryScene className={styles.dataDictionaryScene} />
+          {/* <DataGlossaryTable /> — hidden while the pinned scene above
+              (scaffold build → real data-dictionary table) is being built;
+              see PLAN.md beat 12 / progress.md. */}
         </Section>
 
         {/* section.data (old ContentHub-based hub-and-spoke version) hidden
@@ -386,23 +670,95 @@ export default function SoftwareObservabilityPage() {
           </Section>
         </DataScrollController> */}
 
+        {/* ── section.overview-prototype-1 ── */}
+        <Section className={styles.overviewPrototype1}>
+          <LabelBlock
+            className={styles.overviewPrototype1TextBlock}
+            size="display"
+            label="Overview Prototype 1"
+            body="Product intent: provide stakeholders with high-level portfolio health check that answered their most critical questions."
+          />
+          <Block size="md" className={styles.overviewPrototype1DetailBlock}>
+            I built this first concept to test my core assumptions, get answers
+            to open questions, and give the team something tangible to align on.
+          </Block>
+        </Section>
+
+        {/* ── section.overview-prototype-1-questions ── */}
+        <Section className={styles.overviewPrototype1Questions}>
+          <LazyMount>
+            <OverviewPrototype1QuestionsMap />
+          </LazyMount>
+        </Section>
+
+        {/* ── section.overview-prototype-1-limitations ── */}
+        <Section className={styles.overviewPrototype1Limitations}>
+          <LabelBlock
+            className={styles.overviewPrototype1LimitationsTextBlock}
+            size="display"
+            label="Learnings"
+            body="Reviewing this first concept tested my initial assumptions and surfaced data limitations that narrowed scope, setting the foundation for the rest of the software experience."
+          />
+        </Section>
+
+        {/* ── section.overview-prototype-1-learnings ── */}
+        <Section className={styles.overviewPrototype1Learnings}>
+          <LazyMount>
+            <OverviewPrototype1LearningsMap />
+          </LazyMount>
+        </Section>
+
+        {/* ── section.overview-prototype-2-intro ── */}
+        <Section className={styles.overviewPrototype2Intro}>
+          <LabelBlock
+            className={styles.overviewPrototype2IntroTextBlock}
+            size="display"
+            label="Overview Prototype 2"
+            body={
+              <>
+                The learnings from prototype 1 led me to design decisions that
+                answered our{" "}
+                <Tooltip
+                  className={styles.overviewPrototype2IntroQuestions}
+                  content={
+                    <>
+                      What do we own?
+                      <br />
+                      What does it cost?
+                      <br />
+                      How is it being used?
+                      <br />
+                      Are we compliant?
+                    </>
+                  }
+                >
+                  core questions
+                </Tooltip>{" "}
+                in a more specific and actionable way.
+              </>
+            }
+          />
+        </Section>
+
+        {/* ── section.overview-prototype-2-decisions ── */}
+        <Section className={styles.overviewPrototype2Decisions}>
+          <LazyMount>
+            <OverviewPrototype2DecisionsMap />
+          </LazyMount>
+        </Section>
+
         {/* ── section.prototype-validation ── */}
-        {/* Card player walks Intent → Insights → Prototype 02 switch →
+        {/* TEMP: hidden — restore by uncommenting the Section below.
+            Card player walks Intent → Insights → Prototype 02 switch →
             Decisions in one sequence; Timeline sidebar (right column) tracks
             the phase. See OverviewPrototypeSection. Previously a separate
             section.overview-prototypes below this one. */}
-        <Section className={styles.prototypeValidation}>
-          <LabelBlock
-            className={styles.prototypeValidationTextBlock}
-            size="display"
-            label="Validating Understanding"
-            body="Using the outputs as building blocks, I created a prototype to identitfy knowledge gaps & focus direction through sessions with leadership and subject matter experts."
-          />
+        {/* <Section className={styles.prototypeValidation}>
           <OverviewPrototypeSection />
-        </Section>
+        </Section> */}
 
-        {/* ── section.gaps-identified ── */}
-        <Section className={styles.gapsIdentified}>
+        {/* ── section.gaps-identified ── hidden */}
+        {/* <Section className={styles.gapsIdentified}>
           <div className={styles.gapsIdentifiedWrapper}>
             <LabelBlock
               className={styles.gapsIdentifiedTextBlock}
@@ -410,43 +766,41 @@ export default function SoftwareObservabilityPage() {
               body="With gaps identified and alignment forming, I had the confidence to start design work for the rest of the software experience."
               support=""
             />
-            {/* <Block size="lg" className={styles.gapsIdentifiedDetailBlock}>
-              As I finalized the Overview page designs, I kicked off designs for
-              the All Software view and Software Profiles.
-            </Block> */}
           </div>
-        </Section>
+        </Section> */}
 
         <Section className={styles.allSoftwareView}>
           <LabelBlock
             className={styles.allSoftwareViewTextBlock}
             size="display"
             label="All Software View"
-            body="The design would be consistent with the structure established across all asset views, a complete, filterable catalog. The challenge was defining the right row-level attributes so teams could find what they needed fast."
+            body="The design would be consistent with the structure established across all asset views: a complete, filterable catalog of everything owned."
           />
           <Block size="lg" className={styles.allSoftwareViewDetailBlock}>
             This would enable teams to isolate exactly the subset of titles they
-            need to act on.
+            needed to act on.
           </Block>
         </Section>
 
-        {/* <Section className={styles.coreAttributeIntent}>
+        {/* ── section.core-attribute-intent ── hidden
+        <Section className={styles.coreAttributeIntent}>
           <LabelBlock
             className={styles.coreAttributeIntentTextBlock}
             size="display"
             label="Core Attribute Intent"
-            body="The challenge was defining the right row-level attributes and data points,"
-            support="so teams could find what they needed fast without friction."
+            body="The challenge was defining the core row-level attributes and data points,
+            that would lead stakholders to action. This is where reclaiming would take place."
           />
-        </Section> */}
-
-        {/* ── section.all-software-prototype-1 ── */}
-        {/* Card player + Timeline sidebar, same pattern as
-            section.prototype-validation above — see
-            AllSoftwarePrototype1Section.tsx (own internal LazyMount). */}
-        <Section className={styles.allSoftwarePrototype1}>
-          <AllSoftwarePrototype1Section />
         </Section>
+        */}
+
+        {/* ── section.all-software-prototype-1 ── hidden
+        <Section className={styles.allSoftwarePrototype1}>
+          <LazyMount>
+            <AllSoftwarePrototype1Map />
+          </LazyMount>
+        </Section>
+        */}
 
         <Section className={styles.softwareProfile}>
           <LabelBlock
@@ -484,16 +838,13 @@ export default function SoftwareObservabilityPage() {
             Static Assumption/Finding cards + image replaced by the live hotspot
             experience — see SoftwareProfileLegacyHotspots.tsx. */}
         <Section className={styles.profilePrototype1}>
-          <div className={styles.profilePrototype1Quote}>
-            <Block size="lg" className={styles.softwareProfileQuoteDetailBlock}>
-              I designed the landing view to immediately answer the two most
-              critical questions:
-            </Block>
-            <QuoteBlock quote="What is this software costing us? Is it actually being used?" />
-          </div>
-          <div className={styles.profilePrototype1Embed}>
-            <SoftwareProfileLegacyHotspots />
-          </div>
+          {/* Quote column hidden — landing-view intro + QuoteBlock:
+              "I designed the landing view to immediately answer the two most
+              critical questions:" / "What is this software costing us? Is it
+              actually being used?" */}
+          <LazyMount>
+            <SoftwareProfilePrototype1Map />
+          </LazyMount>
         </Section>
 
         <Section className={styles.lifecycleTimeline}>
@@ -508,9 +859,15 @@ export default function SoftwareObservabilityPage() {
         {/* Static before/after CardColumns + image replaced by the live hotspot
             experience — see LifecycleTimelineHotspots.tsx. */}
         <Section className={styles.finalLifecycleTimeline}>
+          <LabelBlock
+            className={styles.finalLifecycleTimelineTextBlock}
+            size="display"
+            label="Lifecycle Timeline Prototype 01"
+            body="Lorem ipsum dolor sit amet, consectetur adipiscing elit sed do eiusmod."
+          />
           <div className={styles.finalLifecycleTimelineEmbed}>
             <LazyMount>
-              <LifecycleTimelineHotspots />
+              <LifecycleTimelinePrototypeMap />
             </LazyMount>
           </div>
         </Section>
@@ -523,10 +880,6 @@ export default function SoftwareObservabilityPage() {
                 label="Unifying Systems"
                 body="Connecting software data to employee, device, and financial records was central to delivering on XOPS' core promise."
               />
-              <Block size="lg" className={styles.unifyingSystemsDetailBlock}>
-                Using the same parallel prototyping approach as the Overview, I
-                generated directional variations.
-              </Block>
             </div>
             <div className={styles.unifyingSystemsScroll} data-scroll-body>
               <div className={styles.unifyingSystemsCard}>
@@ -684,35 +1037,13 @@ export default function SoftwareObservabilityPage() {
           />
         </Section>
 
-        {/* ── section.direction-issue-annotations ── */}
-        {/* Static Assumption cards + image hidden while the hotspot annotation
-            system is applied here — see AllSoftwareDirectionIssuesHotspots.tsx. */}
-        <Section className={styles.directionIssueAnnotations}>
-          <div className={styles.directionIssueAnnotationsEmbed}>
-            <LazyMount>
-              <AllSoftwareDirectionIssuesHotspots />
-            </LazyMount>
-          </div>
+        {/* ── section.all-software-issues-embed ── */}
+        <Section className={styles.allSoftwareIssuesEmbed}>
+          <LazyMount>
+            <AllSoftwareIssuesMap />
+          </LazyMount>
         </Section>
 
-        <Section className={styles.allSoftwareExperienceIssues}>
-          <LabelBlock
-            size="display"
-            label="Not Ready for Scale"
-            body="While solving for All Software, I captured issues with our current table experience that would compound as we introduced more lifecycle data to the platform."
-          />
-        </Section>
-
-        {/* ── section.experience-issue-annotations ── */}
-        {/* Static Assumption cards + image hidden while the hotspot annotation
-            system is applied here — see AllSoftwareExperienceIssuesHotspots.tsx. */}
-        <Section className={styles.experienceIssueAnnotations}>
-          <div className={styles.experienceIssueAnnotationsEmbed}>
-            <LazyMount>
-              <AllSoftwareExperienceIssuesHotspots />
-            </LazyMount>
-          </div>
-        </Section>
 
         {/* ── section.all-software-final ── */}
         <Section className={styles.allSoftwareFinal}>
@@ -743,7 +1074,7 @@ export default function SoftwareObservabilityPage() {
           />
           <div className={styles.tableAnatomyEmbed}>
             <LazyMount>
-              <RowAnatomyHotspots />
+              <RowAnatomyMap />
             </LazyMount>
           </div>
         </Section>
@@ -783,51 +1114,6 @@ export default function SoftwareObservabilityPage() {
 
         {/* ── section.refinement-annotations ── */}
 
-        {/* ── section.custimizable-columns ── */}
-        <Section className={styles.custimizableColumns}>
-          <LabelBlock
-            size="display"
-            label="Customizable Columns"
-            body="Column controls let users tailor their view so they only see the information that matters to them."
-          />
-        </Section>
-
-        {/* ── section.custimizable-columns-final ── */}
-        <Section className={styles.custimizableColumnsFinal}>
-          <ImgCard caption="Custom Columns">
-            <img
-              src="/images/software-observability/custom-columns-final.jpg"
-              alt="Customizable Columns Final Design"
-            />
-          </ImgCard>
-        </Section>
-
-        {/* ── section.Drag-and-Drop-Reordering ── */}
-        <Section className={styles.dragAndDropReordering}>
-          <LabelBlock
-            size="display"
-            label="Drag-and-Drop Reordering"
-            body="Users can arrange information in the order that best fits their workflow,"
-            support="giving them faster access to the attributes they rely on most."
-          />
-        </Section>
-
-        {/* ── section.Drag-and-Drop-final ── */}
-        <Section className={styles.dragAndDropFinal}>
-          <ImgCard
-            layout="column"
-            images={[
-              {
-                src: "/images/software-observability/grab-column.jpg",
-                caption: "Grab Column",
-              },
-              {
-                src: "/images/software-observability/drop-column.jpg",
-                caption: "Drop Column",
-              },
-            ]}
-          />
-        </Section>
 
         {/* ── section.software-profile-issues ── */}
         <Section className={styles.softwareProfileIssues}>
@@ -844,7 +1130,7 @@ export default function SoftwareObservabilityPage() {
         <Section className={styles.profileIssueAnnotations}>
           <div className={styles.profileIssueAnnotationsEmbed}>
             <LazyMount>
-              <SoftwareProfileIssuesHotspots />
+              <SoftwareProfileIssuesMap />
             </LazyMount>
           </div>
         </Section>
@@ -864,7 +1150,7 @@ export default function SoftwareObservabilityPage() {
         <Section className={styles.profileFinalDesign}>
           <div className={styles.profileFinalDesignEmbed}>
             <LazyMount>
-              <SoftwareProfileFinalHotspots />
+              <SoftwareProfileFinalMap />
             </LazyMount>
           </div>
         </Section>
@@ -952,11 +1238,7 @@ export default function SoftwareObservabilityPage() {
             .inactive-by-costCenter) replaced by the live hotspot experience —
             see InactiveLicenseDistributionHotspots.tsx. */}
         <Section className={styles.inactiveLicenseDistributionEmbed}>
-          <div className={styles.inactiveLicenseDistributionEmbedInner}>
-            <LazyMount>
-              <InactiveLicenseDistributionHotspots />
-            </LazyMount>
-          </div>
+          <InactiveLicenseDistributionMap />
         </Section>
 
         {/* ── section.overview-revisit ── */}
@@ -975,7 +1257,7 @@ export default function SoftwareObservabilityPage() {
 
         {/* ── section.overview-final ── */}
         <Section className={styles.overviewFinal}>
-          <ImgCard caption="Final Overview Page" height="100vh">
+          <ImgCard caption="Final Overview Page">
             <LazyMount>
               <OverviewSpendLifecycleEmbed />
             </LazyMount>
@@ -984,7 +1266,10 @@ export default function SoftwareObservabilityPage() {
 
         {/* ── section.completion ── */}
         <Section className={styles.completion}>
-          <QuoteBlock quote="With the overview refined, the software observability foundation for Phase 1 was complete." />
+          <LabelBlock
+            size="display"
+            body="With the overview refined, the software observability foundation for Phase 1 was complete."
+          />
         </Section>
 
         {/* ── section.final-design ── */}
@@ -1154,6 +1439,74 @@ export default function SoftwareObservabilityPage() {
             size="display"
             label="Next Steps"
             body="Phase 1 made reclamation actionable at the software title level. Phase 2 expanded that intelligence to the portfolio, enabling vendor level comparisons across operational, compliance, and financial dashboards."
+          />
+        </Section>
+
+        {/* ── ARCHIVED — moved to the end of the case study ──
+            Not Ready for Scale / Experience Issues, Customizable Columns /
+            Custom Columns image. Kept in the page, not removed. */}
+        <Section className={styles.allSoftwareExperienceIssues}>
+          <LabelBlock
+            size="display"
+            label="Not Ready for Scale"
+            body="While solving for All Software, I captured issues with our current table experience that would compound as we introduced more lifecycle data to the platform."
+          />
+        </Section>
+
+        {/* ── section.experience-issue-annotations ── */}
+        {/* Static Assumption cards + image hidden while the hotspot annotation
+            system is applied here — see AllSoftwareExperienceIssuesHotspots.tsx. */}
+        <Section className={styles.experienceIssueAnnotations}>
+          <div className={styles.experienceIssueAnnotationsEmbed}>
+            <LazyMount>
+              <AllSoftwareExperienceIssuesHotspots />
+            </LazyMount>
+          </div>
+        </Section>
+
+        {/* ── section.custimizable-columns ── */}
+        <Section className={styles.custimizableColumns}>
+          <LabelBlock
+            size="display"
+            label="Customizable Columns"
+            body="Column controls let users tailor their view so they only see the information that matters to them."
+          />
+        </Section>
+
+        {/* ── section.custimizable-columns-final ── */}
+        <Section className={styles.custimizableColumnsFinal}>
+          <ImgCard caption="Custom Columns">
+            <img
+              src="/images/software-observability/custom-columns-final.jpg"
+              alt="Customizable Columns Final Design"
+            />
+          </ImgCard>
+        </Section>
+
+        {/* ── section.Drag-and-Drop-Reordering ── */}
+        <Section className={styles.dragAndDropReordering}>
+          <LabelBlock
+            size="display"
+            label="Drag-and-Drop Reordering"
+            body="Users can arrange information in the order that best fits their workflow,"
+            support="giving them faster access to the attributes they rely on most."
+          />
+        </Section>
+
+        {/* ── section.Drag-and-Drop-final ── */}
+        <Section className={styles.dragAndDropFinal}>
+          <ImgCard
+            layout="column"
+            images={[
+              {
+                src: "/images/software-observability/grab-column.jpg",
+                caption: "Grab Column",
+              },
+              {
+                src: "/images/software-observability/drop-column.jpg",
+                caption: "Drop Column",
+              },
+            ]}
           />
         </Section>
       </main>

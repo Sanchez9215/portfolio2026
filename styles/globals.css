@@ -535,6 +535,10 @@
   --text-label-xs-lh:         16px;
   --text-label-xs-ls:         -0.02em;
 
+  --text-label-2xs-size:      11px;
+  --text-label-2xs-lh:        16px;
+  --text-label-2xs-ls:        -0.02em;
+
   /* title — Cabinet Grotesk Bold, static, no clamp */
   /* title-xl — hero headline (Hero.tsx), Figma node 214:7415. Figma source is
      Extrabold; no Extrabold woff2 is self-hosted, falls back to Bold (confirmed). */
