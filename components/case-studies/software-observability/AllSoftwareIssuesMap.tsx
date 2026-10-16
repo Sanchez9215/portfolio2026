@@ -106,7 +106,21 @@ function IssueNotes({
     measure();
     const ro = new ResizeObserver(measure);
     ro.observe(container);
-    return () => ro.disconnect();
+    // Re-measure over the next frames, once fonts are ready, and on resize — the
+    // live embed lays out after this effect (scale + webfonts), so one measure can
+    // land before the table exists or at the wrong size.
+    let frames = 0;
+    let raf = requestAnimationFrame(function tick() {
+      measure();
+      if (++frames < 10) raf = requestAnimationFrame(tick);
+    });
+    document.fonts?.ready.then(measure);
+    window.addEventListener("resize", measure);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("resize", measure);
+      ro.disconnect();
+    };
   }, [containerRef]);
 
   if (!box) return null;

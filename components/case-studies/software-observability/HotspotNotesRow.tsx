@@ -48,7 +48,23 @@ export default function HotspotNotesRow({
     measure();
     const ro = new ResizeObserver(measure);
     ro.observe(container);
-    return () => ro.disconnect();
+    // The live embed lays out after this effect (scale + webfonts), so a single
+    // measure can land before the target exists or at the wrong size — re-measure
+    // over the next frames, once fonts are ready, and whenever the target resizes.
+    let frames = 0;
+    let raf = requestAnimationFrame(function tick() {
+      measure();
+      if (++frames < 10) raf = requestAnimationFrame(tick);
+    });
+    document.fonts?.ready.then(measure);
+    const target = container.querySelector<HTMLElement>(targetSelector);
+    if (target) ro.observe(target);
+    window.addEventListener("resize", measure);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("resize", measure);
+      ro.disconnect();
+    };
   }, [containerRef, targetSelector, offset]);
 
   if (!box) return null;
