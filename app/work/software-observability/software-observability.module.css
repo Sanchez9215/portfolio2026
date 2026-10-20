@@ -2128,3 +2128,35 @@ section.inactiveLicenseDistributionEmbed {
 .nextStepsTextBlock {
   grid-column: 1 / 9;
 }
+
+/* ── section.launch-cta — fade-out + contact prompt ───────────────────────── */
+
+section.launchCta {
+  position: relative;
+  /* Cancels the previous section's bottom padding so the CTA starts flush
+     under the embed; ::before then fades the embed's last stretch out. */
+  margin-top: calc(var(--spacing-5xl) * -1);
+  background: var(--surface-base);
+  z-index: 1;
+}
+
+section.launchCta::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 100%;
+  height: calc(var(--spacing-5xl) * 3);
+  background: linear-gradient(to bottom, transparent, var(--surface-base));
+  pointer-events: none;
+}
+
+.launchCtaInner {
+  grid-column: 4 / 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-xl);
+  padding-bottom: var(--spacing-5xl);
+  text-align: center;
+}
