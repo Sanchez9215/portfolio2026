@@ -2085,14 +2085,22 @@ section.inactiveLicenseDistributionEmbed {
 
 section.launchCta {
   position: relative;
+  /* Cancels the previous section's bottom padding so the CTA starts flush
+     under the embed; ::before then fades the embed's last stretch out. */
   margin-top: calc(var(--spacing-5xl) * -1);
-  padding-top: var(--spacing-5xl);
-  background: linear-gradient(
-    to bottom,
-    transparent 0,
-    var(--surface-base) var(--spacing-5xl)
-  );
+  background: var(--surface-base);
   z-index: 1;
+}
+
+section.launchCta::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 100%;
+  height: calc(var(--spacing-5xl) * 3);
+  background: linear-gradient(to bottom, transparent, var(--surface-base));
+  pointer-events: none;
 }
 
 .launchCtaInner {
