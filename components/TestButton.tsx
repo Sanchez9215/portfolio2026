@@ -37,6 +37,8 @@
  * border.
  */
 
+"use client";
+
 import { useEffect, useRef, type ReactNode } from "react";
 import gsap from "gsap";
 import styles from "./TestButton.module.css";

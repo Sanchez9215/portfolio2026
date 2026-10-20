@@ -18,7 +18,7 @@ import OktaLogo from "@/components/case-studies/software-observability/OktaLogo"
 import LabelBlock from "@/components/LabelBlock";
 import Tooltip from "@/components/Tooltip";
 import Block from "@/components/Block";
-import Button from "@/components/Button";
+import TestButton from "@/components/TestButton";
 import Card from "@/components/Card";
 import SectionIntroductionEntry from "@/components/case-studies/software-observability/SectionIntroductionEntry";
 // import ContextBlock from "@/components/ContextBlock"; — unused while section.research / stakeholders are hidden
@@ -154,7 +154,7 @@ const RowAnatomyMap = dynamic(
 // Trimmed to intro + prototype/findings/final embeds. Flip to true to bring the
 // cut sections back (context, research, framework, text-only labels, impact, reflection, archived).
 const SHOW_CUT_SECTIONS = false;
-// Everything after section.profile-final-design (distribution + final overview).
+// Everything after section.profile-prototype-1.
 // Off for the partial launch — flip to true to restore.
 const SHOW_AFTER_CUTOFF = false;
 // The contour-ring version (PriorityRings) of the mountain — tried and dropped.
@@ -978,6 +978,23 @@ export default function SoftwareObservabilityPage() {
           <PageCenterLine startBelow="[data-profile-design-embed]" />
         </Section>
 
+        {/* ── section.launch-cta ── fade-out + contact prompt; the case study
+            is cut off after section.profile-prototype-1 for this launch. */}
+        <Section className={styles.launchCta}>
+          <div className={styles.launchCtaInner}>
+            <Block size="2xl" color="primary">
+              Want to learn more about this project?
+            </Block>
+            <TestButton href="mailto:edgar.sanchez9215@gmail.com">
+              Let&rsquo;s Chat
+            </TestButton>
+          </div>
+        </Section>
+
+        {/* Everything below section.profile-prototype-1 — off for the partial
+            launch; flip SHOW_AFTER_CUTOFF to restore. */}
+        {SHOW_AFTER_CUTOFF && (
+          <>
         <Section className={styles.lifecycleTimeline}>
           <LabelBlock
             className={styles.lifecycleTimelineTextBlock}
@@ -1440,19 +1457,6 @@ export default function SoftwareObservabilityPage() {
           </>
         )}
 
-        {/* ── section.launch-cta ── fade-out + contact prompt; the case study
-            is cut off after section.profile-final-design for this launch. */}
-        <Section className={styles.launchCta}>
-          <div className={styles.launchCtaInner}>
-            <Block size="2xl" color="primary">
-              Want to learn more about this project?
-            </Block>
-            <Button variant="primary" size="large" href="mailto:edgar.sanchez9215@gmail.com">
-              Contact me
-            </Button>
-          </div>
-        </Section>
-
         {SHOW_CUT_SECTIONS && (
           <>
             {/* ── section.completion ── */}
@@ -1707,6 +1711,8 @@ export default function SoftwareObservabilityPage() {
                 ]}
               />
             </Section>
+          </>
+        )}
           </>
         )}
       </main>
