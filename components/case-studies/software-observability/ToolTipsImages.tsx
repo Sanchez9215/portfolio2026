@@ -59,7 +59,11 @@ export default function ToolTipsImages() {
   }, []);
 
   return (
-    <div ref={imagesRef} className={styles.toolTipsFinalDesignImages}>
+    <div
+      ref={imagesRef}
+      className={styles.toolTipsFinalDesignImages}
+      data-tooltip-images
+    >
       {IMAGES.map((img) => (
         <ImgCard key={img.src} caption={img.caption}>
           <img src={img.src} alt={img.caption} />

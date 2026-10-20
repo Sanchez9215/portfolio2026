@@ -1306,12 +1306,15 @@ section.prototypeValidation {
 
 /* ── section.all-software-view ──────────────────────────────── */
 
-.allSoftwareView {
+section.allSoftwareView {
   row-gap: var(--spacing-xl);
+  /* Hosts PageCenterLine (Prototype 2 embed -> the All Software tabs). */
+  position: relative;
+  isolation: isolate;
 }
 
 .allSoftwareViewTextBlock {
-  grid-column: 1 / 9;
+  grid-column: 1 / 7;
 }
 
 .allSoftwareViewDetailBlock {
@@ -1322,6 +1325,8 @@ section.prototypeValidation {
 
 section.allSoftwarePrototype {
   row-gap: var(--spacing-3xl);
+  position: relative;
+  isolation: isolate;
 }
 
 /* Tab row and embed: center 10 columns, like the other embed tab rows. */
@@ -1912,6 +1917,9 @@ section.twoTrackValidation {
 
 section.tableAnatomy {
   padding-bottom: var(--spacing-3xl);
+  /* Hosts PageCenterLine (to the top of the table). */
+  position: relative;
+  isolation: isolate;
 }
 
 .tableAnatomyLabel {
@@ -1939,6 +1947,9 @@ section.tableAnatomy {
 
 section.toolTipsFinalDesign {
   padding-top: var(--spacing-3xl);
+  /* Hosts PageCenterLine (Opportunity tooltip -> Software Profile). */
+  position: relative;
+  isolation: isolate;
 }
 
 .toolTipsFinalDesignImages {

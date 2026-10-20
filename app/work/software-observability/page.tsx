@@ -890,11 +890,14 @@ export default function SoftwareObservabilityPage() {
             needed to act on.
           </Block>
           */}
+          <PageCenterLine />
         </Section>
 
         {/* ── section.all-software-prototype ── */}
         <Section className={styles.allSoftwarePrototype}>
           <AllSoftwareViewTabs />
+          <PageCenterLine endAbove="[data-prototype-tabs]" />
+          <PageCenterLine startBelow="[data-all-software-embed]" />
         </Section>
 
         {/* ── section.table-anatomy ── (absorbed section.row-anatomy — embed sits
@@ -915,11 +918,14 @@ export default function SoftwareObservabilityPage() {
               <RowAnatomyMap />
             </LazyMount>
           </div>
+          <PageCenterLine endAbove="table" />
         </Section>
 
         {/* ── section.tool-tips-final-design ── */}
         <Section className={styles.toolTipsFinalDesign}>
           <ToolTipsImages />
+          {/* Out of the bottom edge of the middle (Opportunity) tooltip card. */}
+          <PageCenterLine startBelow="[data-tooltip-images] > :nth-child(2)" />
         </Section>
 
         {/* ── section.software-profile ── */}

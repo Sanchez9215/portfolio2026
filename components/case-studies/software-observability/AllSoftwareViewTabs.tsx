@@ -23,8 +23,10 @@ export default function AllSoftwareViewTabs() {
         value={index}
         onChange={(next) => next !== null && setIndex(next)}
         deselectable={false}
+        data-prototype-tabs
       />
       <EmbedSwitch
+        data-all-software-embed
         index={index}
         layers={[
           <LazyMount key="legacy">
