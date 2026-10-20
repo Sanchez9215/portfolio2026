@@ -127,7 +127,7 @@ const PUPIL_RATIO = 0.3;
 const SHOW_USAGE_BEAM = false;
 // Turn on to draw bigEye's pointer-driven beam (and its text-inversion overlay)
 // again — tracking/geometry still runs, it just isn't rendered.
-const SHOW_POINTER_BEAM = false;
+const SHOW_POINTER_BEAM = true;
 
 // Flat-top-cone beam, shooting from bigEye's pupil (confirmed values):
 // top circle radius = 75% of the pupil's own radius, base circle radius =
