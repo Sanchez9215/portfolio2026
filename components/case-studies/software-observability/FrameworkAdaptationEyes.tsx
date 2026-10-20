@@ -122,6 +122,13 @@ const CONNECTOR_GAP = 8;
 // without needing to measure its DOM rect.
 const PUPIL_RATIO = 0.3;
 
+// Turn on to draw satelliteA's scripted beam at the Success section's squares
+// again (the interaction is intact, just not rendered).
+const SHOW_USAGE_BEAM = false;
+// Turn on to draw bigEye's pointer-driven beam (and its text-inversion overlay)
+// again — tracking/geometry still runs, it just isn't rendered.
+const SHOW_POINTER_BEAM = false;
+
 // Flat-top-cone beam, shooting from bigEye's pupil (confirmed values):
 // top circle radius = 75% of the pupil's own radius, base circle radius =
 // 3x the top radius at rest, base center = BEAM_ANGLE (down-right) from the
@@ -805,6 +812,9 @@ export default function FrameworkAdaptationEyes({
       const detail = (event as CustomEvent<UsageBeamProgressDetail>).detail;
       const pupil = childPupilRefs.current.satelliteA;
       if (!detail || !pupil || !outerEl) return;
+      // Beam is hidden for now — the progress/eye events still fire, so the
+      // squares' own animation (UsageBeamReveal) is unaffected.
+      if (!SHOW_USAGE_BEAM) return;
       if (detail.progress <= 0) {
         setShotClipPath(null);
         return;
@@ -866,7 +876,7 @@ export default function FrameworkAdaptationEyes({
   // below — both clip to the exact same frustum+caps region, in the outer
   // wrap's coordinate space.
   const beamClipPath =
-    beamPath && beamCaps
+    SHOW_POINTER_BEAM && beamPath && beamCaps
       ? `path('${beamPath} ${circlePathD(
           beamCaps.top.cx,
           beamCaps.top.cy,
