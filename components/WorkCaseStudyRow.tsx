@@ -92,7 +92,7 @@ export interface WorkCaseStudyRowProps {
   /** Overrides the impact items' shared 108px height (see .impactItem in
    *  WorkCaseStudyRow.module.css) for this row only. */
   impactItemHeight?: number;
-  /** When set, shows a TestButton-style "View case study" link 32px below the
+  /** When set, shows a TestButton-style "View Case Study" link 32px below the
    *  description (the ctaRow is otherwise empty). */
   caseStudyHref?: string;
 }
@@ -230,7 +230,7 @@ export default function WorkCaseStudyRow({
         <div ref={ctaRef} className={styles.ctaRow}>
           {caseStudyHref && (
             <div className={styles.ctaInline}>
-              <TestButton href={caseStudyHref}>View case study</TestButton>
+              <TestButton href={caseStudyHref}>View Case Study</TestButton>
             </div>
           )}
           {/* Hidden until the case study is ready to link to publicly.
