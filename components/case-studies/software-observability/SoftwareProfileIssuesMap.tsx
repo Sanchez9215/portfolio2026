@@ -120,6 +120,8 @@ export default function SoftwareProfileIssuesMap() {
           </div>
         </LiveEmbed>
         <AnnotationConnectorHotspot
+          cardStyle
+          accentColor="var(--color-grey-700)"
           containerRef={embedWrapperRef}
           nativeWidth={580}
           hotspots={HOTSPOTS}

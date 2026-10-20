@@ -1,0 +1,133 @@
+/* Figma node 2385:958 (1248 × 1395 at the 1440 frame). Burst is full content
+   width at a locked 1248:1066 ratio; the question sits at its centre. The two
+   lists keep their Figma offsets (fixed px from the top, hung off the centre
+   line) — they don't scale with the burst. */
+
+.opener {
+  --diamond-box: 11.314px; /* Figma: 8px square rotated 45° */
+  position: relative;
+  /* Room below the burst for the lists: Figma frame (1395) + 2 × 128px added
+     above the lists, minus the burst's own 1066px. */
+  padding-bottom: calc(329px + 2 * var(--spacing-5xl));
+}
+
+/* The space the burst takes is 85% of its drawn height (15% less); the rays
+   keep full width and ratio and bleed evenly above and below. The lists are
+   positioned from this box's bottom edge, so they move up with the saving. */
+.burstStage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1248 / 906.1; /* 1066 × 0.85 */
+}
+
+/* Rays are drawn as individual lines (bridge-burst-rays.ts) so each can light
+   on its own; they start in the card color and BridgeOpener tweens them to
+   grey-500. */
+.burst {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  aspect-ratio: 1248 / 1066;
+  transform: translateY(-50%);
+}
+
+.burst line {
+  stroke: var(--surface-card);
+}
+
+/* The question is dead centre of the burst (it lives inside .burstStage, so
+   50% is the burst's own centre) and spans 3 of the 12 grid columns
+   (3 columns + 2 gaps; the burst is the full content width). The label sits
+   above it without moving the question off centre. */
+.question {
+  position: absolute;
+  top: calc(50% + var(--spacing-5xl)); /* centre, pushed down 128px */
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: calc(
+    (100% - 11 * var(--spacing-xl)) / 12 * 3 + 2 * var(--spacing-xl)
+  );
+  text-align: center;
+}
+
+.question > span {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-bottom: var(--spacing-md);
+  white-space: nowrap;
+}
+
+.question p {
+  line-height: 1.2;
+}
+
+.questionList,
+.roleList {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.questionList ul,
+.roleList ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.questionList li,
+.roleList li {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding-block: var(--spacing-sm);
+}
+
+/* Diamond centres sit exactly on the spine: the diamond is the list's outer
+   edge, so that edge is half a diamond box off centre. */
+.questionList {
+  top: calc(100% + 195px); /* 1005 + 256 − the burst's 1066 */
+  left: calc(50% - var(--diamond-box) / 2);
+}
+
+.questionList > span {
+  padding-inline-start: calc(var(--diamond-box) + var(--spacing-sm));
+}
+
+.roleList {
+  top: calc(100% + 441px); /* 1251 + 256 − the burst's 1066 */
+  right: calc(50% - var(--diamond-box) / 2);
+  align-items: flex-end;
+  text-align: right;
+}
+
+/* Right-align each row so every diamond sits on the same edge, not just the
+   widest row's. */
+.roleList li {
+  justify-content: flex-end;
+}
+
+.roleList > span {
+  padding-inline-end: calc(var(--diamond-box) + var(--spacing-sm));
+}
+
+.diamond {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  margin: calc((var(--diamond-box) - 8px) / 2);
+  box-sizing: border-box;
+  background-color: var(--color-grey-500);
+  border: 1px solid var(--color-grey-500);
+  transform: rotate(45deg);
+}
+
+/* Hidden until the line tip reaches each title/item (BridgeOpener's scroll
+   triggers fade it in). */
+.reveal {
+  opacity: 0;
+}

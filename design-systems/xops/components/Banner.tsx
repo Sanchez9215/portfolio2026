@@ -9,6 +9,8 @@ export type BannerProps = {
   icon: string;
   title: ReactNode;
   description: ReactNode;
+  /** Optional trailing action (e.g. a Button), vertically centered at the right edge. */
+  action?: ReactNode;
   className?: string;
   style?: React.CSSProperties;
 };
@@ -22,7 +24,7 @@ export type BannerProps = {
 // which colors its own text per status. `risk` reuses caution's color
 // (no separate "risk" tokens exist); `info`'s tint/solid are new tokens
 // sourced from the sidebar's own selected-state blue (see tokens.css).
-export function Banner({ status, icon, title, description, className, style }: BannerProps) {
+export function Banner({ status, icon, title, description, action, className, style }: BannerProps) {
   return (
     <div className={[styles.banner, styles[status], className].filter(Boolean).join(" ")} style={style}>
       <div className={styles.content}>
@@ -34,6 +36,7 @@ export function Banner({ status, icon, title, description, className, style }: B
           <p className={styles.description}>{description}</p>
         </div>
       </div>
+      {action && <div className={styles.action}>{action}</div>}
     </div>
   );
 }

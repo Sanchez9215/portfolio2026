@@ -155,6 +155,9 @@ export interface AllSoftwareLegacyProps {
   /** Case study only: hides the region FilterTabs (Global/NA/EMEA/…), leaving the
    *  Filter button. */
   hideRegionFilter?: boolean;
+  /** Case study only: swaps the icon-only Filter button for the final design's
+   *  "Add Filter" button. */
+  finalFilterButton?: boolean;
   /** Case study only: renders just the table (no Sidebar, header, toolbar or
    *  profile panel), capped to its first rows, with no scrolling in either axis. */
   tableOnly?: boolean;
@@ -170,6 +173,7 @@ export default function AllSoftwareLegacy({
   disableHorizontalScroll,
   scrollToX,
   hideRegionFilter,
+  finalFilterButton,
   tableOnly,
   hideSidebar,
 }: AllSoftwareLegacyProps = {}) {
@@ -267,7 +271,11 @@ export default function AllSoftwareLegacy({
                 />
               </div>
             )}
-            <Button iconOnly icon={<Icon name="Filter" color="var(--xops-text-secondary)" />} ariaLabel="Filter" />
+            {finalFilterButton ? (
+              <Button icon={<Icon name="add_circle" color="var(--xops-text-secondary)" />}>Add Filter</Button>
+            ) : (
+              <Button iconOnly icon={<Icon name="Filter" color="var(--xops-text-secondary)" />} ariaLabel="Filter" />
+            )}
           </div>
           <Grid style={{ flex: 1, minHeight: 0, gridAutoRows: "1fr" }}>
             <GridItem colSpan={12} style={{ display: "flex", flexDirection: "column", minHeight: 0 }}>

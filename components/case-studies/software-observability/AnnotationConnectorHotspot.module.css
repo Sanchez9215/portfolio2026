@@ -109,11 +109,36 @@
 .tooltipRole {
   gap: 0;
   align-items: flex-start;
+  /* Figma 2525:27: 230px card, translucent grey-1000 (75%) with a 2px blur,
+     6px radius. In autoPlace mode the corner the pointer leaves from is square
+     (see .tooltipCornerLeft/.tooltipCornerRight). */
+  width: 230px;
+  background: color-mix(in srgb, var(--color-grey-1000) 75%, transparent);
+  backdrop-filter: blur(2px);
+  border-radius: var(--border-radius-sm);
 }
+
+.tooltipRole.tooltipCornerLeft {
+  border-top-left-radius: 0;
+}
+
+.tooltipRole.tooltipCornerRight {
+  border-top-right-radius: 0;
+}
+
+/* Question tooltips: 14px title (body-sm size + line-height), with a slight
+   grey-900 drop shadow. */
+.tooltipRole .title {
+  font-size: var(--text-body-sm-size);
+  line-height: var(--text-body-sm-lh);
+  text-shadow: 0 1px 2px var(--color-grey-900);
+  color: var(--text-secondary);
+}
+
 
 .tooltipRole .roleTag,
 .tooltipRole .roleTags {
-  margin-top: var(--spacing-sm);
+  margin-top: var(--spacing-sm-md);
 }
 
 /* Multiple roles on one question: pills side by side. */
@@ -135,14 +160,16 @@
   display: inline-flex;
   align-items: center;
   border-radius: var(--radius-pill);
-  background: var(--surface-card);
-  color: var(--badge-text);
+  background: var(--badge-text);
+  color: var(--surface-card);
   font-family: var(--font-family-display);
   font-weight: var(--font-weight-semibold);
-  font-size: var(--text-label-2xs-size);
-  line-height: var(--text-label-2xs-lh);
-  letter-spacing: var(--text-label-2xs-ls);
+  font-size: var(--text-label-xs-size);
+  line-height: var(--text-label-xs-lh);
+  letter-spacing: var(--text-label-xs-ls);
   padding-inline: var(--spacing-sm);
-  padding-block: var(--spacing-xs);
+  padding-block: 0;
+  border-right: var(--border-card) var(--border-style-default)
+    var(--surface-card-border);
   white-space: nowrap;
 }

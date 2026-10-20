@@ -80,3 +80,8 @@
 .emphasis {
   font-weight: var(--xops-font-weight-medium);
 }
+
+.action {
+  flex-shrink: 0;
+  margin-left: var(--xops-spacing-16);
+}

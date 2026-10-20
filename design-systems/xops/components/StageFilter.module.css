@@ -6,6 +6,8 @@
 
 .pill {
   display: inline-flex;
+  /* Hugs its contents; the group wraps pills onto the next row when they don't fit. */
+  flex: 0 0 auto;
   align-items: center;
   gap: var(--xops-spacing-8);
   padding: var(--xops-spacing-6) var(--xops-spacing-12) var(--xops-spacing-6) var(--xops-spacing-6);

@@ -60,56 +60,105 @@ const EMPLOYEE_DRILL_DOWN_NOTES: HotspotNote[] = [
 
 const COST_CENTER_HOTSPOTS: AnnotationHotspotData[] = [];
 
+// The notes/tooltips on these embeds are hidden for now (flip to true to
+// restore).
+const SHOW_NOTES = false;
+
 // Fragment (not a wrapper div) so both columns stay direct children of the
 // Section's CSS grid, same as OverviewPrototypeSection.
 export default function InactiveLicenseDistributionMap() {
-  // Height of the By Department embed's card, so the drill-down below it can
-  // match it exactly.
-  const topRef = useRef<HTMLDivElement>(null);
-  const [topHeight, setTopHeight] = useState<number | undefined>(undefined);
+  // The three embeds share one height: the taller of By Department / By Cost
+  // Center at their natural size. Measured with nothing constrained, then every
+  // embed is set to it (the live views crop/pan inside). Re-measured on resize
+  // and once fonts load, since both change the natural heights.
+  const leftRef = useRef<HTMLDivElement>(null);
+  const rightRef = useRef<HTMLDivElement>(null);
+  const [rowHeight, setRowHeight] = useState<number | undefined>(undefined);
+  const [measuring, setMeasuring] = useState(true);
+
   useLayoutEffect(() => {
-    const el = topRef.current;
-    if (!el) return;
-    const measure = () => setTopHeight(el.offsetHeight);
-    measure();
-    const ro = new ResizeObserver(measure);
-    ro.observe(el);
-    return () => ro.disconnect();
+    if (!measuring) return;
+    // Next frame: the embeds drop their previous height in their own effects
+    // first, so this reads their natural heights.
+    const frame = requestAnimationFrame(() => {
+      const heights = [leftRef.current, rightRef.current].map(
+        (el) => el?.offsetHeight ?? 0,
+      );
+      setRowHeight(Math.max(...heights) || undefined);
+      setMeasuring(false);
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [measuring]);
+
+  useLayoutEffect(() => {
+    const remeasure = () => setMeasuring(true);
+    window.addEventListener("resize", remeasure);
+    document.fonts?.ready?.then(remeasure);
+    return () => window.removeEventListener("resize", remeasure);
   }, []);
+
+  // The embeds mount lazily (LazyMount), so their natural heights can appear
+  // after the first measure: when either panel's height stops matching the row
+  // height, measure again.
+  useLayoutEffect(() => {
+    const left = leftRef.current;
+    const right = rightRef.current;
+    if (!left || !right) return;
+    const observer = new ResizeObserver(() => {
+      if (measuring) return;
+      const off = [left, right].some(
+        (el) => Math.abs(el.offsetHeight - (rowHeight ?? 0)) > 1,
+      );
+      if (off) setMeasuring(true);
+    });
+    observer.observe(left);
+    observer.observe(right);
+    return () => observer.disconnect();
+  }, [measuring, rowHeight]);
+
+  const totalHeight = measuring ? undefined : rowHeight;
 
   return (
     <>
-      <div className={pageStyles.inactiveLicenseDistributionLeft}>
-        <div ref={topRef}>
-          <LazyMount>
-            <SoftwareProfileFinalMap
-              hotspots={DEPARTMENT_HOTSPOTS}
-              caption="By Department"
-              initialViewBy="top-departments"
-              distributionOnly
-              notesSide="left"
-            />
-          </LazyMount>
-        </div>
-        {/* Live employee drill-down, directly below By Department in the same
-            column. */}
-        <div style={{ position: "relative" }}>
-          <LazyMount>
-            <EmployeeDrillDownEmbed totalHeight={topHeight} />
-          </LazyMount>
-          <HotspotNotesColumn side="left" notes={EMPLOYEE_DRILL_DOWN_NOTES} />
-        </div>
-      </div>
-      <div className={pageStyles.inactiveLicenseDistributionRight}>
+      <div className={pageStyles.inactiveLicenseDistributionLeft} ref={leftRef}>
         <LazyMount>
           <SoftwareProfileFinalMap
-            hotspots={COST_CENTER_HOTSPOTS}
+            hotspots={SHOW_NOTES ? DEPARTMENT_HOTSPOTS : []}
+            caption="By Department"
+            initialViewBy="top-departments"
+            distributionOnly
+            notesSide="left"
+            totalHeight={totalHeight}
+          />
+        </LazyMount>
+      </div>
+      <div
+        className={pageStyles.inactiveLicenseDistributionRight}
+        ref={rightRef}
+      >
+        <LazyMount>
+          <SoftwareProfileFinalMap
+            hotspots={SHOW_NOTES ? COST_CENTER_HOTSPOTS : []}
             caption="By Cost Center"
             initialViewBy="cost-center"
             distributionOnly
             notesSide="right"
+            totalHeight={totalHeight}
           />
         </LazyMount>
+      </div>
+      {/* Live employee drill-down, in the same row, matched to By Department's
+          height. */}
+      <div
+        className={pageStyles.inactiveLicenseDistributionMiddle}
+        style={{ position: "relative" }}
+      >
+        <LazyMount>
+          <EmployeeDrillDownEmbed totalHeight={totalHeight} />
+        </LazyMount>
+        {SHOW_NOTES && (
+          <HotspotNotesColumn side="left" notes={EMPLOYEE_DRILL_DOWN_NOTES} />
+        )}
       </div>
     </>
   );

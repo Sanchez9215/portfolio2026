@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import ImgCard from "@/components/ImgCard";
 import LiveEmbed from "@/components/LiveEmbed";
 import HotspotNotesColumn from "./HotspotNotesColumn";
@@ -111,10 +111,16 @@ export type SoftwareProfileFinalMapProps = {
   /** Shows only the Inactive License Distribution section, as if the panel
    *  were scrolled down to it. */
   distributionOnly?: boolean;
+  /** Drops the Inactive License Distribution section. */
+  hideDistribution?: boolean;
   /** Replaces the connector tooltips with a column of notes (one per hotspot,
    *  same order) on this side of the embed — every hotspot becomes a
    *  spotlight-only cutout. */
   notesSide?: "left" | "right";
+  /** Total outer height (card chrome included) to fill — e.g. so a row of embeds
+   *  share one height. The live view crops/pans inside it; omitted = hugs its
+   *  own content. */
+  totalHeight?: number;
 };
 
 export default function SoftwareProfileFinalMap({
@@ -122,9 +128,25 @@ export default function SoftwareProfileFinalMap({
   caption,
   initialViewBy = "top-departments",
   distributionOnly,
+  hideDistribution,
   notesSide,
+  totalHeight,
 }: SoftwareProfileFinalMapProps) {
   const embedWrapperRef = useRef<HTMLDivElement>(null);
+  const outerRef = useRef<HTMLDivElement>(null);
+  const [viewportHeight, setViewportHeight] = useState<number | undefined>(undefined);
+
+  // Chrome (caption + padding) = outer minus the embed wrapper; constant whatever
+  // the wrapper's height is, so the live view fills exactly the remainder.
+  useLayoutEffect(() => {
+    const outer = outerRef.current;
+    const inner = embedWrapperRef.current;
+    if (!outer || !inner || !totalHeight) {
+      setViewportHeight(undefined);
+      return;
+    }
+    setViewportHeight(Math.max(totalHeight - (outer.offsetHeight - inner.offsetHeight), 200));
+  }, [totalHeight]);
 
   const ds = useMemo(() => getDataset(), []);
   const row = useMemo(() => productSummary(ds, "ZOOM-ONE"), [ds]);
@@ -151,9 +173,10 @@ export default function SoftwareProfileFinalMap({
   if (!row) return null;
 
   return (
+    <div ref={outerRef}>
     <ImgCard variant="embed" allowOverflow caption={caption}>
       <div ref={embedWrapperRef} style={{ position: "relative" }}>
-        <LiveEmbed nativeWidth={580} disableCanvasTransition>
+        <LiveEmbed nativeWidth={580} viewportHeight={viewportHeight} disableCanvasTransition>
           {/* Reproduces SidePanel.module.css's `.panel` chrome around the
               standalone profile body, as in SoftwareProfileFinalHotspots. */}
           <div
@@ -215,6 +238,7 @@ export default function SoftwareProfileFinalMap({
               viewBy={viewBy}
               onViewByChange={setViewBy}
               distributionOnly={distributionOnly}
+              hideDistribution={hideDistribution}
             />
           </div>
         </LiveEmbed>
@@ -222,6 +246,8 @@ export default function SoftwareProfileFinalMap({
             embed. */}
         {hotspots.length > 0 && (
           <AnnotationConnectorHotspot
+            cardStyle
+            accentColor="var(--color-grey-700)"
             containerRef={embedWrapperRef}
             nativeWidth={580}
             hotspots={
@@ -239,5 +265,6 @@ export default function SoftwareProfileFinalMap({
         )}
       </div>
     </ImgCard>
+    </div>
   );
 }

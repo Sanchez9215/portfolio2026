@@ -117,6 +117,9 @@
   transform-origin: right;
   border: var(--border-card) solid var(--color-grey-650);
   border-radius: var(--radius-default);
+  /* Outline build-out: --draw (0 → 1, tweened in the .tsx) wipes the whole
+     card, border included, in from the left. Defaults to fully drawn. */
+  clip-path: inset(0 calc((1 - var(--draw, 1)) * 100%) 0 0);
   /* z-index below .table — this card sits BEHIND the table, only its top
      slice showing above the table's own top edge (matches the Figma
      layer order: Document Intent card painted first, table painted over
@@ -158,6 +161,10 @@
   border: var(--border-card) solid var(--color-grey-650);
   border-radius: var(--radius-default);
   overflow: hidden;
+  /* Outline build-out: --draw (0 → 1, tweened in the .tsx) wipes the table's
+     border and its inner lines in from the left, in step with the column-by-
+     column cell build. Defaults to fully drawn. */
+  clip-path: inset(0 calc((1 - var(--draw, 1)) * 100%) 0 0);
   --table-grid-template: 0.8fr 1.4fr 1fr 1.2fr 1.6fr 0.9fr;
 }
 

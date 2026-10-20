@@ -1,0 +1,23 @@
+/* Sits behind the host section's content (z-index -1 inside the section's own
+   stacking context). Doubled class beats the host section's `> *` column rule
+   without !important; auto placement keeps the absolute containing block at
+   the section's padding box, which the .tsx measurements are relative to. */
+.line.line {
+  grid-column: auto;
+  grid-row: auto;
+}
+
+.line {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  overflow: visible;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.line path {
+  stroke: var(--color-grey-500);
+  stroke-width: 1px;
+  vector-effect: non-scaling-stroke;
+}

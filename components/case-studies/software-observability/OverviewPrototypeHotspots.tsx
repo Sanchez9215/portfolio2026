@@ -47,7 +47,7 @@ const HOTSPOTS: Hotspot[] = [
     id: "geographic-filtering",
     title: "Region & Org Structure Filters",
     label: "Assumption",
-    body: "When operational events point to a specific region or org unit, filters let stakeholders focus on the software and vendors driving exposure.",
+    body: "When operational events point to a specific region or organizational unit, filters let stakeholders focus on the software and vendors driving exposure.",
     insight:
       "Compliance and usage terms vary by region. Without legal expertise and full visibility into those differences, regional filtering could mislead teams.",
     placement: "right-top",

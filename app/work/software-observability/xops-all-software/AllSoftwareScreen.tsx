@@ -302,8 +302,12 @@ const regionOptions: FilterTabOption[] = [
 export function AllSoftwareScreen({
   onNavigate,
   embedded = false,
+  hideRegionFilter = false,
 }: {
   onNavigate?: (screen: SoftwareSubKey) => void;
+  /** Case study only: hides the region FilterTabs (Global/NA/EMEA/…), leaving the
+   *  Add Filter button. */
+  hideRegionFilter?: boolean;
   /** True when rendered inside SoftwareExperienceEmbed's scaled LiveEmbed canvas —
    *  content sizes naturally (minHeight) so LiveEmbed's own scroll wrapper handles
    *  scrolling, same as OverviewScreen already does. False (default, the standalone
@@ -459,6 +463,7 @@ export function AllSoftwareScreen({
                   <BannerEmphasis>Inactive</BannerEmphasis> license counts.
                 </>
               }
+              action={<Button variant="primary">View</Button>}
             />
           )}
           <PageHeader
@@ -477,12 +482,14 @@ export function AllSoftwareScreen({
             }}
           >
             <div style={{ display: "flex", alignItems: "center", gap: "var(--xops-spacing-16)" }}>
-              <FilterTabs
-                options={regionOptions}
-                value={region}
-                onChange={setRegion}
-                ariaLabel="Filter by region"
-              />
+              {!hideRegionFilter && (
+                <FilterTabs
+                  options={regionOptions}
+                  value={region}
+                  onChange={setRegion}
+                  ariaLabel="Filter by region"
+                />
+              )}
               <Button icon={<Icon name="add_circle" color="var(--xops-text-secondary)" />}>
                 Add Filter
               </Button>

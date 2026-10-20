@@ -1,0 +1,67 @@
+/* Segmented pill (Figma 2499:1537): four equal segments inside a bordered pill.
+   The hover and selected fills are two shared pills behind the segments,
+   stretched between segments by GSAP (see the pill helpers in the .tsx).
+   Selected = filled grey-500 pill with a close icon (click again to clear);
+   hover = --surface-card-border pill. */
+.tabs {
+  position: relative;
+  display: flex;
+  gap: 1px;
+  width: 100%;
+  box-sizing: border-box;
+  padding: var(--spacing-sm);
+  background: var(--surface-card);
+  border-radius: var(--radius-pill);
+}
+
+.tab {
+  position: relative;
+  z-index: 1;
+  flex: 1 1 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  padding: var(--spacing-md) var(--spacing-lg);
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+/* x / width / visibility are driven by GSAP. */
+.pill {
+  position: absolute;
+  top: var(--spacing-sm);
+  bottom: var(--spacing-sm);
+  left: 0;
+  box-sizing: border-box;
+  width: 0;
+  visibility: hidden;
+  border-radius: var(--radius-pill);
+  pointer-events: none;
+}
+
+.pillHover {
+  background: var(--surface-card-border);
+}
+
+.pillSelected {
+  background: var(--color-grey-500);
+  border-right: var(--border-card) var(--border-style-default)
+    var(--surface-card-border);
+}
+
+.close {
+  position: absolute;
+  top: 50%;
+  right: var(--spacing-md);
+  transform: translateY(-50%);
+  display: flex;
+  width: var(--icon-md);
+  height: var(--icon-md);
+}
+
+.close img {
+  width: 100%;
+  height: 100%;
+}

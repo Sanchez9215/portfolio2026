@@ -2,11 +2,9 @@
 
 import { useLayoutEffect, useRef, useState } from "react";
 import ImgCard from "@/components/ImgCard";
-import Label from "@/components/Label";
+import PrototypeTabs from "@/components/PrototypeTabs";
 import LiveEmbed from "@/components/LiveEmbed";
-import OverviewLegacy, {
-  type StageValue,
-} from "@/design-systems/xops/legacy/OverviewLegacy";
+import OverviewLegacy from "@/design-systems/xops/legacy/OverviewLegacy";
 import AnnotationConnectorHotspot, {
   AnnotationHotspotData,
 } from "./AnnotationConnectorHotspot";
@@ -15,8 +13,8 @@ import styles from "./OverviewPrototype1QuestionsMap.module.css";
 
 // One tooltip set per question (same order as QUESTION_LABELS), filled in
 // role by role — SAM first, then Financial and IT Operations — as each is
-// aligned. title = the question, role = the single role that asked it (shown
-// as the tag pill), body = why it matters. label/insightLabel/insight are
+// aligned. title = the question, role = the role(s) that asked it (shown as
+// the tag pill), body is left empty (question-only tooltips). label/insightLabel/insight are
 // unused (showInsight stays false) but required by AnnotationHotspotData's
 // shape. `branch` adds a second connector for questions that answer in two
 // places. Tab targets are the individual lifecycle tab buttons — selecting a
@@ -48,7 +46,7 @@ const QUESTION_HOTSPOTS: AnnotationHotspotData[][] = [
       flip: true,
       title: "How many licenses have we purchased?",
       role: "SAM",
-      body: "Sets baseline numbers for the rest of the analysis.",
+      body: "",
     },
     {
       ...NO_INSIGHT,
@@ -60,7 +58,7 @@ const QUESTION_HOTSPOTS: AnnotationHotspotData[][] = [
       flipVertical: true,
       title: "How are our licenses broken down by licensing model?",
       role: "SAM",
-      body: "I needed to validate how much we needed to surface in terms of licensing models as this information could get very complex. I decided to surface a breakdown at the highest level and arrive with open questions to our review.",
+      body: "",
     },
     {
       ...NO_INSIGHT,
@@ -71,7 +69,7 @@ const QUESTION_HOTSPOTS: AnnotationHotspotData[][] = [
       flipVertical: true,
       title: "What is expiring soon?",
       role: "SAM",
-      body: "My initial assumption was that licenses expired in batches based on when they were purchased, creating an operational risk if not addressed in time.",
+      body: "",
     },
     {
       // Spotlight over the Assigned + Unassigned stat tiles — listed first so
@@ -95,7 +93,7 @@ const QUESTION_HOTSPOTS: AnnotationHotspotData[][] = [
       targetSelectors: ['[data-hotspot="assigned-licenses"] + *'],
       title: "How many licenses are assigned vs. unassigned? (Overall and Per Title)",
       role: "SAM",
-      body: "Shows what's been given to employees vs. what's available, so teams don't buy more.",
+      body: "",
     },
     {
       ...NO_INSIGHT,
@@ -108,7 +106,7 @@ const QUESTION_HOTSPOTS: AnnotationHotspotData[][] = [
       placeBelow: true,
       title: "What software is being set up or assigned to users?",
       role: "SAM",
-      body: "Shows purchased software stuck in set-up or assignment, to avoid duplicate purchases.",
+      body: "",
     },
     {
       // Spotlight over Region + Cost Center + Business Unit + Department — listed first
@@ -131,9 +129,9 @@ const QUESTION_HOTSPOTS: AnnotationHotspotData[][] = [
       // its left; the spotlight covers all four filter fields.
       targetSelectors: ['[data-hotspot="geographic-filtering"] > :first-child'],
       flip: true,
-      title: "Where are our licenses held across regions and org units?",
+      title: "Where are our licenses held across regions and organizational units?",
       role: "SAM",
-      body: "Filters re-scope every number on the page, so SAM can check entitlements against regional and org-unit boundaries.",
+      body: "",
     },
     // ── Financial ──
     {
@@ -142,7 +140,7 @@ const QUESTION_HOTSPOTS: AnnotationHotspotData[][] = [
       targetSelectors: [LIFECYCLE_TAB(3)],
       title: "What software is missing a business unit owner?",
       role: "FINANCIAL SPECIALIST",
-      body: "A blank B.U. Owner is software no one is accountable for. I surfaced it next to spend in the lifecycle tables so those gaps stand out.",
+      body: "",
     },
     // ── IT Ops ──
     {
@@ -152,7 +150,7 @@ const QUESTION_HOTSPOTS: AnnotationHotspotData[][] = [
       flip: true,
       title: "What software is in provisioning/deprovisioning?",
       role: "IT OPS",
-      body: "Tracks software moving into setup or out of service, keeping IT support tickets aligned with the tool's actual lifecycle phase.",
+      body: "",
     },
     // TODO (progress.md Deferred): "What software has been set for
     // deprovisioning?" — SAM, "Ensures licenses are reclaimed for new users
@@ -179,17 +177,18 @@ const QUESTION_HOTSPOTS: AnnotationHotspotData[][] = [
       flipVertical: true,
       title: "How much are we spending per year?",
       role: ["SAM", "FINANCIAL SPECIALIST"],
-      body: "Total Annual Spend sets the baseline, and the vendor table shows each vendor's share of it.",
+      body: "",
     },
     {
       ...NO_INSIGHT,
       targetId: "sam-renewal-cost",
       spotlightId: "spend-overview",
-      // Anchored at the Spend card's own top-right corner, not the tile.
-      targetSelectors: ['[data-hotspot="spend-overview"]'],
+      // Anchored at the Est. Renewals (90d) tile (2nd stat).
+      targetSelectors: ['[data-hotspot="spend-stats"] > :nth-child(2)'],
+      flip: true,
       title: "How much will software renewals cost us?",
       role: ["SAM", "FINANCIAL SPECIALIST"],
-      body: "Est. Renewals (90d) puts a dollar figure on what's coming up, so renewals get planned before contracts lapse.",
+      body: "",
     },
     {
       ...NO_INSIGHT,
@@ -204,7 +203,7 @@ const QUESTION_HOTSPOTS: AnnotationHotspotData[][] = [
       flipVertical: true,
       title: "What vendors is the majority of our annual spend concentrated with?",
       role: ["SAM", "FINANCIAL SPECIALIST"],
-      body: "The vendor table shows each vendor's share of total spend, so finance can see where spend is concentrated.",
+      body: "",
     },
     {
       // Spotlight over Region + Cost Center + Business Unit + Department — listed first
@@ -227,9 +226,9 @@ const QUESTION_HOTSPOTS: AnnotationHotspotData[][] = [
       // its left; the spotlight covers all four filter fields.
       targetSelectors: ['[data-hotspot="geographic-filtering"] > :first-child'],
       flip: true,
-      title: "How much is each org unit spending on software?",
+      title: "How much is each organizational unit spending on software?",
       role: "FINANCIAL SPECIALIST",
-      body: "Filters re-scope every number on the page, allowing finance to attribute spend to any particular org unit.",
+      body: "",
     },
     // ── Lifecycle stages ──
     {
@@ -239,7 +238,7 @@ const QUESTION_HOTSPOTS: AnnotationHotspotData[][] = [
       flip: true,
       title: "What new spend is in the pipeline?",
       role: "FINANCIAL SPECIALIST",
-      body: "Procurement lists requested software with its estimated annual cost, so finance sees spend before it's committed.",
+      body: "",
     },
     {
       ...NO_INSIGHT,
@@ -248,7 +247,7 @@ const QUESTION_HOTSPOTS: AnnotationHotspotData[][] = [
       flipVertical: true,
       title: "Which software renewals are coming up, and for how much?",
       role: ["SAM", "FINANCIAL SPECIALIST"],
-      body: "Renewal lists each product with its renewal date, days remaining and total spend, so action starts before contracts lapse.",
+      body: "",
     },
   ],
   // How is it used?
@@ -275,7 +274,7 @@ const QUESTION_HOTSPOTS: AnnotationHotspotData[][] = [
       targetSelectors: ['[data-hotspot="license-utilization"] + *'],
       title: "How many assigned licenses are active vs. inactive? (Overall)",
       role: "SAM",
-      body: "Splits licenses into active, inactive and unassigned, so idle spend is visible at a glance.",
+      body: "",
     },
     {
       ...NO_INSIGHT,
@@ -284,7 +283,7 @@ const QUESTION_HOTSPOTS: AnnotationHotspotData[][] = [
       targetSelectors: ['[data-hotspot="inactivity-threshold"]'],
       title: "What licenses can be reclaimed and reassigned right now?",
       role: "SAM",
-      body: "Licenses not used for a specific time range would be the ones to reclaim. I set 60 days as a default to start the discussion, since thresholds vary by software type.",
+      body: "",
     },
     // ── Financial ──
     {
@@ -293,7 +292,7 @@ const QUESTION_HOTSPOTS: AnnotationHotspotData[][] = [
       targetSelectors: [LIFECYCLE_TAB(3)],
       title: "What software has the biggest gap between high spend and low adoption?",
       role: ["SAM", "FINANCIAL SPECIALIST"],
-      body: "Total Spend sits next to Utilization on every active title, so over-paid, under-used software stands out.",
+      body: "",
     },
     // ── IT Ops ──
     {
@@ -304,7 +303,7 @@ const QUESTION_HOTSPOTS: AnnotationHotspotData[][] = [
       flipVertical: true,
       title: "Is adoption of newly rolled-out software meeting target?",
       role: "IT OPS",
-      body: "Provisioning shows licenses assigned against the activation threshold, so IT can see rollouts that haven't taken hold.",
+      body: "",
     },
   ],
   // Are we compliant?
@@ -327,9 +326,9 @@ const QUESTION_HOTSPOTS: AnnotationHotspotData[][] = [
         '[data-hotspot="top-non-compliant"] th:nth-child(3)',
         '[data-hotspot="top-non-compliant"] td:nth-child(3)',
       ],
-      title: "Which software has more installed instances than we have licenses for?",
+      title: "What software has over assigned licenses?",
       role: "SAM",
-      body: "Instances next to the violation type show where installs have outrun what we've licensed.",
+      body: "",
     },
     {
       ...NO_INSIGHT,
@@ -343,7 +342,7 @@ const QUESTION_HOTSPOTS: AnnotationHotspotData[][] = [
       flip: true,
       title: "Which software carries the most audit risk?",
       role: "SAM",
-      body: "The table is ranked by instance count, so the titles most exposed in an audit come first.",
+      body: "",
     },
     {
       // Spotlight over the whole Compliance card — listed first so it defines
@@ -363,17 +362,16 @@ const QUESTION_HOTSPOTS: AnnotationHotspotData[][] = [
       flip: true,
       title: "What is our compliance stance overall?",
       role: "SAM",
-      body: "Compliant, At Risk and Non-Compliant instances in one view, so we know where we stand before an audit does.",
+      body: "",
     },
   ],
 ];
 
 // Static, all-at-once rendering (no card-by-card player) for whichever
 // question is selected; nothing selected = a bare, undimmed embed.
-// TEMP: the lifecycle-stage tooltips (every hotspot targeting a lifecycle tab)
-// are hidden while the story is reworked — each is swapped for a bare
-// spotlight over the whole lifecycle card instead. Flip to true to restore.
-const SHOW_STAGE_TOOLTIPS = false;
+// The lifecycle-stage tooltips (every hotspot targeting a lifecycle tab). When
+// false, each is swapped for a bare spotlight over the whole lifecycle card.
+const SHOW_STAGE_TOOLTIPS = true;
 
 const isStageHotspot = (h: AnnotationHotspotData) =>
   h.targetSelectors?.some((sel) => sel.includes("lifecycle-stage-terms"));
@@ -391,8 +389,12 @@ const STAGE_CARD_SPOTLIGHT: AnnotationHotspotData = {
 // The two general notes (why stages matter, how the baseline columns were
 // chosen) sit at the tooltips' own level — an overlay row directly above the
 // lifecycle card, shown whenever a question is selected (see StageNotes).
-const STAGE_NOTES_OFFSET = 32;
-const STAGE_QUESTIONS_OFFSET = 32;
+// The stage notes are hidden for now (flip to true to restore).
+const SHOW_STAGE_NOTES = false;
+
+// The notes now sit inside the lifecycle card, in its top-right corner.
+const STAGE_NOTES_INSET_TOP = 16;
+const STAGE_NOTES_INSET_RIGHT = 16;
 
 const STAGE_NOTES = [
   {
@@ -413,9 +415,8 @@ function StageNotes({
   containerRef: React.RefObject<HTMLElement>;
 }) {
   const [box, setBox] = useState<{
-    left: number;
-    bottom: number;
-    width: number;
+    top: number;
+    right: number;
     noteWidth: number;
   } | null>(null);
 
@@ -436,12 +437,11 @@ function StageNotes({
       const gap = grid ? parseFloat(getComputedStyle(grid).columnGap) || 0 : 0;
       const width = r.width / scale;
       setBox({
-        left: r.left - c.left,
-        // 32px clear of the card's top edge. Everything here is in on-screen
-        // px: the tooltips' type isn't scaled with the embed, so neither is
-        // this; only the card's position and 3-column width follow it.
-        bottom: c.bottom - r.top + STAGE_NOTES_OFFSET,
-        width: r.width,
+        // Everything here is in on-screen px: the tooltips' type isn't scaled
+        // with the embed, so neither are the insets; only the card's position
+        // and 3-column width follow it.
+        top: r.top - c.top + STAGE_NOTES_INSET_TOP,
+        right: c.right - r.right + STAGE_NOTES_INSET_RIGHT,
         noteWidth: ((width - 3 * gap) / 4) * scale,
       });
     };
@@ -455,11 +455,7 @@ function StageNotes({
   return (
     <div
       className={styles.stageNotes}
-      style={{
-        left: box.left,
-        bottom: box.bottom,
-        width: box.width,
-      }}
+      style={{ top: box.top, right: box.right }}
     >
       {STAGE_NOTES.map((note) => (
         <div
@@ -475,186 +471,55 @@ function StageNotes({
   );
 }
 
-// Stage questions per category (same order as QUESTION_LABELS): what the
-// lifecycle table itself answers, by stage and column. Listed as a plain column
-// 32px left of the lifecycle card — no connectors. Compliant has none: the
-// table has no compliance column. Titles/descriptions are drafts to confirm.
-const STAGE_QUESTIONS: {
-  stage: StageValue;
-  title: string;
-  roles: string[];
-  body: string;
-}[][] = [
-  // What do we own?
-  [
-    {
-      stage: "provisioning",
-      title: "What purchased software is still being set up?",
-      roles: ["SAM", "IT OPS"],
-      body: "On the Provisioning tab, Assigned and B.U Owner show what was purchased but is still being set up, and who owns it.",
-    },
-    {
-      stage: "active",
-      title: "What software has no business unit owner?",
-      roles: ["FINANCIAL SPECIALIST"],
-      body: "On the Active tab, a blank B.U Owner beside Total Spend marks software nobody is accountable for.",
-    },
-  ],
-  // What does it cost?
-  [
-    {
-      stage: "procurement",
-      title: "What new spend is in the pipeline?",
-      roles: ["FINANCIAL SPECIALIST"],
-      body: "On the Procurement tab, Licenses Requested, Latest Request Date and Est. Annual Cost show spend before it's committed.",
-    },
-    {
-      stage: "renewal",
-      title: "Which titles renew soonest, and what are they worth?",
-      roles: ["SAM", "FINANCIAL SPECIALIST"],
-      body: "On the Renewal tab, Days to Renewal beside Total Spend ranks the biggest, closest contracts so action starts early.",
-    },
-  ],
-  // How is it used?
-  [
-    {
-      stage: "active",
-      title: "Where is spend high and adoption low?",
-      roles: ["SAM", "FINANCIAL SPECIALIST"],
-      body: "On the Active tab, Total Spend sits beside Utilization and Inactive, so over-paid, under-used software stands out.",
-    },
-    {
-      stage: "provisioning",
-      title: "Are new rollouts taking hold?",
-      roles: ["IT OPS"],
-      body: "On the Provisioning tab, Assigned against the Activation Threshold shows rollouts that haven't taken hold.",
-    },
-    {
-      stage: "renewal",
-      title: "What is underused going into renewal?",
-      roles: ["SAM"],
-      body: "On the Renewal tab, Utilization and Inactive beside Days to Renewal show what to cut before the contract renews.",
-    },
-  ],
-  // Are we compliant?
-  [],
-];
-
-// Only the question(s) for the stage tab currently open in the embed show.
-function StageQuestions({
-  containerRef,
-  questionIndex,
-  stage,
-}: {
-  containerRef: React.RefObject<HTMLElement>;
-  questionIndex: number;
-  stage: StageValue;
-}) {
-  const [box, setBox] = useState<{
-    top: number;
-    right: number;
-  } | null>(null);
-
-  useLayoutEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-    const measure = () => {
-      const card = container.querySelector<HTMLElement>(
-        '[data-hotspot="lifecycle-stage-scope"]',
-      );
-      if (!card) return;
-      const c = container.getBoundingClientRect();
-      const r = card.getBoundingClientRect();
-      // Right edge sits 32px left of the card, top aligned with it. Width is the
-      // tooltips' own fixed 232px, so the column may extend past the embed's
-      // left edge (the ImgCard allows overflow).
-      const edge = r.left - c.left - STAGE_QUESTIONS_OFFSET;
-      setBox({ top: r.top - c.top, right: c.width - edge });
-    };
-    measure();
-    const ro = new ResizeObserver(measure);
-    ro.observe(container);
-    return () => ro.disconnect();
-  }, [containerRef]);
-
-  const items = STAGE_QUESTIONS[questionIndex].filter((q) => q.stage === stage);
-  if (!box || items.length === 0) return null;
-  return (
-    <div
-      className={styles.stageQuestions}
-      style={{ top: box.top, right: box.right }}
-    >
-      {items.map((q) => (
-        <div key={q.title} className={styles.stageQuestion}>
-          <p className={styles.stageNoteTitle}>{q.title}</p>
-          <div className={styles.stageQuestionRoles}>
-            {q.roles.map((role) => (
-              <span key={role} className={styles.stageRoleTag}>
-                {role}
-              </span>
-            ))}
-          </div>
-          <p className={styles.stageNoteBody}>{q.body}</p>
-        </div>
-      ))}
-    </div>
-  );
-}
-
 const VISIBLE_QUESTION_HOTSPOTS: AnnotationHotspotData[][] =
-  QUESTION_HOTSPOTS.map((set) =>
-    SHOW_STAGE_TOOLTIPS
-      ? set
-      : set.map((h) => (isStageHotspot(h) ? STAGE_CARD_SPOTLIGHT : h)),
-  );
+  QUESTION_HOTSPOTS.map((set) => {
+    if (!set.some(isStageHotspot)) return set;
+    // One spotlight over the whole lifecycle card (listed first so it defines
+    // the cutout), shared by every stage tooltip in the set via spotlightId.
+    // Each stage tooltip still anchors its connector at its own tab.
+    return [
+      STAGE_CARD_SPOTLIGHT,
+      ...set.flatMap((h) => {
+        if (!isStageHotspot(h)) return [h];
+        return SHOW_STAGE_TOOLTIPS
+          ? [{ ...h, spotlightId: STAGE_CARD_SPOTLIGHT.targetId }]
+          : [];
+      }),
+    ];
+  });
 
 export default function OverviewPrototype1QuestionsMap() {
   const embedWrapperRef = useRef<HTMLDivElement>(null);
   const [questionIndex, setQuestionIndex] = useState<number | null>(null);
-  const [stage, setStage] = useState<StageValue>("provisioning");
 
   const hotspots =
     questionIndex === null ? [] : VISIBLE_QUESTION_HOTSPOTS[questionIndex];
 
   return (
     <>
-      <div className={styles.questionRow}>
-        {QUESTION_LABELS.map((label, qi) => (
-          <button
-            key={label}
-            type="button"
-            className={styles.question}
-            aria-pressed={questionIndex === qi}
-            onClick={() =>
-              setQuestionIndex((prev) => (prev === qi ? null : qi))
-            }
-          >
-            <Label
-              size="lg"
-              color={
-                questionIndex === null || questionIndex === qi
-                  ? "default"
-                  : "tertiary"
-              }
-            >
-              {label}
-            </Label>
-          </button>
-        ))}
-      </div>
+      <PrototypeTabs
+        items={QUESTION_LABELS}
+        value={questionIndex}
+        onChange={setQuestionIndex}
+        className={styles.tabsRow}
+        data-question-row
+      />
       <ImgCard variant="embed" allowOverflow>
-        <div ref={embedWrapperRef} style={{ position: "relative" }}>
-          <LiveEmbed nativeWidth={1440} disableCanvasTransition>
-            <OverviewLegacy showLogos={false} onStageChange={setStage} />
+        <div
+          ref={embedWrapperRef}
+          data-prototype-embed
+          style={{ position: "relative" }}
+        >
+          <LiveEmbed
+            nativeWidth={1440}
+            disableCanvasTransition
+            className={styles.liveEmbed}
+          >
+            <OverviewLegacy showLogos={false} />
           </LiveEmbed>
           {questionIndex !== null && (
             <>
-              <StageNotes containerRef={embedWrapperRef} />
-              <StageQuestions
-                containerRef={embedWrapperRef}
-                questionIndex={questionIndex}
-                stage={stage}
-              />
+              {SHOW_STAGE_NOTES && <StageNotes containerRef={embedWrapperRef} />}
             </>
           )}
           {hotspots.length > 0 && (
@@ -662,6 +527,7 @@ export default function OverviewPrototype1QuestionsMap() {
               containerRef={embedWrapperRef}
               nativeWidth={1440}
               hotspots={hotspots}
+              accentColor="var(--color-grey-700)"
             />
           )}
         </div>

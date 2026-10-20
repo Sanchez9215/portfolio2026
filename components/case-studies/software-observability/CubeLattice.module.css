@@ -1,0 +1,62 @@
+/* Isometric cube lattice — flat 2D SVG, dark faces so nearer cubes occlude
+   the outlines behind them; 1px grey-500 stroke at any rendered size. */
+/* Positioning context for the level callouts around the SVG. */
+.root {
+  position: relative;
+}
+
+.lattice {
+  display: block;
+  height: auto;
+  overflow: visible;
+}
+
+.face {
+  fill: var(--surface-base);
+  stroke: var(--color-grey-500);
+  stroke-width: 1px;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.outline {
+  fill: none;
+  stroke: var(--color-grey-500);
+  stroke-width: 1px;
+  stroke-linejoin: miter;
+  vector-effect: non-scaling-stroke;
+}
+
+/* Swelling spindle that travels the outline — same grey, filled, no stroke. */
+.pulse {
+  fill: var(--color-grey-500);
+  stroke: none;
+}
+
+/* Insights ring — same flat 1px grey-500 line as the hexagon. */
+.ring {
+  fill: none;
+  stroke: var(--color-grey-500);
+  stroke-width: 1px;
+  vector-effect: non-scaling-stroke;
+}
+
+/* Asset Profile cube — inverted: grey-500 faces, --surface-base outline. */
+.faceSolid {
+  fill: var(--color-grey-500);
+  stroke: var(--surface-base);
+  stroke-width: 1px;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+/* Insights threshold — dashed, so the ring's distortions read as a graph
+   rising above and falling back below it. Flat 0.25px grey-700. */
+.threshold {
+  fill: none;
+  stroke: var(--color-grey-700);
+  stroke-width: 0.25px;
+  stroke-dasharray: 4 4;
+  vector-effect: non-scaling-stroke;
+}
+

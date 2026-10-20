@@ -1,0 +1,39 @@
+.wrap {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.canvas {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+}
+
+/* Line-detail slider (tuning control, shown with the `controls` prop). */
+.control {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  font-family: var(--font-family-display);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--text-label-xs-size);
+  line-height: var(--text-label-xs-lh);
+  letter-spacing: var(--text-label-xs-ls);
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.control input {
+  flex: 1;
+  max-width: 320px;
+}
+
+/* Zero-size marker at the summit; PageCenterLine ends at its top edge. */
+.tip {
+  position: absolute;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}

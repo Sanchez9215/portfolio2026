@@ -1,0 +1,177 @@
+// Questions per role for each category, in card order
+// (What do we own? / How is it used? / What does it cost? / Are we compliant?).
+export type RoleName =
+  | "Financial Specialist"
+  | "Software Asset Manager"
+  | "IT Operations Manager";
+
+type QuestionSet = Record<RoleName, string[]>;
+
+const OWN: QuestionSet = {
+  "Financial Specialist": [
+    "How much are we currently spending with each vendor?",
+    "How much is each organizational unit spending on software?",
+    "Which department, company entity, and region owns each software license?",
+    "What products have auto renew?",
+    "What renewals are coming up this year?",
+    "How much software is locked into long term contracts vs. monthly?",
+    "How much do we still owe on contracts?",
+    "Where are we paying for overlapping tools?",
+    "How much prepaid software support and maintenance credit do we have left for this year?",
+    "What is the total cost of all software contracts and licenses that don't have an assigned team or budget owner?",
+    "For each vendor, what are our minimum spend promises?",
+    "For each vendor, do we have any prepaid credits?",
+  ],
+  "Software Asset Manager": [
+    "How many licenses are purchased?",
+    "How many licenses are assigned/unassigned/active/inactive overall?",
+    "How many licenses are assigned/unassigned/active/inactive per title?",
+    "Licenses broken down by license model?",
+    "What products have expired purchase records?",
+    "Does the number of licenses we're using match our vendor/publisher records?",
+    "What are the termination clauses for all software contracts?",
+    "What are the exact contract start and end dates, renewal notice windows?",
+    "What % of software discovered matches a purchase record?",
+    "What software is unrecognized or unmanaged?",
+    "What usage rights are there?",
+    "Which entitlements are affected by mergers, divestitures, or entity changes?",
+    "What software is present in procurement records but missing in inventory?",
+  ],
+  "IT Operations Manager": [
+    "What software and tools are installed across all of our computers, servers, and cloud environments?",
+    "Which software is end-of-life?",
+    "Which software versions are outdated?",
+    "Which apps use our SSO system to log in, and which ones are managed separately?",
+    "Which software is no longer supported by vendors?",
+    "Which key business apps rely on underlying tech or infrastructure?",
+    "Which devices are running software that isn't approved?",
+    "How much of our software is built in-house versus bought from vendors?",
+    "How much of our network are we tracking software for?",
+    "Which entitlements are affected by mergers, divestitures, or entity changes?",
+  ],
+};
+
+const USED: QuestionSet = {
+  "Financial Specialist": [
+    "How does utilization by product translate to spend?",
+    "How much are we spending on inactive licenses we can reclaim right now?",
+    "How much can we save at our renewal by paying only for what people actually use?",
+    "Which of our top 20 software publishers by spend have the lowest usage?",
+    "How much are we paying per active user each month?",
+    "How much money are we wasting on unused licenses that we can take back before our next vendor true-up?",
+    "What software has the biggest gap between high spend and low adoption?",
+    "Which teams have software usage that does not match their actual team size?",
+    "How much do we still owe on contracts?",
+    "Where are we paying for overlapping tools?",
+    "How much prepaid software support and maintenance credit do we have left for this year?",
+    "What is the total cost of all software contracts and licenses that don't have an assigned team or budget owner?",
+    "What is the gap between our predicted usage costs and our actual monthly bills?",
+    "Based on usage trends, what software will need extra licenses or budget next quarter?",
+    "How fast are we spending through our minimum contract commitments for pay-as-you-go and consumption-based tools?",
+    "For consumption-based software, how do our bills compare to our contract limits, budget, and last month's usage?",
+  ],
+  "Software Asset Manager": [
+    "How many assigned licenses are active/inactive overall?",
+    "How many assigned licenses are active/inactive per title?",
+    "Who has premium versions but only uses basic features?",
+    "Where have we deployed beyond what we bought?",
+    "What licenses can be reclaimed and reassigned right now?",
+    "How many departed employees have licenses assigned?",
+    "What % of unused software licenses are successfully being reclaimed and reassigned?",
+  ],
+  "IT Operations Manager": [
+    "What products have zero usage?",
+    "Is adoption of newly rolled-out software meeting target?",
+    "Which heavily used software is unmanaged or unsupported?",
+    "How long does a new hire wait for the right software?",
+    "How much of our software is being used on company-managed devices versus personal or unapproved devices?",
+    "What products have declining usage?",
+    "Which computers or virtual machines have unused software running in the background and wasting system resources?",
+    "Which apps drag down computer performance and cause lag during peak work hours?",
+  ],
+};
+
+const COST: QuestionSet = {
+  "Financial Specialist": [
+    "What renewals fall in the next 90, 180, and 365 days, and for how much?",
+    "How much of our total software spend goes to our top 10 software publishers?",
+    "How has our total software spend shifted over the past years?",
+    "How much of this year's identified software savings has actually been approved, locked into contracts, and saved in our budget?",
+    "How do our upcoming renewal prices compare to what we paid previously, what we budgeted, and standard market rates?",
+    "Which software publishers and departments are over or under budget this month and year-to-date, and by how much?",
+    "What are the tax implications and payout schedules for our new multi-year software contracts?",
+    "How much software is being paid for on corporate credit cards or expense reports instead of through central procurement?",
+    "What are the year-over-year spend changes, and what drives it?",
+    "How much software savings have we actually achieved compared to what we identified?",
+    "How much are we spending on software per employee compared to industry averages?",
+  ],
+  "Software Asset Manager": [
+    "What is our unit cost per license by product?",
+    "Are we paying different prices for the same product?",
+    "How much are we spending per year, and what is the full total cost, for each of our top software vendors?",
+    "How much can we save reclaiming unused licenses?",
+    "How much will software renewals cost us?",
+    "How much money are we losing each year on unused licenses?",
+    "Are we on the right edition or bundle for how it's used?",
+    "What extra fees, true-up payments, or rate increases kick in if we over-assign licenses?",
+    "Are we paying maintenance on retired or unused licenses?",
+    "How much can we save downgrading tiers?",
+    "Which software products have the highest cost per license compared to similar deals across our company?",
+    "What discount percentage did we get on recent contract renewals compared to past deals?",
+    "How much extra are vendor price hikes and inflation adjustments?",
+  ],
+  "IT Operations Manager": [
+    "How will our upcoming hiring plans affect our software license needs and budget?",
+    "What is the true total cost of each core app, including licenses, servers, support, and admin work?",
+    "How much did we spend in the last year on vendor support, consultants, and emergency fixes?",
+    "How much effort goes into maintaining overlapping tools?",
+    "How much do we spend each year to maintain, patch, and manage each software suite?",
+    "How much are we paying for servers, storage, and power to run our self-hosted software?",
+    "How much will upcoming cloud moves cost us?",
+    "How much staff time is spent setting up software and tracking licenses manually?",
+  ],
+};
+
+const COMPLIANT: QuestionSet = {
+  "Financial Specialist": [
+    "Which software renewals and true-ups are coming up?",
+    "Do our vendor invoices match our contract rates, or are we being overbilled?",
+    "How much total money do we risk losing to software audit penalties?",
+    "Is it cheaper to fix our license shortages now than to pay the audit penalty?",
+    "How has our software financial risk changed quarter over quarter?",
+    "Which software contracts contain hidden traps like minimum spend rules, auto-renewals, or cancellation fees?",
+    "Which software audits are currently open?",
+    "What is our financial risk from improper software usage in newly acquired companies or joint ventures?",
+    "How much cash do we have set aside to cover unexpected true-up fees?",
+    "How much have we paid vendors over the past years in audit settlements, surprise true-ups, and late fees?",
+  ],
+  "Software Asset Manager": [
+    "For each product do we have a license shortage or surplus?",
+    "What publishers pose the highest audit risk?",
+    "Do our owned licenses match our actual usage for high-audit-risk publishers?",
+    "Is the open-source code built into our software following all of its licensing rules?",
+    "Which publishers have gaps between what we actually have installed and what we reported paying for?",
+    "How much would we owe in extra license fees if an audit happened today?",
+    "Are all software licenses properly assigned without violating location restrictions or export laws?",
+    "Which software contracts are coming up for a routine audit based on schedule or recent vendor outreach?",
+    "Which software products are violating specific publisher rules?",
+    "Are our server environments following all product usage rules, virtualization limits, and indirect access policies?",
+    "When were we last audited by publishers?",
+    "Are we following licensing rules across our virtual servers, cloud systems, and processor cores?",
+    "Are we using our software strictly within approved company subsidiaries, locations, and contractual limits?",
+  ],
+  "IT Operations Manager": [
+    "Which active software accounts belong to former employees?",
+    "Which unapproved or banned software apps are running?",
+    "What percentage of our software has all critical security patches installed?",
+    "Which computers or servers are running outdated software that creates security risks?",
+    "Can we collect and share required audit records before the vendor's deadline?",
+    "What percentage of our software meets company security, encryption, and login rules?",
+    "What percentage of our software complies with privacy laws like GDPR and HIPAA?",
+    "How long on average does it take our team to fix critical software security flaws across our entire system?",
+    "Are we following all rules and obligations for the open-source software we use?",
+    "Are any of our apps violating data location or export control laws?",
+  ],
+};
+
+export const QUESTIONS_BY_CATEGORY: QuestionSet[] = [OWN, USED, COST, COMPLIANT];

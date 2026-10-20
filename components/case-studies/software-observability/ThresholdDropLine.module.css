@@ -1,0 +1,28 @@
+/* Sits behind the host section's content (z-index -1 inside the section's own
+   stacking context) and spans from the Framework figure's outer circle down to
+   the section's bottom edge. */
+/* Doubled class beats the host section's own `> *` column rule (e.g.
+   .dataLimitations > * { grid-column: 1 / 9 }) without !important. For an
+   absolutely positioned grid child, an explicit grid-column makes that grid
+   area its containing block, shifting left:0 by the section's padding; auto
+   placement keeps the containing block at the section's padding box, which
+   the measurements in the .tsx are relative to. */
+.line.line {
+  grid-column: auto;
+  grid-row: auto;
+}
+
+.line {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  overflow: visible;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.line path {
+  stroke: var(--color-grey-500);
+  stroke-width: 1px;
+  vector-effect: non-scaling-stroke;
+}

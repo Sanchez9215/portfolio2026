@@ -17,8 +17,8 @@
 
 .heading {
   position:       absolute;
-  top:            var(--spacing-2xl);
-  left:           var(--spacing-xl);
+  top:            0;
+  left:           0;
   color:          var(--text-secondary);
   font-family:    var(--font-family-body);
   font-weight:    var(--font-weight-bold);

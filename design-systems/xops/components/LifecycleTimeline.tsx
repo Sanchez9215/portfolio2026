@@ -76,9 +76,15 @@ export function LifecycleTimeline({ events }: LifecycleTimelineProps) {
         })
       : filteredEvents.find((e) => new Date(e.date).getUTCFullYear() === year);
     if (!targetEvent) return;
-    logRef.current
-      ?.querySelector<HTMLElement>(`[data-event-id="${targetEvent.id}"]`)
-      ?.scrollIntoView({ block: "start" });
+    // Scroll only the event log (scrollIntoView would also move the page): the
+    // target — the newest event of the month, i.e. its last day — eases to the log's
+    // top edge, as the first event in view.
+    const log = logRef.current;
+    const target = log?.querySelector<HTMLElement>(`[data-event-id="${targetEvent.id}"]`);
+    if (!log || !target) return;
+    const offset = target.getBoundingClientRect().top - log.getBoundingClientRect().top;
+    const paddingTop = parseFloat(getComputedStyle(log).paddingTop) || 0;
+    log.scrollTo({ top: log.scrollTop + offset - paddingTop, behavior: "smooth" });
   };
 
   return (

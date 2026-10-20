@@ -1,19 +1,36 @@
 .timeline {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--xops-spacing-16);
+  /* Three rows: search, stage filter, then the event log + year/month nav as two
+     columns — so the nav's top lines up with the log's top edge. */
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-rows: auto auto minmax(0, 1fr);
+  column-gap: var(--xops-spacing-16);
+  row-gap: var(--xops-spacing-24);
+  align-items: start;
   width: 100%;
   flex: 1;
   min-height: 0;
 }
 
+/* Flattened into the grid above. */
 .main {
-  display: flex;
-  flex-direction: column;
-  gap: var(--xops-spacing-16);
-  flex: 1;
-  min-width: 0;
-  min-height: 0;
+  display: contents;
+}
+
+/* Search and the stage filter each span the full width (a row apiece). */
+.main > * {
+  grid-column: 1 / -1;
+}
+
+/* The event log and the nav share the third row as two columns. */
+.main > .log {
+  grid-column: 1;
+  grid-row: 3;
+}
+
+.timeline > :last-child {
+  grid-column: 2;
+  grid-row: 3;
 }
 
 .searchRow {
@@ -50,6 +67,7 @@
 }
 
 .log {
+  align-self: stretch;
   border: var(--xops-border-width-1) solid var(--xops-border-divider);
   border-radius: var(--xops-radius-12);
   padding: var(--xops-spacing-16) var(--xops-spacing-12);

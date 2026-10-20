@@ -1,15 +1,12 @@
-.questionRow {
-  display: flex;
-  justify-content: center;
-  gap: var(--spacing-4xl);
+/* Spacing under the PrototypeTabs row. */
+.tabsRow {
   margin-bottom: var(--spacing-3xl);
 }
 
-.question {
-  background: none;
-  border: 0;
-  padding: 0;
-  cursor: pointer;
+/* A PrototypeTabs row that sits under an embed: 128px above, 64px below. */
+.tabsRowBelow {
+  margin-top: var(--spacing-5xl);
+  margin-bottom: var(--spacing-3xl);
 }
 
 /* Two text cards at the tooltips' own level (above the dim overlay, same
@@ -44,7 +41,8 @@
   font-size: var(--text-body-xs-size);
   line-height: var(--text-body-xs-lh);
   letter-spacing: var(--text-label-sm-ls);
-  color: var(--text-primary-strong);
+  /* The notes sit on the lifecycle card's light surface. */
+  color: var(--text-inverse-primary);
 }
 
 .stageNoteBody {
@@ -53,48 +51,11 @@
   font-weight: var(--font-weight-semibold);
   font-size: var(--text-body-xs-size);
   line-height: var(--text-body-xs-lh);
-  color: var(--color-grey-50);
+  color: var(--text-inverse-secondary);
 }
 
-/* Stage-question column: plain list left of the lifecycle card (see
-   StageQuestions), same layer and type as the note cards; role pills copy the
-   tooltips' pill. */
-.stageQuestions {
-  position: absolute;
-  z-index: 11;
-  width: 232px;
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-md);
-  box-sizing: border-box;
-  pointer-events: none;
-}
-
-.stageQuestion {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: var(--spacing-sm);
-}
-
-.stageQuestionRoles {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--spacing-sm);
-}
-
-.stageRoleTag {
-  display: inline-flex;
-  align-items: center;
-  border-radius: var(--radius-pill);
-  background: var(--surface-card);
-  color: var(--badge-text);
-  font-family: var(--font-family-display);
-  font-weight: var(--font-weight-semibold);
-  font-size: var(--text-label-2xs-size);
-  line-height: var(--text-label-2xs-lh);
-  letter-spacing: var(--text-label-2xs-ls);
-  padding-inline: var(--spacing-sm);
-  padding-block: var(--spacing-xs);
-  white-space: nowrap;
+/* LiveEmbed's own container already clips (overflow:hidden); this only rounds
+   it. Tooltips/notes are siblings of the embed, so they aren't clipped. */
+.liveEmbed {
+  border-radius: var(--border-radius-md);
 }

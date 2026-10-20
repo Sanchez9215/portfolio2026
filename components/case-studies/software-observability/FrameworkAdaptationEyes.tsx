@@ -14,6 +14,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { PointerEvent as ReactPointerEvent, Ref } from "react";
 import { createPortal } from "react-dom";
 import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Almond } from "./ObservabilityEyes";
 import {
   useDragPlacementLogger,
@@ -26,6 +27,12 @@ import {
 import Label from "../../Label";
 import labelBlockStyles from "../../LabelBlock.module.css";
 import styles from "./FrameworkAdaptationEyes.module.css";
+import {
+  USAGE_BEAM_EYE_EVENT,
+  USAGE_BEAM_PROGRESS_EVENT,
+  type UsageBeamEyeDetail,
+  type UsageBeamProgressDetail,
+} from "./usageBeamEvent";
 
 interface Point {
   x: number;
@@ -33,6 +40,8 @@ interface Point {
 }
 
 type ScatterKey = "scatter-0";
+gsap.registerPlugin(ScrollTrigger);
+
 type ChildKey = "satelliteA" | "satelliteB" | "bigEye" | ScatterKey;
 type LeafKey = string;
 
@@ -113,6 +122,13 @@ const CONNECTOR_GAP = 8;
 // without needing to measure its DOM rect.
 const PUPIL_RATIO = 0.3;
 
+// Turn on to draw satelliteA's scripted beam at the Success section's squares
+// again (the interaction is intact, just not rendered).
+const SHOW_USAGE_BEAM = false;
+// Turn on to draw bigEye's pointer-driven beam (and its text-inversion overlay)
+// again — tracking/geometry still runs, it just isn't rendered.
+const SHOW_POINTER_BEAM = true;
+
 // Flat-top-cone beam, shooting from bigEye's pupil (confirmed values):
 // top circle radius = 75% of the pupil's own radius, base circle radius =
 // 3x the top radius at rest, base center = BEAM_ANGLE (down-right) from the
@@ -121,6 +137,7 @@ const PUPIL_RATIO = 0.3;
 // instead eases toward the cursor (see the mouse-tracking effect below),
 // stretching the cone while keeping this same taper angle (computeBeam()).
 const BEAM_ANGLE = Math.PI / 4;
+const RETRACT_VIEWPORT_RATIO = 0.75;
 const BEAM_TOP_RATIO = 0.75;
 const BEAM_DISTANCE_RATIO = 1.8;
 const BEAM_BASE_RATIO = 3;
@@ -215,14 +232,30 @@ function computeBeam(
   topRadius: number,
   baseCenter: Point,
   bigEyeWidthPx: number,
+  maxBottom: number = Infinity,
 ) {
   const flareRate =
     ((BEAM_BASE_RATIO - 1) * topRadius) /
     (BEAM_DISTANCE_RATIO * bigEyeWidthPx);
-  const distance = Math.hypot(
+  let distance = Math.hypot(
     baseCenter.x - topCenter.x,
     baseCenter.y - topCenter.y,
   );
+  // Shorten the beam along its own direction until the base cap's bottom
+  // fits inside maxBottom (the outer edge of the next section's top
+  // padding) — the cap ends rounded instead of being cut flat.
+  const dy = baseCenter.y - topCenter.y;
+  if (topCenter.y + dy + topRadius + flareRate * distance > maxBottom) {
+    const t = Math.max(
+      0,
+      (maxBottom - topCenter.y - topRadius) / (dy + flareRate * distance),
+    );
+    baseCenter = {
+      x: topCenter.x + (baseCenter.x - topCenter.x) * t,
+      y: topCenter.y + dy * t,
+    };
+    distance *= t;
+  }
   const baseRadius = topRadius + flareRate * distance;
   return {
     path: frustumPath(topCenter, topRadius, baseCenter, baseRadius),
@@ -238,9 +271,13 @@ function computeBeam(
 function EyeShape({
   className,
   pupilRef,
+  fillPupil = false,
 }: {
   className?: string;
   pupilRef?: Ref<HTMLDivElement>;
+  // Scroll-scrubbed solid fill inside the pupil — every eye except the two
+  // beam eyes (satelliteA, bigEye), which stay untouched.
+  fillPupil?: boolean;
 }) {
   return (
     <div className={className}>
@@ -251,7 +288,9 @@ function EyeShape({
         strokeWidth={1}
         strokeDasharray={EYE_DASH}
       />
-      <div className={styles.pupil} ref={pupilRef} />
+      <div className={styles.pupil} ref={pupilRef}>
+        {fillPupil && <div className={styles.pupilFill} data-pupil-fill />}
+      </div>
     </div>
   );
 }
@@ -360,6 +399,10 @@ export default function FrameworkAdaptationEyes({
   } | null>(null);
 
   const [beamPath, setBeamPath] = useState<string | null>(null);
+  // Clip-path of the scripted shot from satelliteA at the Success section's
+  // square — its own beam layer, so the pointer-driven bigEye beam is untouched.
+  // Drawn as far out as the Success section tells it (and gone at 0).
+  const [shotClipPath, setShotClipPath] = useState<string | null>(null);
   // Top/base caps rendered as their own full circles (not just whatever
   // partial arc happens to fall out of the tangent path) so both ends read
   // as clean filled yellow circles.
@@ -375,6 +418,8 @@ export default function FrameworkAdaptationEyes({
     topRadius: number;
     bigEyeWidthPx: number;
     staticBaseCenter: Point;
+    // Bottom of the wrap + the next section's top padding, in wrap coords.
+    getMaxBottom: () => number;
   } | null>(null);
   // True once the pointer has entered the section at least once — while
   // true, the measure() pass above leaves beamPath/beamCaps alone (the
@@ -529,14 +574,35 @@ export default function FrameworkAdaptationEyes({
           x: topCenter.x + Math.cos(BEAM_ANGLE) * distance,
           y: topCenter.y + Math.sin(BEAM_ANGLE) * distance,
         };
+        // Read live (not cached at measure time): the wrap's height can change
+        // after this pass (fonts, images, sections above reflowing), which
+        // would leave a cached limit stale and let the beam run past it.
+        const getMaxBottom = () => {
+          if (!outerEl) return Infinity;
+          const nextSectionPaddingTop = parseFloat(
+            getComputedStyle(
+              (outerEl.nextElementSibling as HTMLElement | null) ?? document.body,
+            ).paddingTop,
+          );
+          return (
+            outerEl.getBoundingClientRect().height + (nextSectionPaddingTop || 0)
+          );
+        };
         beamGeometryRef.current = {
           topCenter,
           topRadius,
           bigEyeWidthPx,
           staticBaseCenter,
+          getMaxBottom,
         };
         if (!beamTrackingActiveRef.current) {
-          const beam = computeBeam(topCenter, topRadius, staticBaseCenter, bigEyeWidthPx);
+          const beam = computeBeam(
+            topCenter,
+            topRadius,
+            staticBaseCenter,
+            bigEyeWidthPx,
+            getMaxBottom(),
+          );
           setBeamPath(beam.path);
           setBeamCaps(beam.caps);
         }
@@ -640,6 +706,7 @@ export default function FrameworkAdaptationEyes({
         geo.topRadius,
         base,
         geo.bigEyeWidthPx,
+        geo.getMaxBottom(),
       );
       setBeamPath(beam.path);
       setBeamCaps(beam.caps);
@@ -678,15 +745,30 @@ export default function FrameworkAdaptationEyes({
       });
     }
 
+    // Last known pointer position — re-evaluated on scroll too, since the
+    // page moves under a still cursor without firing pointermove.
+    let lastPointer: { x: number; y: number } | null = null;
+
     function handlePointerMove(e: PointerEvent) {
+      lastPointer = { x: e.clientX, y: e.clientY };
+      evaluate(e.clientX, e.clientY);
+    }
+
+    function handleScroll() {
+      if (lastPointer) evaluate(lastPointer.x, lastPointer.y);
+    }
+
+    function evaluate(clientX: number, clientY: number) {
       if (!outerEl) return;
       const rect = getObservabilityRect();
       if (!rect) return;
       const inside =
-        e.clientX >= rect.left &&
-        e.clientX <= rect.right &&
-        e.clientY >= rect.top &&
-        e.clientY <= rect.bottom;
+        clientX >= rect.left &&
+        clientX <= rect.right &&
+        clientY >= rect.top &&
+        clientY <= rect.bottom &&
+        // Past 75% down the viewport the beam retracts to its resting angle.
+        clientY <= window.innerHeight * RETRACT_VIEWPORT_RATIO;
       if (inside === isInsideObservability) {
         if (!inside) return;
       } else {
@@ -699,21 +781,82 @@ export default function FrameworkAdaptationEyes({
       // Relative to the outer wrap (same coordinate space as topCenter/
       // staticBaseCenter above), not this component's own wrapEl.
       const outerRect = outerEl.getBoundingClientRect();
-      trackToward(e.clientX - outerRect.left, e.clientY - outerRect.top);
+      trackToward(clientX - outerRect.left, clientY - outerRect.top);
     }
 
     function handlePointerLeave() {
+      lastPointer = null;
       if (!isInsideObservability) return;
       isInsideObservability = false;
       revertToStatic();
     }
 
+    // Scripted shot: satelliteA draws its own beam at the Success section's
+    // square, as far out as it's told (progress 0 → 1 — the squares' timeline
+    // drives it, so it runs backwards on scroll up too). Flat top = satelliteA's
+    // pupil (same ratio as the bigEye beam); the base circle sits on the target
+    // and is sized to completely cover it; the beam stays on at 1. Not driven by
+    // the pointer.
+    function handleEyeQuery(event: Event) {
+      const pupil = childPupilRefs.current.satelliteA;
+      const detail = (event as CustomEvent<UsageBeamEyeDetail>).detail;
+      if (!pupil || !detail) return;
+      const rect = pupil.getBoundingClientRect();
+      detail.respond({
+        x: rect.left + rect.width / 2,
+        y: rect.top + rect.height / 2,
+      });
+    }
+
+    function handleProgress(event: Event) {
+      const detail = (event as CustomEvent<UsageBeamProgressDetail>).detail;
+      const pupil = childPupilRefs.current.satelliteA;
+      if (!detail || !pupil || !outerEl) return;
+      // Beam is hidden for now — the progress/eye events still fire, so the
+      // squares' own animation (UsageBeamReveal) is unaffected.
+      if (!SHOW_USAGE_BEAM) return;
+      if (detail.progress <= 0) {
+        setShotClipPath(null);
+        return;
+      }
+      const pupilRect = pupil.getBoundingClientRect();
+      const outerRect = outerEl.getBoundingClientRect();
+      const topCenter = {
+        x: pupilRect.left + pupilRect.width / 2 - outerRect.left,
+        y: pupilRect.top + pupilRect.height / 2 - outerRect.top,
+      };
+      const topRadius = (pupilRect.width / 2) * BEAM_TOP_RATIO;
+      const target = {
+        x: detail.clientX - outerRect.left,
+        y: detail.clientY - outerRect.top,
+      };
+      const base = {
+        x: topCenter.x + (target.x - topCenter.x) * detail.progress,
+        y: topCenter.y + (target.y - topCenter.y) * detail.progress,
+      };
+      const baseRadius =
+        topRadius + (detail.coverRadius - topRadius) * detail.progress;
+      setShotClipPath(
+        `path('${frustumPath(topCenter, topRadius, base, baseRadius)} ${circlePathD(
+          topCenter.x,
+          topCenter.y,
+          topRadius,
+        )} ${circlePathD(base.x, base.y, baseRadius)}')`,
+      );
+    }
+
     outerEl.addEventListener("pointermove", handlePointerMove);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    window.addEventListener(USAGE_BEAM_EYE_EVENT, handleEyeQuery);
+    window.addEventListener(USAGE_BEAM_PROGRESS_EVENT, handleProgress);
     outerEl.addEventListener("pointerleave", handlePointerLeave);
 
     return () => {
       outerEl.removeEventListener("pointermove", handlePointerMove);
       outerEl.removeEventListener("pointerleave", handlePointerLeave);
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener(USAGE_BEAM_EYE_EVENT, handleEyeQuery);
+      window.removeEventListener(USAGE_BEAM_PROGRESS_EVENT, handleProgress);
       activeTween?.kill();
     };
   }, []);
@@ -733,7 +876,7 @@ export default function FrameworkAdaptationEyes({
   // below — both clip to the exact same frustum+caps region, in the outer
   // wrap's coordinate space.
   const beamClipPath =
-    beamPath && beamCaps
+    SHOW_POINTER_BEAM && beamPath && beamCaps
       ? `path('${beamPath} ${circlePathD(
           beamCaps.top.cx,
           beamCaps.top.cy,
@@ -744,6 +887,32 @@ export default function FrameworkAdaptationEyes({
           beamCaps.base.r,
         )}')`
       : null;
+
+  // Grey-500 disc inside every non-beam pupil scales out from its center,
+  // scrubbed 1:1 with scroll through the eyes row (reverses on scroll up).
+  useEffect(() => {
+    const wrapEl = wrapRef.current;
+    if (!wrapEl) return;
+    const rowEl = wrapEl.closest("[data-eyes-row]") ?? wrapEl;
+    const fills = wrapEl.querySelectorAll("[data-pupil-fill]");
+    const ctx = gsap.context(() => {
+      gsap.fromTo(
+        fills,
+        { scale: 0 },
+        {
+          scale: 1,
+          ease: "none",
+          scrollTrigger: {
+            trigger: rowEl,
+            start: "top 60%",
+            end: "center center",
+            scrub: true,
+          },
+        },
+      );
+    }, wrapEl);
+    return () => ctx.revert();
+  }, []);
 
   return (
     <div
@@ -801,6 +970,19 @@ export default function FrameworkAdaptationEyes({
           outerWrapEl,
         )}
 
+      {shotClipPath &&
+        outerWrapEl &&
+        createPortal(
+          // satelliteA's scripted beam (see handleFire) — same layer styling as
+          // the bigEye beam, clipped to its own frustum + caps.
+          <div
+            className={styles.beamLayer}
+            style={{ clipPath: shotClipPath }}
+            aria-hidden="true"
+          />,
+          outerWrapEl,
+        )}
+
       {beamClipPath &&
         outerWrapEl &&
         textOverlayRect &&
@@ -851,7 +1033,7 @@ export default function FrameworkAdaptationEyes({
           ...(hubTopPx !== null ? { top: `${hubTopPx}px` } : null),
         }}
       >
-        <EyeShape className={styles.eyeInner} />
+        <EyeShape className={styles.eyeInner} fillPupil />
       </div>
 
       {(["satelliteA", "satelliteB", "bigEye"] as const).map((key) => {
@@ -875,6 +1057,7 @@ export default function FrameworkAdaptationEyes({
             }}
           >
             <EyeShape
+              fillPupil={key === "satelliteB"}
               className={styles.eyeInner}
               pupilRef={(el) => {
                 childPupilRefs.current[key] = el;
@@ -909,6 +1092,7 @@ export default function FrameworkAdaptationEyes({
             }}
           >
             <EyeShape
+              fillPupil
               className={styles.eyeInner}
               pupilRef={(el) => {
                 childPupilRefs.current[s.key] = el;
@@ -934,7 +1118,7 @@ export default function FrameworkAdaptationEyes({
             data-eye={cfg.key}
             onPointerDown={(e) => startLeafDrag(cfg.key, e)}
           >
-            <EyeShape className={styles.eyeInner} />
+            <EyeShape className={styles.eyeInner} fillPupil />
           </div>
         );
       })}

@@ -1,12 +1,22 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import LabelBlock from "@/components/LabelBlock";
 import ContextBlock from "@/components/ContextBlock";
 import Label from "@/components/Label";
 import TitleBlock from "@/components/TitleBlock";
 import Block from "@/components/Block";
 import styles from "@/app/work/software-observability/software-observability.module.css";
+import { BRIDGE_TIP_VIEWPORT_POSITION } from "./bridgeScroll";
+import { scheduleScrollTriggerRefresh } from "./scrollTriggerRefresh";
+
+gsap.registerPlugin(ScrollTrigger);
+
+// Each row (badge, connectors, extensions, insight + goal text) fades in as the
+// drawn line tip reaches its badge.
+const ROW_FADE_SECONDS = 0.3;
 
 // The curve's own native vertical drop (its path runs from y=0.5 to
 // y=46.5) — the badge/spine target Y has to back this out, so the curve's
@@ -78,9 +88,9 @@ export default function InsightsGoalsContent() {
   const insightItemRefs = useRef<(HTMLDivElement | null)[]>([]);
   const goalItemRefs = useRef<(HTMLDivElement | null)[]>([]);
 
-  // Static layout — no scroll-triggered reveal. The spine runs the full
-  // section height, and badges/connectors/extensions are positioned once
-  // (and on resize) from the real DOM layout, all visible immediately.
+  // Layout is measured from the real DOM (and on resize). The spine draws down
+  // the centre as you scroll — picking up from the bridge's exit line at this
+  // section's top edge — and each row fades in as the tip reaches its badge.
   useEffect(() => {
     const sectionEl = labelWrapRef.current?.closest("section");
     const svgEl = svgRef.current;
@@ -109,6 +119,10 @@ export default function InsightsGoalsContent() {
     ) {
       return;
     }
+
+    // Badge top Y per row, section-relative; set by layout(), read lazily by the
+    // scroll triggers so they follow re-measures.
+    let rowYs: number[] = [];
 
     const layout = () => {
       const sectionRect = sectionEl.getBoundingClientRect();
@@ -140,6 +154,7 @@ export default function InsightsGoalsContent() {
         sectionRect.left -
         goalPadding;
 
+      rowYs = badgeTopYs;
       svgEl.setAttribute("viewBox", `0 0 ${width} ${height}`);
 
       // Spine runs the full section height, flush with the top edge, fully
@@ -189,7 +204,68 @@ export default function InsightsGoalsContent() {
 
     layout();
     window.addEventListener("resize", layout);
-    return () => window.removeEventListener("resize", layout);
+
+    const ctx = gsap.context(() => {
+      const length = () => spineEl.getTotalLength();
+      gsap.set(spineEl, {
+        strokeDasharray: length,
+        strokeDashoffset: length,
+      });
+      // Draws forward only: it follows scroll down but never un-draws when you
+      // scroll back up (furthest progress reached wins).
+      let furthest = 0;
+      const applySpine = () =>
+        gsap.set(spineEl, {
+          strokeDasharray: length(),
+          strokeDashoffset: length() * (1 - furthest),
+        });
+      ScrollTrigger.create({
+        trigger: sectionEl,
+        start: `top ${BRIDGE_TIP_VIEWPORT_POSITION}`,
+        end: `bottom ${BRIDGE_TIP_VIEWPORT_POSITION}`,
+        invalidateOnRefresh: true,
+        onRefreshInit: () => {
+          layout();
+          applySpine();
+        },
+        onUpdate: (self) => {
+          if (self.progress <= furthest) return;
+          furthest = self.progress;
+          applySpine();
+        },
+      });
+
+      [0, 1, 2].forEach((i) => {
+        const row = [
+          badgeEls[i],
+          rightConnEls[i],
+          leftConnEls[i],
+          rightExtEls[i],
+          leftExtEls[i],
+          insightItemRefs.current[i],
+          goalItemRefs.current[i],
+        ];
+        const fadeTo = (opacity: number) =>
+          gsap.to(row, {
+            opacity,
+            duration: ROW_FADE_SECONDS,
+            ease: "none",
+            overwrite: true,
+          });
+        ScrollTrigger.create({
+          trigger: sectionEl,
+          start: () => `top+=${rowYs[i]} ${BRIDGE_TIP_VIEWPORT_POSITION}`,
+          // Once in, stays in — no fade-out when scrolling back up.
+          onEnter: () => fadeTo(1),
+        });
+      });
+    }, sectionEl);
+    scheduleScrollTriggerRefresh();
+
+    return () => {
+      window.removeEventListener("resize", layout);
+      ctx.revert();
+    };
   }, []);
 
   return (
@@ -210,6 +286,7 @@ export default function InsightsGoalsContent() {
             ref={(el) => {
               rightConnectorRefs.current[i] = el;
             }}
+            className={styles.insightsGoalsReveal}
             d={CONNECTOR_PATH_D}
             stroke="var(--surface-card-border)"
             strokeWidth={1}
@@ -222,6 +299,7 @@ export default function InsightsGoalsContent() {
             ref={(el) => {
               leftConnectorRefs.current[i] = el;
             }}
+            className={styles.insightsGoalsReveal}
             d={CONNECTOR_PATH_D}
             stroke="var(--surface-card-border)"
             strokeWidth={1}
@@ -231,6 +309,7 @@ export default function InsightsGoalsContent() {
         {[0, 1, 2].map((i) => (
           <line
             key={i}
+            className={styles.insightsGoalsReveal}
             ref={(el) => {
               rightExtensionRefs.current[i] = el;
             }}
@@ -241,6 +320,7 @@ export default function InsightsGoalsContent() {
         {[0, 1, 2].map((i) => (
           <line
             key={i}
+            className={styles.insightsGoalsReveal}
             ref={(el) => {
               leftExtensionRefs.current[i] = el;
             }}
@@ -256,7 +336,7 @@ export default function InsightsGoalsContent() {
           ref={(el) => {
             badgeRefs.current[i] = el;
           }}
-          className={styles.insightsGoalsBadge}
+          className={`${styles.insightsGoalsBadge} ${styles.insightsGoalsReveal}`}
         >
           {String(i + 1).padStart(2, "0")}
         </div>
@@ -304,7 +384,7 @@ export default function InsightsGoalsContent() {
               ref={(el) => {
                 insightItemRefs.current[i] = el;
               }}
-              className={styles.insightsGoalsItem}
+              className={`${styles.insightsGoalsItem} ${styles.insightsGoalsReveal}`}
             >
               <div
                 ref={(el) => {
@@ -334,7 +414,7 @@ export default function InsightsGoalsContent() {
               ref={(el) => {
                 goalItemRefs.current[i] = el;
               }}
-              className={styles.insightsGoalsItem}
+              className={`${styles.insightsGoalsItem} ${styles.insightsGoalsReveal}`}
             >
               <div className={styles.insightsGoalsItemHeading}>
                 <p className={styles.insightsGoalsItemTitle}>{item.title}</p>

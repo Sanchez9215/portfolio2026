@@ -247,7 +247,7 @@ const makeEnterpriseColumns = (
     },
     {
       key: "purchased",
-      label: "Purchased Licenses",
+      label: "Licenses Purchased",
       width: "auto",
       align: "right",
       sortable: true,
@@ -362,7 +362,7 @@ const makePerpetualColumns = (
   },
   {
     key: "purchased",
-    label: "Purchased Licenses",
+    label: "Licenses Purchased",
     width: "auto",
     align: "right",
     sortable: true,

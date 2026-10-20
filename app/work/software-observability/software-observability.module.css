@@ -145,7 +145,7 @@ section.workingBackwards {
 
 /* Rules on the grid's inner edges only: under the top row, and between the two
    columns (right edge of the left cells) — together a centered cross. */
-.workingBackwards > :nth-child(4) > :nth-child(-n+2) {
+.workingBackwards > :nth-child(4) > :nth-child(-n + 2) {
   border-bottom: 1px solid var(--color-grey-500);
 }
 
@@ -222,7 +222,9 @@ section.systemMap {
    shared .questionRow's own bottom margin, made for the embeds it sits above. */
 .systemMap > :nth-child(3) {
   grid-column: 1 / -1;
-  margin-top: calc(var(--spacing-xl) + var(--spacing-3xl)); /* 128px from the text above */
+  margin-top: calc(
+    var(--spacing-xl) + var(--spacing-3xl)
+  ); /* 128px from the text above */
   margin-bottom: var(--spacing-xl);
 }
 
@@ -248,6 +250,13 @@ section.systemMap {
   text-wrap: wrap;
 }
 
+/* Data Limitations' label/display block and detail block are narrower than the
+   rest (6 columns). */
+.dataLimitations > :first-child,
+.dataLimitations > :nth-child(2) {
+  grid-column: 1 / 6;
+}
+
 /* Detail block (32px): 1.2 — see .brief above. (The integrations line below is a
    regular 18px detail block and keeps its own line height.) */
 .dataLimitations > :nth-child(2) {
@@ -260,17 +269,112 @@ section.systemMap {
   color: var(--text-subtle);
 }
 
+/* Integrations row: logos (24px tall, single color via currentColor) next to
+   the names that don't have a logo yet — logos replace names as they arrive. */
+.dataLimitationsIntegrations {
+  margin-top: var(--spacing-xl);
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: var(--spacing-xl);
+}
+
+.dataLimitationsLogo {
+  height: 24px;
+  width: auto;
+  max-width: 200px;
+}
+
+/* Per-logo overrides — tweak each logo's size here (shared defaults above). */
+.dataLimitationsLogoAriba {
+}
+
+.dataLimitationsLogoFlexera {
+  height: 20px;
+}
+
+.dataLimitationsLogoOkta {
+  height: 32px;
+}
+
+.dataLimitationsLogoMicrosoft {
+}
+
+/* The two text blocks end 64px to the left of the snake: --snake-x is the
+   line's x from the section's left edge (set by ThresholdDropLine), minus the
+   grid's inline padding and the gap. Height just follows the wrapped text. */
+.dataLimitations > :nth-child(-n + 2) {
+  max-width: calc(
+    var(--snake-x, 9999px) - var(--spacing-xl) - var(--spacing-3xl)
+  );
+}
+
+/* ThresholdDropLine sits behind this section's content (z-index -1 inside its
+   own stacking context). */
+section.dataLimitations {
+  position: relative;
+  isolation: isolate;
+}
+
 section.startingDesign,
 section.dataLimitations {
   row-gap: var(--spacing-xl);
+}
+
+/* PageCenterLine runs down the page center through this section (behind its
+   content); the copy starts 32px to the right of it. --center-line-x is set by
+   PageCenterLine (line x from the content-box left). */
+section.startingDesign,
+section.overviewPrototype1 {
+  position: relative;
+  isolation: isolate;
+}
+
+section.startingDesign {
+  min-height: 100vh;
+  align-content: center;
+}
+
+section.startingDesign > :not(svg) {
+  grid-column: 1 / -1;
+  margin-left: calc(var(--center-line-x, 0px) + var(--spacing-xl));
 }
 
 /* ── section.success ────────────────────────────────────────── */
 /* Figma node 1:26: label + display statement only — no min-height (the frame
    hugs its content, 510px at 1440). */
 
-.success > * {
+/* Text keeps the same 8-column span as every other text section. The square of
+   squares is taken out of the flow (absolute) and anchored to the top-right
+   corner of the section's inner padding — the grid area is the content box — so
+   it can grow and overflow leftward without pushing or squeezing the text. */
+.success > :first-child {
   grid-column: 1 / 9;
+}
+
+/* Offsets are the section's own padding (Section's padding-block, .cs-grid's
+   padding-inline), so the square's top-right corner sits exactly on the inner
+   padding's top-right corner. */
+.success > .successSquares {
+  position: absolute;
+  top: calc(2 * var(--spacing-5xl)); /* matches the section's padding-top */
+  right: var(--spacing-4xl);
+  /* Above the beam layer (z-index 2 in FrameworkAdaptationEyes.module.css), so
+     the beam's difference blend doesn't recolor the squares — the unused ones
+     stay the red they're set to. The beam still shows around and between them. */
+  z-index: 3;
+}
+
+@media (max-width: 900px) {
+  .success > .successSquares {
+    right: var(--spacing-xl);
+  }
+}
+
+section.success {
+  position: relative;
+  /* Section default (128px) + 128px more above. */
+  padding-top: calc(2 * var(--spacing-5xl));
 }
 
 .success > :first-child p {
@@ -311,8 +415,61 @@ section.roleLens {
      gradient (transparent → 43% → solid bg), expressed as a mask so it works on
      whatever the page background is. Stops mapped from the Figma overlay onto the
      image's own height: opaque to 40%, ~57% at 56%, fully gone by 85%. */
-  -webkit-mask-image: linear-gradient(to bottom, #000 40%, rgba(0, 0, 0, 0.57) 56%, transparent 85%);
-  mask-image: linear-gradient(to bottom, #000 40%, rgba(0, 0, 0, 0.57) 56%, transparent 85%);
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    #000 40%,
+    rgba(0, 0, 0, 0.57) 56%,
+    transparent 85%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    #000 40%,
+    rgba(0, 0, 0, 0.57) 56%,
+    transparent 85%
+  );
+}
+
+/* ── section.bridge ─────────────────────────────────────────── */
+/* Intro → Overview Prototype 1. Text recipe matches .roleLens: display block +
+   32px detail block (8 columns); the middle slot spans full width for the
+   questions × roles interaction. */
+
+section.bridge {
+  position: relative; /* containing block for BridgeSpine's continuous line */
+  /* Section default (128px) + 128px more below the cards. */
+  padding-bottom: calc(2 * var(--spacing-5xl));
+  row-gap: var(--spacing-xl);
+}
+
+.bridge > * {
+  grid-column: 1 / 9;
+}
+
+/* Opener (Figma 2385:958) and the spine overlay both use the full content width. */
+.bridge > :first-child,
+.bridge > :nth-child(2),
+.bridge > :nth-child(3),
+.bridge > svg {
+  grid-column: 1 / -1;
+}
+
+/* 128px between the opener and the lens frame (Figma), net of the 32px row-gap. */
+.bridge > :nth-child(2) {
+  margin-top: var(--spacing-4xl);
+}
+
+/* Framing question + detail block (32px): 1.2 — see .brief above. */
+.bridge > :nth-child(1),
+.bridge > :nth-child(4) {
+  line-height: 1.2;
+}
+
+.bridge > :nth-child(2) p {
+  text-wrap: wrap;
+}
+
+.bridge > :nth-child(3) {
+  grid-column: 1 / -1;
 }
 
 /* ── section.our-target ─────────────────────────────────────── */
@@ -371,12 +528,12 @@ section.theOpportunity {
   min-height: 100vh;
   align-content: center;
   background-color: var(--accent-warning);
-  --text-primary:                var(--text-dark-display);
+  --text-primary: var(--text-dark-display);
   --text-body-display-statement: var(--text-dark-display);
-  --text-tertiary:               var(--text-dark-display);
-  --text-secondary:              var(--text-dark-display);
-  --text-subtle:                 var(--text-dark-display);
-  --quote-mark-filter:           brightness(0);
+  --text-tertiary: var(--text-dark-display);
+  --text-secondary: var(--text-dark-display);
+  --text-subtle: var(--text-dark-display);
+  --quote-mark-filter: brightness(0);
 }
 
 .theOpportunityLeft {
@@ -415,7 +572,7 @@ section.theOpportunity {
    be reached by name from here. */
 .theOpportunityMetric {
   --text-display-metric-size: var(--text-display-lg-size);
-  --text-display-metric-lh:   var(--text-display-lg-lh);
+  --text-display-metric-lh: var(--text-display-lg-lh);
   align-items: flex-start;
   padding: var(--spacing-3xl) var(--spacing-md);
   border-radius: var(--border-radius-lg);
@@ -446,6 +603,25 @@ section.theOpportunity {
 
 .frameworkScene {
   grid-column: 1 / -1;
+}
+
+/* Regular section (hugs its content): text block on the usual 8 columns,
+   lattice centered across all 12, 128px between them. */
+section.framework {
+  row-gap: var(--spacing-5xl);
+}
+
+.framework > :first-child {
+  grid-column: 1 / 9;
+}
+
+.framework > :first-child p {
+  text-wrap: wrap;
+}
+
+.frameworkLattice {
+  grid-column: 1 / -1;
+  justify-self: center;
 }
 
 /* ── section.research ───────────────────────────────────── */
@@ -483,6 +659,11 @@ section.insightsGoals {
   position: relative;
   background: var(--surface-section-inverse);
   row-gap: var(--spacing-5xl);
+}
+
+/* Hidden until the bridge/spine line reaches each row (InsightsGoalsContent). */
+.insightsGoalsReveal {
+  opacity: 0;
 }
 
 .insightsGoalsMotionSvg {
@@ -803,20 +984,9 @@ section.data {
 /* Plain wrapper around the two (independent again) Framework Adaptation /
    Observability Sections — position:relative only, so FrameworkAdaptationEyes'
    beam/mask layers (portaled here) have a positioned ancestor to size
-   (inset:0) and measure against. No isolation — that was only ever needed
-   for the now-abandoned FrameworkFunnelSpine mechanism. */
+   (inset:0) and measure against. */
 .frameworkObservabilityWrap {
   position: relative;
-}
-
-.frameworkFunnelSpineSvg {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 2;
-  pointer-events: none;
-  overflow: visible;
 }
 
 /* Framework Adaptation — its own independent Section again (un-merged).
@@ -926,12 +1096,13 @@ section.observabilityEyes {
 }
 
 .overviewPrototype1TextBlock {
-  grid-column: 1 / -1;
+  grid-column: 1 / 7;
   max-width: 907px;
 }
 
 .overviewPrototype1DetailBlock {
-  grid-column: 1 / 4;
+  grid-column: 1 / 6;
+  line-height: 1.2;
 }
 
 /* ── section.overview-prototype-1-questions ──────────────────
@@ -941,6 +1112,10 @@ section.observabilityEyes {
 
 section.overviewPrototype1Questions {
   padding-bottom: var(--spacing-3xl);
+  /* PageCenterLine runs down the page center to the question row's top edge,
+     behind the content (z-index -1). */
+  position: relative;
+  isolation: isolate;
 }
 
 .overviewPrototype1Questions > * {
@@ -949,26 +1124,77 @@ section.overviewPrototype1Questions {
   grid-template-columns: subgrid;
 }
 
-/* Embed card: center 10 columns. */
+/* Question row and embed card: center 10 columns. */
 .overviewPrototype1Questions > * > * {
   grid-column: 2 / 12;
 }
 
-/* Question row: all 12 columns. */
-.overviewPrototype1Questions > * > :first-child {
-  grid-column: 1 / -1;
-}
-
 /* ── section.overview-prototype-1-limitations ── */
 
-section.overviewPrototype1Limitations {
+section.overviewPrototype1Limitations,
+section.overviewPrototype1Scope {
   min-height: 100vh;
   align-content: center;
 }
 
-.overviewPrototype1LimitationsTextBlock {
+/* PageCenterLine runs down the page center through each of these sections
+   (behind the content); --center-line-x comes from it. */
+section.overviewPrototype1Limitations,
+section.overviewPrototype1Learnings,
+section.overviewPrototype1Scope,
+section.overviewPrototype1Mountain {
+  position: relative;
+  isolation: isolate;
+}
+
+.overviewPrototype1LimitationsTextBlock,
+.overviewPrototype1ScopeTextBlock {
   grid-column: 1 / -1;
   max-width: 939px;
+  /* Copy starts 32px right of the line, like Starting Design. */
+  margin-left: calc(var(--center-line-x, 0px) + var(--spacing-xl));
+}
+
+/* The priority mountain (MountainTerrain), full width. */
+.overviewPrototype1Mountain > :first-child {
+  grid-column: 1 / -1;
+}
+
+/* ── section.priority-mountain ── */
+
+/* Size container so the stage (PriorityMountain) sizes from the content width
+   (cqw); --mountain-box-h is its height, capped to the viewport below the nav.
+   PageCenterLine runs from the section top to the summit marker. */
+section.priorityMountain {
+  container-type: inline-size;
+  position: relative;
+  isolation: isolate;
+  align-content: start;
+  --mountain-box-h: min(
+    calc(100cqw * 9 / 16),
+    calc(100vh - var(--nav-height))
+  );
+  /* "MVP" label above the peak: the gap from label to peak, and from the peak
+     up to the label's top (gap + one md label line). PageCenterLine ends at the
+     label's top. */
+  --mountain-label-gap: var(--spacing-xl);
+  --mountain-label-offset: calc(var(--mountain-label-gap) + var(--text-label-md-lh));
+}
+
+/* ── section.priority-rings ── */
+
+/* Size container so the stage (PriorityRings) sizes from the content width
+   (cqw); --ring-box-h is its height, capped to the viewport below the nav.
+   PageCenterLine runs from the section top to the summit marker. */
+section.priorityRings {
+  container-type: inline-size;
+  position: relative;
+  isolation: isolate;
+  align-content: start;
+  --ring-box-h: min(
+    calc(100cqw * 700 / 1280),
+    calc(100vh - var(--nav-height))
+  );
 }
 
 /* ── section.overview-prototype-1-learnings ── */
@@ -979,17 +1205,12 @@ section.overviewPrototype1Limitations {
 
 /* ── section.overview-prototype-2-decisions ── */
 
-section.overviewPrototype2Intro {
-  min-height: 100vh;
-  align-content: center;
-}
-
 .overviewPrototype2IntroTextBlock {
   grid-column: 1 / -1;
   max-width: 939px;
 }
 
-/* Tooltip trigger as inline text: dashed underline, inherits body type. */
+/* Tooltip trigger as inline text, no underline, inherits body type. */
 .overviewPrototype2IntroQuestions button {
   display: inline;
   font: inherit;
@@ -997,9 +1218,15 @@ section.overviewPrototype2Intro {
   color: inherit;
   line-height: inherit;
   text-align: inherit;
-  text-decoration: underline dashed;
-  text-decoration-thickness: 1px;
-  text-underline-offset: 4px;
+  text-decoration: none;
+}
+
+/* Hosts PageCenterLine (Prototype 2 embed -> profile section -> profile tabs). */
+section.overviewPrototype2Decisions,
+section.softwareProfile,
+section.profilePrototype1 {
+  position: relative;
+  isolation: isolate;
 }
 
 .overviewPrototype2Decisions > * {
@@ -1019,6 +1246,8 @@ section.dataDictionary {
      section's own direct grid child (no explicit grid-column/row), not
      nested inside the narrower 7-column .dataDictionaryScene box. */
   position: relative;
+  /* PageCenterLine sits behind the section's content (z-index -1). */
+  isolation: isolate;
   padding-top: var(--spacing-5xl);
   padding-bottom: var(--spacing-xl);
   padding-inline: var(--spacing-4xl);
@@ -1078,8 +1307,6 @@ section.prototypeValidation {
 /* ── section.all-software-view ──────────────────────────────── */
 
 .allSoftwareView {
-  min-height: 100vh;
-  align-content: center;
   row-gap: var(--spacing-xl);
 }
 
@@ -1089,6 +1316,17 @@ section.prototypeValidation {
 
 .allSoftwareViewDetailBlock {
   grid-column: 1 / 4;
+}
+
+/* ── section.all-software-prototype ─────────────────────────── */
+
+section.allSoftwarePrototype {
+  row-gap: var(--spacing-3xl);
+}
+
+/* Tab row and embed: center 10 columns, like the other embed tab rows. */
+.allSoftwarePrototype > * {
+  grid-column: 2 / 12;
 }
 
 /* ── section.gaps-identified ────────────────────────────────── */
@@ -1276,9 +1514,11 @@ section.experienceIssueAnnotations {
   grid-column: 4 / 10;
 }
 
-/* Question row: all 12 columns. */
-.profilePrototype1 > * > :first-child {
-  grid-column: 1 / -1;
+/* Tab rows above and below the embed: center 10 columns, same as
+   .overviewPrototype1Questions. */
+.profilePrototype1 > * > :first-child,
+.profilePrototype1 > * > :nth-child(3) {
+  grid-column: 2 / 12;
 }
 
 /* ── section.core-attribute-intent ─────────────────────────── */
@@ -1309,17 +1549,22 @@ section.experienceIssueAnnotations {
 /* ── section.lifecycle-timeline ─────────────────────────────── */
 
 section.lifecycleTimeline {
+  min-height: 100vh;
+  align-content: center;
   row-gap: 0;
+  position: relative;
+  isolation: isolate;
 }
 
-.lifecycleTimelineScene {
-  grid-column: 1 / -1;
+.lifecycleTimelineTextBlock {
+  grid-column: 1 / 7;
 }
 
 /* ── section.generating-events ──────────────────────────────── */
 
 section.generatingEvents {
   position: relative;
+  isolation: isolate;
   background: var(--surface-section-inverse);
   row-gap: var(--spacing-5xl);
 }
@@ -1331,6 +1576,7 @@ section.generatingEvents {
   height: 100%;
   pointer-events: none;
   overflow: visible;
+  z-index: -1;
 }
 
 /* Subgrid so the label block (6 cols) and detail block (4 cols) can each
@@ -1341,6 +1587,7 @@ section.generatingEvents {
   display: grid;
   grid-template-columns: subgrid;
   row-gap: var(--spacing-xl);
+  padding-bottom: var(--spacing-3xl);
 }
 
 .generatingEventsTextBlock {
@@ -1355,6 +1602,11 @@ section.generatingEvents {
   grid-column: 1 / 9;
   display: flex;
   gap: var(--spacing-xl);
+}
+
+/* Claude Output + Timeline Draft: 16px rounded corners. */
+.generatingEventsImages img {
+  border-radius: var(--border-radius-md);
 }
 
 .generatingEventsSteps {
@@ -1658,6 +1910,10 @@ section.twoTrackValidation {
    its own runway; the section just wraps the label + embed at their
    natural content height. */
 
+section.tableAnatomy {
+  padding-bottom: var(--spacing-3xl);
+}
+
 .tableAnatomyLabel {
   grid-column: 1 / 7;
 }
@@ -1667,6 +1923,12 @@ section.twoTrackValidation {
   margin-top: var(--spacing-5xl);
 }
 
+.tableAnatomyDetailBlock {
+  grid-column: 1 / 6;
+  line-height: 1.2;
+  margin-top: var(--spacing-xl);
+}
+
 /* ── section.tool-tips ───────────────────────────────────────── */
 
 .toolTips > * {
@@ -1674,6 +1936,10 @@ section.twoTrackValidation {
 }
 
 /* ── section.tool-tips-final-design ─────────────────────────── */
+
+section.toolTipsFinalDesign {
+  padding-top: var(--spacing-3xl);
+}
 
 .toolTipsFinalDesignImages {
   grid-column: 1 / -1;
@@ -1740,20 +2006,27 @@ section.inactiveLicenseDistributionEmbed {
   align-items: center;
 }
 
-/* Two embeds side by side in the center (By Department | By Cost Center) —
-   tooltips run outward from each one's outer edge (allowOverflow). */
+/* Three embeds in one row, a third of the width each (By Department | By Cost
+   Center | Employee Drill-Down). */
 .inactiveLicenseDistributionLeft {
-  grid-column: 3 / 7;
-  /* By Department embed with the employee drill-down stacked directly below. */
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-3xl);
+  grid-column: 1 / 5;
+  align-self: start;
+}
+
+.inactiveLicenseDistributionMiddle {
+  grid-column: 9 / 13;
   align-self: start;
 }
 
 .inactiveLicenseDistributionRight {
-  grid-column: 7 / 11;
+  grid-column: 5 / 9;
   align-self: start;
+}
+
+/* ── section.final-experience ── */
+
+.finalExperience > * {
+  grid-column: 1 / -1;
 }
 
 /* ── section.overview-revisit ── */

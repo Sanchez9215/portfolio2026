@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import ImgCard from "@/components/ImgCard";
 import LiveEmbed from "@/components/LiveEmbed";
 import { LifecycleTimeline } from "@/design-systems/xops/components/LifecycleTimeline";
@@ -17,6 +17,10 @@ import AnnotationConnectorHotspot, {
 // Targets are structural selectors (shared DS component, no data-hotspot ids).
 // Placement is a blind pass — tune in-browser.
 const NO_INSIGHT = { label: "", insightLabel: "", insight: "" };
+
+// Tooltips hidden for now (flip to true to restore).
+const SHOW_TOOLTIPS = false;
+const NATIVE_WIDTH = 580;
 
 const HOTSPOTS: AnnotationHotspotData[] = [
   {
@@ -58,23 +62,51 @@ const HOTSPOTS: AnnotationHotspotData[] = [
 
 export default function LifecycleTimelinePrototypeMap() {
   const embedWrapperRef = useRef<HTMLDivElement>(null);
+  // The embed is one viewport tall (100vh). The content is laid out at the
+  // native width and scaled down, so the panel's native height is the viewport
+  // height divided by that scale — then the event log scrolls inside it.
+  const [nativeHeight, setNativeHeight] = useState<number | null>(null);
 
   const ds = useMemo(() => getDataset(), []);
   const events = useMemo(() => lifecycleEvents(ds, "ZOOM-ONE"), [ds]);
 
+  useEffect(() => {
+    const wrapper = embedWrapperRef.current;
+    if (!wrapper) return;
+    const update = () => {
+      const scale = wrapper.clientWidth / NATIVE_WIDTH;
+      if (scale > 0) setNativeHeight(window.innerHeight / scale);
+    };
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(wrapper);
+    window.addEventListener("resize", update);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", update);
+    };
+  }, []);
+
   return (
-    <ImgCard variant="embed" allowOverflow>
+    <ImgCard
+      variant="embed"
+      allowOverflow
+      caption="Lifecycle Timeline Prototype 01"
+    >
       <div ref={embedWrapperRef} style={{ position: "relative" }}>
-        <LiveEmbed nativeWidth={580} disableCanvasTransition>
+        <LiveEmbed nativeWidth={NATIVE_WIDTH} disableCanvasTransition>
           {/* LifecycleTimeline is normally a Lifecycle-tab body inside
               SoftwareProfileLegacy's SidePanel — reproduces that panel's
               chrome around it, as in LifecycleTimelineHotspots. */}
           <div
             style={{
               display: "flex",
+              boxSizing: "border-box",
+              height: nativeHeight ?? undefined,
               padding: "var(--xops-spacing-16)",
               backgroundColor: "var(--xops-white)",
-              border: "var(--xops-border-width-1) solid var(--xops-border-divider)",
+              border:
+                "var(--xops-border-width-1) solid var(--xops-border-divider)",
               borderRadius: "var(--xops-radius-12)",
               boxShadow: "var(--xops-elevation-1-left)",
             }}
@@ -82,12 +114,14 @@ export default function LifecycleTimelinePrototypeMap() {
             <LifecycleTimeline events={events} />
           </div>
         </LiveEmbed>
-        <AnnotationConnectorHotspot
-          containerRef={embedWrapperRef}
-          nativeWidth={580}
-          hotspots={HOTSPOTS}
-        />
+        {SHOW_TOOLTIPS && (
+          <AnnotationConnectorHotspot
+            containerRef={embedWrapperRef}
+            nativeWidth={580}
+            hotspots={HOTSPOTS}
+          />
+        )}
       </div>
-  </ImgCard>
-);
+    </ImgCard>
+  );
 }
