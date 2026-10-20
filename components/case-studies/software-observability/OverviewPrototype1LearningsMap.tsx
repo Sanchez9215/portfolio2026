@@ -7,6 +7,7 @@ import OverviewLegacy from "@/design-systems/xops/legacy/OverviewLegacy";
 import AnnotationConnectorHotspot, {
   AnnotationHotspotData,
 } from "./AnnotationConnectorHotspot";
+import styles from "./OverviewEmbedRadius.module.css";
 
 // Static, all-at-once learnings over the legacy Overview embed — the same
 // elements and connector style as OverviewPrototypeHotspots.tsx's Prototype 1
@@ -87,10 +88,16 @@ export default function OverviewPrototype1LearningsMap() {
   return (
     <ImgCard variant="embed" allowOverflow>
       <div ref={embedWrapperRef} style={{ position: "relative" }}>
-        <LiveEmbed nativeWidth={1440} disableCanvasTransition>
+        <LiveEmbed
+          nativeWidth={1440}
+          disableCanvasTransition
+          className={styles.liveEmbed}
+        >
           <OverviewLegacy showLogos={false} />
         </LiveEmbed>
         <AnnotationConnectorHotspot
+          cardStyle
+          accentColor="var(--color-grey-700)"
           containerRef={embedWrapperRef}
           nativeWidth={1440}
           hotspots={LEARNING_HOTSPOTS}

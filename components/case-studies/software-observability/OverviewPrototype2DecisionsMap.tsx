@@ -7,6 +7,7 @@ import { OverviewScreen } from "@/app/work/software-observability/xops-overview/
 import AnnotationConnectorHotspot, {
   AnnotationHotspotData,
 } from "./AnnotationConnectorHotspot";
+import styles from "./OverviewEmbedRadius.module.css";
 
 // Static, all-at-once decisions over the Overview 2 screen — the same
 // elements and connector style as OverviewPrototypeHotspots.tsx's
@@ -51,6 +52,7 @@ const DECISION_HOTSPOTS: AnnotationHotspotData[] = [
     spotlightPadding: 0,
     spotlightRadius: 12,
     flip: true,
+    flipVertical: true,
     title: "Expiring Licenses",
     body: "Exchanged the expiring license insight for a focus on contract-level data, since contract terms (end dates, true-up windows, renewal terms) drive the major renewal and spend decisions. Renewal data would be found within the Renewal stage tab and eventually within Software Profiles.",
   },
@@ -92,8 +94,16 @@ export default function OverviewPrototype2DecisionsMap() {
 
   return (
     <ImgCard variant="embed" allowOverflow>
-      <div ref={embedWrapperRef} style={{ position: "relative" }}>
-        <LiveEmbed nativeWidth={1440} disableCanvasTransition>
+      <div
+        ref={embedWrapperRef}
+        data-prototype-embed
+        style={{ position: "relative" }}
+      >
+        <LiveEmbed
+          nativeWidth={1440}
+          disableCanvasTransition
+          className={styles.liveEmbed}
+        >
           <OverviewScreen
             showLogos={false}
             showUtilizationTags={false}
@@ -104,6 +114,8 @@ export default function OverviewPrototype2DecisionsMap() {
           />
         </LiveEmbed>
         <AnnotationConnectorHotspot
+          cardStyle
+          accentColor="var(--color-grey-700)"
           containerRef={embedWrapperRef}
           nativeWidth={1440}
           hotspots={DECISION_HOTSPOTS}

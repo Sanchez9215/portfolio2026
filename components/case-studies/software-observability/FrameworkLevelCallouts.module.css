@@ -1,0 +1,34 @@
+/* Column of always-on annotation cards + leader lines (see the .tsx header).
+   Line color matches AnnotationCallout. */
+.column {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  pointer-events: none;
+}
+
+.card {
+  position: relative; /* title.offsetTop is measured from the card */
+  display: flex;
+  flex-direction: column;
+  gap: 8px; /* title -> description */
+  box-sizing: border-box;
+}
+
+.lines {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+  color: var(--annotation-connector-color, #0f8fff);
+}
+
+.line {
+  stroke: currentColor;
+  stroke-width: 1px;
+  stroke-linejoin: miter;
+  vector-effect: non-scaling-stroke;
+}

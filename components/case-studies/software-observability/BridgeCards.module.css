@@ -1,0 +1,341 @@
+/* Figma node 2387:1003 (1248 wide). The half circle's top is the diamond's
+   centre; every card position is measured from it. Pixel offsets are Figma's
+   (fixed — the cards don't scale with the width). */
+
+.stage {
+  /* Plain block, not flex: the pinned unit's parent must not be a flex container
+     or ScrollTrigger drops the pin spacing. .pin centres its own content. */
+  /* Gap below the lens block: 160px (Figma) net of the section's 32px row-gap. */
+  margin-top: calc(var(--spacing-5xl) + var(--spacing-xl));
+}
+
+/* Pinned as one unit (BridgeCards.tsx): the header, its lines and the dome. */
+.pin {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+/* The page line (BridgeSpine) ends where the snake's last elbow ends. From there
+   a straight line (.lead) runs down to 8px above this header, and a 96px stem
+   (.stem) continues 8px below it. Both live inside the pinned unit, so when the
+   section pins they stay put as the short line at the top of the screen. */
+.header {
+  position: relative;
+  text-align: center;
+}
+
+.lead,
+.stem,
+.exit {
+  position: absolute;
+  left: 50%;
+  width: 1px;
+  background-color: var(--color-grey-500);
+  transform-origin: top;
+  transform: scaleY(0); /* drawn on scroll */
+}
+
+/* Elbow end → 8px above the header: the stage's 160px margin-top (5xl + xl, net
+   of the section row-gap) is measured from the elbow's end, minus the 8px gap. */
+.lead {
+  bottom: calc(100% + var(--spacing-sm));
+  height: calc(var(--spacing-5xl) + var(--spacing-xl) - var(--spacing-sm));
+}
+
+.stem {
+  top: calc(100% + var(--spacing-sm));
+  height: var(--spacing-4xl);
+}
+
+/* Arc top → centre of the diamond: 8px stem gap + 21px + half the 45.25px
+   diamond (Figma 2387:1040 / 2392:1224). */
+.dome {
+  --side-width: 312px;
+  --center-width: 416px;
+  position: relative;
+  width: 100%;
+  height: 825px; /* centre card's 116px offset + its 709px height */
+  margin-top: calc(var(--spacing-sm) + 43.63px);
+}
+
+/* The exported half circle, used as a mask so its color comes from the token. */
+.dome::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  aspect-ratio: 1248 / 624;
+  background-color: var(--color-grey-500);
+  -webkit-mask: url("/SVG/half%20cir.svg") center / 100% 100% no-repeat;
+  mask: url("/SVG/half%20cir.svg") center / 100% 100% no-repeat;
+}
+
+/* 32px square rotated 45° (Figma), centred on the arc's top. Above the spine so
+   its fill hides the stem line behind it. */
+.diamond {
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  left: 50%;
+  width: 32px;
+  height: 32px;
+  box-sizing: border-box;
+  background-color: var(--surface-base);
+  border: 1px solid var(--color-grey-500);
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+
+/* Holds the three cards; BridgeCards.tsx rotates it about the arc's centre to
+   carry them along the curve when the category changes. */
+.cards {
+  position: absolute;
+  inset: 0;
+}
+
+.card {
+  position: absolute;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl);
+  padding: var(--spacing-lg) var(--spacing-xl);
+  border: 1px solid var(--color-grey-500);
+  border-radius: var(--radius-md);
+  background-color: var(--surface-base); /* solid on every card: no see-through while swapping */
+  width: var(--side-width);
+  height: 531.75px;
+  /* A swap moves the card with transforms (GSAP Flip in BridgeCards.tsx), not
+     by transitioning layout properties. */
+}
+
+.card.center {
+  /* Freestyled, not tokenized yet: soft shadow around the focus card, spreading ~64px
+     out from every side (no offset). */
+  box-shadow:
+    0 0 32px rgb(0 0 0 / 0.24),
+    0 0 64px rgb(0 0 0 / 0.32);
+}
+
+.card[role="button"] {
+  border: var(--border-card) solid var(--surface-card-border);
+  cursor: pointer;
+  /* `translate` / `scale` are separate from `transform`, so they don't fight the
+     swap's Flip transform. */
+  transition-property: translate, rotate, scale, border-color;
+  transition-duration: var(--fan-duration, var(--press-seconds));
+  transition-timing-function: ease-out;
+}
+
+/* While the pointer is inside the arc (data-fanned, set in BridgeCards.tsx), both
+   side cards lift and fan out, tilting away from the focused centre card, so
+   it's obvious they're clickable. */
+.cards[data-fanned] .card[role="button"] {
+  translate: 0 calc(-1 * var(--spacing-md));
+  border-color: var(--color-grey-500);
+}
+
+.cards .card[role="button"]:hover {
+  border-color: var(--text-primary-strong);
+}
+
+.cards[data-fanned] .card.left[role="button"] {
+  rotate: -3deg;
+}
+
+.cards[data-fanned] .card.right[role="button"] {
+  rotate: 3deg;
+}
+
+.card[role="button"]:active {
+  scale: 0.98;
+}
+
+.cardHeader {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+/* The title eases between its small and large sizes instead of snapping. */
+.roleTitle {
+  transition-property: font-size, line-height, letter-spacing;
+  transition-duration: var(--swap-seconds);
+  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1); /* ≈ expo-out */
+}
+
+/* Description: height opens/closes (0fr → 1fr) with a fade and slight rise, so
+   it grows in with the card rather than popping. Only the focused card's is open. */
+.description {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  translate: 0 var(--spacing-sm);
+  margin-top: calc(-1 * var(--spacing-sm)); /* cancels the header's gap while closed */
+  transition-property: grid-template-rows, opacity, translate, margin-top;
+  transition-duration: var(--swap-seconds);
+  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.description > div {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.descriptionOpen {
+  grid-template-rows: 1fr;
+  opacity: 1;
+  translate: 0 0;
+  margin-top: 0;
+}
+
+/* Question list window. The lists scroll up on a loop (BridgeCards.tsx); the mask
+   fades them in over the bottom --fade-size and out over the top --fade-size
+   (the top edge sits 32px below the role name/description, the card's gap). Holds the real
+   list and, over it, the crisp vector pixel version used on background cards. */
+.questionsWindow {
+  /* Fade length. Stops follow a smoothstep curve (not a straight ramp) so the
+     fade has no visible start/end edge. */
+  --fade-size: var(--spacing-3xl);
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.0) calc(var(--fade-size) * 0.0),
+    rgba(0, 0, 0, 0.028) calc(var(--fade-size) * 0.1),
+    rgba(0, 0, 0, 0.104) calc(var(--fade-size) * 0.2),
+    rgba(0, 0, 0, 0.216) calc(var(--fade-size) * 0.3),
+    rgba(0, 0, 0, 0.352) calc(var(--fade-size) * 0.4),
+    rgba(0, 0, 0, 0.5) calc(var(--fade-size) * 0.5),
+    rgba(0, 0, 0, 0.648) calc(var(--fade-size) * 0.6),
+    rgba(0, 0, 0, 0.784) calc(var(--fade-size) * 0.7),
+    rgba(0, 0, 0, 0.896) calc(var(--fade-size) * 0.8),
+    rgba(0, 0, 0, 0.972) calc(var(--fade-size) * 0.9),
+    rgba(0, 0, 0, 1.0) calc(var(--fade-size) * 1.0),
+    rgba(0, 0, 0, 1.0) calc(100% - var(--fade-size) * 1.0),
+    rgba(0, 0, 0, 0.972) calc(100% - var(--fade-size) * 0.9),
+    rgba(0, 0, 0, 0.896) calc(100% - var(--fade-size) * 0.8),
+    rgba(0, 0, 0, 0.784) calc(100% - var(--fade-size) * 0.7),
+    rgba(0, 0, 0, 0.648) calc(100% - var(--fade-size) * 0.6),
+    rgba(0, 0, 0, 0.5) calc(100% - var(--fade-size) * 0.5),
+    rgba(0, 0, 0, 0.352) calc(100% - var(--fade-size) * 0.4),
+    rgba(0, 0, 0, 0.216) calc(100% - var(--fade-size) * 0.3),
+    rgba(0, 0, 0, 0.104) calc(100% - var(--fade-size) * 0.2),
+    rgba(0, 0, 0, 0.028) calc(100% - var(--fade-size) * 0.1),
+    rgba(0, 0, 0, 0.0) calc(100% - var(--fade-size) * 0.0)
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.0) calc(var(--fade-size) * 0.0),
+    rgba(0, 0, 0, 0.028) calc(var(--fade-size) * 0.1),
+    rgba(0, 0, 0, 0.104) calc(var(--fade-size) * 0.2),
+    rgba(0, 0, 0, 0.216) calc(var(--fade-size) * 0.3),
+    rgba(0, 0, 0, 0.352) calc(var(--fade-size) * 0.4),
+    rgba(0, 0, 0, 0.5) calc(var(--fade-size) * 0.5),
+    rgba(0, 0, 0, 0.648) calc(var(--fade-size) * 0.6),
+    rgba(0, 0, 0, 0.784) calc(var(--fade-size) * 0.7),
+    rgba(0, 0, 0, 0.896) calc(var(--fade-size) * 0.8),
+    rgba(0, 0, 0, 0.972) calc(var(--fade-size) * 0.9),
+    rgba(0, 0, 0, 1.0) calc(var(--fade-size) * 1.0),
+    rgba(0, 0, 0, 1.0) calc(100% - var(--fade-size) * 1.0),
+    rgba(0, 0, 0, 0.972) calc(100% - var(--fade-size) * 0.9),
+    rgba(0, 0, 0, 0.896) calc(100% - var(--fade-size) * 0.8),
+    rgba(0, 0, 0, 0.784) calc(100% - var(--fade-size) * 0.7),
+    rgba(0, 0, 0, 0.648) calc(100% - var(--fade-size) * 0.6),
+    rgba(0, 0, 0, 0.5) calc(100% - var(--fade-size) * 0.5),
+    rgba(0, 0, 0, 0.352) calc(100% - var(--fade-size) * 0.4),
+    rgba(0, 0, 0, 0.216) calc(100% - var(--fade-size) * 0.3),
+    rgba(0, 0, 0, 0.104) calc(100% - var(--fade-size) * 0.2),
+    rgba(0, 0, 0, 0.028) calc(100% - var(--fade-size) * 0.1),
+    rgba(0, 0, 0, 0.0) calc(100% - var(--fade-size) * 0.0)
+  );
+}
+
+/* Two copies of the list stacked, translated by the ticker. */
+.track {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg); /* same as the list's own gap, so the loop is even */
+  will-change: transform;
+}
+
+.copy {
+  position: relative;
+}
+
+.questions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg); /* unfocused cards: 24px, scaled to their 24px type */
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* Built by BridgeCards.tsx from the same text, size and gap as the list. */
+.pixels {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+}
+
+.pixels path {
+  fill: var(--text-subtle);
+}
+
+.questions p {
+  line-height: 1.2;
+  text-align: center; /* every card, including the right one's right-aligned default */
+  color: var(--text-subtle); /* Block has no subtle color option */
+}
+
+/* Background cards' questions sit a step darker than the focused card's. */
+.card[role="button"] .questions p {
+  color: var(--color-grey-800);
+}
+
+/* Slots are all positioned from `left` so a swap can transition between them. */
+
+/* Left card: right edge 96px (--spacing-4xl) left of centre. */
+.left {
+  top: 212px;
+  left: calc(50% - var(--spacing-4xl) - var(--side-width));
+}
+
+/* Right card: mirrored, text right-aligned. */
+.right {
+  top: 217px;
+  left: calc(50% + var(--spacing-4xl));
+  text-align: right;
+}
+
+.right .cardHeader {
+  align-items: flex-end;
+}
+
+/* Centre card (the focused role): solid fill, larger type, and stacked above the
+   side cards (they overlap it by 112px and tuck behind its fill). */
+.center {
+  z-index: 1;
+  top: 116px;
+  left: calc(50% - var(--center-width) / 2);
+  width: var(--center-width);
+  height: 709px;
+  padding: var(--spacing-xl);
+}
+
+.center .questions,
+.center .track {
+  gap: var(--spacing-xl);
+}
+
+/* Leaves the centre of the dome's bottom edge (the focused card's bottom) and
+   runs to the section's bottom edge; height is set in BridgeCards.tsx. */
+.exit {
+  top: 100%;
+}

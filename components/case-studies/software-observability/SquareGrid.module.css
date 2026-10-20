@@ -1,0 +1,21 @@
+/* The big square's side (--side) is set in SquareGrid.tsx. It splits into --squares × --squares cells; each cell is a
+   1px outline with a 2px gap between neighbours (first-pass values). */
+.grid {
+  --square-gap: 2px;
+  --square-outline: 1px;
+  width: var(--side, 0);
+  height: var(--side, 0);
+  display: grid;
+  grid-template-columns: repeat(var(--squares), 1fr);
+  grid-template-rows: repeat(var(--squares), 1fr);
+  gap: 4px;
+}
+
+/* Every license is a square with a 1px outline. The fill is --cell, set by
+   UsageBeamReveal: solid grey-500 when they load in, then — as the beam reaches
+   each one — surface-black for the good ones and solid red for the unused. */
+.square {
+  box-sizing: border-box;
+  border: var(--square-outline) solid var(--color-grey-500);
+  background: var(--cell, var(--color-grey-500));
+}

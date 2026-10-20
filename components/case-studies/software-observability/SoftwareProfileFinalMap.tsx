@@ -111,6 +111,8 @@ export type SoftwareProfileFinalMapProps = {
   /** Shows only the Inactive License Distribution section, as if the panel
    *  were scrolled down to it. */
   distributionOnly?: boolean;
+  /** Drops the Inactive License Distribution section. */
+  hideDistribution?: boolean;
   /** Replaces the connector tooltips with a column of notes (one per hotspot,
    *  same order) on this side of the embed — every hotspot becomes a
    *  spotlight-only cutout. */
@@ -122,6 +124,7 @@ export default function SoftwareProfileFinalMap({
   caption,
   initialViewBy = "top-departments",
   distributionOnly,
+  hideDistribution,
   notesSide,
 }: SoftwareProfileFinalMapProps) {
   const embedWrapperRef = useRef<HTMLDivElement>(null);
@@ -215,6 +218,7 @@ export default function SoftwareProfileFinalMap({
               viewBy={viewBy}
               onViewByChange={setViewBy}
               distributionOnly={distributionOnly}
+              hideDistribution={hideDistribution}
             />
           </div>
         </LiveEmbed>
@@ -222,6 +226,8 @@ export default function SoftwareProfileFinalMap({
             embed. */}
         {hotspots.length > 0 && (
           <AnnotationConnectorHotspot
+            cardStyle
+            accentColor="var(--color-grey-700)"
             containerRef={embedWrapperRef}
             nativeWidth={580}
             hotspots={

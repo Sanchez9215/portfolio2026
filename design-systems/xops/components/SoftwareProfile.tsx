@@ -108,6 +108,9 @@ export type SoftwareProfileProps = {
    *  (as if the panel were scrolled down to it), dropping the header and the
    *  opportunity/licenses/utilization cards above it. */
   distributionOnly?: boolean;
+  /** Case study only: drops the Inactive License Distribution section (both
+   *  ranked-bar cards and its View By / Metric controls). */
+  hideDistribution?: boolean;
 };
 
 export function SoftwareProfile({
@@ -160,6 +163,7 @@ export function SoftwareProfile({
   onViewInactiveEmployees,
   onViewTerminatedEmployees,
   distributionOnly,
+  hideDistribution,
 }: SoftwareProfileProps) {
   const [metric, setMetric] = useState<"count" | "opportunity">("count");
 
@@ -335,6 +339,7 @@ export function SoftwareProfile({
         </div>
         </>
         )}
+        {!hideDistribution && (
         <div className={styles.detailContainer}>
           <div className={styles.detailHeader}>
             <div className={styles.summaryCardTitleRow}>
@@ -443,6 +448,7 @@ export function SoftwareProfile({
             </Card>
           </div>
         </div>
+        )}
       </div>
     </div>
   );

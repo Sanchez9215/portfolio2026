@@ -3,26 +3,19 @@
 import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { MorphSVGPlugin } from "gsap/MorphSVGPlugin";
 import LabelBlock from "@/components/LabelBlock";
 import Block from "@/components/Block";
 import ImgCard from "@/components/ImgCard";
 import styles from "@/app/work/software-observability/software-observability.module.css";
 import { scheduleScrollTriggerRefresh } from "./scrollTriggerRefresh";
 
-gsap.registerPlugin(ScrollTrigger, MorphSVGPlugin);
+gsap.registerPlugin(ScrollTrigger);
 
-// Same funnel-morph.svg technique as InsightsGoalsContent.tsx — see that
-// file for the flat→shape rationale. Reused here at the same native size.
-const FUNNEL_WIDTH = 256;
-const FUNNEL_HEIGHT = 128;
-const SPINE_FUNNEL_OVERLAP = 8;
-const FUNNEL_FLAT_D = "M0 0C70.6875 0 128 0 128 0C128 0 185.312 0 256 0H0Z";
-const FUNNEL_SHAPE_D =
-  "M0 0C70.6875 0 128 57.3066 128 128C128 57.3066 185.312 0 256 0H0Z";
-// Extra scroll distance held after the spine reaches the last badge, matching
+// Extra scroll distance held after the line reaches the last badge, matching
 // InsightsGoalsContent's SPINE_END_BUFFER convention.
 const SPINE_END_BUFFER = 200;
+// A step's fade, as a fraction of the line's timeline, ending as the tip
+// arrives at its badge.
 const STEP_REVEAL_DURATION = 0.1;
 // Simple fade-up used for the two static Blocks (detail + steps intro) —
 // matches LabelBlock's own display-size scroll window.
@@ -31,7 +24,7 @@ const BLOCK_FADE_END = "center center";
 // Image cards stagger in right after the detail block's own reveal
 // finishes — scroll distance for that follow-on phase, and the per-card
 // fade duration/gap as fractions of it (matches this file's other
-// buffer/duration constant conventions, e.g. SPINE_END_BUFFER).
+// buffer/duration constant conventions).
 const IMAGES_REVEAL_RUNWAY = 250;
 const IMAGE_FADE_DURATION = 0.6;
 const IMAGE_STAGGER = 0.4;
@@ -52,13 +45,12 @@ const STEPS = [
 ];
 
 export default function GeneratingEventsContent() {
-  const svgRef = useRef<SVGSVGElement>(null);
-  const funnelRef = useRef<SVGPathElement>(null);
-  const spineRef = useRef<SVGLineElement>(null);
   const detailBlockRef = useRef<HTMLDivElement>(null);
   const stepsIntroRef = useRef<HTMLDivElement>(null);
   const imagesRef = useRef<HTMLDivElement>(null);
   const stepsColRef = useRef<HTMLDivElement>(null);
+  const svgRef = useRef<SVGSVGElement>(null);
+  const pathRef = useRef<SVGPathElement>(null);
   const stepRefs = useRef<(HTMLDivElement | null)[]>([]);
   const badgeRefs = useRef<(HTMLDivElement | null)[]>([]);
 
@@ -110,22 +102,24 @@ export default function GeneratingEventsContent() {
     return () => ctx.revert();
   }, []);
 
-  // Funnel → spine → step reveal.
+  // The page's center line comes down from the section's top edge to the
+  // header's bottom edge (padding included), pivots right to the badges' x, then
+  // runs down through each badge. Drawn as the page scrolls; each step fades in
+  // as the tip reaches its badge.
   useEffect(() => {
     const sectionEl = stepsColRef.current?.closest("section");
     const svgEl = svgRef.current;
-    const funnelEl = funnelRef.current;
-    const spineEl = spineRef.current;
-    const stepsColEl = stepsColRef.current;
+    const pathEl = pathRef.current;
+    const headerEl = sectionEl?.querySelector<HTMLElement>(
+      "[data-generating-header]",
+    );
     const stepEls = stepRefs.current;
     const badgeEls = badgeRefs.current;
-
     if (
       !sectionEl ||
       !svgEl ||
-      !funnelEl ||
-      !spineEl ||
-      !stepsColEl ||
+      !pathEl ||
+      !headerEl ||
       stepEls.some((el) => !el) ||
       badgeEls.some((el) => !el)
     ) {
@@ -133,89 +127,48 @@ export default function GeneratingEventsContent() {
     }
 
     const ctx = gsap.context(() => {
-      const measure = () => {
-        const sectionRect = sectionEl.getBoundingClientRect();
-        // Spine runs through the real center of the badges, not the gutter
-        // between the image row and the step column — all badges share the
-        // same x, so the first one is representative.
-        const badgeRect = badgeEls[0]!.getBoundingClientRect();
-        const badgeCenterX =
-          badgeRect.left + badgeRect.width / 2 - sectionRect.left;
-        const badgeCenterYs = badgeEls.map((el) => {
-          const r = el!.getBoundingClientRect();
-          return r.top + r.height / 2 - sectionRect.top;
-        });
-        return {
-          width: sectionRect.width,
-          height: sectionRect.height,
-          badgeCenterX,
-          badgeCenterYs,
-        };
-      };
-
-      const m = measure();
-      svgEl.setAttribute("viewBox", `0 0 ${m.width} ${m.height}`);
-
-      funnelEl.setAttribute(
-        "transform",
-        `translate(${m.badgeCenterX - FUNNEL_WIDTH / 2}, 0)`,
-      );
-      funnelEl.setAttribute("d", FUNNEL_FLAT_D);
-
-      const spineStartY = FUNNEL_HEIGHT - SPINE_FUNNEL_OVERLAP;
-      gsap.set(spineEl, {
-        attr: {
-          x1: m.badgeCenterX,
-          x2: m.badgeCenterX,
-          y1: spineStartY,
-          y2: spineStartY,
-        },
+      const sectionRect = sectionEl.getBoundingClientRect();
+      const centerX = sectionRect.width / 2;
+      // Through the real center of the badges (all share the same x).
+      const badgeRect = badgeEls[0]!.getBoundingClientRect();
+      const badgeX = badgeRect.left + badgeRect.width / 2 - sectionRect.left;
+      const pivotY = headerEl.getBoundingClientRect().bottom - sectionRect.top;
+      const badgeYs = badgeEls.map((el) => {
+        const r = el!.getBoundingClientRect();
+        return r.top + r.height / 2 - sectionRect.top;
       });
+      const lastY = badgeYs[badgeYs.length - 1];
+
+      svgEl.setAttribute(
+        "viewBox",
+        `0 0 ${sectionRect.width} ${sectionRect.height}`,
+      );
+      pathEl.setAttribute("d", `M${centerX} 0V${pivotY}H${badgeX}V${lastY}`);
+      const length = pathEl.getTotalLength();
+      const total = length + SPINE_END_BUFFER;
+      gsap.set(pathEl, { strokeDasharray: length, strokeDashoffset: length });
       gsap.set(stepEls, { opacity: 0, y: 16 });
 
       scheduleScrollTriggerRefresh();
 
-      // Phase 1 — funnel morphs from flat to its full shape over the
-      // section's first 25% of viewport entry.
-      gsap
-        .timeline({
-          scrollTrigger: {
-            trigger: sectionEl,
-            start: "top bottom",
-            end: "top 75%",
-            scrub: true,
-          },
-        })
-        .to(funnelEl, { morphSVG: FUNNEL_SHAPE_D, duration: 1, ease: "none" });
-
-      // Phase 2 — spine grows continuously through each badge's center,
-      // fading that step's row in as the tip arrives.
-      const lastBadgeCenterY = m.badgeCenterYs[m.badgeCenterYs.length - 1];
-      const spineTravel = lastBadgeCenterY - spineStartY;
-      const totalPhaseLength = spineTravel + SPINE_END_BUFFER;
-
-      const revealTl = gsap.timeline({
+      const tl = gsap.timeline({
         scrollTrigger: {
           trigger: sectionEl,
-          start: "top 75%",
-          end: () => `+=${totalPhaseLength}`,
+          start: "top 70%",
+          end: () => `+=${total}`,
           scrub: true,
         },
       });
-
-      revealTl.to(
-        spineEl,
-        {
-          attr: { y2: lastBadgeCenterY },
-          duration: spineTravel / totalPhaseLength,
-          ease: "none",
-        },
+      tl.to(
+        pathEl,
+        { strokeDashoffset: 0, duration: length / total, ease: "none" },
         0,
       );
-
-      m.badgeCenterYs.forEach((y, i) => {
-        const arrivesAt = (y - spineStartY) / totalPhaseLength;
-        revealTl.to(
+      // Distance along the path to each badge: down to the pivot, across, down.
+      const toPivot = pivotY + Math.abs(badgeX - centerX);
+      badgeYs.forEach((y, i) => {
+        const arrivesAt = (toPivot + (y - pivotY)) / total;
+        tl.to(
           stepEls[i],
           {
             opacity: 1,
@@ -238,15 +191,15 @@ export default function GeneratingEventsContent() {
         className={styles.generatingEventsMotionSvg}
         aria-hidden="true"
       >
-        <path ref={funnelRef} fill="var(--surface-base)" />
-        <line
-          ref={spineRef}
+        <path
+          ref={pathRef}
+          fill="none"
           stroke="var(--surface-card-border)"
           strokeWidth={1}
         />
       </svg>
 
-      <div className={styles.generatingEventsHeader}>
+      <div className={styles.generatingEventsHeader} data-generating-header>
         <div className={styles.generatingEventsTextBlock}>
           <LabelBlock
             size="display"

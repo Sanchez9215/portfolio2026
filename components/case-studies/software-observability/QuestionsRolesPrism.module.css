@@ -1,0 +1,83 @@
+/* ── QuestionsRolesPrism ─────────────────────────────────────── */
+/* Bridge interaction: 3 role faces + 4 categories stacked in the centre.
+   Geometry comes from public/SVG/prism.svg (viewBox 818×714); the prism's
+   offset/size inside .root are its share of the original 2000×1250 mock. */
+
+.root {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+}
+
+.prism {
+  position: absolute;
+  left: 21.6%;
+  top: 9.2%;
+  width: 56.75%;
+  aspect-ratio: 818 / 714;
+}
+
+.outline {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+/* #D6E5FE in the source SVG = --color-grey-500. non-scaling-stroke keeps the
+   line at 1px however far the prism is scaled. */
+.outline path {
+  fill: none;
+  stroke: var(--color-grey-500);
+  stroke-width: var(--border-width-sm);
+  vector-effect: non-scaling-stroke;
+}
+
+.lane {
+  position: absolute;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Position + width are inline (derived from the face geometry); GSAP drives
+   transform and opacity. */
+.question {
+  position: absolute;
+  opacity: 0;
+  will-change: transform, opacity;
+}
+
+.question > p {
+  text-align: center;
+  transform-origin: 50% 50%;
+}
+
+.roleLabel {
+  position: absolute;
+  white-space: nowrap;
+  transform: translate(-50%, -50%) rotate(var(--role-angle, 0deg));
+}
+
+/* Centred on the centre triangle's apex axis, starting just under its top
+   edge (the faces' shared horizontal line at y=335 of 714). */
+.categories {
+  position: absolute;
+  left: 49.6%;
+  top: calc(46.9% + var(--spacing-md));
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.category {
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+}

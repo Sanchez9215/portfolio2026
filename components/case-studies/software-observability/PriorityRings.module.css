@@ -1,0 +1,77 @@
+/* Host section (page CSS) is a size container (container-type: inline-size)
+   and defines --ring-box-h, the stage height. */
+.stage {
+  grid-column: 1 / -1;
+  grid-row: 1;
+  justify-self: center;
+  position: sticky;
+  /* Centered in the viewport while pinned, never under the nav. */
+  top: max(var(--nav-height), calc((100vh - var(--ring-box-h)) / 2));
+  height: var(--ring-box-h);
+  aspect-ratio: 1280 / 700;
+  max-width: 100%;
+}
+
+/* Scroll the timeline plays over, once the stage is pinned. */
+.runway {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  height: 300vh;
+}
+
+/* Zero-size marker at the summit; PageCenterLine ends at its top edge. It sits
+   in the section (not the sticky stage), at the stage's unpinned position. */
+.summit {
+  position: absolute;
+  left: 50%;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.stroke {
+  stroke: var(--color-grey-500);
+  stroke-width: 1px;
+  stroke-linejoin: round;
+}
+
+/* Slice fill: the page background, opaque, so inner slices cover the rings
+   behind them. */
+.fill {
+  fill: var(--surface-base);
+  stroke: none;
+}
+
+/* Side wall of an MVP slice: opaque like the fill, outlined like the rings. */
+.wall {
+  fill: var(--surface-base);
+  stroke: var(--color-grey-500);
+  stroke-width: 1px;
+  stroke-linejoin: round;
+}
+
+.card {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  gap: 8px; /* title -> description */
+  box-sizing: border-box;
+  pointer-events: none;
+}
+
+.body {
+  margin: 0;
+  font-family: var(--font-family-body);
+  font-weight: var(--font-weight-regular);
+  font-size: var(--text-body-xs-size);
+  line-height: var(--text-body-xs-lh);
+  color: var(--text-secondary);
+}

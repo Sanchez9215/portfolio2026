@@ -1,0 +1,131 @@
+/* Host section (page CSS) is a size container (container-type: inline-size)
+   and defines --mountain-box-h (the stage height), --mountain-label-gap and
+   --mountain-label-offset (see there). */
+.stage {
+  grid-column: 1 / -1;
+  grid-row: 1;
+  justify-self: center;
+  position: sticky;
+  /* Centered in the viewport while pinned, never under the nav. */
+  top: max(var(--nav-height), calc((100vh - var(--mountain-box-h)) / 2));
+  height: var(--mountain-box-h);
+  aspect-ratio: 16 / 9;
+  max-width: 100%;
+}
+
+/* Scroll the timeline plays over, once the stage is pinned. */
+.runway {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  height: 300vh;
+}
+
+/* Zero-size marker at the summit; PageCenterLine ends at its top edge. It sits
+   in the section (not the sticky stage), at the stage's unpinned position. */
+.summit {
+  position: absolute;
+  left: 50%;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.terrain {
+  position: absolute;
+  inset: 0;
+}
+
+.svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.pointer {
+  stroke: var(--color-grey-500);
+  stroke-width: 1px;
+}
+
+/* Everything after the MVP: grey-700 pointer, title and description, and no
+   card background. */
+.pointer.followUp {
+  stroke: var(--color-grey-700);
+}
+
+.card.followUp {
+  background: none;
+}
+
+.card.followUp > span,
+.card.followUp > p {
+  color: var(--color-grey-700);
+}
+
+.card {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  gap: 8px; /* title -> description */
+  box-sizing: border-box;
+  padding: 4px 0;
+  background: var(--surface-base);
+  pointer-events: none;
+}
+
+.body {
+  margin: 0;
+  font-family: var(--font-family-body);
+  font-weight: var(--font-weight-regular);
+  font-size: var(--text-body-xs-size);
+  line-height: var(--text-body-xs-lh);
+  color: var(--text-secondary);
+}
+
+/* "MVP" label: centered on the peak, the gap above it. */
+.peakLabel {
+  position: absolute;
+  left: 50%;
+  translate: -50% 0;
+  white-space: nowrap;
+}
+
+/* "Follow Ups" divider below the MVP area (per the reference mock): the label
+   centered 16px + 64px + 32px under the MVP box's bottom edge, then 8px below it a short
+   dashed line (200px, centered), both grey-700. */
+.followUpsLabel {
+  position: absolute;
+  left: 50%;
+  translate: calc(-50% + 16px) calc(var(--spacing-md) + var(--spacing-3xl) + var(--spacing-xl));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-sm);
+  white-space: nowrap;
+  /* 200px of content + 16px of padding on each side; the dashed line runs the
+     full width, edge to edge. */
+  box-sizing: border-box;
+  width: calc(200px + 2 * var(--spacing-md));
+  padding: var(--spacing-md) var(--spacing-md) var(--spacing-sm);
+  /* Solid page background at the bottom fading to transparent at the top, so
+     the terrain behind shows through above the label. */
+  background: linear-gradient(to top, var(--surface-base), transparent);
+}
+
+.followUpsLabel > span:first-child {
+  color: var(--color-grey-700);
+}
+
+.followUpsLine {
+  display: block;
+  align-self: stretch;
+  margin-inline: calc(-1 * var(--spacing-md)); /* out through the padding, edge to edge */
+  height: 1px;
+  background: repeating-linear-gradient(
+    to right,
+    var(--color-grey-700) 0 4px,
+    transparent 4px 8px
+  );
+}

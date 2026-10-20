@@ -1,7 +1,13 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import gsap from "gsap";
+import {
+  placeTooltips,
+  type PlaceInput,
+  type Placement,
+  type Rect as PlaceRect,
+} from "./annotationAutoPlacement";
 import styles from "./AnnotationConnectorHotspot.module.css";
 
 // Native diagonal size, taken from /icons/annotation-connect.svg's own diagonal
@@ -17,11 +23,22 @@ const STROKE_WIDTH = 2;
 // Tooltip's fixed card width (unscaled, matches the Figma spec) — the connector's
 // horizontal run is sized to reach exactly this far so it spans the card edge to edge.
 const TOOLTIP_WIDTH = 232;
+// Question tooltips (those with a role tag) are the Figma 2525:27 card, 230px.
+const ROLE_TOOLTIP_WIDTH = 230;
+// Exact clear space between a question tooltip's card and its target (legacy
+// flip placement), for every tooltip with a role tag.
+const ROLE_TOOLTIP_CLEARANCE = 16;
 // Padding added around the measured target rect on each side, so the cutout
 // reads as +4px taller/wider than the element itself, not a bare-tight crop.
 const RECT_PADDING = 4;
 // Clear space between a `placeAbove`/`placeBelow` tooltip and the target.
-const PLACE_ABOVE_GAP = 16;
+const PLACE_ABOVE_GAP = 0;
+// Question tooltips (those with a role tag): when true the connector's
+// horizontal run sits above the question + role tag, with the question's top
+// (its line box, past the tooltip's own padding) CONTENT_BELOW_LINE_GAP under
+// the line. When false the line sits 8px under the role tag, as before.
+const CONTENT_BELOW_LINE = true;
+const CONTENT_BELOW_LINE_GAP = 12;
 
 export interface AnnotationHotspotData {
   /** `data-hotspot` id to attach to — this experiment only supports one target
@@ -150,6 +167,17 @@ interface AnnotationConnectorHotspotProps {
    *  player swapping it per phase (yellow-500 for Early Assumptions,
    *  blue-500 for Learnings/Decisions). */
   accentColor?: string;
+  /** Computed placement + pointer instead of each hotspot's hand-tuned
+   *  flip/flipVertical/placeAbove: tooltips sit on the nearest side of their
+   *  spotlit card with room, 32px away, 16px apart, never overlapping a lit
+   *  card or each other, with a pointer derived to reach the target (see
+   *  annotationAutoPlacement.ts). Off = every existing consumer unchanged. */
+  autoPlace?: boolean;
+  /** Gives every tooltip in this set the question-tooltip card style (Figma
+   *  2525:27): translucent blurred card, hairline on its top edge with the
+   *  content below, and an exact ROLE_TOOLTIP_CLEARANCE from its target.
+   *  Hotspots with a `role` always get it. Off = the original look. */
+  cardStyle?: boolean;
 }
 
 interface Rect {
@@ -182,6 +210,8 @@ export default function AnnotationConnectorHotspot({
   hotspots,
   showInsight = false,
   accentColor,
+  autoPlace = false,
+  cardStyle = false,
 }: AnnotationConnectorHotspotProps) {
   const maskId = useId();
   // What's actually measured/rendered right now — decoupled from the `hotspots`
@@ -273,6 +303,21 @@ export default function AnnotationConnectorHotspot({
     height: number;
   } | null>(null);
   const [scale, setScale] = useState(1);
+  // autoPlace: the area tooltips may occupy (the embed plus the page's content
+  // edges) and each tooltip's measured height/hairline offset, reported by
+  // ConnectorTooltip once it has laid out.
+  const [bounds, setBounds] = useState<PlaceRect | null>(null);
+  const [sizes, setSizes] = useState<
+    Record<string, { h: number; lineY: number }>
+  >({});
+  const reportSize = (id: string, size: { h: number; lineY: number }) =>
+    setSizes((prev) =>
+      prev[id] &&
+      Math.abs(prev[id].h - size.h) < 0.5 &&
+      Math.abs(prev[id].lineY - size.lineY) < 0.5
+        ? prev
+        : { ...prev, [id]: size },
+    );
 
   useEffect(() => {
     const container = containerRef.current;
@@ -341,6 +386,32 @@ export default function AnnotationConnectorHotspot({
         height: containerRect.height,
       });
       setScale(containerRect.width / nativeWidth);
+      if (autoPlace) {
+        // Tooltips may extend past the embed's sides, up to the page's content
+        // edges (the host section's padding box).
+        const section = container.closest("section");
+        if (section) {
+          const sr = section.getBoundingClientRect();
+          const cs = getComputedStyle(section);
+          const left =
+            sr.left + parseFloat(cs.paddingLeft) - containerRect.left;
+          const rightEdge =
+            sr.right - parseFloat(cs.paddingRight) - containerRect.left;
+          setBounds({
+            left,
+            top: 0,
+            width: rightEdge - left,
+            height: containerRect.height,
+          });
+        } else {
+          setBounds({
+            left: 0,
+            top: 0,
+            width: containerRect.width,
+            height: containerRect.height,
+          });
+        }
+      }
 
       setRects(
         displayHotspots.map((hotspot) =>
@@ -397,6 +468,38 @@ export default function AnnotationConnectorHotspot({
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [containerRef, displayHotspots, nativeWidth, cutoutKeys.join(",")]);
+
+  const placements = useMemo(() => {
+    if (!autoPlace || !bounds) return null;
+    const indices: number[] = [];
+    const inputs: PlaceInput[] = [];
+    displayHotspots.forEach((h, i) => {
+      if (h.cutoutOnly) return;
+      const key = h.spotlightId ?? h.targetId;
+      const target = rects[i];
+      const card = cutoutRects[cutoutKeys.indexOf(key)];
+      const size = sizes[h.targetId];
+      if (!target || !card || !size) return;
+      indices.push(i);
+      inputs.push({
+        cardKey: key,
+        card,
+        target,
+        width: h.role || cardStyle ? ROLE_TOOLTIP_WIDTH : TOOLTIP_WIDTH,
+        height: size.h,
+        lineY: size.lineY,
+      });
+    });
+    const placed = placeTooltips(
+      inputs,
+      cutoutRects.filter((r): r is Rect => r !== null),
+      bounds,
+    );
+    const map = new Map<string, Placement | null>();
+    indices.forEach((i, k) => map.set(displayHotspots[i].targetId, placed[k]));
+    return map;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoPlace, bounds, displayHotspots, rects, cutoutRects, sizes, cutoutKeys.join(",")]);
 
   if (!containerSize) return null;
 
@@ -478,6 +581,17 @@ export default function AnnotationConnectorHotspot({
             scale={scale}
             hotspot={hotspot}
             showInsight={showInsight}
+            cardStyle={cardStyle}
+            autoPlacement={
+              !autoPlace
+                ? undefined
+                : sizes[hotspot.targetId]
+                  ? (placements?.get(hotspot.targetId) ?? undefined)
+                  : null
+            }
+            onMeasure={
+              autoPlace ? (size) => reportSize(hotspot.targetId, size) : undefined
+            }
             wrapperRef={(el) => {
               if (el) tooltipNodeRefs.current.set(hotspot.targetId, el);
               else tooltipNodeRefs.current.delete(hotspot.targetId);
@@ -547,6 +661,9 @@ function ConnectorTooltip({
   scale,
   hotspot,
   showInsight,
+  cardStyle,
+  autoPlacement,
+  onMeasure,
   wrapperRef,
 }: {
   rect: Rect;
@@ -556,6 +673,16 @@ function ConnectorTooltip({
   hotspot: AnnotationHotspotData;
   /** Renders `hotspot.insight` instead of `hotspot.body` — the Insights pass. */
   showInsight: boolean;
+  /** Question-tooltip card style for a hotspot without a role (see the
+   *  container's `cardStyle`). */
+  cardStyle: boolean;
+  /** autoPlace mode: undefined = placed by the hotspot's own flip props (the
+   *  original behavior, and the fallback when no side fits); null = waiting
+   *  for the parent to place it (rendered hidden so it can be measured); a
+   *  Placement = positioned here with a derived pointer. */
+  autoPlacement?: Placement | null;
+  /** Reports the tooltip's laid-out height + hairline offset (autoPlace). */
+  onMeasure?: (size: { h: number; lineY: number }) => void;
   /** Registers this instance's root node with the parent, which owns the
    *  fade-out/fade-in timing for the whole transition (see
    *  AnnotationConnectorHotspot above) — this component no longer animates
@@ -564,6 +691,8 @@ function ConnectorTooltip({
 }) {
   const titleRef = useRef<HTMLSpanElement>(null);
   const tagRef = useRef<HTMLSpanElement>(null);
+  const isCard = !!hotspot.role || cardStyle;
+  const cardWidth = isCard ? ROLE_TOOLTIP_WIDTH : TOOLTIP_WIDTH;
   const roles = hotspot.role
     ? Array.isArray(hotspot.role)
       ? hotspot.role
@@ -581,37 +710,59 @@ function ConnectorTooltip({
   useEffect(() => {
     // With a role tag the line sits 8px under the tag instead of the title.
     const el = hotspot.role ? tagRef.current : titleRef.current;
+    const contentBelow = isCard && CONTENT_BELOW_LINE;
     if (!el) return;
     const measure = () => {
-      const lineY = el.offsetTop + el.offsetHeight + 8;
+      const lineY =
+        contentBelow
+          ? (titleRef.current?.offsetTop ?? 0) - CONTENT_BELOW_LINE_GAP
+          : el.offsetTop + el.offsetHeight + 8;
       setLineOffsetY(lineY);
       const tooltipEl = el.parentElement;
       if (tooltipEl) setBelowLineH(tooltipEl.offsetHeight - lineY);
+      if (tooltipEl) onMeasure?.({ h: tooltipEl.offsetHeight, lineY });
     };
     measure();
     const observer = new ResizeObserver(measure);
     observer.observe(el);
+    if (el.parentElement) observer.observe(el.parentElement);
     return () => observer.disconnect();
-  }, [hotspot.title, hotspot.role]);
+    // onMeasure only wraps a functional state update, so a stale copy is safe.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hotspot.title, hotspot.role, isCard]);
 
   // Attach corner — the target's top-right by default, or top-left when flipped
   // (the diagonal's lower end lands here either way). flipVertical attaches to
   // the bottom edge instead of the top, so the diagonal descends to its elbow
   // rather than rising to it.
-  const cornerX = (hotspot.attachLeft ?? hotspot.flip)
-    ? rect.left
-    : rect.left + rect.width;
+  const cornerX =
+    (hotspot.attachLeft ?? hotspot.flip) ? rect.left : rect.left + rect.width;
   const cornerY = hotspot.flipVertical ? rect.top + rect.height : rect.top;
   // Native diagonal size — DIAGONAL_SIZE, or longer (still 45°) when
   // `placeAbove` needs the tooltip to clear the target's top edge.
-  const diagSize =
-    hotspot.placeAbove && !hotspot.flipVertical
-      ? Math.max(DIAGONAL_SIZE, (belowLineH + PLACE_ABOVE_GAP) / scale)
-      : hotspot.placeBelow && hotspot.flipVertical
-        ? Math.max(DIAGONAL_SIZE, ((lineOffsetY ?? 0) + PLACE_ABOVE_GAP) / scale)
-        : DIAGONAL_SIZE;
-  const diagonalWidth = diagSize * scale;
-  const diagonalHeight = diagSize * scale;
+  // Diagonal's native horizontal / vertical extents (equal = 45°). Question
+  // tooltips (role tag) get an exact ROLE_TOOLTIP_CLEARANCE between card and
+  // target: rising diagonals keep the standard horizontal run and stretch
+  // vertically (steeper than 45°) until the whole card clears the target,
+  // descending ones shorten (still 45°) to exactly the clearance.
+  let diagDX = DIAGONAL_SIZE;
+  let diagDY = DIAGONAL_SIZE;
+  if (isCard) {
+    if (hotspot.flipVertical) {
+      diagDX = diagDY = (ROLE_TOOLTIP_CLEARANCE + (lineOffsetY ?? 0)) / scale;
+    } else {
+      diagDY = (belowLineH + ROLE_TOOLTIP_CLEARANCE) / scale;
+    }
+  } else if (hotspot.placeAbove && !hotspot.flipVertical) {
+    diagDX = diagDY = Math.max(DIAGONAL_SIZE, (belowLineH + PLACE_ABOVE_GAP) / scale);
+  } else if (hotspot.placeBelow && hotspot.flipVertical) {
+    diagDX = diagDY = Math.max(
+      DIAGONAL_SIZE,
+      ((lineOffsetY ?? 0) + PLACE_ABOVE_GAP) / scale,
+    );
+  }
+  const diagonalWidth = diagDX * scale;
+  const diagonalHeight = diagDY * scale;
   // The elbow is fixed relative to the corner (native size, just scaled — never
   // stretched), which fixes where the tooltip itself must sit so its title/
   // content gap lines up exactly with the connector's horizontal run. Flipped
@@ -623,7 +774,7 @@ function ConnectorTooltip({
   const elbowX = hotspot.flip
     ? cornerX - diagonalWidth
     : cornerX + diagonalWidth;
-  const tooltipLeft = hotspot.flip ? elbowX - TOOLTIP_WIDTH : elbowX;
+  const tooltipLeft = hotspot.flip ? elbowX - cardWidth : elbowX;
   const tooltipTop = lineOffsetY != null ? elbowY - lineOffsetY : elbowY;
   // SVG box's own page-space top — whichever of corner/elbow is higher
   // (smaller y). Matches elbowY in the default (rising) orientation; matches
@@ -632,17 +783,17 @@ function ConnectorTooltip({
   // Local y-coordinates (within the 0..DIAGONAL_SIZE viewBox) for the corner
   // and elbow ends of the diagonal — swapped top/bottom when flipVertical, so
   // the path descends instead of rises.
-  const localCornerY = hotspot.flipVertical ? 0 : diagSize;
-  const localElbowY = hotspot.flipVertical ? diagSize : 0;
+  const localCornerY = hotspot.flipVertical ? 0 : diagDY;
+  const localElbowY = hotspot.flipVertical ? diagDY : 0;
 
   // One continuous path, same native unit space throughout (never non-uniformly
   // stretched): diagonal from the corner up (or, flipVertical, down) to the
   // elbow, then horizontal out to (DIAGONAL_SIZE + horizontalRun) at the
   // elbow's own height — sized so that run, once scaled, reaches exactly the
   // tooltip's full width.
-  const horizontalRun = TOOLTIP_WIDTH / scale;
-  const pathWidth = diagSize + horizontalRun;
-  const connectorPath = `M0 ${localCornerY}L${diagSize} ${localElbowY}H${pathWidth}`;
+  const horizontalRun = cardWidth / scale;
+  const pathWidth = diagDX + horizontalRun;
+  const connectorPath = `M0 ${localCornerY}L${diagDX} ${localElbowY}H${pathWidth}`;
 
   // Branch connector — grows from the primary connector's elbow to the nearest
   // point on the branch target's rect: a 45° diagonal (same angle as the
@@ -693,8 +844,18 @@ function ConnectorTooltip({
       }}
     >
       <div
-        className={`${styles.tooltip}${hotspot.role ? ` ${styles.tooltipRole}` : ""}`}
-        style={{ left: tooltipLeft, top: tooltipTop }}
+        className={`${styles.tooltip}${isCard ? ` ${styles.tooltipRole}` : ""}${
+          autoPlacement
+            ? ` ${autoPlacement.corner === "left" ? styles.tooltipCornerLeft : styles.tooltipCornerRight}`
+            : ""
+        }`}
+        style={
+          autoPlacement
+            ? { left: autoPlacement.left, top: autoPlacement.top }
+            : autoPlacement === null
+              ? { left: 0, top: 0, visibility: "hidden" }
+              : { left: tooltipLeft, top: tooltipTop }
+        }
       >
         <span ref={titleRef} className={styles.title}>
           {hotspot.title}
@@ -713,17 +874,21 @@ function ConnectorTooltip({
             ))}
           </span>
         )}
-        <div className={styles.sections}>
-          <div className={styles.section}>
-            {/* Label (Assumption/Insight/Decision) hidden for now (this view
-                only) — data untouched, just not rendered. showInsight swaps
-                which field renders — the Insights pass re-walks the identical
-                hotspots/groups as Intent, showing insight text instead. */}
-            <p className={styles.text}>
-              {showInsight ? hotspot.insight : hotspot.body}
-            </p>
+        {(showInsight ? hotspot.insight : hotspot.body) && (
+          <div className={styles.sections}>
+            <div className={styles.section}>
+              {/* Label (Assumption/Insight/Decision) hidden for now (this view
+                  only) — data untouched, just not rendered. showInsight swaps
+                  which field renders — the Insights pass re-walks the
+                  identical hotspots/groups as Intent, showing insight text
+                  instead. A tooltip with no text (question-only) renders no
+                  body block at all. */}
+              <p className={styles.text}>
+                {showInsight ? hotspot.insight : hotspot.body}
+              </p>
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Rendered after (on top of) the tooltip so the horizontal run reads as
@@ -731,6 +896,23 @@ function ConnectorTooltip({
           path itself is unchanged (still drawn running rightward) — mirrored via
           transform instead, pivoting around its own left edge (= the corner attach
           point, which must stay fixed) so it renders running leftward instead. */}
+      {autoPlacement && (
+        <svg className={styles.branch} fill="none">
+          <path
+            d={`${autoPlacement.path
+              .map((pt, k) => `${k === 0 ? "M" : "L"}${pt.x} ${pt.y}`)
+              .join("")}H${
+              autoPlacement.corner === "left"
+                ? autoPlacement.left + cardWidth
+                : autoPlacement.left
+            }`}
+            stroke="currentColor"
+            strokeWidth={STROKE_WIDTH * scale}
+            strokeLinejoin="miter"
+          />
+        </svg>
+      )}
+      {autoPlacement === undefined && (
       <svg
         className={styles.connector}
         style={{
@@ -741,7 +923,7 @@ function ConnectorTooltip({
           transform: hotspot.flip ? "scaleX(-1)" : undefined,
           transformOrigin: hotspot.flip ? "left" : undefined,
         }}
-        viewBox={`0 0 ${pathWidth} ${diagSize}`}
+        viewBox={`0 0 ${pathWidth} ${diagDY}`}
         fill="none"
       >
         <path
@@ -751,8 +933,9 @@ function ConnectorTooltip({
           strokeLinejoin="miter"
         />
       </svg>
+      )}
 
-      {branchPath && (
+      {branchPath && autoPlacement === undefined && (
         <svg className={styles.branch}>
           <path
             d={branchPath}

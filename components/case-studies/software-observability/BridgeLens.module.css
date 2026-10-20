@@ -1,0 +1,19 @@
+/* Figma node 2385:964: a 96px-padded frame (--spacing-4xl). BridgeSpine's snake
+   runs along this box's top and bottom edges, so the padding is part of the box
+   on purpose. Inside, the page's 12-column grid with 32px gutters: the heading
+   and the detail block span the same 10 columns. */
+.lens {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  column-gap: var(--spacing-xl);
+  row-gap: var(--spacing-xl);
+  padding: var(--spacing-4xl);
+}
+
+.lens > * {
+  grid-column: 1 / 11;
+}
+
+.lens p {
+  line-height: 1.2;
+}

@@ -1,8 +1,8 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useLayoutEffect, useMemo, useRef, useState } from "react";
+import gsap from "gsap";
 import ImgCard from "@/components/ImgCard";
-import Label from "@/components/Label";
 import LiveEmbed from "@/components/LiveEmbed";
 import { SoftwareProfileLegacy } from "@/design-systems/xops/legacy/SoftwareProfileLegacy";
 import { TooltipProps } from "@/design-systems/xops/components/Tooltip";
@@ -13,6 +13,9 @@ import AnnotationConnectorHotspot, {
   AnnotationHotspotData,
 } from "./AnnotationConnectorHotspot";
 import { QUESTION_LABELS } from "./SoftwareSystemMap";
+import PrototypeTabs from "@/components/PrototypeTabs";
+import SoftwareProfileIssuesMap from "./SoftwareProfileIssuesMap";
+import SoftwareProfileFinalMap from "./SoftwareProfileFinalMap";
 import styles from "./OverviewPrototype1QuestionsMap.module.css";
 
 // Same status-tooltip copy as SoftwareProfileLegacyHotspots — this embed
@@ -40,6 +43,8 @@ const unassignedTooltip: Omit<TooltipProps, "children" | "className"> = {
 };
 
 const NO_INSIGHT = { label: "", insightLabel: "", insight: "" };
+// Second tab row under the embed: picks which embed sits below it.
+const DESIGN_TABS = ["Issues Identified", "Final Design"];
 const hs = (id: string) => `[data-hotspot="${id}"]`;
 
 // One tooltip set per question, same order as QUESTION_LABELS (own, cost,
@@ -176,6 +181,7 @@ const QUESTION_HOTSPOTS: AnnotationHotspotData[][] = [
 export default function SoftwareProfilePrototype1Map() {
   const embedWrapperRef = useRef<HTMLDivElement>(null);
   const [questionIndex, setQuestionIndex] = useState<number | null>(null);
+  const [designIndex, setDesignIndex] = useState(0); // Issues Identified first
 
   const ds = useMemo(() => getDataset(), []);
   const row = useMemo(() => productSummary(ds, "ZOOM-ONE"), [ds]);
@@ -183,30 +189,18 @@ export default function SoftwareProfilePrototype1Map() {
 
   if (!row) return null;
 
-  const hotspots = questionIndex === null ? [] : QUESTION_HOTSPOTS[questionIndex];
+  const hotspots =
+    questionIndex === null ? [] : QUESTION_HOTSPOTS[questionIndex];
 
   return (
     <>
-      <div className={styles.questionRow}>
-        {QUESTION_LABELS.map((label, qi) => (
-          <button
-            key={label}
-            type="button"
-            className={styles.question}
-            aria-pressed={questionIndex === qi}
-            onClick={() => setQuestionIndex((prev) => (prev === qi ? null : qi))}
-          >
-            <Label
-              size="lg"
-              color={
-                questionIndex === null || questionIndex === qi ? "default" : "tertiary"
-              }
-            >
-              {label}
-            </Label>
-          </button>
-        ))}
-      </div>
+      <PrototypeTabs
+        items={QUESTION_LABELS}
+        value={questionIndex}
+        onChange={setQuestionIndex}
+        className={styles.tabsRow}
+        data-question-row
+      />
       <ImgCard variant="embed" allowOverflow>
         <div ref={embedWrapperRef} style={{ position: "relative" }}>
           <LiveEmbed nativeWidth={580} disableCanvasTransition>
@@ -219,7 +213,8 @@ export default function SoftwareProfilePrototype1Map() {
                 flexDirection: "column",
                 padding: "var(--xops-spacing-16)",
                 backgroundColor: "var(--xops-white)",
-                border: "var(--xops-border-width-1) solid var(--xops-border-divider)",
+                border:
+                  "var(--xops-border-width-1) solid var(--xops-border-divider)",
                 borderRadius: "var(--xops-radius-12)",
                 boxShadow: "var(--xops-elevation-1-left)",
               }}
@@ -240,10 +235,104 @@ export default function SoftwareProfilePrototype1Map() {
               containerRef={embedWrapperRef}
               nativeWidth={580}
               hotspots={hotspots}
+              accentColor="var(--color-grey-700)"
             />
           )}
         </div>
       </ImgCard>
+      <PrototypeTabs
+        items={DESIGN_TABS}
+        value={designIndex}
+        onChange={(next) => next !== null && setDesignIndex(next)}
+        deselectable={false}
+        className={styles.tabsRowBelow}
+      />
+      <DesignSwitch index={designIndex} />
     </>
+  );
+}
+
+const SWITCH_SECONDS = 0.5;
+const SWITCH_EASE = "power2.inOut";
+
+// The issues embed and the final-design embed stacked in one spot: the active
+// one is in flow, the other sits on top of it, hidden. Switching crossfades them
+// while the wrapper's height eases between the two embeds' heights.
+function DesignSwitch({ index }: { index: number }) {
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const layerRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const previous = useRef({ index, height: 0 });
+
+  useLayoutEffect(() => {
+    const wrap = wrapRef.current;
+    const layers = layerRefs.current;
+    if (!wrap) return;
+    const seconds = window.matchMedia("(prefers-reduced-motion: reduce)")
+      .matches
+      ? 0
+      : SWITCH_SECONDS;
+    const settle = () => {
+      previous.current = { index, height: wrap.offsetHeight };
+    };
+    if (previous.current.index === index) {
+      gsap.set(layers[index], { autoAlpha: 1 });
+      gsap.set(layers[1 - index], { autoAlpha: 0 });
+      settle();
+      return;
+    }
+    const from = previous.current.height;
+    const to = wrap.offsetHeight;
+    gsap.killTweensOf([wrap, ...layers]);
+    gsap.fromTo(
+      layers[index],
+      { autoAlpha: 0 },
+      { autoAlpha: 1, duration: seconds, ease: SWITCH_EASE },
+    );
+    gsap.to(layers[1 - index], {
+      autoAlpha: 0,
+      duration: seconds,
+      ease: SWITCH_EASE,
+    });
+    gsap.fromTo(
+      wrap,
+      { height: from },
+      {
+        height: to,
+        duration: seconds,
+        ease: SWITCH_EASE,
+        clearProps: "height",
+        onComplete: settle,
+      },
+    );
+    settle();
+  }, [index]);
+
+  const layerStyle = (i: number): React.CSSProperties =>
+    i === index
+      ? { position: "relative" }
+      : { position: "absolute", top: 0, left: 0, width: "100%" };
+
+  return (
+    <div
+      ref={wrapRef}
+      data-profile-design-embed
+      style={{ position: "relative" }}
+    >
+      {[
+        <SoftwareProfileIssuesMap key="issues" />,
+        <SoftwareProfileFinalMap key="final" hotspots={[]} hideDistribution />,
+      ].map((embed, i) => (
+        <div
+          key={i}
+          ref={(el) => {
+            layerRefs.current[i] = el;
+          }}
+          style={layerStyle(i)}
+          aria-hidden={i !== index}
+        >
+          {embed}
+        </div>
+      ))}
+    </div>
   );
 }

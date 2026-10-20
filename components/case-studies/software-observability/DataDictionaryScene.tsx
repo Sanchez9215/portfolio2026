@@ -1,14 +1,26 @@
 "use client";
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import {
-  EYES_HUB_UPDATED,
-  FAN_DROP_LINE_UPDATED,
-} from "./frameworkAdaptationSync";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { scheduleScrollTriggerRefresh } from "./scrollTriggerRefresh";
 import Block from "@/components/Block";
 import LabelBlock from "@/components/LabelBlock";
 import ProcessConnector from "@/components/ProcessConnector";
 import styles from "./DataDictionaryScene.module.css";
+
+gsap.registerPlugin(ScrollTrigger);
+
+// Scroll-scrubbed table entrance (timeline units are arbitrary — the scrub
+// maps the whole timeline onto the scroll range): the Document Intent card
+// first, then the table builds column by column, left to right, each column's
+// cells (header first) staggering top to bottom.
+const INTENT_DURATION = 1;
+const COLUMN_START_OFFSET = 0.7; // between one column's start and the next's
+const CELL_STAGGER = 0.1; // between cells inside a column
+const CELL_DURATION = 0.6;
+const CELL_RISE_PX = 12;
+const OUTLINE_LEAD = 0.2; // outline wipe starts this far ahead of column 1
 
 // Full rebuild (old pinned scaffold-build scene scrapped, see progress.md/
 // PLAN.md) — a static section: an SVG connector line runs from the
@@ -188,7 +200,10 @@ function buildRoundedPolylinePath(points: Point[], radius: number): string {
       x: curr.x + ((next.x - curr.x) / d2) * r,
       y: curr.y + ((next.y - curr.y) / d2) * r,
     };
-    commands.push(`L${before.x},${before.y}`, `Q${curr.x},${curr.y} ${after.x},${after.y}`);
+    commands.push(
+      `L${before.x},${before.y}`,
+      `Q${curr.x},${curr.y} ${after.x},${after.y}`,
+    );
   }
   const last = points[points.length - 1];
   commands.push(`L${last.x},${last.y}`);
@@ -241,10 +256,7 @@ export default function DataDictionaryScene({
   const textBlockRef = useRef<HTMLDivElement>(null);
   const connectorSvgRef = useRef<SVGSVGElement>(null);
   const [connectorPoints, setConnectorPoints] = useState<Point[]>([]);
-  const [fanDropSegment, setFanDropSegment] = useState<RakeSegment | null>(
-    null,
-  );
-  const fanDropSegmentRef = useRef<RakeSegment | null>(null);
+  const connectorPathRef = useRef<SVGPathElement>(null);
   const rowRefs = useRef<(HTMLDivElement | null)[]>([]);
   // One invisible marker per row, a real DOM child of that row — so
   // measuring it gives the TRUE perspective-projected position of a
@@ -332,7 +344,8 @@ export default function DataDictionaryScene({
       const refA = rows.length > 3 ? rows[1] : top;
       const refB = rows.length > 3 ? rows[rows.length - 2] : bottom;
       const lineXAt = (y: number) => {
-        const t = (y - refA.shoulder.y) / (refB.shoulder.y - refA.shoulder.y || 1);
+        const t =
+          (y - refA.shoulder.y) / (refB.shoulder.y - refA.shoulder.y || 1);
         return refA.shoulder.x + t * (refB.shoulder.x - refA.shoulder.x);
       };
       const barTop = { x: lineXAt(topY), y: topY };
@@ -372,12 +385,6 @@ export default function DataDictionaryScene({
           to: insetEnd(mid.shoulder, mid.target, CARD_GAP),
         });
       }
-
-      // Set below once the fan's bar geometry is known — the wrap-local
-      // point where the CENTER mid stub (the true center divider) meets the
-      // bar, used to anchor the section-bottom vertical connector built in
-      // the Connector block further down.
-      let columnFanCenterBarPoint: Point | null = null;
 
       // Bottom column-divider fan — same trapezoid shape as the row rake
       // above (shoulder bar + fixed-angle diagonal legs + straight mid
@@ -458,11 +465,7 @@ export default function DataDictionaryScene({
           },
           {
             from: dBarRight,
-            to: insetEnd(
-              dOuterRightShoulder,
-              dOuterRight,
-              CARD_GAP_ALONG_LINE,
-            ),
+            to: insetEnd(dOuterRightShoulder, dOuterRight, CARD_GAP_ALONG_LINE),
           },
         );
         dMids.forEach((mid, i) => {
@@ -472,22 +475,6 @@ export default function DataDictionaryScene({
             to: insetEnd(shoulder, mid, CARD_GAP),
           });
         });
-
-        // Drop point is the Calculation column's own right edge (not the
-        // table's center divider anymore, per request) — its real target
-        // point (the table's own bottom edge), not the bar, so the drop
-        // line below starts flush against the table instead of at the
-        // (now-hidden) fan's bar distance away from it. dividerTargets[k]
-        // is marker k+1's real position (slice(1) above dropped marker 0,
-        // term's own left edge) — marker k+1 sits at column (k+1)'s LEFT
-        // edge, i.e. column k's right edge, so the Calculation column's
-        // (index 3) right edge is dividerTargets[3].
-        const calculationColIndex = COLUMNS.findIndex(
-          (c) => c.key === "calculation",
-        );
-        columnFanCenterBarPoint =
-          dividerTargets[calculationColIndex] ??
-          dMids[Math.floor(dMids.length / 2)];
       }
 
       setRakeSegments(segments);
@@ -509,7 +496,13 @@ export default function DataDictionaryScene({
         const sectionStyle = getComputedStyle(sectionEl);
         const topPad = parseFloat(sectionStyle.paddingTop) || 0;
         const leftPad = parseFloat(sectionStyle.paddingLeft) || 0;
-        const centerX = svgRect.width / 2;
+        // Starts on the Framework hexagon's own center x, where
+        // ThresholdDropLine arrives from above, so the two read as one line.
+        const hexagonEl = document.querySelector("[data-hexagon]");
+        const hexagonRect = hexagonEl?.getBoundingClientRect();
+        const centerX = hexagonRect
+          ? hexagonRect.left + hexagonRect.width / 2 - svgRect.left
+          : svgRect.width / 2;
 
         // Segment 3/4's bottom turn lands level with the Renewal Date
         // row's own real left edge (not the fan's bar, now hidden) — same
@@ -536,40 +529,6 @@ export default function DataDictionaryScene({
           landingLocal,
           rowTargetLocal,
         ]);
-
-        // Vertical connector flush to the table's own real bottom edge —
-        // starts at the center column divider's real target point (the
-        // fan that used to carry this stretch is now hidden), grows
-        // straight down past this section's own bottom edge, stopping
-        // flush at the TOP of FrameworkAdaptationEyes' hub eye (its own
-        // data-eyes-hub marker — that eye's x is in turn pinned to this
-        // same line, see FrameworkAdaptationEyes.tsx) rather than at the
-        // section's bottom.
-        if (columnFanCenterBarPoint) {
-          const dropX =
-            columnFanCenterBarPoint.x + wrapRect.left - svgRect.left;
-          const dropStartY =
-            columnFanCenterBarPoint.y + wrapRect.top - svgRect.top;
-          const hubEl = document.querySelector("[data-eyes-hub]");
-          const dropEndY = hubEl
-            ? hubEl.getBoundingClientRect().top - svgRect.top
-            : svgRect.height;
-          const nextSegment = {
-            from: { x: dropX, y: dropStartY },
-            to: { x: dropX, y: dropEndY },
-          };
-          const prevSegment = fanDropSegmentRef.current;
-          const changed =
-            !prevSegment ||
-            prevSegment.from.x !== nextSegment.from.x ||
-            prevSegment.from.y !== nextSegment.from.y ||
-            prevSegment.to.x !== nextSegment.to.x ||
-            prevSegment.to.y !== nextSegment.to.y;
-          if (changed) {
-            fanDropSegmentRef.current = nextSegment;
-            setFanDropSegment(nextSegment);
-          }
-        }
       }
     }
 
@@ -580,22 +539,118 @@ export default function DataDictionaryScene({
     // instead of guessing how many frames that takes. document.fonts.ready
     // covers a webfont swap reflowing the table/fan after first paint.
     window.addEventListener("resize", measure);
-    window.addEventListener(EYES_HUB_UPDATED, measure);
     document.fonts?.ready?.then(measure);
     return () => {
       window.removeEventListener("resize", measure);
-      window.removeEventListener(EYES_HUB_UPDATED, measure);
     };
   }, []);
 
-  // Announce the drop-line's settled position only once it's actually
-  // committed and painted (plain useEffect runs after paint, unlike the
-  // layout effect above) — FrameworkAdaptationEyes' hub reads this line's
-  // real x for its own position, so dispatching any earlier would hand it
-  // a position that isn't on screen yet.
   useEffect(() => {
-    if (fanDropSegment) window.dispatchEvent(new Event(FAN_DROP_LINE_UPDATED));
-  }, [fanDropSegment]);
+    const wrap = perspectiveWrapRef.current;
+    const table = tableRef.current;
+    if (!wrap || !table) return;
+    const card = wrap.querySelector<HTMLElement>(`.${styles.card}`);
+    const headerCells = Array.from(
+      table.querySelectorAll<HTMLElement>(`.${styles.headerCell}`),
+    );
+    const bodyRows = Array.from(
+      table.querySelectorAll<HTMLElement>(`.${styles.bodyRow}`),
+    );
+    // One list per column: header cell, then that column's cell in each row.
+    const columns = headerCells.map((header, c) => [
+      header,
+      ...bodyRows.map((row) => row.children[c] as HTMLElement),
+    ]);
+    const mm = gsap.matchMedia();
+    mm.add("(prefers-reduced-motion: no-preference)", () => {
+      const timeline = gsap.timeline({
+        scrollTrigger: {
+          // Starts as the table group's top enters; done (table complete) when
+          // the header text block's top reaches the viewport's top edge.
+          trigger: wrap,
+          start: "top 80%",
+          endTrigger: textBlockRef.current ?? wrap,
+          end: "top top",
+          scrub: 0.6,
+        },
+      });
+      if (card) {
+        // Opacity only: the card's own CSS transform (translate + rotateX tilt)
+        // must stay untouched, so no GSAP transform is applied to it.
+        timeline.fromTo(
+          card,
+          { opacity: 0, "--draw": 0 },
+          {
+            opacity: 1,
+            "--draw": 1,
+            duration: INTENT_DURATION,
+            ease: "power2.out",
+          },
+          0,
+        );
+      }
+      // Table outline + inner lines wipe in left to right over the whole
+      // column build, leading it slightly so each column's cells arrive inside
+      // an already-drawn outline.
+      timeline.fromTo(
+        table,
+        { "--draw": 0 },
+        {
+          "--draw": 1,
+          duration: columns.length * COLUMN_START_OFFSET,
+          ease: "none",
+        },
+        INTENT_DURATION * 0.6 - OUTLINE_LEAD,
+      );
+      columns.forEach((cells, c) => {
+        timeline.fromTo(
+          cells,
+          { opacity: 0, y: CELL_RISE_PX },
+          {
+            opacity: 1,
+            y: 0,
+            duration: CELL_DURATION,
+            ease: "power2.out",
+            stagger: CELL_STAGGER,
+          },
+          INTENT_DURATION * 0.6 + c * COLUMN_START_OFFSET,
+        );
+      });
+    });
+    scheduleScrollTriggerRefresh();
+    return () => mm.revert();
+  }, []);
+
+  // The connector continues ThresholdDropLine (which ends at this section's
+  // top edge, on the same x) as one scrubbed line: same "tip ~70% down the
+  // viewport" rule, so it starts drawing the moment the drop line finishes
+  // and ends when its landing point on the table reaches that height.
+  useEffect(() => {
+    const path = connectorPathRef.current;
+    const svg = connectorSvgRef.current;
+    const section = svg?.parentElement;
+    if (!path || !section || connectorPoints.length < 2) return;
+    const length = path.getTotalLength();
+    const endY = connectorPoints[connectorPoints.length - 1].y;
+    const ctx = gsap.context(() => {
+      gsap.fromTo(
+        path,
+        { strokeDasharray: length, strokeDashoffset: length },
+        {
+          strokeDashoffset: 0,
+          ease: "none",
+          scrollTrigger: {
+            trigger: section,
+            start: "top 70%",
+            end: `top+=${endY} 70%`,
+            scrub: true,
+          },
+        },
+      );
+    }, svg);
+    scheduleScrollTriggerRefresh();
+    return () => ctx.revert();
+  }, [connectorPoints]);
 
   return (
     <>
@@ -614,23 +669,11 @@ export default function DataDictionaryScene({
       >
         {connectorPoints.length > 0 && (
           <path
+            ref={connectorPathRef}
             d={buildRoundedPolylinePath(connectorPoints, CONNECTOR_RADIUS)}
-            stroke="var(--color-grey-650)"
+            stroke="var(--color-grey-500)"
             strokeWidth={1}
             className={styles.rakeLine}
-          />
-        )}
-        {fanDropSegment && (
-          <path
-            data-fan-drop-line="true"
-            d={`M${fanDropSegment.from.x},${fanDropSegment.from.y} L${fanDropSegment.to.x},${fanDropSegment.to.y}`}
-            stroke="var(--color-grey-650)"
-            strokeWidth={1}
-            className={styles.rakeLine}
-            // Hidden (not removed): FrameworkAdaptationEyes still measures this
-            // element's x to pin its hub, and getBoundingClientRect works on a
-            // visibility:hidden path.
-            style={{ visibility: "hidden" }}
           />
         )}
       </svg>
@@ -645,6 +688,7 @@ export default function DataDictionaryScene({
           <Block
             size="2xl"
             color="secondary"
+            reveal
             className={styles.dataDictionaryDetailBlock}
           >
             Based on API documentation and further research using Claude, I
@@ -663,19 +707,19 @@ export default function DataDictionaryScene({
             column-divider fan render through this one combined segment
             list) — per request, table/card/connector-C/drop-line stay. */}
           {false && (
-          <svg className={styles.rake} aria-hidden="true">
-            {rakeSegments.map((seg, i) => (
-              <ProcessConnector
-                key={i}
-                from={seg.from}
-                to={seg.to}
-                shape="straight"
-                gap={0}
-                color="var(--color-grey-650)"
-                className={styles.rakeLine}
-              />
-            ))}
-          </svg>
+            <svg className={styles.rake} aria-hidden="true">
+              {rakeSegments.map((seg, i) => (
+                <ProcessConnector
+                  key={i}
+                  from={seg.from}
+                  to={seg.to}
+                  shape="straight"
+                  gap={0}
+                  color="var(--color-grey-650)"
+                  className={styles.rakeLine}
+                />
+              ))}
+            </svg>
           )}
 
           <div className={styles.card}>

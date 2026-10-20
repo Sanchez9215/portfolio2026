@@ -1,0 +1,5 @@
+/* Same 16px rounding as OverviewPrototype1QuestionsMap's embed. LiveEmbed's own
+   container already clips (overflow:hidden); this only rounds it. */
+.liveEmbed {
+  border-radius: var(--border-radius-md);
+}
