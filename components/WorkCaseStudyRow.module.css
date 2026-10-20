@@ -82,6 +82,16 @@
   gap: var(--spacing-lg);
 }
 
+/* Row-gap between description and CTA is 32px when a case-study link is shown. */
+.leftWithCta {
+  row-gap: var(--spacing-xl);
+}
+
+.ctaRow > .ctaInline {
+  width: auto;
+  align-self: flex-start;
+}
+
 .ctaRow > * {
   width: 100%;
   /* entrance-animation hidden state */

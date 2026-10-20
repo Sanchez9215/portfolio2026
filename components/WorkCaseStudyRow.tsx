@@ -21,6 +21,7 @@
 
 "use client";
 
+import TestButton from "@/components/TestButton";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -91,6 +92,9 @@ export interface WorkCaseStudyRowProps {
   /** Overrides the impact items' shared 108px height (see .impactItem in
    *  WorkCaseStudyRow.module.css) for this row only. */
   impactItemHeight?: number;
+  /** When set, shows a TestButton-style "View case study" link 32px below the
+   *  description (the ctaRow is otherwise empty). */
+  caseStudyHref?: string;
 }
 
 export default function WorkCaseStudyRow({
@@ -99,6 +103,7 @@ export default function WorkCaseStudyRow({
   fixedVisualRatio = false,
   flushBottomRadius = false,
   impactItemHeight,
+  caseStudyHref,
 }: WorkCaseStudyRowProps) {
   const { titleLines, description, meta, impact, companyLogo } = intro;
   // Passed to the `visual` render prop. Flips when this row's own embedWrap
@@ -205,7 +210,10 @@ export default function WorkCaseStudyRow({
 
   return (
     <Section className={styles.work}>
-      <div ref={leftRef} className={styles.left}>
+      <div
+        ref={leftRef}
+        className={`${styles.left}${caseStudyHref ? ` ${styles.leftWithCta}` : ""}`}
+      >
         <div className={styles.intro}>
           <h2 ref={titleRef} className={styles.title}>
             {titleLines.map((line, i, arr) => (
@@ -220,6 +228,11 @@ export default function WorkCaseStudyRow({
           </Block>
         </div>
         <div ref={ctaRef} className={styles.ctaRow}>
+          {caseStudyHref && (
+            <div className={styles.ctaInline}>
+              <TestButton href={caseStudyHref}>View case study</TestButton>
+            </div>
+          )}
           {/* Hidden until the case study is ready to link to publicly.
           <Button
             variant="primary"

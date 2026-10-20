@@ -34,6 +34,7 @@ export default function WorkSection() {
     <main id="work">
       <WorkCaseStudyRow
         intro={softwareObservabilityIntro}
+        caseStudyHref="/work/software-observability"
         visual={(entranceReady) => (
           <SoftwareExperienceEmbed
             entranceReady={entranceReady}
