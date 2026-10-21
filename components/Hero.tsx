@@ -38,12 +38,10 @@ import TestButton from "./TestButton";
 import styles from "./Hero.module.css";
 
 const HEADLINE_LINES = [
-  { prefix: "Specializing in ", text: "Enterprise" },
-  { text: "Data", breakBefore: "enterprise" as const },
-  { text: "Systems", breakBefore: "data" as const },
-  { text: "Designed", breakBefore: "systems" as const },
-  { text: "for", breakBefore: "optional" as const },
-  { text: "High Stakes.", breakBefore: "for" as const },
+  { text: "Building high-stakes" },
+  { text: "data systems that turn", breakBefore: "optional" as const },
+  { text: "operational complexity", breakBefore: "optional" as const },
+  { text: "into clarity.", breakBefore: "optional" as const },
 ];
 
 // Splits a run of text into individually-animatable word spans (so a line
@@ -232,6 +230,7 @@ export default function Hero() {
     <section className={styles.section}>
       <div className={styles.content}>
         <div className={styles.topGroup}>
+          {/* Hidden: "PRODUCT BUILDER" label row
           <div className={styles.labelRow}>
             <span className={styles.icon} aria-hidden="true">
               <Image src="/icons/happy.svg" alt="" width={32} height={32} />
@@ -239,7 +238,7 @@ export default function Hero() {
             <Label size="2xl" color="secondary">
               PRODUCT BUILDER
             </Label>
-          </div>
+          </div> */}
           <div className={styles.headlineGroup}>
             <Title size="xl" color="primary" className={styles.headline}>
               <span>
