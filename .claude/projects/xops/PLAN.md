@@ -106,6 +106,71 @@ Per-screen classification (visual-only vs. structural vs. mixed) happens during 
 15. **Establish design-system-only documentation** — a place to log structural/token findings (color drift between a source file and audited tokens, missing size tiers, component-recipe duplication like #14) that isn't tied to any one page or case study. Today these surface mid-session on whatever project happens to trigger them (e.g. Data Health Monitor) and get logged into that project's own doc set or `xops`'s `PLAN.md` by default, even when the finding is really about the shared `xops` system itself. Needs its own home.
 16. **Add Configuration Item (asset record) data to the shared data model** — Data Health Monitor's real-world basis is a ServiceNow-style CMDB: Configuration Items (one per asset/record, per domain — Employee/Infrastructure/Worksite/Software), each with domain-specific Asset Profile Fields (attributes), validated for Completeness (required fields populated), Quality (populated fields that pass validation), and Recency (synced within 24h). A single CI can carry multiple simultaneous validation failures across categories — the model must support that, not assume one failure per record. This is **in addition to** the existing `hr`/`publisher`/`procurement`/`discovery` tables, not a replacement — part of the same overall ecosystem (Employee CIs relate to `hr` rows, Software CIs relate to `catalog`/`procurement`, etc.), but not yet scoped into `design-systems/xops/data/`. Downstream; not started.
 
+17. **All Requests — parent request status rollup** — a request (REQ) is a parent of items (ITM); parent status is derived from its items, not stored. Item statuses: open, in-progress, warning, exception, complete. Parent statuses: Open, In-Progress, Suspended, Closed-Complete, Closed-Incomplete, Closed-Canceled. Rules (provisional, pressure-test later): all items open → Open; any item started → In-Progress; **exception** with no item still active (open/in-progress) → Suspended; the system can also set Suspended directly (SLA nearing breach, employee confirmation outstanding); all items complete → Closed-Complete (a parent cannot close complete while any item holds an unresolved exception or warning); Closed-Incomplete / Closed-Canceled are explicit terminal outcomes passed in, not derived. Warnings do not move the parent to Suspended. Exception/warning badge on the progress bar (for the collapsed list) is the next piece. ServiceNow's official RITM→request mapping only covers open/WIP/pending → In Progress and the three closed states → Closed; how a child problem affects an open parent is not documented there — this rule is our own design.
+
+18. **All Requests — portfolio showpiece (goal + build order)** — a front-end rebuild of a screen Edgar designed at a former employer; it will never ship, so it's shown as a playable concept with the reasoning behind it (no NDA constraint, nothing added to the original design). Thesis: ServiceNow doesn't show cross-system orchestration — making automated fulfillment legible (what triggered what) was the value prop. Takeaway for hiring managers: Edgar designs orchestration visualizations and designs for AI/agents. Goal is *playable*, including a manager stepping in to unsuspend a request; no invented impact metrics. Build order: (1) events dataset — 4 runbooks (Device Deployment, Badge Access, Software Deployment, Mobile Line Assignment; remote roles skip Badge Access; offboarding ordered by risk, not strictly reversed), events with optional cross-lane `triggeredBy`, an exception scenario; (2) orchestration graph (main employee-event lane + one swim lane per item, data-driven SVG); (3) event log; (4) detail header + General Details (status-count chips moved to Revisit — the graph icons and the header status tag already carry per-item and parent status, so chips only earn a place if they filter or jump to a lane); (5) pagination bar + Filters; (6) playable scenario. Triggers are only for cross-lane/cross-system causality — in-lane order is implicit and origin events have none. Open modeling questions: gates/waits vs triggers, approvals, SLA clock, event outcomes (succeeded/failed/retried/resolved), exception ownership, scheduled vs actual events.
+
+19. **All Requests — events data model (built)** — `design-systems/xops/data/requests/` (`types.ts`, `runbooks.ts` templates, `generate.ts` seeded, `metrics.ts` seam). 200 requests (REQ-232 scripted: VIP onboarding, device-lane Inventory Unavailable exception) from 3 templates — US VIP Onboarding (pace ×0.3, 48h SLA), Remote Knowledge Worker (no badge), US Employee Offboarding (ordered by risk: access → license reclaim → device recovery → mobile). Events carry `source` (itsm/hr/identity/screening/badge/device-management/software-distribution/telecom/logistics/procurement), `actor` (system/employee/manager/agent), `type`, `outcome` (complete/in-progress/planned/warning/exception) and optional cross-lane `triggeredBy`; a step also waits on its trigger. Item status derives from lane outcomes, parent status from items (item 17). Resolved exceptions/warnings stay as complete events (`type` keeps the history). Not yet modeled: approvals as gates, SLA clock pause, exception ownership/assignee, the AI agent proposing a resolution (playable scenario, later).
+
+## All Requests orchestration graph — case-study material
+
+**Intent:** the story and the decisions behind the All Requests graph, written to be lifted into the case study. Items marked *(pending review)* are built but not yet confirmed in the browser.
+
+**Thesis:** ServiceNow shows a request as a flat list of events. The graph makes cross-system orchestration legible: which lane started because of which event, where lanes merge back, and where one is stuck. Hiring-manager takeaway: Edgar designs orchestration visualizations and designs for agents.
+
+### How it got here (screenshots in `iterations/all-requests-graph/`)
+
+1. **Original screen** (`01`) — a small legend-style graph beside a flat event list.
+2. **Redesigned target** (`02`) — graph promoted to the hero, a request list with derived status, exception tint in the log.
+3. **First build, all open** (`03`) — every lane grey, status chips above the graph.
+4. **In-progress and complete** (`04`) — branches leave the trunk, lanes fill; chips counted statuses.
+5. **Branch crossing** (`05`) — a branch ran straight through an unstarted lane's label.
+6. **Merge to trunk** (`06`) — a finished lane rises back to the trunk and fills it.
+7. **Exception head** (`07`) — a lane runs to a red head on the problem event.
+8. **Lane-colored badges and merges** (`08`) — color moved onto the lane's check badge and merge dot.
+9. **Chips removed** (`09`) — the icons and header tag already carried status, so the chips went (PLAN 18 Revisit).
+10. **Annotated overlap** (`10`) — the red line marks branches crossing a lane's first dots; led to the shared-slope rule.
+11. **Offboarding stress** (`11`) — a head label ran into the ITM code; the 14-lane pressure test (`?stress=1`) found the same.
+12. **Final** (`12`) — eight items, hover tooltip, highlighter, guide line.
+
+### Decisions (confirmed with the user unless marked)
+
+**Data**
+- Real prototype data had at most 4 items per request, so it could not stress the graph. Added an Executive Onboarding template (8 items: the existing four + Email Provisioning, VPN Access, Payroll Setup, Training Assignment) and three pinned requests that draw nothing from the rng: REQ-901 complete, REQ-902 mid-flight, REQ-903 exception + warning.
+- The four new item types take existing chart tokens (chart-4/5/8, training shares chart-3).
+
+**Graph logic**
+- Every branch and merge runs at one shared slope with two elbows; branches from one dot are staggered deepest-first; merges onto the trunk are staggered one margin apart.
+- A head label shrinks with an ellipsis instead of overrunning the ITM code.
+- The trunk is "done" only when its own events and every item lane are complete; otherwise it stops at its last point and the grey remainder continues. This covers Closed-Incomplete and Canceled.
+- Only a lane's first cross-lane trigger is drawn — drawing later mid-lane dependencies was declined as extra noise.
+
+**Layout**
+- Lanes are 32px (`control-height-medium`), compact, centered inside a 320px minimum height; the graph has 16px padding and a bottom divider, no card border or title. The request name moved back under the REQ id.
+- The trunk reads **Start → End**: Start in a left gutter (brand once started, disabled before), End left-aligned with the ITM codes (disabled until done). A finished trunk's last point sits on the center of the check badges.
+- The trunk uses `brand-primary`, the same blue as the request progress bar, so the line, the labels and the bar agree.
+- Kept the in-progress half circle in status blue rather than lane color: it carries a status meaning shared with the list, and light lane colors have weak contrast at that stroke width.
+
+**Hover interaction** *(pending review)*
+- The lane is the row under the pointer; the point is the nearest dot or head by x, with no distance cutoff, so a tooltip always shows. Hovering focuses that lane and dims the rest, as before.
+- Point highlighter: 12px disc, 1px ring and 8px dot in the lane color, 4px halo at 35% (the donut chart's recipe). A full-height guide line uses `border-divider`.
+- Motion: highlighter scales in over 150ms, then glides between points; guide and tooltip glide and fade over 250ms; the tooltip never flies in from off-screen.
+- The tooltip is an `event` variant of `ChartTooltip` (union-typed so the two variants cannot mix), built from existing tokens, not the older Figma hexes; opens below-right, flips at edges, ignores the pointer. The old per-dot mini tooltip was removed.
+- Merge dots take their lane's color and hover as "Completed" at the lane's final event time, focusing that lane. This separates arrivals from true trunk events.
+
+**Event log**
+- Shows only what has happened plus each lane's next planned event, in disabled text; 16px gap under the controls; 16px container padding (also on the detail header).
+
+### Process lessons worth telling
+- The 14-lane stress view surfaced the head-label overrun and the lack of a lane for new item types before they reached the prototype.
+- Several instructions reversed an earlier one (trunk end 16px before the badges, then flush, then centered on them); each was a deliberate trade between label spacing and alignment.
+- Tokens and values were proposed and confirmed before being written; where Figma and the audited tokens disagreed, the tokens won.
+
+### Open
+- Hover-intent delay and point stickiness if lane dimming feels twitchy.
+- Tooltip timestamp format ("4:06 PM" in data vs "4:06PM" in Figma).
+- The remaining detail pane sections and the playable scenario (PLAN 18).
+
 ## Status
 
 See `.claude/projects/xops/progress.md` for current build state.

@@ -14,6 +14,8 @@ export type DropdownProps<T extends string = string> = {
   options: DropdownOption<T>[];
   onChange: (value: T) => void;
   ariaLabel: string;
+  /** Fixed trigger text (action-menu mode, e.g. "Actions") instead of the selected option's label. */
+  label?: string;
   size?: DropdownSize;
   disabled?: boolean;
   openDirection?: DropdownOpenDirection;
@@ -27,6 +29,7 @@ export function Dropdown<T extends string = string>({
   options,
   onChange,
   ariaLabel,
+  label,
   size = "medium",
   disabled,
   openDirection = "up",
@@ -71,7 +74,7 @@ export function Dropdown<T extends string = string>({
         disabled={disabled}
         onClick={() => setOpen((prev) => !prev)}
       >
-        <span>{selected?.label ?? ""}</span>
+        <span>{label ?? selected?.label ?? ""}</span>
         <Icon
           name="keyboard_arrow_down"
           color="var(--xops-text-secondary)"

@@ -56,25 +56,34 @@
   background-color: var(--xops-state-active-on-surface);
 }
 
-.text {
+.text,
+.text-secondary {
   background-color: transparent;
   color: var(--xops-text-primary);
   border-color: transparent;
   padding-inline: var(--xops-spacing-12);
 }
 
-.text:hover {
+.text:hover,
+.text-secondary:hover {
   background-color: var(--xops-state-hover-on-surface);
 }
 
-.text:active {
+.text:active,
+.text-secondary:active {
   background-color: var(--xops-state-active-on-surface);
 }
 
-.text:disabled {
+.text:disabled,
+.text-secondary:disabled {
   background-color: transparent;
   color: var(--xops-state-disabled-text);
   border-color: transparent;
+}
+
+/* Same shape as `text`, label and icon in the secondary text color. */
+.text-secondary {
+  color: var(--xops-text-secondary);
 }
 
 .link {

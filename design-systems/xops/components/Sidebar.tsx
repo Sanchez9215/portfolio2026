@@ -8,13 +8,13 @@ type NavLeafKey =
   | "problem-mgmt"
   | "worksite"
   | "infrastructure"
-  | "requests"
   | "communications"
   | "activity-log"
   | "users";
 
 export type SoftwareSubKey = "overview" | "all-software";
 export type ControlCenterSubKey = "insights";
+export type RequestsSubKey = "all-requests";
 
 const SOFTWARE_SUB_ROUTES: Record<SoftwareSubKey, string> = {
   overview: "/work/software-observability/xops-overview",
@@ -34,6 +34,14 @@ const CONTROL_CENTER_SUB_ITEMS: { key: ControlCenterSubKey; label: string }[] = 
   { key: "insights", label: "Insights" },
 ];
 
+const REQUESTS_SUB_ROUTES: Record<RequestsSubKey, string> = {
+  "all-requests": "/work/all-requests",
+};
+
+const REQUESTS_SUB_ITEMS: { key: RequestsSubKey; label: string }[] = [
+  { key: "all-requests", label: "All Requests" },
+];
+
 type NavItemData = {
   key: NavLeafKey;
   label: string;
@@ -45,7 +53,6 @@ const NAV_ITEMS: NavItemData[] = [
   { key: "problem-mgmt", label: "Problem Mgmt", icon: "e911_emergency" },
   { key: "worksite", label: "Worksite", icon: "domain" },
   { key: "infrastructure", label: "Infrastructure", icon: "storage" },
-  { key: "requests", label: "Requests", icon: "acute" },
 ];
 
 const NAV_ITEMS_AFTER_SOFTWARE: NavItemData[] = [
@@ -58,6 +65,7 @@ export type SidebarProps = {
   activeItem?: NavLeafKey;
   activeSoftwareItem?: SoftwareSubKey;
   activeControlCenterItem?: ControlCenterSubKey;
+  activeRequestsItem?: RequestsSubKey;
   /** When set, the software sub-links call this instead of routing via next/link —
    *  used to drive an in-place embed's screen state (the live case-study hero flow)
    *  where real routing would navigate the whole portfolio page away. */
@@ -68,10 +76,12 @@ export default function Sidebar({
   activeItem,
   activeSoftwareItem,
   activeControlCenterItem,
+  activeRequestsItem,
   onNavigate,
 }: SidebarProps) {
   const softwareExpanded = Boolean(activeSoftwareItem);
   const controlCenterExpanded = Boolean(activeControlCenterItem);
+  const requestsExpanded = Boolean(activeRequestsItem);
 
   return (
     <nav className={styles.sidebar} aria-label="Primary">
@@ -93,6 +103,15 @@ export default function Sidebar({
             <NavButton icon={item.icon} label={item.label} active={activeItem === item.key} />
           </li>
         ))}
+
+        <NavGroup
+          icon="acute"
+          label="Requests"
+          expanded={requestsExpanded}
+          items={REQUESTS_SUB_ITEMS}
+          routes={REQUESTS_SUB_ROUTES}
+          activeKey={activeRequestsItem}
+        />
 
         <NavGroup
           icon="code_blocks"

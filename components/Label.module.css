@@ -5,10 +5,11 @@
   word-spacing:   var(--word-spacing-display);
 }
 
-.default { color: var(--text-primary); }
+/* --label-color: opt-in hook (a page can recolor every default/secondary/tertiary Label) */
+.default { color: var(--label-color, var(--text-primary)); }
 .inverse { color: var(--text-inverse-secondary); }
-.secondary { color: var(--text-secondary); }
-.tertiary { color: var(--text-tertiary); }
+.secondary { color: var(--label-color, var(--text-secondary)); }
+.tertiary { color: var(--label-color, var(--text-tertiary)); }
 .accent { color: var(--text-accent); }
 
 .xs { font-size: var(--text-label-xs-size); line-height: var(--text-label-xs-lh); letter-spacing: var(--text-label-xs-ls); }

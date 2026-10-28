@@ -132,6 +132,19 @@ All in `design-systems/xops/components/`, matching Storybook story per component
 - **status.danger.tint → danger.100** (was danger.200) — affects `Banner` and `Tag`'s danger background together
 - **font-weight.semibold** (600) — new primitive, first use: Banner title
 
+- **status icon** — `StatusIcon.tsx` (open/in-progress/warning/exception/complete), inline SVG on tokens, `size` 12|16, optional `color` on the complete disc
+- **tag extensions** — `size="small"`, leading `icon` slot, `status="info"` (new `status-info-text`) and `"open"` (new `status-open-tint/text`); `icon-size-12` token
+- **indicator `count` variant** — glyph + number, no fill, danger/warning text — exception/warning counts on the request bar
+- **button `text-secondary` variant** — `text` shape in `text-secondary` — "Full View" / "View Full Event Log"
+- **dropdown `label` prop** — fixed trigger text for action menus ("Actions")
+- **stat `size="compact"`** — 12px padding + 12px label; `value` may be a node
+- **request status** — `requestStatus.ts`: six parent statuses, tag colors, `deriveRequestStatus` rollup from items (`PLAN.md` 17)
+- **request list** — `RequestList.tsx` + `RequestListItem.tsx`: derived status/progress, expandable items, exception/warning counts, single-open accordion
+- **event log** — `EventLog.tsx`: lane-colored rows, sticky date bars, item filter, full-log expand, danger/warning row tints; `eventLaneColors.ts`
+- **request detail header** — `RequestDetailHeader.tsx`: ID/runbook, Actions menu (Close/Cancel Request, unwired), four compact `Stat` tiles
+- **app shell `fillViewport`** — locks the shell to the viewport so only inner regions scroll
+- **requests data model** — `data/requests/` (types, runbooks, seeded generator, metrics seam): 200 requests, source-tagged events, derived item/parent status (`PLAN.md` 19)
+
 ### Patterns
 
 - **License Utilization card** — `Card` + `Stat` pair + `DonutChart` + `Legend` (Figma 471:7567, warning banner deferred); story + real Overview page
@@ -153,6 +166,8 @@ All in `design-systems/xops/components/`, matching Storybook story per component
 - **Legacy Overview (v1, dev-only)** — `design-systems/xops/legacy/OverviewLegacy.tsx` + `AlertsPanel.tsx`, route `app/work/software-observability/xops-overview-legacy/`; screenshot-only reconstruction (no Figma node, see `DECISIONS.md` 019/024), isolated from the main components tree; stage-scoped table columns for Procurement/Provisioning/Active/Renewal (Deprovisioning removed), decorative per-stage alerts panel with row-tint tie-in to named software
 - **Legacy All Software (dev-only)** — `design-systems/xops/legacy/AllSoftwareLegacy.tsx`, route `app/work/software-observability/xops-all-software-legacy/`; built from real Figma node 2031:925 (`DECISIONS.md` 019/024), isolated from the main components tree; reuses `Sidebar`/`GlobalHeader`/`PageHeader`/`FilterTabs`/`Table` with three adjustments — tighter row padding (spacing-8 vertical, scoped CSS override), no logos, no tags; 9 sortable columns (Software/Publisher/Vendor/Category/Total Spend/Licenses Purchased/Utilization/Inactive/Renewal), real dataset via `getDataset()`; row click now opens the legacy Software Profile panel (below)
 - **Legacy Software Profile panel (dev-only)** — `design-systems/xops/legacy/SoftwareProfileLegacy.tsx`, opens in `SidePanel` from Legacy All Software's row click (Figma 1498:5483); header (LogoTile+name) / description / Primary+Secondary Owner tiles / Summary Card (Purchased + spend panel + `BarChart` progress + two `Legend` breakdowns [Active/Total Assigned, Inactive/Unassigned] + cost tiles) — every number a live join off `ProductSummary`; palette absorbed into existing XOPS tokens, `#EEF2F7` filled panels → `surface-stat`; detail tabs = `FilterTabs variant="underline"`; **Lifecycle tab now renders the real `LifecycleTimeline`** (see Primitives); Employees/Financial/Devices tab bodies still unbuilt (placeholder)
+
+- **All Requests (dev route)** — `app/work/all-requests/`; request list + detail pane (header, graph, event log) reading the requests dataset; General Details / tables / pagination bar / Filters not built
 
 ---
 
@@ -182,6 +197,14 @@ All in `design-systems/xops/components/`, matching Storybook story per component
 - **Migrate existing icon-size CSS overrides to `Icon`'s new `size` prop** — `Stat`/`TimelineEvent`/`StageFilter`/`Legend`/`FilterTabs`/`SoftwareProfile`/`Tooltip`.module.css each hand-roll their own `width/height: var(--xops-icon-size-*)` override class instead of using `Icon`'s new `size` prop (added for `Indicator`); not migrated yet to keep this session's change additive-only
 - **`Indicator` `dot` variant** — declared in the type union, throws if used; no real consumer yet, size unconfirmed so left unbuilt rather than guessed
 
+- **Exception/warning/count chips (graph)** — status-count chips above the orchestration graph ("In-Progress 2 / Open 2"), designed after the graph
+- **Event row expansion** — source system / actor / trigger on an expanded log row; unanswered
+- **Graph dot → log highlight** — click a dot to highlight its log row; lane click filters the log
+- **Actions menu wiring** — Close/Cancel Request do nothing yet; wire in the playable scenario
+- **Playable scenario** — agent proposes a fix for the exception, manager approves via Actions, request unsuspends and completes
+- **Parent-status gaps** — Day-One Readiness completes while an item is stuck; approvals-as-gates, SLA clock pause, exception ownership not modeled
+- **Detail pane sections** — Employee Information card, device/software tables (Figma 1327:3520), General Details
+
 ---
 
 ## Resume Context
@@ -203,7 +226,12 @@ Not started for Overview or All Software (Software Profile confirmed structural-
 ### Catalog logo work (roadmap)
 16 new publishers wired to empty-state (`PUBLISHER_LOGOS` nulls in `catalog.ts`): Snowflake, Databricks, Datadog, MongoDB, Notion, Asana, Box, Miro, HubSpot, Palo Alto Networks, Fortinet, Coupa, Anaplan, Smartsheet, GitLab, Elastic. Empty-state is now live (`code_blocks` glyph via `LogoTile`). Source a subset for ~85% coverage — some stay empty-state on purpose (100% reads too clean); confirm source before fetching; wire added logos into the map as files land.
 
+### All Requests orchestration graph
+`OrchestrationGraph.tsx` — **built, unreviewed** (check in browser before any Built entry): states open / in-progress / complete / exception / warning; branches and merges at one shared slope with two elbows, branches from one dot staggered deepest-first; hover dims other item lanes; trunk ("Request Timeline") fills when closed-complete; indicators have a white backing. Also touched this session, unreviewed: request list/item (3-col list, grey-50 panel, animated drawer, click-to-expand, hover states), event log padding/spine, detail header, tokens `spacing-20` + `motion-easing-in`.
+**Pressure test:** `/work/all-requests?stress=1` (and stories `FourteenItems`/`FourteenItemsNarrow`) swap in 14-lane data from `data/requests/stress.ts` — chains, fan-out, an upward branch, a no-dot exception. Next: review it, then fix what breaks.
+**Open:** head label overruns the ITM code on the right; merges not staggered; Closed-Incomplete/Canceled still keep the grey trunk remainder; only a lane's first cross-lane trigger is drawn; x is event order, not time. Trial values to settle: `--graph-line-width` 1.5px (track still 2px), `--graph-dim-opacity` 0.3 / `--graph-dim-duration` 250ms (graph-local), raw `grey-50` on the request panel, `.detail` gap 32. Event log collapsed `max-height` still assumes 8px row padding; unused props `runbookName` (RequestDetailHeader), `onFullView` (RequestListItem). Status-count chips moved to Revisit (PLAN 18). Open questions: merge-dot tooltip/style, reorder rows by branch start.
+
 ### Next up
 Standing principle: **build the final/real design-system version first, always** — legacy/prototype versions are deferred throwaway one-offs.
 
-**Next session starts here:** `LifecycleTimeline` is built (final DS component, see Primitives) and wired live into Legacy Software Profile's Lifecycle tab — event log, year/month nav (functional scroll-to-period), stage filter/legend (functional multi-select), and search (functional text filter) are all real. Events come from `data/lifecycle.ts` — deterministic-synthetic today, but source-tagged and shaped to swap in real per-system event feeds later; stage icons (`procurement`/`license_management`/`activation`/`security`/`support`) are in `public/xops/icons/`. Open thread: Employees/Financial/Devices tabs on the profile are still unbuilt (placeholder). Then, in order: config-as-YAML view + "plugs into real systems" visual (`PLAN.md` 11a); modularity toggle (`PLAN.md` 12); source a subset of the 16 logos (`## Catalog logo work`). Security/compliance cards stay decorative pending removal.
+**Next session starts here (XOPS All Requests — see `## Resume Context` → All Requests orchestration graph, `PLAN.md` 17–19):** finish the graph states (exception, warning, then chips), review the merge/overlap work in the browser, then the detail pane sections and the playable scenario. Earlier thread, if returning to the software case study: `LifecycleTimeline` is built (final DS component, see Primitives) and wired live into Legacy Software Profile's Lifecycle tab — event log, year/month nav (functional scroll-to-period), stage filter/legend (functional multi-select), and search (functional text filter) are all real. Events come from `data/lifecycle.ts` — deterministic-synthetic today, but source-tagged and shaped to swap in real per-system event feeds later; stage icons (`procurement`/`license_management`/`activation`/`security`/`support`) are in `public/xops/icons/`. Open thread: Employees/Financial/Devices tabs on the profile are still unbuilt (placeholder). Then, in order: config-as-YAML view + "plugs into real systems" visual (`PLAN.md` 11a); modularity toggle (`PLAN.md` 12); source a subset of the 16 logos (`## Catalog logo work`). Security/compliance cards stay decorative pending removal.

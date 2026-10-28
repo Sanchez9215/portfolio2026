@@ -42,11 +42,14 @@ export interface SectionIntroductionProps {
    *  flips when the hero visual's own fade-in starts, `settled` when it
    *  finishes. A static/non-interactive visual can ignore both. */
   visual: (entranceReady: boolean, settled: boolean) => ReactNode;
+  /** false = the entrance fades only (no slide-up). Default true. */
+  slideUp?: boolean;
 }
 
 export default function SectionIntroduction({
   intro,
   visual,
+  slideUp = true,
 }: SectionIntroductionProps) {
   const titleRef = useRef<HTMLHeadingElement>(null);
   const descriptionRef = useRef<HTMLParagraphElement>(null);
@@ -104,7 +107,7 @@ export default function SectionIntroduction({
         .call(() => setEntranceReady(true), undefined, TIMING.heroStart)
         .fromTo(
           heroEmbedEl,
-          { y: TIMING.heroTravelDistance },
+          { y: slideUp ? TIMING.heroTravelDistance : 0 },
           {
             opacity: 1,
             y: 0,
@@ -118,7 +121,7 @@ export default function SectionIntroduction({
     return () => {
       ctx.revert();
     };
-  }, []);
+  }, [slideUp]);
 
   const {
     titleLines: introTitleLines,
@@ -129,7 +132,9 @@ export default function SectionIntroduction({
   } = intro;
 
   return (
-    <section className={`cs-grid ${styles.introduction}`}>
+    <section
+      className={`cs-grid ${styles.introduction}${slideUp ? "" : ` ${styles.noSlide}`}`}
+    >
       <div className={styles.projectOverview}>
         <div className={styles.intro}>
           <h1 ref={titleRef} className={styles.title}>

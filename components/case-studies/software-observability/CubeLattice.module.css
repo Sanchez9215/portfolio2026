@@ -21,22 +21,22 @@
 
 .outline {
   fill: none;
-  stroke: var(--color-grey-500);
+  stroke: var(--color-grey-600);
   stroke-width: 1px;
   stroke-linejoin: miter;
   vector-effect: non-scaling-stroke;
 }
 
-/* Swelling spindle that travels the outline — same grey, filled, no stroke. */
+/* Swelling spindle that travels the outline — same grey-600, filled, no stroke. */
 .pulse {
-  fill: var(--color-grey-500);
+  fill: var(--color-grey-600);
   stroke: none;
 }
 
-/* Insights ring — same flat 1px grey-500 line as the hexagon. */
+/* Insights ring — flat 1px blue-500 line. */
 .ring {
   fill: none;
-  stroke: var(--color-grey-500);
+  stroke: var(--color-blue-500);
   stroke-width: 1px;
   vector-effect: non-scaling-stroke;
 }

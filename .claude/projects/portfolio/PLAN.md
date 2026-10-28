@@ -104,6 +104,9 @@ A second, separate use of `AnnotationConnectorHotspot`: not the scroll-driven As
 
 **Rules agreed this pass:** every large (2xl) detail block uses the display text's word-by-word reveal (`Block reveal`); the opener question is exempt. Insights & Goals animates forward only. Funnel animation removed (`FrameworkFunnelSpine`, `funnel-morph.svg`). Data Limitations / Data Dictionary / Starting Design placement still undecided; the old "Integration work hadn't started…" detail block is hidden in `page.tsx` for now.
 
+### software-1.2 page restructure (confirmed in conversation)
+Page cut further to: intro → Opportunity → Working Backwards (role cards, whole section pins, categories scroll-driven) → Overview Prototype 1 (intro text + compliance/lifecycle panel copies + embed) → Focusing the MVP → priority mountain; everything else hidden via `SHOW_INTRO_TO_QUESTIONS` / `SHOW_BELOW_QUESTIONS` (hidden, not deleted). New type styles (14px labels/body, 32px red metric values) are local one-offs on purpose — standardize later. Page-scoped theme: grey-100 page, text grey-750, titles/labels grey-900.
+
 ### Question-embed tooltip placement + pointer (confirmed in conversation, `OverviewPrototype1QuestionsMap`)
 
 Replaces the per-tooltip hand-tuned `flip`/`flipVertical`/`placeAbove` placement with computed placement, opt-in via a new `AnnotationConnectorHotspot` prop (other embeds keep their current placement). Modeled on the Data Health Monitor pain-point system: the tooltip's position is the independent variable (fixed gaps from its card), the pointer is derived to reach the target.

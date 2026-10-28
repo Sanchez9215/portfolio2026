@@ -1,0 +1,175 @@
+.root {
+  position: relative;
+  display: inline-flex;
+  align-items: flex-end;
+  gap: var(--xops-spacing-8);
+  font-family: var(--xops-font-family);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--xops-spacing-4);
+}
+
+.label {
+  font-size: var(--xops-typography-body-12-font-size);
+  line-height: var(--xops-typography-body-12-line-height);
+  color: var(--xops-text-secondary);
+}
+
+.trigger {
+  display: inline-flex;
+  align-items: center;
+  height: var(--xops-control-height-large);
+  padding-inline: var(--xops-spacing-12);
+  background-color: var(--xops-white);
+  border: var(--xops-border-width-1) solid var(--xops-border-divider);
+  border-radius: var(--xops-radius-6);
+  font-family: var(--xops-font-family);
+  font-size: var(--xops-typography-body-14-font-size);
+  line-height: var(--xops-typography-body-14-line-height);
+  color: var(--xops-text-primary);
+  cursor: pointer;
+}
+
+.trigger:hover {
+  background-color: var(--xops-state-hover-on-surface);
+}
+
+.trigger:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 var(--xops-state-focus-ring-width) var(--xops-state-focus-ring);
+}
+
+.separator {
+  display: flex;
+  align-items: center;
+  height: var(--xops-control-height-large);
+  font-size: var(--xops-typography-body-14-font-size);
+  line-height: var(--xops-typography-body-14-line-height);
+  color: var(--xops-text-secondary);
+}
+
+.panel {
+  position: absolute;
+  top: calc(100% + var(--xops-spacing-4));
+  left: 0;
+  z-index: 10;
+  padding: var(--xops-spacing-12);
+  background-color: var(--xops-white);
+  border: var(--xops-border-width-1) solid var(--xops-border-divider);
+  border-radius: var(--xops-radius-6);
+  box-shadow: var(--xops-elevation-1);
+}
+
+.monthBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--xops-spacing-8);
+}
+
+.monthTitle {
+  font-size: var(--xops-typography-subheading-14-font-size);
+  line-height: var(--xops-typography-subheading-14-line-height);
+  font-weight: var(--xops-font-weight-medium);
+  color: var(--xops-text-primary);
+}
+
+.navButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--xops-control-height-medium);
+  height: var(--xops-control-height-medium);
+  padding: 0;
+  background: none;
+  border: none;
+  border-radius: var(--xops-radius-6);
+  cursor: pointer;
+}
+
+.navButton:hover:not(:disabled) {
+  background-color: var(--xops-state-hover-on-surface);
+}
+
+.navButton:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 var(--xops-state-focus-ring-width) var(--xops-state-focus-ring);
+}
+
+.navButton:disabled {
+  cursor: not-allowed;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(7, var(--xops-control-height-medium));
+}
+
+.weekday {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: var(--xops-control-height-medium);
+  font-size: var(--xops-typography-body-12-font-size);
+  line-height: var(--xops-typography-body-12-line-height);
+  color: var(--xops-text-secondary);
+}
+
+.day {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--xops-control-height-medium);
+  height: var(--xops-control-height-medium);
+  padding: 0;
+  background: none;
+  border: var(--xops-border-width-1) solid transparent;
+  border-radius: var(--xops-radius-6);
+  font-family: var(--xops-font-family);
+  font-size: var(--xops-typography-body-14-font-size);
+  line-height: var(--xops-typography-body-14-line-height);
+  color: var(--xops-text-primary);
+  cursor: pointer;
+}
+
+.day:hover:not(:disabled) {
+  background-color: var(--xops-state-hover-on-surface);
+}
+
+.day:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 var(--xops-state-focus-ring-width) var(--xops-state-focus-ring);
+}
+
+.day:disabled {
+  color: var(--xops-state-disabled-text);
+  cursor: not-allowed;
+}
+
+.dayOutside {
+  color: var(--xops-text-disabled);
+  cursor: default;
+}
+
+.dayToday {
+  border-color: var(--xops-brand-primary);
+}
+
+.dayInRange {
+  background-color: var(--xops-surface-selected);
+  border-radius: 0;
+}
+
+.dayInRange:hover:not(:disabled) {
+  background-color: var(--xops-surface-selected);
+}
+
+.dayEdge,
+.dayEdge:hover:not(:disabled) {
+  background-color: var(--xops-brand-primary);
+  color: var(--xops-text-inverse);
+  border-radius: var(--xops-radius-6);
+}

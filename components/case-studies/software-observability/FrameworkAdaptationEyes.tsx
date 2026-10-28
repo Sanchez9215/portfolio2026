@@ -24,8 +24,6 @@ import {
   EYES_HUB_UPDATED,
   FAN_DROP_LINE_UPDATED,
 } from "./frameworkAdaptationSync";
-import Label from "../../Label";
-import labelBlockStyles from "../../LabelBlock.module.css";
 import styles from "./FrameworkAdaptationEyes.module.css";
 import {
   USAGE_BEAM_EYE_EVENT,
@@ -111,7 +109,6 @@ interface LeafConfig {
 // confirmed values instead.
 const LEAF_CONFIGS: LeafConfig[] = [];
 
-const EYE_STROKE = "var(--color-grey-500)";
 const CONNECTOR_STROKE = "var(--color-grey-500)";
 const EYE_DASH = undefined;
 // Extra clearance past a child's pupil edge before its connector line
@@ -175,12 +172,7 @@ function getRotationDeg(el: Element): number {
 // circle's own far-side cap, away from the other). Replaces the earlier
 // lightbeam.svg teardrop asset with an exact, accurate frustum instead of
 // an approximation.
-function frustumPath(
-  c1: Point,
-  r1: number,
-  c2: Point,
-  r2: number,
-): string {
+function frustumPath(c1: Point, r1: number, c2: Point, r2: number): string {
   const dx = c2.x - c1.x;
   const dy = c2.y - c1.y;
   const d = Math.hypot(dx, dy) || 1;
@@ -235,8 +227,7 @@ function computeBeam(
   maxBottom: number = Infinity,
 ) {
   const flareRate =
-    ((BEAM_BASE_RATIO - 1) * topRadius) /
-    (BEAM_DISTANCE_RATIO * bigEyeWidthPx);
+    ((BEAM_BASE_RATIO - 1) * topRadius) / (BEAM_DISTANCE_RATIO * bigEyeWidthPx);
   let distance = Math.hypot(
     baseCenter.x - topCenter.x,
     baseCenter.y - topCenter.y,
@@ -275,19 +266,13 @@ function EyeShape({
 }: {
   className?: string;
   pupilRef?: Ref<HTMLDivElement>;
-  // Scroll-scrubbed solid fill inside the pupil — every eye except the two
-  // beam eyes (satelliteA, bigEye), which stay untouched.
+  // Scroll-scrubbed solid fill inside the pupil — every eye except bigEye
+  // (the mouse-follow beam eye), which stays untouched.
   fillPupil?: boolean;
 }) {
   return (
     <div className={className}>
-      <Almond
-        className={styles.eyeShape}
-        fill="var(--surface-base)"
-        stroke={EYE_STROKE}
-        strokeWidth={1}
-        strokeDasharray={EYE_DASH}
-      />
+      <Almond className={styles.eyeShape} fill="var(--color-grey-200)" />
       <div className={styles.pupil} ref={pupilRef}>
         {fillPupil && <div className={styles.pupilFill} data-pupil-fill />}
       </div>
@@ -299,6 +284,7 @@ export default function FrameworkAdaptationEyes({
   className,
   beamTextOverlayLabel,
   beamTextOverlayBody,
+  beamTextOverlayClassNames,
 }: {
   className?: string;
   // Content for the black-text mask overlay (see outerWrapEl/textOverlay
@@ -308,6 +294,9 @@ export default function FrameworkAdaptationEyes({
   // plain mix-blend-mode result gives against that text's real color.
   beamTextOverlayLabel?: string;
   beamTextOverlayBody?: string;
+  // Class names the real Observability text uses (page module), so the
+  // clone matches it exactly: block wrapper, label <p>, body <p>.
+  beamTextOverlayClassNames?: { block: string; label: string; body: string };
 }) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const hubRef = useRef<HTMLDivElement>(null);
@@ -346,7 +335,11 @@ export default function FrameworkAdaptationEyes({
       CHILD_INITIAL_POSITIONS,
     );
   const { positions: leafPositions, startDrag: startLeafDrag } =
-    useDragPlacementLogger<LeafKey>(wrapRef, "leaf-eyes", LEAF_INITIAL_POSITIONS);
+    useDragPlacementLogger<LeafKey>(
+      wrapRef,
+      "leaf-eyes",
+      LEAF_INITIAL_POSITIONS,
+    );
   // satelliteA/B's rotation lives only in CSS (rotate(-8deg)/rotate(14deg))
   // — captured from the real computed style the first time each is
   // dragged, so the drag override can preserve it without duplicating
@@ -397,6 +390,11 @@ export default function FrameworkAdaptationEyes({
     top: number;
     width: number;
   } | null>(null);
+
+  // How far the beam layers stop short of the outer wrap's bottom: the
+  // Observability section's own bottom padding, so the beam can't pass that
+  // padding's inner edge.
+  const [beamBottomInset, setBeamBottomInset] = useState(0);
 
   const [beamPath, setBeamPath] = useState<string | null>(null);
   // Clip-path of the scripted shot from satelliteA at the Success section's
@@ -488,6 +486,19 @@ export default function FrameworkAdaptationEyes({
         );
       }
 
+      const observabilityRow = document.querySelector(
+        "[data-observability-row]",
+      );
+      if (observabilityRow && outerRect) {
+        const rowRect = observabilityRow.getBoundingClientRect();
+        const paddingBottom = parseFloat(
+          getComputedStyle(observabilityRow).paddingBottom,
+        );
+        setBeamBottomInset(
+          Math.max(0, outerRect.bottom - (rowRect.bottom - paddingBottom)),
+        );
+      }
+
       const dropLineEl = document.querySelector("[data-fan-drop-line]");
       const hub = centerOf(hubEl);
       if (dropLineEl) {
@@ -509,12 +520,9 @@ export default function FrameworkAdaptationEyes({
       const rowEl = wrapEl.closest("[data-eyes-row]");
       if (rowEl) {
         const r = rowEl.getBoundingClientRect();
-        const paddingBottom = parseFloat(
-          getComputedStyle(rowEl).paddingBottom,
-        );
+        const paddingBottom = parseFloat(getComputedStyle(rowEl).paddingBottom);
         const hubHeight = hubEl.getBoundingClientRect().height;
-        const sectionBottomY =
-          r.top + r.height - paddingBottom - wrapRect.top;
+        const sectionBottomY = r.top + r.height - paddingBottom - wrapRect.top;
         const hubFlushY = sectionBottomY - hubHeight / 2;
         if (hubTopPxRef.current !== hubFlushY) {
           hubTopPxRef.current = hubFlushY;
@@ -581,11 +589,13 @@ export default function FrameworkAdaptationEyes({
           if (!outerEl) return Infinity;
           const nextSectionPaddingTop = parseFloat(
             getComputedStyle(
-              (outerEl.nextElementSibling as HTMLElement | null) ?? document.body,
+              (outerEl.nextElementSibling as HTMLElement | null) ??
+                document.body,
             ).paddingTop,
           );
           return (
-            outerEl.getBoundingClientRect().height + (nextSectionPaddingTop || 0)
+            outerEl.getBoundingClientRect().height +
+            (nextSectionPaddingTop || 0)
           );
         };
         beamGeometryRef.current = {
@@ -888,7 +898,7 @@ export default function FrameworkAdaptationEyes({
         )}')`
       : null;
 
-  // Grey-500 disc inside every non-beam pupil scales out from its center,
+  // Grey-500 disc inside every pupil except bigEye's scales out from its center,
   // scrubbed 1:1 with scroll through the eyes row (reverses on scroll up).
   useEffect(() => {
     const wrapEl = wrapRef.current;
@@ -964,7 +974,7 @@ export default function FrameworkAdaptationEyes({
           // reaches down past this component's own (eyes-row-sized) .wrap.
           <div
             className={styles.beamLayer}
-            style={{ clipPath: beamClipPath }}
+            style={{ clipPath: beamClipPath, bottom: beamBottomInset }}
             aria-hidden="true"
           />,
           outerWrapEl,
@@ -977,7 +987,7 @@ export default function FrameworkAdaptationEyes({
           // the bigEye beam, clipped to its own frustum + caps.
           <div
             className={styles.beamLayer}
-            style={{ clipPath: shotClipPath }}
+            style={{ clipPath: shotClipPath, bottom: beamBottomInset }}
             aria-hidden="true"
           />,
           outerWrapEl,
@@ -997,27 +1007,31 @@ export default function FrameworkAdaptationEyes({
           // up exactly with the actual (normally-colored) text underneath.
           <div
             className={styles.textOverlay}
-            style={{
-              left: textOverlayRect.left,
-              top: textOverlayRect.top,
-              width: textOverlayRect.width,
-              clipPath: beamClipPath,
-            }}
+            style={{ clipPath: beamClipPath, bottom: beamBottomInset }}
             aria-hidden="true"
           >
-            <div className={`${labelBlockStyles.labelBlock} ${labelBlockStyles.display}`}>
-              <Label size="xl" color="default" className={styles.forceBlack}>
-                {beamTextOverlayLabel}
-              </Label>
-              {beamTextOverlayBody && (
-                <div className={labelBlockStyles.displayBody}>
+            <div
+              className={styles.textOverlayText}
+              style={{
+                left: textOverlayRect.left,
+                top: textOverlayRect.top,
+                width: textOverlayRect.width,
+              }}
+            >
+              <div className={beamTextOverlayClassNames?.block}>
+                <p
+                  className={`${beamTextOverlayClassNames?.label ?? ""} ${styles.forceBlack}`}
+                >
+                  {beamTextOverlayLabel}
+                </p>
+                {beamTextOverlayBody && (
                   <p
-                    className={`${labelBlockStyles.statement} ${styles.forceBlack}`}
+                    className={`${beamTextOverlayClassNames?.body ?? ""} ${styles.forceBlack}`}
                   >
                     {beamTextOverlayBody}
                   </p>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           </div>,
           outerWrapEl,
@@ -1057,7 +1071,7 @@ export default function FrameworkAdaptationEyes({
             }}
           >
             <EyeShape
-              fillPupil={key === "satelliteB"}
+              fillPupil={key === "satelliteA" || key === "satelliteB"}
               className={styles.eyeInner}
               pupilRef={(el) => {
                 childPupilRefs.current[key] = el;

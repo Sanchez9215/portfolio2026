@@ -7,7 +7,7 @@
    independent of whatever page embeds it. */
 .wrapper {
   position:      relative;
-  border-radius: var(--border-radius-sm);
+  border-radius: var(--border-radius-sm) var(--border-radius-sm) 0 0;
   overflow:      hidden;
   /* Makes this box the containing block for position:fixed descendants
      (SidePanel's overlay, while open) instead of LiveEmbed's transformed

@@ -1,0 +1,45 @@
+.icon {
+  display: block;
+  flex-shrink: 0;
+  width: var(--xops-icon-size-16);
+  height: var(--xops-icon-size-16);
+}
+
+.track,
+.fill {
+  fill: none;
+  stroke-width: 2.88;
+}
+
+.track {
+  stroke: var(--xops-surface-track);
+}
+
+.fill {
+  stroke: var(--xops-status-info-solid);
+}
+
+.complete {
+  fill: var(--xops-status-info-solid);
+}
+
+.check {
+  fill: var(--xops-text-inverse);
+}
+
+.backing {
+  fill: var(--xops-surface-page);
+}
+
+.warning {
+  fill: var(--xops-status-warning-solid);
+}
+
+.exception {
+  fill: var(--xops-status-danger-solid);
+}
+
+.size12 {
+  width: var(--xops-icon-size-12);
+  height: var(--xops-icon-size-12);
+}

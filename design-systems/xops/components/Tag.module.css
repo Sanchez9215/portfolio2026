@@ -34,3 +34,25 @@
   background-color: var(--xops-status-caution-tint);
   color: var(--xops-status-caution-text);
 }
+
+.small {
+  font-size: var(--xops-typography-body-12-font-size);
+  line-height: var(--xops-typography-body-12-line-height);
+}
+
+.info {
+  background-color: var(--xops-status-info-tint);
+  color: var(--xops-status-info-text);
+}
+
+/* Icon slot: tight leading edge, 4px between icon and label. */
+.withIcon {
+  gap: var(--xops-spacing-4);
+  padding-left: var(--xops-spacing-2);
+  padding-right: var(--xops-spacing-6);
+}
+
+.open {
+  background-color: var(--xops-status-open-tint);
+  color: var(--xops-status-open-text);
+}

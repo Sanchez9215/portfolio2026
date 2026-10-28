@@ -45,23 +45,15 @@
 }
 
 .pointer {
-  stroke: var(--color-grey-500);
+  stroke: var(--color-grey-600);
   stroke-width: 1px;
 }
 
-/* Everything after the MVP: grey-700 pointer, title and description, and no
-   card background. */
-.pointer.followUp {
-  stroke: var(--color-grey-700);
-}
+/* Everything after the MVP: no card background. (Pointers are grey-600 and
+   text colors match the MVP cards for every item.) */
 
 .card.followUp {
   background: none;
-}
-
-.card.followUp > span,
-.card.followUp > p {
-  color: var(--color-grey-700);
 }
 
 .card {
@@ -71,8 +63,18 @@
   gap: 8px; /* title -> description */
   box-sizing: border-box;
   padding: 4px 0;
-  background: var(--surface-base);
+  /* No card background (the terrain lines pass behind the text). */
+  background: none;
   pointer-events: none;
+}
+
+/* All cards: title grey-800, description grey-750. */
+.card > span {
+  color: var(--color-grey-800);
+}
+
+.card > p {
+  color: var(--color-grey-750);
 }
 
 .body {
@@ -90,15 +92,23 @@
   left: 50%;
   translate: -50% 0;
   white-space: nowrap;
+  margin: 0;
+  /* Clash Display semibold (size/line-height as the page's section labels). */
+  font-family: var(--font-family-display);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--text-label-md-size);
+  line-height: var(--text-label-md-lh);
+  letter-spacing: var(--text-label-md-ls);
+  color: var(--color-blue-500);
 }
 
 /* "Follow Ups" divider below the MVP area (per the reference mock): the label
-   centered 16px + 64px + 32px under the MVP box's bottom edge, then 8px below it a short
+   centered 16px + 64px under the MVP box's bottom edge, then 8px below it a short
    dashed line (200px, centered), both grey-700. */
 .followUpsLabel {
   position: absolute;
   left: 50%;
-  translate: calc(-50% + 16px) calc(var(--spacing-md) + var(--spacing-3xl) + var(--spacing-xl));
+  translate: calc(-50% + 16px) calc(var(--spacing-md) + var(--spacing-3xl));
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -109,13 +119,16 @@
   box-sizing: border-box;
   width: calc(200px + 2 * var(--spacing-md));
   padding: var(--spacing-md) var(--spacing-md) var(--spacing-sm);
-  /* Solid page background at the bottom fading to transparent at the top, so
-     the terrain behind shows through above the label. */
-  background: linear-gradient(to top, var(--surface-base), transparent);
 }
 
-.followUpsLabel > span:first-child {
-  color: var(--color-grey-700);
+.followUpsText {
+  margin: 0;
+  font-family: var(--font-family-display);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--text-label-md-size);
+  line-height: var(--text-label-md-lh);
+  letter-spacing: var(--text-label-md-ls);
+  color: var(--color-blue-500);
 }
 
 .followUpsLine {

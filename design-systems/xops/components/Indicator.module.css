@@ -1,0 +1,19 @@
+/* variant="count": glyph + number, no background tint. */
+.count {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--xops-spacing-4);
+  font-family: var(--xops-font-family);
+  font-weight: var(--xops-font-weight-regular);
+  font-size: var(--xops-typography-body-12-font-size);
+  line-height: var(--xops-typography-body-12-line-height);
+  white-space: nowrap;
+}
+
+.danger {
+  color: var(--xops-status-danger-text);
+}
+
+.warning {
+  color: var(--xops-status-warning-text);
+}

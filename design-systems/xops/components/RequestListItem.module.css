@@ -1,0 +1,231 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--xops-spacing-12);
+  width: 100%;
+  padding: var(--xops-spacing-8);
+  border: var(--xops-border-width-1) solid transparent;
+  border-bottom-color: var(--xops-border-divider);
+  background-color: var(--xops-surface-page);
+  font-family: var(--xops-font-family);
+}
+
+.container:hover {
+  border-radius: var(--xops-radius-6);
+}
+
+.container:hover:not(.selected) {
+  background-color: var(--xops-surface-table-row-hover);
+}
+
+.selected {
+  border-color: var(--xops-brand-primary);
+  border-radius: var(--xops-radius-6);
+  background-color: var(--xops-surface-selected);
+}
+
+.summary {
+  display: flex;
+  flex-direction: column;
+  gap: var(--xops-spacing-6);
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.header,
+.details {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.id {
+  font-weight: var(--xops-font-weight-medium);
+  font-size: var(--xops-typography-body-14-font-size);
+  line-height: var(--xops-typography-body-14-line-height);
+  color: var(--xops-text-primary);
+}
+
+.time {
+  font-weight: var(--xops-font-weight-regular);
+  font-size: var(--xops-typography-body-14-font-size);
+  line-height: var(--xops-typography-body-14-line-height);
+  color: var(--xops-text-secondary);
+}
+
+.runbookName {
+  font-weight: var(--xops-font-weight-regular);
+  font-size: var(--xops-typography-body-12-font-size);
+  line-height: var(--xops-typography-body-12-line-height);
+  color: var(--xops-text-secondary);
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  width: 100%;
+  padding: var(--xops-spacing-6) var(--xops-spacing-8) var(--xops-spacing-8);
+  border-radius: var(--xops-radius-6);
+  background-color: var(--xops-grey-50);
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.progressRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.progress {
+  display: flex;
+  flex-direction: column;
+  gap: var(--xops-spacing-4);
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.caption {
+  display: flex;
+  gap: var(--xops-spacing-8);
+  margin: 0;
+  font-weight: var(--xops-font-weight-regular);
+  font-size: var(--xops-typography-body-12-font-size);
+  line-height: var(--xops-typography-body-12-line-height);
+  color: var(--xops-text-secondary);
+  white-space: nowrap;
+  align-items: center;
+}
+
+/* Borderless, same treatment as Table's row chevron. */
+.chevron {
+  border-color: transparent;
+  background-color: transparent;
+  color: var(--xops-text-secondary);
+}
+
+.chevron:hover,
+.chevron:active {
+  background-color: transparent;
+}
+
+/* A selected request keeps its panel white. */
+.selected .panel {
+  background-color: var(--xops-surface-page);
+}
+
+/* Hovering the request lifts its panel to white and brings the chevron to the brand color. */
+.container:hover .panel {
+  background-color: var(--xops-surface-page);
+}
+
+.container:hover .chevron {
+  color: var(--xops-brand-500);
+}
+
+.chevronIcon {
+  transition: transform var(--xops-motion-duration-default) var(--xops-motion-easing-default);
+}
+
+.chevronOpen {
+  transform: rotate(180deg);
+}
+
+/* The drawer animates its height by sliding its grid row between 0fr and 1fr, so no height is measured
+   or hard-coded. Opening eases out, closing eases in; the content fades alongside. */
+.drawer {
+  display: grid;
+  grid-template-rows: 0fr;
+  width: 100%;
+  transition: grid-template-rows var(--xops-motion-duration-default) var(--xops-motion-easing-in);
+}
+
+.drawerOpen {
+  grid-template-rows: 1fr;
+  transition-timing-function: var(--xops-motion-easing-default);
+}
+
+.drawerContent {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--xops-spacing-8);
+  min-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity var(--xops-motion-duration-default) var(--xops-motion-easing-in);
+}
+
+.drawerOpen .drawerContent {
+  opacity: 1;
+  transition-timing-function: var(--xops-motion-easing-default);
+}
+
+/* The space above the list lives inside the drawer, so it collapses with it. */
+.drawerContent > :first-child {
+  margin-top: var(--xops-spacing-8);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .drawer,
+  .drawerContent {
+    transition: none;
+  }
+}
+
+/* Shows four rows, scrolls beyond — each row is its two text lines + vertical padding + divider. */
+.items {
+  width: 100%;
+  cursor: default;
+  max-height: calc(
+    4 * (
+      var(--xops-typography-body-14-line-height) + var(--xops-typography-body-12-line-height) +
+        2 * var(--xops-spacing-6) + var(--xops-border-width-1)
+    ) + var(--xops-border-width-1)
+  );
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  overflow-y: auto;
+  border: var(--xops-border-width-1) solid var(--xops-border-divider);
+  border-radius: var(--xops-radius-2);
+}
+
+.item {
+  display: flex;
+  flex-direction: column;
+  padding: var(--xops-spacing-6) var(--xops-spacing-8);
+  border-bottom: var(--xops-border-width-1) solid var(--xops-border-divider);
+}
+
+.item:last-child {
+  border-bottom: none;
+}
+
+.itemId {
+  font-weight: var(--xops-font-weight-medium);
+  font-size: var(--xops-typography-body-14-font-size);
+  line-height: var(--xops-typography-body-14-line-height);
+  color: var(--xops-text-primary);
+}
+
+.itemDetails {
+  display: flex;
+  align-items: center;
+  gap: var(--xops-spacing-8);
+  color: var(--xops-text-secondary);
+}
+
+.itemRunbookName {
+  font-weight: var(--xops-font-weight-regular);
+  font-size: var(--xops-typography-body-12-font-size);
+  line-height: var(--xops-typography-body-12-line-height);
+}

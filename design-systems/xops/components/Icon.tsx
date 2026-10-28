@@ -4,7 +4,7 @@ import styles from "./Icon.module.css";
 export type IconProps = {
   name: string;
   color?: string;
-  size?: "16" | "18" | "20";
+  size?: "12" | "16" | "18" | "20";
   className?: string;
 };
 

@@ -1,0 +1,9 @@
+/* Anchored 32px in from the host card's top-left; the host clips the rest
+   (overflow hidden). Display-only for now — no pointer input. */
+.card {
+  position: absolute;
+  top: var(--spacing-xl);
+  left: var(--spacing-xl);
+  transform-origin: top left;
+  pointer-events: none;
+}

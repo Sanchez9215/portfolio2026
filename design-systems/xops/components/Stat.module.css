@@ -10,6 +10,15 @@
   overflow: hidden;
 }
 
+.statCompact {
+  padding: var(--xops-spacing-12);
+}
+
+.statCompact .label {
+  font-size: var(--xops-typography-body-12-font-size);
+  line-height: var(--xops-typography-body-12-line-height);
+}
+
 .statWhite {
   background-color: var(--xops-white);
 }

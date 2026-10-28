@@ -4,9 +4,10 @@
   margin:       0;
 }
 
-.default { color: var(--text-secondary); }
+/* --title-color: opt-in hook (a page can recolor every default/tertiary Title) */
+.default { color: var(--title-color, var(--text-secondary)); }
 .inverse { color: var(--text-inverse-primary); }
-.tertiary { color: var(--text-tertiary); }
+.tertiary { color: var(--title-color, var(--text-tertiary)); }
 .primary { color: var(--text-primary-strong); }
 
 .xs { font-size: var(--text-title-xs-size); line-height: var(--text-title-xs-lh); letter-spacing: var(--text-title-xs-ls); }

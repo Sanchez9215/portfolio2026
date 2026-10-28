@@ -7,15 +7,19 @@ import styles from "./Stat.module.css";
 
 export type StatValueSize = "medium" | "small";
 export type StatSurface = "filled" | "white" | "magic";
+export type StatSize = "default" | "compact";
 
 export type StatProps = {
   label: string;
-  value: string;
+  /** Text, or a node (e.g. a link button). */
+  value: ReactNode;
   meta?: string;
   tag?: { status: TagStatus; label: string };
   icon?: boolean;
   tooltip?: Omit<TooltipProps, "children" | "className">;
   valueSize?: StatValueSize;
+  /** "compact": 12px padding and a 12px label (e.g. header info tiles). */
+  size?: StatSize;
   surface?: StatSurface;
   // Only applies when surface="magic" — scales the blob background proportionally
   // for smaller tiles (see MagicSurface's `scale` prop). Defaults to full size.
@@ -41,6 +45,7 @@ export function Stat({
   icon,
   tooltip,
   valueSize = "medium",
+  size = "default",
   surface = "filled",
   magicScale = 1,
   spaceBetween,
@@ -91,6 +96,7 @@ export function Stat({
     <div
       className={[
         styles.stat,
+        size === "compact" && styles.statCompact,
         surface === "white" && styles.statWhite,
         surface === "magic" && styles.statMagic,
         className,

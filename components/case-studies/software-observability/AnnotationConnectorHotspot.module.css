@@ -80,7 +80,7 @@
   font-weight: var(--font-weight-bold);
   font-size: var(--text-body-xs-size);
   line-height: var(--text-body-xs-lh);
-  color: var(--text-primary);
+  color: var(--tooltip-label-color, var(--text-primary));
 }
 
 .text {
@@ -88,7 +88,7 @@
   font-weight: var(--font-weight-semibold);
   font-size: var(--text-body-xs-size);
   line-height: var(--text-body-xs-lh);
-  color: var(--color-grey-50);
+  color: var(--tooltip-body-color, var(--color-grey-50));
   margin: 0;
 }
 
@@ -113,8 +113,13 @@
      6px radius. In autoPlace mode the corner the pointer leaves from is square
      (see .tooltipCornerLeft/.tooltipCornerRight). */
   width: 230px;
-  background: color-mix(in srgb, var(--color-grey-1000) 75%, transparent);
-  backdrop-filter: blur(2px);
+  /* Opt-in hooks: --tooltip-bg (default: the translucent grey-1000) and
+     --tooltip-blur (default 2px). */
+  background: var(
+    --tooltip-bg,
+    color-mix(in srgb, var(--color-grey-1000) 75%, transparent)
+  );
+  backdrop-filter: blur(var(--tooltip-blur, 2px));
   border-radius: var(--border-radius-sm);
 }
 
@@ -131,8 +136,9 @@
 .tooltipRole .title {
   font-size: var(--text-body-sm-size);
   line-height: var(--text-body-sm-lh);
-  text-shadow: 0 1px 2px var(--color-grey-900);
-  color: var(--text-secondary);
+  /* Opt-in hooks: --tooltip-label-color, --tooltip-title-shadow. */
+  text-shadow: var(--tooltip-title-shadow, 0 1px 2px var(--color-grey-900));
+  color: var(--tooltip-label-color, var(--text-secondary));
 }
 
 

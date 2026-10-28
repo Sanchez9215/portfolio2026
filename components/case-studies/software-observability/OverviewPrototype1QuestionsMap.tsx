@@ -392,6 +392,10 @@ const STAGE_CARD_SPOTLIGHT: AnnotationHotspotData = {
 // The stage notes are hidden for now (flip to true to restore).
 const SHOW_STAGE_NOTES = false;
 
+// The 4-question pill row above the embed. Hidden for now (flip to true to
+// restore) — with it hidden no question can be selected, so the embed stays bare.
+const SHOW_QUESTION_ROW = false;
+
 // The notes now sit inside the lifecycle card, in its top-right corner.
 const STAGE_NOTES_INSET_TOP = 16;
 const STAGE_NOTES_INSET_RIGHT = 16;
@@ -497,21 +501,24 @@ export default function OverviewPrototype1QuestionsMap() {
 
   return (
     <>
-      <PrototypeTabs
-        items={QUESTION_LABELS}
-        value={questionIndex}
-        onChange={setQuestionIndex}
-        className={styles.tabsRow}
-        data-question-row
-      />
+      {SHOW_QUESTION_ROW && (
+        <PrototypeTabs
+          items={QUESTION_LABELS}
+          value={questionIndex}
+          onChange={setQuestionIndex}
+          className={styles.tabsRow}
+          data-question-row
+        />
+      )}
       <ImgCard variant="embed" allowOverflow>
         <div
           ref={embedWrapperRef}
           data-prototype-embed
-          style={{ position: "relative" }}
+          className={styles.embedFrame}
         >
           <LiveEmbed
             nativeWidth={1440}
+            scroll
             disableCanvasTransition
             className={styles.liveEmbed}
           >

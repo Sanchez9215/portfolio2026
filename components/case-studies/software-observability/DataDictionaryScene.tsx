@@ -4,8 +4,6 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { scheduleScrollTriggerRefresh } from "./scrollTriggerRefresh";
-import Block from "@/components/Block";
-import LabelBlock from "@/components/LabelBlock";
 import ProcessConnector from "@/components/ProcessConnector";
 import styles from "./DataDictionaryScene.module.css";
 
@@ -680,21 +678,15 @@ export default function DataDictionaryScene({
 
       <div className={`${styles.scene}${className ? ` ${className}` : ""}`}>
         <div className={styles.textBlock} ref={textBlockRef}>
-          <LabelBlock
-            size="display"
-            label="Driving Alignment"
-            body="The data dictionary."
-          />
-          <Block
-            size="2xl"
-            color="secondary"
-            reveal
-            className={styles.dataDictionaryDetailBlock}
-          >
-            Based on API documentation and further research using Claude, I
-            created a living document with the data points, their definitions,
-            calculations and sources that were required to achieve our goals.
-          </Block>
+          <div className={styles.textBlockCopy}>
+            <p className={styles.dataDictionaryLabel}>The Data Dictionary</p>
+            <p className={styles.dataDictionaryDetailBlock}>
+              Based on API documentation and further research using Claude, I
+              created a living document with the data points, their
+              definitions, calculations and sources that were required to
+              achieve our goals.
+            </p>
+          </div>
         </div>
 
         <div className={styles.perspectiveWrap} ref={perspectiveWrapRef}>

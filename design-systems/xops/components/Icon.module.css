@@ -12,6 +12,11 @@
   mask-size: contain;
 }
 
+.size12 {
+  width: var(--xops-icon-size-12);
+  height: var(--xops-icon-size-12);
+}
+
 .size16 {
   width: var(--xops-icon-size-16);
   height: var(--xops-icon-size-16);

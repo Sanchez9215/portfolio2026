@@ -1,0 +1,22 @@
+/* Fills the space left under the toolbar so the request list scrolls inside it, not the page. */
+.grid {
+  flex: 1;
+  min-height: 0;
+  grid-template-rows: minmax(0, 1fr);
+}
+
+/* Temporary detail-pane shell until the detail header/graph exist. */
+.detail {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: var(--xops-spacing-20);
+  overflow-y: auto;
+  border: var(--xops-border-width-1) solid var(--xops-border-divider);
+  border-radius: var(--xops-radius-6);
+}
+
+/* The header, graph and event log stack with no gap; only the event log keeps its space above. */
+.detail > :last-child {
+  margin-top: var(--xops-spacing-32);
+}

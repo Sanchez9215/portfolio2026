@@ -9,6 +9,16 @@
   margin-top: calc(var(--spacing-5xl) + var(--spacing-xl));
 }
 
+/* pinned={false}: no pin and no scroll-drawn lines, so no gap above the header
+   and the three lines stay hidden. */
+.stage[data-static] {
+  margin-top: 0;
+}
+
+.stage[data-static] :is(.lead, .stem, .exit) {
+  display: none;
+}
+
 /* Pinned as one unit (BridgeCards.tsx): the header, its lines and the dome. */
 .pin {
   display: flex;
@@ -80,11 +90,12 @@
   z-index: 1;
   top: 0;
   left: 50%;
-  width: 32px;
-  height: 32px;
+  /* Opt-in hooks: --bridge-diamond-size, --bridge-diamond-bg, --bridge-diamond-border. */
+  width: var(--bridge-diamond-size, 32px);
+  height: var(--bridge-diamond-size, 32px);
   box-sizing: border-box;
-  background-color: var(--surface-base);
-  border: 1px solid var(--color-grey-500);
+  background-color: var(--bridge-diamond-bg, var(--surface-base));
+  border: var(--bridge-diamond-border, 1px solid var(--color-grey-500));
   transform: translate(-50%, -50%) rotate(45deg);
 }
 
@@ -104,7 +115,8 @@
   padding: var(--spacing-lg) var(--spacing-xl);
   border: 1px solid var(--color-grey-500);
   border-radius: var(--radius-md);
-  background-color: var(--surface-base); /* solid on every card: no see-through while swapping */
+  /* solid on every card: no see-through while swapping. --bridge-card-bg: opt-in hook. */
+  background-color: var(--bridge-card-bg, var(--surface-base));
   width: var(--side-width);
   height: 531.75px;
   /* A swap moves the card with transforms (GSAP Flip in BridgeCards.tsx), not
@@ -114,13 +126,22 @@
 .card.center {
   /* Freestyled, not tokenized yet: soft shadow around the focus card, spreading ~64px
      out from every side (no offset). */
-  box-shadow:
+  /* --bridge-card-shadow: opt-in hook (set to none to remove). */
+  box-shadow: var(
+    --bridge-card-shadow,
     0 0 32px rgb(0 0 0 / 0.24),
-    0 0 64px rgb(0 0 0 / 0.32);
+    0 0 64px rgb(0 0 0 / 0.32)
+  );
 }
 
 .card[role="button"] {
-  border: var(--border-card) solid var(--surface-card-border);
+  /* --bridge-side-gap: opt-in hook for the gap between a side card's header and
+     its questions (default: the card's own gap). */
+  gap: var(--bridge-side-gap, var(--spacing-xl));
+  /* --bridge-side-border: opt-in hook for the side cards' border color (transparent
+     removes it without changing the card's size). */
+  border: var(--border-card) solid
+    var(--bridge-side-border, var(--surface-card-border));
   cursor: pointer;
   /* `translate` / `scale` are separate from `transform`, so they don't fight the
      swap's Flip transform. */
@@ -134,11 +155,11 @@
    it's obvious they're clickable. */
 .cards[data-fanned] .card[role="button"] {
   translate: 0 calc(-1 * var(--spacing-md));
-  border-color: var(--color-grey-500);
+  border-color: var(--bridge-side-border, var(--color-grey-500));
 }
 
 .cards .card[role="button"]:hover {
-  border-color: var(--text-primary-strong);
+  border-color: var(--bridge-side-border, var(--text-primary-strong));
 }
 
 .cards[data-fanned] .card.left[role="button"] {
@@ -160,7 +181,10 @@
 }
 
 /* The title eases between its small and large sizes instead of snapping. */
-.roleTitle {
+/* --bridge-card-label: opt-in hook for the role title color (default: Title's own
+   primary color). .card .roleTitle outranks Title's color class. */
+.card .roleTitle {
+  color: var(--bridge-card-label, var(--text-primary-strong));
   transition-property: font-size, line-height, letter-spacing;
   transition-duration: var(--swap-seconds);
   transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1); /* ≈ expo-out */

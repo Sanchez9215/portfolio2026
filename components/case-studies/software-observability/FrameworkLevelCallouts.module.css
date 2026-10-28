@@ -1,5 +1,6 @@
 /* Column of always-on annotation cards + leader lines (see the .tsx header).
-   Leader lines are grey-500. */
+   Same look as the priority mountain's callouts: title grey-800, description
+   grey-750, leader lines grey-600. */
 .column {
   position: absolute;
   display: flex;
@@ -16,6 +17,14 @@
   box-sizing: border-box;
 }
 
+.card > span {
+  color: var(--color-grey-800);
+}
+
+.card > p {
+  color: var(--color-grey-750);
+}
+
 .lines {
   position: absolute;
   inset: 0;
@@ -23,7 +32,7 @@
   height: 100%;
   overflow: visible;
   pointer-events: none;
-  color: var(--color-grey-500);
+  color: var(--color-grey-600);
 }
 
 .line {

@@ -74,6 +74,10 @@
 
 | mountain-terrain ⚑NEW | components/case-studies/software-observability/MountainTerrain.tsx — canvas ridgeline mountain (simplex-noise height field, back-to-front hidden-line fill): one pointed peak + low foothills; `controls` prop shows a line-detail slider. Lives in the Learnings section; labels/descoped items not added yet. Blind pass |
 
+| embed-panel-copy / scaled-to-width / label-aligned-text ⚑NEW | components/case-studies/software-observability/EmbedPanelCopy.tsx, ScaledToWidth.tsx, LabelAlignedText.tsx (+ `bridgeLabelLeft.ts`, `ShiftLabelToTarget.tsx` unused) — copy of a panel from the Prototype 1 embed at its on-screen size (`fillWidth` scales to the host); scale a 1248-wide box to its container; align text to the BridgeCards label's resting left. Blind pass |
+| bridge-section-pin ⚑NEW | components/case-studies/software-observability/BridgeSectionPin.tsx — pins its host section and feeds `BridgeCards` (`pinned={false} driven`) progress via the `bridge-cards-progress` event; `BridgeCards` also gained `focusOn="hover"` and `--bridge-*` hooks. Blind pass |
+| lifecycle-stage-panel / compliance-panel ⚑NEW | design-systems/xops/legacy/LifecycleStagePanel.tsx, CompliancePanel.tsx — extracted from `OverviewLegacy` (same markup/hotspot ids; stage state stays controllable). Blind pass |
+
 ## Open TODOs (cross-cutting, not tied to one component)
 
 - **Spacing scale migration to XOPS's numeric shape** — portfolio's named scale (`--spacing-xs/sm/md/lg/xl/2xl/3xl/4xl/5xl`, 4/8/16/24/32/48/64/96/128) is missing intermediate steps XOPS's numeric scale has (e.g. 12px, `--xops-spacing-12`). Full rename touches ~394 call sites across 32 files (`styles/globals.css`, `design-system/tokens.json`, every component module). `HotspotOverlay.module.css`'s tooltip card padding is hardcoded to 12px in the meantime — see its inline comment.

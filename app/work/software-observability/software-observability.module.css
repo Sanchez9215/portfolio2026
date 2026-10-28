@@ -5,6 +5,188 @@
    All values resolve through CSS custom properties → tokens.json.
    ============================================================ */
 
+/* ── section.opportunity ── Figma node 2609:75. First pass with local styles —
+   label/body/metric styles here are one-offs until the new type styles get
+   standardized. ────────────────────────────────────────────── */
+
+section.opportunity {
+  padding-block: var(--spacing-xl) var(--spacing-5xl);
+  align-items: start;
+}
+
+/* Three text blocks, 4 columns each: "The Opportunity" (with the metrics row
+   under it) in cols 1–4, "Business Goal" in 5–8, "An Execution Risk" in 9–12. */
+.opportunityColumn {
+  grid-column: 1 / 5;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl);
+}
+
+section.opportunity > :nth-child(2) {
+  grid-column: 5 / 9;
+}
+
+section.opportunity > :nth-child(3) {
+  grid-column: 9 / 13;
+}
+
+.opportunityTextBlock {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.opportunityLabel {
+  font-family: var(--font-family-body);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--text-label-sm-size);
+  line-height: var(--text-label-sm-lh);
+  letter-spacing: var(--text-label-sm-ls);
+  color: var(--color-grey-800);
+}
+
+.opportunityBody {
+  font-family: var(--font-family-body);
+  font-weight: var(--font-weight-regular);
+  font-size: var(--text-body-sm-size);
+  line-height: var(--text-body-sm-lh);
+  letter-spacing: var(--text-body-sm-ls);
+  color: var(--color-grey-750);
+}
+
+/* Three metric groups stacked in a column (32px apart), each a number beside its
+   caption. The number is a fixed 120px, left-aligned, so the captions line up. */
+.opportunityMetrics {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl);
+}
+
+.opportunityMetrics > * {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.opportunityMetricValue {
+  flex: 0 0 120px;
+  text-align: left;
+  font-family: var(--font-family-display);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--text-label-2xl-size);
+  line-height: var(--text-label-2xl-lh);
+  letter-spacing: var(--text-label-2xl-ls);
+  text-transform: uppercase;
+  color: var(--color-red-500);
+}
+
+.opportunityMetricCaption {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--font-family-body);
+  font-weight: var(--font-weight-regular);
+  font-size: var(--text-body-xs-size);
+  line-height: var(--text-body-xs-lh);
+  letter-spacing: var(--text-body-xs-ls);
+  color: var(--color-grey-750);
+}
+
+/* ── section.working-backwards ── new section, reuses the opportunity text-block
+   styles (.opportunityTextBlock / Label / Body). Hugs its content, 128px top + bottom. ───────── */
+
+section.workingBackwards {
+  --bridge-card-bg: var(--color-grey-200); /* #EEF5FF */
+  --bridge-card-shadow: none;
+  --bridge-side-border: transparent;
+  --bridge-side-gap: var(--spacing-md);
+  --bridge-diamond-size: 16px;
+  --bridge-diamond-bg: var(--color-blue-500); /* #0F8FFF */
+  --bridge-diamond-border: none;
+  --bridge-card-label: var(--color-grey-900); /* #2B2E33 */
+  padding-block: var(--spacing-5xl);
+  row-gap: var(--spacing-xl);
+  align-items: start;
+}
+
+/* Left 3 columns: one container holding the three blocks, stacked 32px apart.
+   Row 1, beside the cards. */
+.workingBackwardsBlocks {
+  grid-column: 1 / 4;
+  grid-row: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl);
+}
+
+/* Right 9 columns (4–12), row 1: the lead-in sentence, then (64px below it) the
+   role cards, whose first element is the category label. */
+section.workingBackwards > :nth-child(2) {
+  grid-column: 4 / 13;
+  grid-row: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3xl);
+}
+
+/* The bridge cards' category label ("What do we own?"): same color as this
+   section's other labels, in Cabinet Grotesk instead of Clash Display, title case. Size
+   is unchanged. (data-bridge-cards-header is a plain attribute, so the
+   page can reach it.) */
+section.workingBackwards [data-bridge-cards-header] > div > span {
+  font-family: var(--font-family-body);
+  color: var(--color-grey-800);
+  text-transform: capitalize;
+  word-spacing: normal;
+}
+
+/* As wide as the focused card (416 of the cards' 1248 native width). Its left
+   edge is aligned to the category label's by LabelAlignedText (margin-left). */
+.workingBackwardsLead {
+  align-self: flex-start;
+  width: calc(416 / 1248 * 100%);
+}
+
+/* Below the cards, centered under the focused card and as wide as it: the
+   focus card is 416 of the cards' 1248 native width (BridgeCards.module.css
+   --center-width), and the cards scale with their 8-column area. The row gap
+   above is the 32px below the card (the focus card's bottom is the cards' bottom). */
+section.workingBackwards > :nth-child(3) {
+  grid-column: 4 / 13;
+  grid-row: 2;
+  justify-self: center;
+  width: calc(416 / 1248 * 100%);
+}
+
+/* Bulleted list inside a text block (body styles come from .opportunityBody on
+   each item). */
+.opportunityList {
+  margin: 0;
+  padding-left: var(--spacing-lg);
+  list-style: disc;
+}
+
+/* ── section.focusing-mvp ── reuses the opportunity text-block styles; hugs its
+   content, 4 columns starting at column 7, 128px top + bottom. ───────────────────────────── */
+
+section.focusingMvp {
+  padding-block: var(--spacing-5xl);
+  align-items: start;
+}
+
+.focusingMvp > * {
+  grid-column: 7 / 11;
+}
+
+/* ── section.overview-prototype-1-mountain ── the mountain's body is grey-300
+   (MountainTerrain reads --mountain-fill; default is --surface-base). ──────── */
+section.priorityMountain {
+  --mountain-fill: var(--color-grey-300);
+  --mountain-line-end: var(--color-grey-500); /* lines stay grey-500 to the base */
+  --mountain-mvp-line-color: var(--color-blue-500); /* #0F8FFF: the MVP zone's lines */
+  --mountain-line-far-alpha: 1; /* no fade on the far rows: every line full grey-500 */
+}
+
 /* ── section.brief ──────────────────────────────────────────── */
 
 section.brief {
@@ -101,42 +283,42 @@ section.birdsEyeGoal {
   text-wrap: wrap;
 }
 
-/* ── section.working-backwards ──────────────────────────────── */
+/* ── section.backwards-old ──────────────────────────────── */
 /* Figma node 1:92: intro (label + 32px detail block) pinned to the top, the
    "Fundamental questions" title + 2x2 question grid pinned to the bottom of a
    100vh section. Rows: label, detail block, flexible gap (title sits at its
    bottom, align-self:end), grid. */
 
-section.workingBackwards {
+section.backwardsOld {
   min-height: 100vh;
   grid-template-rows: auto auto 1fr auto;
   row-gap: var(--spacing-md);
 }
 
-.workingBackwards > :nth-child(1),
-.workingBackwards > :nth-child(2) {
+.backwardsOld > :nth-child(1),
+.backwardsOld > :nth-child(2) {
   grid-column: 1 / 9;
 }
 
 /* Detail block (32px): 1.2 — see .brief above. */
-.workingBackwards > :nth-child(2) {
+.backwardsOld > :nth-child(2) {
   line-height: 1.2;
 }
 
-.workingBackwards > :nth-child(3) {
+.backwardsOld > :nth-child(3) {
   grid-column: 1 / -1;
   align-self: end;
   justify-self: center;
   padding-block: var(--spacing-sm);
 }
 
-.workingBackwards > :nth-child(4) {
+.backwardsOld > :nth-child(4) {
   grid-column: 1 / -1;
   display: grid;
   grid-template-columns: 1fr 1fr;
 }
 
-.workingBackwards > :nth-child(4) > * {
+.backwardsOld > :nth-child(4) > * {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -145,11 +327,11 @@ section.workingBackwards {
 
 /* Rules on the grid's inner edges only: under the top row, and between the two
    columns (right edge of the left cells) — together a centered cross. */
-.workingBackwards > :nth-child(4) > :nth-child(-n + 2) {
+.backwardsOld > :nth-child(4) > :nth-child(-n + 2) {
   border-bottom: 1px solid var(--color-grey-500);
 }
 
-.workingBackwards > :nth-child(4) > :nth-child(odd) {
+.backwardsOld > :nth-child(4) > :nth-child(odd) {
   border-right: 1px solid var(--color-grey-500);
 }
 
@@ -250,22 +432,14 @@ section.systemMap {
   text-wrap: wrap;
 }
 
-/* Data Limitations' label/display block and detail block are narrower than the
-   rest (6 columns). */
-.dataLimitations > :first-child,
-.dataLimitations > :nth-child(2) {
-  grid-column: 1 / 6;
+/* Data Limitations' text block spans 4 columns, like the other text blocks. */
+.dataLimitations > :first-child {
+  grid-column: 1 / 5;
 }
 
-/* Detail block (32px): 1.2 — see .brief above. (The integrations line below is a
-   regular 18px detail block and keeps its own line height.) */
+/* The integrations row (logos use currentColor): subtle text
+   (--text-subtle, grey-700) instead of the default secondary. */
 .dataLimitations > :nth-child(2) {
-  line-height: 1.2;
-}
-
-/* The integrations list: the original 18px detail block (Block lg), in subtle
-   text (--text-subtle, grey-700) instead of the default secondary. */
-.dataLimitations > :nth-child(3) {
   color: var(--text-subtle);
 }
 
@@ -300,10 +474,10 @@ section.systemMap {
 .dataLimitationsLogoMicrosoft {
 }
 
-/* The two text blocks end 64px to the left of the snake: --snake-x is the
+/* The text block ends 64px to the left of the snake: --snake-x is the
    line's x from the section's left edge (set by ThresholdDropLine), minus the
    grid's inline padding and the gap. Height just follows the wrapped text. */
-.dataLimitations > :nth-child(-n + 2) {
+.dataLimitations > :first-child {
   max-width: calc(
     var(--snake-x, 9999px) - var(--spacing-xl) - var(--spacing-3xl)
   );
@@ -344,12 +518,12 @@ section.startingDesign > :not(svg) {
 /* Figma node 1:26: label + display statement only — no min-height (the frame
    hugs its content, 510px at 1440). */
 
-/* Text keeps the same 8-column span as every other text section. The square of
+/* Text spans 4 columns (same as the Proof of Concept intro). The square of
    squares is taken out of the flow (absolute) and anchored to the top-right
    corner of the section's inner padding — the grid area is the content box — so
    it can grow and overflow leftward without pushing or squeezing the text. */
 .success > :first-child {
-  grid-column: 1 / 9;
+  grid-column: 1 / 5;
 }
 
 /* Offsets are the section's own padding (Section's padding-block, .cs-grid's
@@ -605,22 +779,35 @@ section.theOpportunity {
   grid-column: 1 / -1;
 }
 
-/* Regular section (hugs its content): text block on the usual 8 columns,
-   lattice centered across all 12, 128px between them. */
-section.framework {
-  row-gap: var(--spacing-5xl);
-}
-
+/* Regular section (hugs its content): the lattice centered across all 12. The
+   label shares its row, centered, and is lifted 32px above the dashed
+   Organization Threshold circle (which sits 16px outside the lattice's top
+   edge, THRESHOLD_OFFSET_PX in CubeLattice.tsx) — z-index puts it above the
+   diagram so the Insights line passes behind it. */
 .framework > :first-child {
-  grid-column: 1 / 9;
+  grid-column: 1 / -1;
+  grid-row: 1;
+  justify-self: center;
+  align-self: start;
+  position: relative;
+  z-index: 1;
+  transform: translateY(calc(-100% - var(--spacing-xl) - 16px));
 }
 
 .framework > :first-child p {
   text-wrap: wrap;
 }
 
+/* "The Framework" label at 24px (label-xl tier). */
+.framework > :first-child > p {
+  font-size: var(--text-label-xl-size);
+  line-height: var(--text-label-xl-lh);
+  letter-spacing: var(--text-label-xl-ls);
+}
+
 .frameworkLattice {
   grid-column: 1 / -1;
+  grid-row: 1;
   justify-self: center;
 }
 
@@ -1001,7 +1188,7 @@ section.data {
 }
 
 .frameworkAdaptationTextBlock {
-  grid-column: 1 /7;
+  grid-column: 1 / 5;
 }
 
 /* First pass (not yet visually confirmed) — height is a placeholder;
@@ -1024,8 +1211,7 @@ section.data {
 }
 
 .stakeholderIntroTextBlock {
-  grid-column: 6 / -1;
-  justify-self: end;
+  grid-column: 9 / 13;
 }
 
 /* ── section.observability-first (eye collage) ──────────────── */
@@ -1116,17 +1302,49 @@ section.overviewPrototype1Questions {
      behind the content (z-index -1). */
   position: relative;
   isolation: isolate;
+  /* Row 1 is the intro text (cols 1–4); row 2 the cards and the band. The row gap
+     is the 32px between the intro and the compliance card. */
+  row-gap: var(--spacing-xl);
 }
 
-.overviewPrototype1Questions > * {
-  grid-column: 1 / -1;
-  display: grid;
-  grid-template-columns: subgrid;
+/* Intro text above the compliance card: left edge, cols 1–4, row 1. */
+.overviewPrototype1Intro {
+  grid-column: 1 / 5;
+  grid-row: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
 }
 
-/* Question row and embed card: center 10 columns. */
-.overviewPrototype1Questions > * > * {
-  grid-column: 2 / 12;
+/* Same look as the intro's .heroImage (SectionIntroduction.module.css): grey-200,
+   32px top + side padding, 6px radius, no bottom padding so the embed sits flush
+   on the band's bottom edge. Only the first child (LazyMount's wrapper) — the
+   other children are the PageCenterLine SVGs, which must stay unstyled. */
+.overviewPrototype1Questions > :first-child {
+  grid-column: 5 / 13;
+  grid-row: 2;
+  padding-top: var(--spacing-xl);
+  padding-inline: var(--spacing-xl);
+  background-color: var(--color-grey-200);
+  border-radius: var(--border-radius-sm);
+}
+
+/* Side column left of the band (cols 1–4): two empty grey blocks stacked with a
+   32px gap, together exactly the band's height (same grid row, stretched; row 2). */
+.overviewPrototype1SideColumn {
+  grid-column: 1 / 5;
+  grid-row: 2;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl);
+}
+
+.overviewPrototype1SideColumn > * {
+  flex: 1 1 0;
+  position: relative;
+  overflow: hidden;
+  background-color: var(--color-grey-200);
+  border-radius: var(--border-radius-sm);
 }
 
 /* ── section.overview-prototype-1-limitations ── */

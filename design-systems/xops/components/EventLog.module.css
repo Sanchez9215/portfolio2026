@@ -1,0 +1,156 @@
+.log {
+  display: flex;
+  flex-direction: column;
+  gap: var(--xops-spacing-16);
+  width: 100%;
+  padding: var(--xops-spacing-16);
+  font-family: var(--xops-font-family);
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--xops-spacing-8);
+}
+
+.heading {
+  margin: 0;
+  font-weight: var(--xops-font-weight-medium);
+  font-size: var(--xops-typography-subheading-16-font-size);
+  line-height: var(--xops-typography-subheading-16-line-height);
+  color: var(--xops-text-primary);
+}
+
+.controls {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+/* Collapsed: shows eight event rows (two text-line heights' worth of padding each), scrolls beyond.
+   Columns size to content and line up across rows via subgrid — no fixed widths. */
+.events {
+  display: grid;
+  grid-template-columns: max-content max-content max-content 1fr;
+  column-gap: var(--xops-spacing-16);
+  align-content: start;
+  max-height: calc(8 * (var(--xops-typography-body-14-line-height) + 2 * var(--xops-spacing-8)));
+  margin: 0;
+  padding: 0 var(--xops-spacing-8) var(--xops-spacing-8);
+  list-style: none;
+  overflow-y: auto;
+  border: var(--xops-border-width-1) solid var(--xops-border-divider);
+  border-radius: var(--xops-radius-6);
+}
+
+.expanded {
+  max-height: none;
+  overflow-y: visible;
+}
+
+.events > :first-child {
+  margin-top: var(--xops-spacing-8);
+}
+
+/* Sticky: the current date stays pinned while its events scroll under it, until the next date takes over. */
+.date {
+  position: sticky;
+  top: var(--xops-spacing-8);
+  z-index: 1;
+  grid-column: 1 / -1;
+  padding: var(--xops-spacing-8);
+  border-radius: var(--xops-radius-6);
+  background-color: var(--xops-surface-stat);
+  font-weight: var(--xops-font-weight-medium);
+  font-size: var(--xops-typography-body-14-font-size);
+  line-height: var(--xops-typography-body-14-line-height);
+  color: var(--xops-text-secondary);
+}
+
+.date::before {
+  content: "";
+  position: absolute;
+  top: calc(-1 * var(--xops-spacing-8));
+  right: 0;
+  left: 0;
+  height: var(--xops-spacing-8);
+  background-color: var(--xops-surface-page);
+}
+
+.event {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+  align-items: center;
+  padding: var(--xops-spacing-12) var(--xops-spacing-8);
+  border-radius: var(--xops-radius-6);
+  font-size: var(--xops-typography-body-14-font-size);
+  line-height: var(--xops-typography-body-14-line-height);
+}
+
+.exception {
+  background-color: var(--xops-status-danger-tint);
+}
+
+.warning {
+  background-color: var(--xops-status-warning-tint);
+}
+
+/* The next planned event: its text reads as not happened yet. */
+.next .lane,
+.next .time,
+.next .title {
+  color: var(--xops-text-disabled);
+}
+
+.info {
+  display: flex;
+  align-items: center;
+  gap: var(--xops-spacing-8);
+  margin-right: var(--xops-spacing-16);
+}
+
+.lane {
+  font-weight: var(--xops-font-weight-medium);
+  color: var(--xops-text-secondary);
+  white-space: nowrap;
+}
+
+.time {
+  text-align: right;
+  font-weight: var(--xops-font-weight-regular);
+  color: var(--xops-text-secondary);
+  white-space: nowrap;
+}
+
+/* The spine: each row draws its own segment through the dot column, so the line runs
+   unbroken from row to row (the date bar sits over it). */
+.dotCell {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: stretch;
+  width: var(--xops-icon-size-20);
+}
+
+.dotCell::before {
+  content: "";
+  position: absolute;
+  top: calc(-1 * var(--xops-spacing-12));
+  bottom: calc(-1 * var(--xops-spacing-12));
+  left: 50%;
+  border-left: var(--xops-border-width-1) solid var(--xops-border-divider);
+}
+
+.dot {
+  position: relative;
+  width: var(--xops-spacing-8);
+  height: var(--xops-spacing-8);
+  border-radius: var(--xops-radius-full);
+}
+
+.title {
+  font-weight: var(--xops-font-weight-medium);
+  color: var(--xops-text-primary);
+}

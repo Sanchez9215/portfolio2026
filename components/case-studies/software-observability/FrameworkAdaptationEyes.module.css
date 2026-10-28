@@ -27,16 +27,14 @@
 .beamLayer {
   position: absolute;
   inset: 0;
-  /* Bottom extends past the wrap by the next section's (Framework) own
-     top padding, so the beam overflows into it and cuts off at the outer
-     edge of that padding. Clip-path coordinates still measure from the
-     top-left, unchanged. */
-  bottom: calc(-1 * var(--spacing-5xl));
+  /* Ends at the wrap's bottom edge (the Observability section's bottom), so
+     the beam can't reach into the Framework section below. */
   width: 100%;
   pointer-events: none;
   z-index: 2;
-  background: var(--color-grey-500);
-  mix-blend-mode: difference;
+  /* Opaque, no blend: the beam is exactly this color. The Observability text
+     inside it is the .textOverlay copy on top, in its own color. */
+  background: var(--color-blue-500);
 }
 
 /* Black-text mask overlay — a clone of the Observability text, clipped to
@@ -44,17 +42,25 @@
    box (not inset:0 like .beamLayer) and painted ABOVE it (z-index) so the
    solid black glyphs read on top of the diffed beam wherever they overlap. */
 .textOverlay {
+  /* Same box as .beamLayer, so the shared clip-path (wrap coordinates) lines
+     up with the beam; the text sits inside it at its measured position. */
   position: absolute;
+  inset: 0;
+  width: 100%;
   pointer-events: none;
   z-index: 3;
-  color: #000;
+  color: var(--color-grey-500);
+}
+
+.textOverlayText {
+  position: absolute;
 }
 
 /* Doubled class to beat Label's/.statement's own single-class color rule
    on specificity without !important (two equal selectors tie, and the
    cascade order between separate CSS modules isn't guaranteed). */
 .forceBlack.forceBlack {
-  color: #000;
+  color: var(--color-grey-500);
 }
 
 .eyeInner {
@@ -83,7 +89,7 @@
   aspect-ratio: 1;
   border-radius: 50%;
   transform: translate(-50%, -50%);
-  border: 1px solid var(--color-grey-500);
+  border: 1px solid var(--color-grey-600);
 }
 
 .pupilFill {
@@ -91,7 +97,7 @@
   /* 75% of the pupil — same ratio as the beam's top cap (BEAM_TOP_RATIO) */
   inset: 12.5%;
   border-radius: 50%;
-  background: var(--color-grey-500);
+  background: var(--color-grey-600);
   transform: scale(0);
 }
 

@@ -1,7 +1,7 @@
 import React, { ButtonHTMLAttributes, ReactNode } from "react";
 import styles from "./Button.module.css";
 
-type ButtonVariant = "primary" | "secondary" | "text" | "link" | "inline-link";
+type ButtonVariant = "primary" | "secondary" | "text" | "text-secondary" | "link" | "inline-link";
 type ButtonSize = "xsmall" | "small" | "medium" | "large";
 
 type ButtonBaseProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, "children">;

@@ -9,6 +9,42 @@
   display: block;
   width: 100%;
   aspect-ratio: 16 / 9;
+  /* The base's outer edges (both sides and the front) fade to transparent, so
+     there is no hard edge against the page. Sides: transparent at the plane's
+     edge (5% in), opaque by 32%; front: opaque to 60% of the height,
+     transparent at the front row (93%). Fractions of the canvas. */
+  --mountain-fade-side-edge: 5%;
+  --mountain-fade-side-solid: 32%;
+  --mountain-fade-front-solid: 60%;
+  --mountain-fade-front-edge: 93%;
+  -webkit-mask-image:
+    linear-gradient(
+      to right,
+      transparent var(--mountain-fade-side-edge),
+      #000 var(--mountain-fade-side-solid),
+      #000 calc(100% - var(--mountain-fade-side-solid)),
+      transparent calc(100% - var(--mountain-fade-side-edge))
+    ),
+    linear-gradient(
+      to bottom,
+      #000 var(--mountain-fade-front-solid),
+      transparent var(--mountain-fade-front-edge)
+    );
+  -webkit-mask-composite: source-in;
+  mask-image:
+    linear-gradient(
+      to right,
+      transparent var(--mountain-fade-side-edge),
+      #000 var(--mountain-fade-side-solid),
+      #000 calc(100% - var(--mountain-fade-side-solid)),
+      transparent calc(100% - var(--mountain-fade-side-edge))
+    ),
+    linear-gradient(
+      to bottom,
+      #000 var(--mountain-fade-front-solid),
+      transparent var(--mountain-fade-front-edge)
+    );
+  mask-composite: intersect;
 }
 
 /* Line-detail slider (tuning control, shown with the `controls` prop). */

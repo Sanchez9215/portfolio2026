@@ -91,7 +91,10 @@ export default function MountainTerrain({
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
       const css = getComputedStyle(canvas);
-      const background = css.getPropertyValue("--surface-base").trim();
+      // Body color of the mountain: --mountain-fill (opt-in hook) or the page surface.
+      const background =
+        css.getPropertyValue("--mountain-fill").trim() ||
+        css.getPropertyValue("--surface-base").trim();
       // Transparent sky, so the page center line shows down to the summit.
       ctx.clearRect(0, 0, width, height);
       const lineColor = css.getPropertyValue("--color-grey-500").trim();
@@ -99,11 +102,20 @@ export default function MountainTerrain({
         ctx.strokeStyle = lineColor;
       } else {
         const gradient = ctx.createLinearGradient(0, 0, 0, height * NEAR_BASE);
-        const from = hexToRgb(lineColor);
-        const to = hexToRgb(css.getPropertyValue("--color-grey-1000").trim());
+        // The MVP zone (top → the MVP box's bottom) can take its own color via
+        // --mountain-mvp-line-color (opt-in hook); below it the lines fade out.
+        const mvpColor =
+          css.getPropertyValue("--mountain-mvp-line-color").trim() || lineColor;
+        const from = hexToRgb(mvpColor);
+        // The lines fade toward --mountain-line-end (opt-in hook) near the base;
+        // default grey-1000. Setting it to the line color keeps them constant.
+        const to = hexToRgb(
+          css.getPropertyValue("--mountain-line-end").trim() ||
+            css.getPropertyValue("--color-grey-1000").trim(),
+        );
         const solid = Math.min(solidUntil / NEAR_BASE, 1);
-        gradient.addColorStop(0, lineColor);
-        gradient.addColorStop(solid, lineColor);
+        gradient.addColorStop(0, mvpColor);
+        gradient.addColorStop(solid, mvpColor);
         for (let i = 1; i <= GRADIENT_STOPS; i++) {
           const t = i / GRADIENT_STOPS;
           const mix = Math.pow(t, GRADIENT_FALLOFF);
@@ -117,6 +129,11 @@ export default function MountainTerrain({
       ctx.lineWidth = 1;
       ctx.lineJoin = "round";
 
+      // Far rows fade to LINE_ALPHA_FAR; --mountain-line-far-alpha (opt-in hook, 1 =
+      // no fade) overrides it.
+      const farAlpha =
+        parseFloat(css.getPropertyValue("--mountain-line-far-alpha")) ||
+        LINE_ALPHA_FAR;
       const { rows, max } = getSamples(lines);
       const cx = width / 2;
       const horizonY = height * HORIZON;
@@ -159,7 +176,7 @@ export default function MountainTerrain({
         trace();
         ctx.globalAlpha =
           solidUntil === undefined
-            ? LINE_ALPHA_FAR + (1 - LINE_ALPHA_FAR) * (1 - t)
+            ? farAlpha + (1 - farAlpha) * (1 - t)
             : 1;
         ctx.stroke();
         ctx.globalAlpha = 1;

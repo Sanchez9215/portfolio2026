@@ -54,8 +54,15 @@
   color: var(--text-inverse-secondary);
 }
 
+/* Same 16/9 footprint as the intro's .heroEmbed (SectionIntroduction.module.css);
+   the embed scrolls inside it (LiveEmbed scroll mode). */
+.embedFrame {
+  position: relative;
+  aspect-ratio: 16 / 9;
+}
+
 /* LiveEmbed's own container already clips (overflow:hidden); this only rounds
    it. Tooltips/notes are siblings of the embed, so they aren't clipped. */
 .liveEmbed {
-  border-radius: var(--border-radius-md);
+  border-radius: var(--border-radius-sm) var(--border-radius-sm) 0 0;
 }

@@ -44,7 +44,7 @@ function mulberry32(a: number): () => number {
   };
 }
 
-interface Rng {
+export interface Rng {
   next: () => number;
   int: (min: number, max: number) => number;
   float: (min: number, max: number) => number;
@@ -54,7 +54,7 @@ interface Rng {
   weighted: <T>(items: { value: T; weight: number }[]) => T;
 }
 
-function createRng(seed: number): Rng {
+export function createRng(seed: number): Rng {
   const rand = mulberry32(seed);
   const int = (min: number, max: number) => Math.floor(rand() * (max - min + 1)) + min;
   return {
