@@ -12,6 +12,8 @@ export interface Step {
   actor?: EventActor; // default "system"
   type?: EventType; // default "automation"
   trigger?: string;
+  /** Closes the request out: completes only once every item lane has, whatever its scheduled time. */
+  closing?: boolean;
 }
 
 export interface Fault {
@@ -36,7 +38,7 @@ const st = (
   title: string,
   source: EventSource,
   at: number,
-  extra: Partial<Pick<Step, "actor" | "type" | "trigger">> = {},
+  extra: Partial<Pick<Step, "actor" | "type" | "trigger" | "closing">> = {},
 ): Step => ({ key, title, source, at, ...extra });
 
 // ---------------------------------------------------------------------------
@@ -45,24 +47,21 @@ const st = (
 
 export const ONBOARDING_EMPLOYEE_LANE: Step[] = [
   st("hire", "Hire Confirmed", "hr", 0, { type: "milestone" }),
-  st("start-date", "Start Date Set", "hr", 0, { type: "milestone" }),
   st("request", "Request Created", "itsm", 0.25, { type: "milestone", trigger: "hire" }),
-  st("manager-approval", "Manager Approval", "itsm", 2, { actor: "manager", type: "approval" }),
   st("identity", "Identity Created", "identity", 6, { trigger: "hire" }),
   st("address", "Shipping Address Confirmed", "itsm", 20, { actor: "employee", type: "human-task" }),
   st("kit", "Kit Selected", "itsm", 22),
   st("screening", "Background Check Cleared", "screening", 40),
   st("received", "Employee Confirmed Receipt", "itsm", 105, { actor: "employee", type: "human-task", trigger: "delivered" }),
-  st("enabled", "Account Enabled", "identity", 132),
-  st("ready", "Day-One Readiness", "itsm", 140, { type: "milestone" }),
+  st("enabled", "Account Enabled", "identity", 132, { trigger: "screening" }),
+  st("ready", "Day-One Readiness", "itsm", 140, { type: "milestone", closing: true }),
 ];
 
 export const OFFBOARDING_EMPLOYEE_LANE: Step[] = [
   st("termination", "Termination Recorded", "hr", 0, { type: "milestone" }),
   st("request", "Request Created", "itsm", 0.25, { type: "milestone", trigger: "termination" }),
-  st("notified", "Manager Notified", "itsm", 0.5, { type: "notification" }),
   st("retention", "Retention Window Set", "itsm", 2),
-  st("ready", "Exit Checklist Complete", "itsm", 170, { type: "milestone" }),
+  st("ready", "Exit Checklist Complete", "itsm", 170, { type: "milestone", closing: true }),
 ];
 
 // ---------------------------------------------------------------------------
@@ -182,7 +181,7 @@ export const VPN_ACCESS: RunbookTemplate = {
   runbookName: "VPN Access",
   domain: "remote-access",
   steps: [
-    st("vpn-approved", "Remote Access Approved", "itsm", 10, { actor: "manager", type: "approval", trigger: "manager-approval" }),
+    st("vpn-approved", "Remote Access Approved", "itsm", 10, { actor: "manager", type: "approval", trigger: "request" }),
     st("vpn-profile", "VPN Profile Created", "identity", 14),
     st("vpn-mfa", "MFA Enrolled", "identity", 136, { actor: "employee", type: "human-task", trigger: "enabled" }),
     st("vpn-tested", "VPN Connectivity Tested", "identity", 138),
@@ -337,7 +336,7 @@ export interface RequestTemplate {
 export const REQUEST_TEMPLATES: Record<RequestTemplateKey, RequestTemplate> = {
   "vip-onboarding": {
     key: "vip-onboarding",
-    name: "US VIP Onboarding",
+    name: "VIP Onboarding",
     employeeLane: ONBOARDING_EMPLOYEE_LANE,
     runbooks: [DEVICE_DEPLOYMENT, BADGE_ACCESS, SOFTWARE_DEPLOYMENT, MOBILE_LINE_ASSIGNMENT],
     pace: 0.3,
@@ -361,7 +360,7 @@ export const REQUEST_TEMPLATES: Record<RequestTemplateKey, RequestTemplate> = {
   },
   offboarding: {
     key: "offboarding",
-    name: "US Employee Offboarding",
+    name: "Employee Offboarding",
     employeeLane: OFFBOARDING_EMPLOYEE_LANE,
     runbooks: [BADGE_ACCESS_DEACTIVATION, SOFTWARE_LICENSE_RECLAIM, DEVICE_RECOVERY, MOBILE_LINE_DEACTIVATION],
     pace: 1,

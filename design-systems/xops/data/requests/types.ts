@@ -65,10 +65,12 @@ export interface RequestItemRecord {
 }
 
 export interface RequestRecord {
-  id: string; // "REQ-232"
+  id: string; // "REQ-232" — numbered in creation order, oldest first
   templateKey: RequestTemplateKey;
-  name: string; // "US VIP Onboarding"
+  name: string; // "VIP Onboarding"
   employeeName: string;
+  /** The HR roster row this request is for (`hr.employeeId`) — name, department, dates and cost center all come from it. */
+  employeeId: string;
   /** Who raised the request (the hiring manager / HR partner) — deterministic per id. */
   requestorName: string;
   createdAt: string;
@@ -86,4 +88,6 @@ export interface RequestsDataset {
   seed: number;
   requests: RequestRecord[];
   events: RequestEvent[];
+  /** The scripted showcase request (VIP onboarding with a device-lane exception). */
+  scriptedRequestId: string;
 }

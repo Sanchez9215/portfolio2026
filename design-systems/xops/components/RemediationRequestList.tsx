@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import Icon from "./Icon";
+import Accordion from "./Accordion";
 import { ProgressBar } from "./ProgressBar";
 import { Card } from "./Card";
 import { Table, Column } from "./Table";
@@ -61,42 +61,33 @@ export function RemediationRequestList({ requests, defaultOpenId }: RemediationR
       {requests.map((request) => {
         const isOpen = openId === request.id;
         return (
-          <div key={request.id} className={styles.row}>
-            <button
-              type="button"
-              className={styles.header}
-              aria-expanded={isOpen}
-              onClick={() => setOpenId(isOpen ? undefined : request.id)}
-            >
-              <div className={styles.headerLeft}>
-                <span className={[styles.chevron, isOpen && styles.chevronOpen].filter(Boolean).join(" ")}>
-                  <Icon name="keyboard_arrow_down" color="var(--xops-text-secondary)" />
-                </span>
-                <span className={styles.ticketId}>{request.id}</span>
-              </div>
-              <div className={styles.headerRight}>
+          <Accordion
+            key={request.id}
+            title={request.id}
+            open={isOpen}
+            onToggle={() => setOpenId(isOpen ? undefined : request.id)}
+            headerEnd={
+              <>
                 <div className={styles.progressCell}>
                   <ProgressBar value={request.percent} status="info" valueLabel={request.percentLabel} height="8" />
                 </div>
                 <span className={styles.recordsCell}>{request.recordsLabel}</span>
-              </div>
-            </button>
-
-            {isOpen && (
-              <div className={styles.detail}>
-                <Card title="Progress by Department" titleSize="subheading-14">
-                  <Table
-                    columns={departmentColumns}
-                    data={request.departments}
-                    rowKey={(row) => row.department}
-                    chrome={false}
-                    scrollFade={false}
-                    headerLabelSize="subheading-12"
-                  />
-                </Card>
-              </div>
-            )}
-          </div>
+              </>
+            }
+          >
+            <div className={styles.detail}>
+              <Card title="Progress by Department" titleSize="subheading-14">
+                <Table
+                  columns={departmentColumns}
+                  data={request.departments}
+                  rowKey={(row) => row.department}
+                  chrome={false}
+                  scrollFade={false}
+                  headerLabelSize="subheading-12"
+                />
+              </Card>
+            </div>
+          </Accordion>
         );
       })}
     </div>

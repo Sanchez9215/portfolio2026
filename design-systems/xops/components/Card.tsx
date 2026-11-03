@@ -7,16 +7,18 @@ export type CardProps = {
   title: string;
   titleSize?: CardTitleSize;
   headerValue?: ReactNode;
+  /** Draws the divider under the header even without a `headerValue`. */
+  divider?: boolean;
   children: ReactNode;
   className?: string;
   /** Sets `data-hotspot` on the outer card element, for hotspot targeting. */
   hotspotId?: string;
 };
 
-export function Card({ title, titleSize = "subheading-14", headerValue, children, className, hotspotId }: CardProps) {
+export function Card({ title, titleSize = "subheading-14", headerValue, divider, children, className, hotspotId }: CardProps) {
   return (
     <div className={[styles.card, className].filter(Boolean).join(" ")} data-hotspot={hotspotId}>
-      <div className={[styles.header, headerValue && styles.headerDivider].filter(Boolean).join(" ")}>
+      <div className={[styles.header, (headerValue || divider) && styles.headerDivider].filter(Boolean).join(" ")}>
         <p
           className={[styles.title, titleSize === "subheading-14" && styles.titleSubheading14]
             .filter(Boolean)

@@ -1,0 +1,39 @@
+.list {
+  /* Labels size to the widest one; every value starts in the same column, at least 64px after it. */
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  column-gap: var(--xops-spacing-64);
+  width: 100%;
+  margin: 0;
+  font-family: var(--xops-font-family);
+}
+
+.row {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+  align-items: start;
+  padding-block: var(--xops-spacing-6);
+}
+
+.label,
+.value {
+  margin: 0;
+  font-weight: var(--xops-font-weight-regular);
+  font-size: var(--xops-typography-body-14-font-size);
+  line-height: var(--xops-typography-body-14-line-height);
+}
+
+.label {
+  font-weight: var(--xops-font-weight-medium);
+  color: var(--xops-text-primary);
+}
+
+/* A value with several entries (e.g. more than one cost center) stacks them, one per line. */
+.value {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  color: var(--xops-text-secondary);
+  white-space: nowrap;
+}

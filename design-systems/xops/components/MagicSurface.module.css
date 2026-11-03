@@ -37,6 +37,10 @@
   animation: xops-magic-blob-spin var(--xops-motion-duration-slow) var(--xops-motion-easing-default);
 }
 
+.blobStatic {
+  animation: none;
+}
+
 @keyframes xops-magic-blob-spin {
   from {
     transform: rotate(0deg);

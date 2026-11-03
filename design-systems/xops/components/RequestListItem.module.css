@@ -3,24 +3,31 @@
   flex-direction: column;
   gap: var(--xops-spacing-12);
   width: 100%;
-  padding: var(--xops-spacing-8);
+  padding: var(--xops-spacing-12);
   border: var(--xops-border-width-1) solid transparent;
-  border-bottom-color: var(--xops-border-divider);
+  /* Always rounded, so the shape never jumps when the wash fades in. */
+  border-radius: var(--xops-radius-6);
   background-color: var(--xops-surface-page);
   font-family: var(--xops-font-family);
-}
-
-.container:hover {
-  border-radius: var(--xops-radius-6);
+  /* The hover wash, the divider fading in and out, and the selected border ease over 250ms (trial value, quicker than
+     the system's 300ms default so sweeping down the list keeps up with the pointer). */
+  transition-property: background-color, border-color;
+  transition-duration: 250ms;
+  transition-timing-function: var(--xops-motion-easing-default);
 }
 
 .container:hover:not(.selected) {
   background-color: var(--xops-surface-table-row-hover);
 }
 
+/* A hovered request drops the dividers above and below it, so its rounded wash isn't boxed in by lines
+   (same idea as Table's selected row). Its own bottom divider and the previous request's. */
+.container:hover:not(.selected),
+.container:has(+ .container:hover:not(.selected)) {
+  border-bottom-color: transparent;
+}
+
 .selected {
-  border-color: var(--xops-brand-primary);
-  border-radius: var(--xops-radius-6);
   background-color: var(--xops-surface-selected);
 }
 
@@ -47,23 +54,36 @@
 
 .id {
   font-weight: var(--xops-font-weight-medium);
-  font-size: var(--xops-typography-body-14-font-size);
-  line-height: var(--xops-typography-body-14-line-height);
-  color: var(--xops-text-primary);
+  font-size: var(--xops-typography-body-12-font-size);
+  line-height: var(--xops-typography-body-12-line-height);
+  color: var(--xops-text-secondary);
 }
 
 .time {
   font-weight: var(--xops-font-weight-regular);
-  font-size: var(--xops-typography-body-14-font-size);
-  line-height: var(--xops-typography-body-14-line-height);
-  color: var(--xops-text-secondary);
-}
-
-.runbookName {
-  font-weight: var(--xops-font-weight-regular);
   font-size: var(--xops-typography-body-12-font-size);
   line-height: var(--xops-typography-body-12-line-height);
   color: var(--xops-text-secondary);
+}
+
+/* The name gives way before the gap does: it ellipsizes (full text in the title tooltip) and the tag never shrinks. */
+.details {
+  gap: var(--xops-spacing-24);
+}
+
+.details > :last-child {
+  flex: none;
+}
+
+.runbookName {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: var(--xops-font-weight-regular);
+  font-size: var(--xops-typography-body-14-font-size);
+  line-height: var(--xops-typography-body-14-line-height);
+  color: var(--xops-text-primary);
 }
 
 .panel {
@@ -71,7 +91,7 @@
   flex-direction: column;
   align-items: flex-end;
   width: 100%;
-  padding: var(--xops-spacing-6) var(--xops-spacing-8) var(--xops-spacing-8);
+  padding: var(--xops-spacing-6);
   border-radius: var(--xops-radius-6);
   background-color: var(--xops-grey-50);
   overflow: hidden;
@@ -175,39 +195,71 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .container,
   .drawer,
   .drawerContent {
     transition: none;
   }
 }
 
-/* Shows four rows, scrolls beyond — each row is its two text lines + vertical padding + divider. */
+/* Shows four rows, scrolls beyond — each row is its two text lines + vertical padding, with a gap between rows. */
 .items {
+  display: flex;
+  flex-direction: column;
+  gap: var(--xops-spacing-2);
   width: 100%;
   cursor: default;
   max-height: calc(
     4 * (
       var(--xops-typography-body-14-line-height) + var(--xops-typography-body-12-line-height) +
-        2 * var(--xops-spacing-6) + var(--xops-border-width-1)
-    ) + var(--xops-border-width-1)
+        2 * var(--xops-spacing-8)
+    ) + 3 * var(--xops-spacing-2) + var(--xops-spacing-4) + var(--xops-border-width-1)
   );
   margin: 0;
-  padding: 0;
+  padding: var(--xops-spacing-4) 0 0;
   list-style: none;
   overflow-y: auto;
-  border: var(--xops-border-width-1) solid var(--xops-border-divider);
+  border-top: var(--xops-border-width-1) solid var(--xops-border-divider);
   border-radius: var(--xops-radius-2);
 }
 
 .item {
   display: flex;
-  flex-direction: column;
-  padding: var(--xops-spacing-6) var(--xops-spacing-8);
-  border-bottom: var(--xops-border-width-1) solid var(--xops-border-divider);
 }
 
-.item:last-child {
-  border-bottom: none;
+/* The whole row is the click target for the item's drill-down. */
+.itemButton {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  width: 100%;
+  padding: var(--xops-spacing-8);
+  border: none;
+  border-radius: var(--xops-radius-6);
+  background: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.itemButton:hover {
+  background-color: var(--xops-state-hover-on-surface);
+}
+
+/* The open item matches a selected request: the selected surface, no border. */
+.itemButton.itemSelected {
+  background-color: var(--xops-surface-selected);
+}
+
+/* Signals the row opens the item's drill-down: at the right edge, centered across both text lines. */
+.itemChevron {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  color: var(--xops-text-secondary);
+}
+
+.itemButton:hover .itemChevron {
+  color: var(--xops-brand-primary);
 }
 
 .itemId {

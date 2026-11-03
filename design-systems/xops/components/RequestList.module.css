@@ -4,7 +4,9 @@
   width: 100%;
   height: 100%;
   min-height: 0;
-  border-radius: var(--xops-radius-6);
+  background-color: var(--xops-surface-page);
+  border: var(--xops-border-width-1) solid var(--xops-border-subtle);
+  border-radius: var(--xops-radius-12);
   font-family: var(--xops-font-family);
 }
 
@@ -12,8 +14,7 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  padding: var(--xops-spacing-12);
-  background-color: var(--xops-surface-page);
+  padding: var(--xops-spacing-16);
   border-bottom: var(--xops-border-width-1) solid var(--xops-border-divider);
   font-weight: var(--xops-font-weight-medium);
   font-size: var(--xops-typography-body-14-font-size);
@@ -25,15 +26,37 @@
 .scroll {
   display: flex;
   flex-direction: column;
+  gap: var(--xops-spacing-2);
   flex: 1 1 auto;
   min-height: 0;
-  padding-right: var(--xops-spacing-8);
+  /* The right 8px is the scrollbar's own gutter (reserved even when nothing overflows), so the thumb sits centered in it. */
+  padding-inline: var(--xops-spacing-2) 0;
+  background-color: var(--xops-grey-50);
   overflow-y: auto;
+  scrollbar-gutter: stable;
   border-radius: 0 0 var(--xops-radius-6) var(--xops-radius-6);
+}
+
+/* An 8px scrollbar with a 4px thumb: a 2px transparent border on each side insets it. Not combined with the standard
+   scrollbar-width/-color properties, which would make Chrome ignore these. */
+.scroll::-webkit-scrollbar {
+  width: var(--xops-spacing-8);
+}
+
+.scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scroll::-webkit-scrollbar-thumb {
+  border: var(--xops-spacing-2) solid transparent;
+  border-radius: var(--xops-radius-full);
+  background-color: var(--xops-grey-400);
+  background-clip: padding-box;
 }
 
 /* Sticky at the top of the scroll area and pulled out of flow, so it overlays the first visible item. */
 .scrollFade {
+  display: none;
   position: sticky;
   top: 0;
   z-index: 1;
@@ -48,4 +71,16 @@
 
 .scrollFadeVisible {
   opacity: 1;
+}
+
+/* The 8px above the first request is its own margin, not padding on the scroll area, so the gradient above it sits flush
+   to the bottom of the heading. */
+.scrollFade + * {
+  margin-top: var(--xops-spacing-2);
+}
+
+/* After the last request; stretches the list's width, like the requests above it. */
+.loadOlder {
+  flex: none;
+  margin-block: var(--xops-spacing-8);
 }

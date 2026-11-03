@@ -1,0 +1,14 @@
+/* The negative block margin cancels the cell's own vertical padding so the photo fills the row's height. */
+.image {
+  display: block;
+  width: var(--xops-product-image-size);
+  height: var(--xops-product-image-size);
+  /* Tailwind's reset caps images at max-width:100%, which collapses to zero in a content-sized table cell. */
+  max-width: none;
+  margin-block: calc(-1 * var(--xops-spacing-12));
+  object-fit: contain;
+}
+
+.pending {
+  color: var(--xops-text-disabled);
+}

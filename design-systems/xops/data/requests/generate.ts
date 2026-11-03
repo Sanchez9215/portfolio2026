@@ -6,7 +6,8 @@
 // planned. A step also waits on its cross-lane trigger. Statuses are NOT stored — they're
 // derived from event outcomes (requestMetrics.ts).
 
-import { createRng } from "../generate";
+import { createRng, getDataset } from "../generate";
+import type { HrRow } from "../types";
 import { EMPLOYEE_LANE } from "./types";
 import type {
   EventActor,
@@ -25,14 +26,27 @@ export const REQUESTS_AS_OF = new Date("2026-01-14T14:06:00Z");
 
 const HOUR_MS = 3_600_000;
 const TRIGGER_LAG_HOURS = 0.5;
+// Working ids while generating (the scripted one and the pinned ones are looked up by these); the dataset's real ids are
+// assigned afterwards, in creation order.
 const SCRIPTED_REQUEST_ID = "REQ-232";
+const FIRST_REQUEST_NUMBER = 100;
+
+// How long a settled request (complete / incomplete / canceled / suspended) has sat since its last update, in hours.
+// Spread across eight weeks with a recency decay (recent days busier, older days thinner), plus a share that settled
+// earlier today (REQUESTS_AS_OF is 14:06 UTC, so "today" is the first ~14 hours) so the newest group isn't all open work.
+const HISTORY_HOURS = 8 * 7 * 24;
+const TODAY_HOURS = 14;
+const DECAY_MEAN_HOURS = 400;
+// In-progress work goes quiet for a shorter stretch: at most ten days, usually a couple.
+const QUIET_MAX_HOURS = 10 * 24;
+const QUIET_MEAN_HOURS = 60;
 
 // Eight-item executive onboardings pinned at known ids, one per stage, so the wide graph can be checked
 // in the real prototype. They draw nothing from the rng, so the rest of the dataset is unchanged.
-const PINNED_REQUESTS: { id: string; employeeName: string; plan: Plan }[] = [
-  { id: "REQ-901", employeeName: "Imani Brooks", plan: { templateKey: "executive-onboarding", mode: "complete", lagHours: 6 } },
-  { id: "REQ-902", employeeName: "Julian Ashford", plan: { templateKey: "executive-onboarding", mode: "in-progress", frac: 0.55 } },
-  { id: "REQ-903", employeeName: "Sienna Vargas", plan: { templateKey: "executive-onboarding", mode: "in-progress", frac: 0.6, exceptionRunbook: 6, exceptionResolved: false, warningRunbook: 4, warningResolved: false } },
+const PINNED_REQUESTS: { id: string; plan: Plan }[] = [
+  { id: "REQ-901", plan: { templateKey: "executive-onboarding", mode: "complete", lagHours: 6 } },
+  { id: "REQ-902", plan: { templateKey: "executive-onboarding", mode: "in-progress", frac: 0.55, quietHours: 0 } },
+  { id: "REQ-903", plan: { templateKey: "executive-onboarding", mode: "in-progress", frac: 0.6, quietHours: 0, exceptionRunbook: 6, exceptionResolved: false, warningRunbook: 4, warningResolved: false } },
 ];
 
 type Mode = "open" | "in-progress" | "suspended" | "sla-suspended" | "complete" | "incomplete" | "canceled";
@@ -51,6 +65,8 @@ interface Plan {
   elapsedHours?: number;
   /** Complete / incomplete: hours past the last event, overriding the random lag. */
   lagHours?: number;
+  /** In-progress: hours the request has sat quiet since its last event, overriding the random wait. */
+  quietHours?: number;
 }
 
 // Raw timeline entry (relative hours) before outcomes are decided.
@@ -64,7 +80,7 @@ interface RawEvent {
   at: number;
   trigger?: string;
   /** "step" always completes by cutoff; the fault kinds decide their own outcome. */
-  kind: "step" | "exception-resolved" | "exception-open" | "warning-resolved" | "warning-open" | "resolution" | "frozen";
+  kind: "step" | "exception-resolved" | "exception-open" | "warning-resolved" | "warning-open" | "resolution" | "frozen" | "closing";
 }
 
 const pad = (n: number) => String(n).padStart(2, "0");
@@ -172,10 +188,14 @@ function buildTimeline(template: RequestTemplate, plan: Plan): { raw: RawEvent[]
       continue;
     }
 
-    raw.push(stepEvent(at, "step"));
+    raw.push(stepEvent(at, step.closing ? "closing" : "step"));
     timeOf.set(step.key, at);
     laneLast[lane] = at;
   }
+
+  // A closing step lands after the last item event (finished or planned), whatever its scheduled time.
+  const lastItemAt = Math.max(0, ...raw.filter((e) => e.lane !== EMPLOYEE_LANE).map((e) => e.at));
+  raw.filter((e) => e.kind === "closing").forEach((e) => (e.at = Math.max(e.at, lastItemAt + TRIGGER_LAG_HOURS)));
 
   const items: RequestItemRecord[] = template.runbooks.map((rb, i) => ({
     id: itemLane[i],
@@ -201,7 +221,7 @@ function playOutcomes(raw: RawEvent[], cutoff: number): Map<RawEvent, EventOutco
     } else if (ev.kind === "warning-open") {
       o = ev.at <= cutoff ? "warning" : "planned";
       if (o === "warning") blocked.add(ev.lane);
-    } else if (ev.kind !== "frozen" && !blocked.has(ev.lane) && ev.at <= cutoff && triggerDone) {
+    } else if (ev.kind !== "frozen" && !blocked.has(ev.lane) && ev.at <= cutoff && triggerDone && (ev.kind !== "closing" || ordered.every((other) => other.lane === EMPLOYEE_LANE || outcome.get(other) === "complete"))) {
       o = "complete";
     }
     outcome.set(ev, o);
@@ -231,6 +251,23 @@ function requestorFor(id: string): string {
   return `${FIRST_NAMES[h % FIRST_NAMES.length]} ${LAST_NAMES[(h >>> 4) % LAST_NAMES.length]}`;
 }
 
+// The roster row a request is for, picked deterministically from its id (no rng draw): onboarding requests
+// go to recent hires, offboarding to people who have left, executive onboarding to recent hires above IC level.
+const NEW_HIRE_FROM = "2025-10-01";
+function employeeFor(id: string, templateKey: RequestTemplateKey): HrRow {
+  const { hr } = getDataset();
+  const recent = hr.filter((row) => row.workerStatus === "Active" && row.hireDate >= NEW_HIRE_FROM);
+  const pool =
+    templateKey === "offboarding"
+      ? hr.filter((row) => row.workerStatus === "Terminated")
+      : templateKey === "executive-onboarding"
+        ? (recent.filter((row) => row.managementLevel !== "IC").length > 0 ? recent.filter((row) => row.managementLevel !== "IC") : recent)
+        : recent;
+  let h = 0;
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
+  return pool[h % pool.length];
+}
+
 function planFor(rng: ReturnType<typeof createRng>, id: string, scripted: boolean): Plan {
   if (scripted) {
     return { templateKey: "vip-onboarding", mode: "in-progress", exceptionRunbook: 0, exceptionResolved: false, elapsedHours: 14 };
@@ -241,13 +278,13 @@ function planFor(rng: ReturnType<typeof createRng>, id: string, scripted: boolea
     { value: "offboarding", weight: 3 },
   ]);
   const mode = rng.weighted<Mode>([
-    { value: "open", weight: 8 },
-    { value: "in-progress", weight: 34 },
+    { value: "open", weight: 3 },
+    { value: "in-progress", weight: 22 },
     { value: "suspended", weight: 8 },
     { value: "sla-suspended", weight: 3 },
-    { value: "complete", weight: 30 },
-    { value: "incomplete", weight: 8 },
-    { value: "canceled", weight: 9 },
+    { value: "complete", weight: 40 },
+    { value: "incomplete", weight: 9 },
+    { value: "canceled", weight: 11 },
   ]);
   const runbookCount = REQUEST_TEMPLATES[templateKey].runbooks.length;
   const plan: Plan = { templateKey, mode, frac: rng.float(0.15, 0.9) };
@@ -286,7 +323,7 @@ export interface RequestGenerateOptions {
 
 export function buildRequestsDataset(options: RequestGenerateOptions = {}): RequestsDataset {
   const seed = options.seed ?? 20260114;
-  const count = options.count ?? 200;
+  const count = options.count ?? 400;
   const rng = createRng(seed);
   const asOfMs = REQUESTS_AS_OF.getTime();
 
@@ -312,22 +349,43 @@ export function buildRequestsDataset(options: RequestGenerateOptions = {}): Requ
     const fullDuration = Math.max(...raw.map((e) => e.at));
     const firstItemAt = Math.min(...raw.filter((e) => e.lane !== EMPLOYEE_LANE).map((e) => e.at));
     const openFaultAt = Math.max(0, ...raw.filter((e) => e.kind === "exception-open" || e.kind === "warning-open").map((e) => e.at));
+    // Hours since creation that have played out (`cutoff`), and since creation overall (`elapsed`): a canceled request
+    // went quiet some time ago, so it has been sitting longer than it ran.
+    const settledAge = () =>
+      rng.chance(0.16) ? rng.float(0, TODAY_HOURS) : TODAY_HOURS + Math.min(HISTORY_HOURS, -Math.log(1 - rng.next()) * DECAY_MEAN_HOURS);
+    const quietAge = () =>
+      rng.chance(0.1) ? rng.float(0, TODAY_HOURS) : TODAY_HOURS + Math.min(QUIET_MAX_HOURS, -Math.log(1 - rng.next()) * QUIET_MEAN_HOURS);
+    let cutoff: number;
     let elapsed: number;
-    if (plan.elapsedHours !== undefined) elapsed = plan.elapsedHours;
-    else if (plan.mode === "open") elapsed = firstItemAt * 0.5;
+    if (plan.elapsedHours !== undefined) elapsed = cutoff = plan.elapsedHours;
+    else if (plan.mode === "open") {
+      // Raised but not started: opened some time ago, not all just now.
+      cutoff = firstItemAt * 0.5;
+      elapsed = cutoff + quietAge();
+    }
     else if (plan.mode === "complete" || plan.mode === "incomplete") {
-      const lag = plan.lagHours ?? (rng.chance(0.4) ? rng.float(0, 10) : rng.float(10, 240));
-      elapsed = fullDuration + lag;
-    } else if (plan.mode === "suspended") elapsed = fullDuration + rng.float(0, 6);
-    else if (plan.mode === "canceled") elapsed = Math.max(firstItemAt, (plan.frac ?? 0.3) * 0.6 * fullDuration);
-    else elapsed = Math.max((plan.frac ?? 0.5) * fullDuration, openFaultAt + 1);
+      elapsed = cutoff = fullDuration + (plan.lagHours ?? settledAge());
+    } else if (plan.mode === "suspended") elapsed = cutoff = fullDuration + settledAge();
+    else if (plan.mode === "canceled") {
+      cutoff = Math.max(firstItemAt, (plan.frac ?? 0.3) * 0.6 * fullDuration);
+      elapsed = cutoff + settledAge();
+    } else {
+      // In progress / SLA-suspended: work waiting on a carrier, an approval or the employee can sit quiet for days.
+      cutoff = Math.max((plan.frac ?? 0.5) * fullDuration, openFaultAt + 1);
+      elapsed = cutoff + (plan.quietHours ?? quietAge());
+    }
 
     const createdMs = asOfMs - elapsed * HOUR_MS;
-    const outcomes = playOutcomes(raw, elapsed);
+    const outcomes = playOutcomes(raw, cutoff);
 
     const closure = plan.mode === "incomplete" ? "incomplete" : plan.mode === "canceled" ? "canceled" : undefined;
     const suspended = plan.mode === "sla-suspended" ? true : undefined;
-    const employeeName = pinned ? pinned.employeeName : scripted ? "Stebin Ben" : `${rng.pick(FIRST_NAMES)} ${rng.pick(LAST_NAMES)}`;
+    // The old random name is still drawn (and dropped) so the rest of the seeded dataset keeps its stream.
+    if (!pinned && !scripted) {
+      rng.pick(FIRST_NAMES);
+      rng.pick(LAST_NAMES);
+    }
+    const employee = employeeFor(id, plan.templateKey);
 
     const requestEvents = [...raw];
     if (suspended) {
@@ -338,7 +396,7 @@ export function buildRequestsDataset(options: RequestGenerateOptions = {}): Requ
         source: "itsm",
         actor: "system",
         type: "notification",
-        at: Math.max(0, elapsed - 1),
+        at: Math.max(0, cutoff - 1),
         kind: "warning-open",
       };
       requestEvents.push(slaEvent);
@@ -368,7 +426,8 @@ export function buildRequestsDataset(options: RequestGenerateOptions = {}): Requ
       id,
       templateKey: plan.templateKey,
       name: template.name,
-      employeeName,
+      employeeName: employee.workerName,
+      employeeId: employee.employeeId,
       requestorName: requestorFor(id),
       createdAt: new Date(createdMs).toISOString(),
       closure,
@@ -378,7 +437,31 @@ export function buildRequestsDataset(options: RequestGenerateOptions = {}): Requ
     });
   }
 
-  return { generatedAt: REQUESTS_AS_OF.toISOString(), seed, requests, events };
+  // Number requests in the order they were created, oldest first, like a real ticketing system — the generation order
+  // above is arbitrary. Event ids carry their request's id as a prefix, so they follow.
+  const ordered = [...requests].sort((a, b) => a.createdAt.localeCompare(b.createdAt) || a.id.localeCompare(b.id));
+  const newId = new Map(ordered.map((request, index) => [request.id, `REQ-${FIRST_REQUEST_NUMBER + index}`]));
+  const renumberEvent = (eventId: string) => {
+    const [, requestId, rest] = eventId.match(/^(REQ-\d+)(.*)$/)!;
+    return `${newId.get(requestId)}${rest}`;
+  };
+
+  return {
+    generatedAt: REQUESTS_AS_OF.toISOString(),
+    seed,
+    requests: ordered.map((request) => ({
+      ...request,
+      id: newId.get(request.id)!,
+      items: request.items.map((item) => ({ ...item, requestId: newId.get(request.id)! })),
+    })),
+    events: events.map((event) => ({
+      ...event,
+      id: renumberEvent(event.id),
+      requestId: newId.get(event.requestId)!,
+      triggeredBy: event.triggeredBy ? renumberEvent(event.triggeredBy) : undefined,
+    })),
+    scriptedRequestId: newId.get(SCRIPTED_REQUEST_ID)!,
+  };
 }
 
 let _dataset: RequestsDataset | null = null;

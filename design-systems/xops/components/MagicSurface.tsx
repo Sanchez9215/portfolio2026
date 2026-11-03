@@ -13,6 +13,10 @@ export type MagicSurfaceProps = {
   // so a smaller surface gets a proportional miniature of the same composition
   // instead of the same absolute blob offsets cropped into a tighter box.
   scale?: number;
+  // Opacity of the blob layer only (0–1), so content on top stays legible. Default 1.
+  blobOpacity?: number;
+  // Whether the blobs play their one-time spin on mount. Default true; false holds them still.
+  animate?: boolean;
 };
 
 // Four blurred, slow-spinning color blobs behind a white surface — the "magic" background
@@ -26,20 +30,20 @@ const blobs = [
   { src: "/xops/svg/dark-purple.svg", left: 436, top: 18 },
 ];
 
-export function MagicSurface({ children, className, contentClassName, scale = 1 }: MagicSurfaceProps) {
+export function MagicSurface({ children, className, contentClassName, scale = 1, blobOpacity = 1, animate = true }: MagicSurfaceProps) {
   return (
     <div className={[styles.surface, className].filter(Boolean).join(" ")}>
       <div
         className={scale !== 1 ? styles.blobsScaled : styles.blobs}
         aria-hidden="true"
-        style={scale !== 1 ? { transform: `scale(${scale})` } : undefined}
+        style={{ ...(scale !== 1 ? { transform: `scale(${scale})` } : {}), opacity: blobOpacity }}
       >
         {blobs.map((blob) => (
           <img
             key={blob.src}
             src={blob.src}
             alt=""
-            className={styles.blob}
+            className={[styles.blob, !animate && styles.blobStatic].filter(Boolean).join(" ")}
             style={{ left: blob.left, top: blob.top }}
           />
         ))}

@@ -1,6 +1,7 @@
 import React from "react";
 import Button from "./Button";
 import Dropdown from "./Dropdown";
+import { Breadcrumb, BreadcrumbItem } from "./Breadcrumb";
 import { Stat } from "./Stat";
 import { RequestStatus, requestStatusTag } from "./requestStatus";
 import styles from "./RequestDetailHeader.module.css";
@@ -21,6 +22,10 @@ export type RequestDetailHeaderProps = {
   requestor: string;
   status: RequestStatus;
   onAction?: (action: RequestAction) => void;
+  /** Replaces the id title with a breadcrumb trail (e.g. REQ-232 › ITM-01) on a drill-down. */
+  breadcrumb?: BreadcrumbItem[];
+  /** Set false to hide the four info tiles. Defaults to true. */
+  showTiles?: boolean;
 };
 
 export function RequestDetailHeader({
@@ -31,12 +36,14 @@ export function RequestDetailHeader({
   requestor,
   status,
   onAction,
+  breadcrumb,
+  showTiles = true,
 }: RequestDetailHeaderProps) {
   return (
     <header className={styles.header}>
       <div className={styles.top}>
         <div className={styles.title}>
-          <h2 className={styles.id}>{id}</h2>
+          {breadcrumb ? <Breadcrumb items={breadcrumb} /> : <h2 className={styles.id}>{id}</h2>}
           <p className={styles.runbookName}>{runbookName}</p>
         </div>
         <Dropdown<RequestAction | "">
@@ -49,6 +56,7 @@ export function RequestDetailHeader({
           openDirection="down"
         />
       </div>
+      {showTiles && (
       <div className={styles.tiles}>
         <Stat label="Date Opened" value={dateOpened} valueSize="small" size="compact" />
         <Stat label="Date Closed" value={dateClosed ?? "-"} valueSize="small" size="compact" />
@@ -59,6 +67,7 @@ export function RequestDetailHeader({
         />
         <Stat label="Status" size="compact" value="" tag={{ status: requestStatusTag[status], label: status }} />
       </div>
+      )}
     </header>
   );
 }

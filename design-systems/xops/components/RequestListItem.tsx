@@ -25,6 +25,10 @@ export type RequestListItemProps = RequestStatusInputs & {
   onSelect?: () => void;
   onToggleExpanded?: () => void;
   onFullView?: () => void;
+  /** Opens an item's drill-down. */
+  onSelectItem?: (itemId: string) => void;
+  /** The item whose drill-down is open, if it belongs to this request. */
+  selectedItemId?: string;
 };
 
 export function RequestListItem({
@@ -39,6 +43,8 @@ export function RequestListItem({
   onSelect,
   onToggleExpanded,
   onFullView,
+  onSelectItem,
+  selectedItemId,
 }: RequestListItemProps) {
   const status = deriveRequestStatus(items, { closure, suspended });
   const exceptionCount = items.filter((item) => item.status === "exception").length;
@@ -54,8 +60,8 @@ export function RequestListItem({
           <span className={styles.time}>{lastUpdated}</span>
         </span>
         <span className={styles.details}>
-          <span className={styles.runbookName}>{runbookName}</span>
-          <Tag status={requestStatusTag[status]} size="small">
+          <span className={styles.runbookName} title={runbookName}>{runbookName}</span>
+          <Tag status={requestStatusTag[status]}>
             {status}
           </Tag>
         </span>
@@ -64,7 +70,7 @@ export function RequestListItem({
       <div className={styles.panel} onClick={onToggleExpanded}>
         <div className={styles.progressRow}>
           <div className={styles.progress}>
-            <ProgressBar value={percent} status="info" />
+            <ProgressBar value={percent} status="info" height="6" />
             <p className={styles.caption}>
               <span>
                 {completeCount}/{items.length}
@@ -94,11 +100,19 @@ export function RequestListItem({
             <ul className={styles.items} onClick={(event) => event.stopPropagation()}>
               {items.map((item) => (
                 <li key={item.id} className={styles.item}>
-                  <span className={styles.itemId}>{item.id}</span>
-                  <span className={styles.itemDetails}>
-                    <StatusIcon status={item.status} />
-                    <span className={styles.itemRunbookName}>{item.runbookName}</span>
-                  </span>
+                  <button
+                    type="button"
+                    className={[styles.itemButton, item.id === selectedItemId && styles.itemSelected].filter(Boolean).join(" ")}
+                    aria-pressed={item.id === selectedItemId}
+                    onClick={() => onSelectItem?.(item.id)}
+                  >
+                    <span className={styles.itemId}>{item.id}</span>
+                    <span className={styles.itemDetails}>
+                      <StatusIcon status={item.status} />
+                      <span className={styles.itemRunbookName}>{item.runbookName}</span>
+                    </span>
+                    <Icon name="chevron_forward" size="16" className={styles.itemChevron} />
+                  </button>
                 </li>
               ))}
             </ul>

@@ -17,7 +17,7 @@ export default meta;
 type Story = StoryObj<typeof EventLog>;
 
 const dataset = getRequestsDataset();
-const request = dataset.requests.find((r) => r.id === 'REQ-232')!;
+const request = dataset.requests.find((r) => r.id === dataset.scriptedRequestId)!;
 
 export const Default: Story = {
   render: () => (

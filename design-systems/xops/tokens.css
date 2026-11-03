@@ -114,6 +114,9 @@
   --xops-chart-6: #279bf4;
   --xops-chart-7: #d891ef;
   --xops-chart-8: #46a828;
+  --xops-chart-9: #4b5bd6;
+  --xops-chart-10: #e0509a;
+  --xops-chart-11: #6b7a99;
 
   /* Primitives — accent color library (decorative-only, not data-representing) */
   --xops-accent-teal: #00d1de;
@@ -157,6 +160,7 @@
   --xops-control-height-small: 24px;
   --xops-control-height-medium: 32px;
   --xops-control-height-large: 36px;
+  --xops-control-height-xlarge: 40px;
 
   /* Primitives — logo tile size (LogoTile) */
   --xops-logo-tile-size-small: 24px;
@@ -165,10 +169,18 @@
 
   /* Primitives — legend swatch size (Legend) */
   --xops-legend-swatch-size: 12px;
+  /* Primitives — swatch bar width (the category bar in ChartTooltip) */
+  --xops-swatch-bar-width: 4px;
+  /* Primitives — tooltip width (ChartTooltip, Tooltip); only medium is defined */
+  --xops-tooltip-width-medium: 300px;
+  /* Primitives — product image size (a device photo in a table cell) */
+  --xops-product-image-size: 64px;
+
   --xops-bar-height: 24px;
   --xops-bar-height-18: 18px;
   --xops-bar-height-16: 16px;
   --xops-bar-height-8: 8px;
+  --xops-bar-height-6: 6px;
 
   /* Primitives — elevation (first value, from Tooltip) */
   --xops-elevation-1: 0px 16px 50px 0px rgba(148, 163, 184, 0.02),
@@ -323,4 +335,9 @@
 
   --xops-typography-button-label-font-size: 14px;
   --xops-typography-button-label-line-height: 20px;
+}
+
+/* Dark theme — semantic overrides only. Empty until values are confirmed;
+   activated by data-theme="dark" on the root or a wrapper. */
+[data-theme='dark'] {
 }

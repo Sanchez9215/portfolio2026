@@ -51,7 +51,7 @@ export type TooltipProps = {
 };
 
 // Must match .panel's width in Tooltip.module.css — used to detect right-edge overflow before render.
-const PANEL_WIDTH = 336;
+const PANEL_WIDTH = 300;
 const GAP = 4;
 // Mirrors --xops-motion-delay-tooltip-close (tokens.css) — kept as a plain
 // number here since setTimeout needs milliseconds, not a CSS value.

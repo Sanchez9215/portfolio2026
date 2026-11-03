@@ -3,7 +3,6 @@
   flex-direction: column;
   gap: var(--xops-spacing-16);
   width: 100%;
-  padding: var(--xops-spacing-16);
   font-family: var(--xops-font-family);
 }
 
@@ -11,6 +10,13 @@
   display: flex;
   flex-direction: column;
   gap: var(--xops-spacing-8);
+}
+
+.headerInline {
+  /* No filter row in an item's drill-down: the heading and the expand button share one row. */
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .heading {
@@ -25,6 +31,11 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
+}
+
+/* Without the filter, the expand button stays at the right edge. */
+.controlsEnd {
+  justify-content: flex-end;
 }
 
 /* Collapsed: shows eight event rows (two text-line heights' worth of padding each), scrolls beyond.
@@ -52,29 +63,9 @@
   margin-top: var(--xops-spacing-8);
 }
 
-/* Sticky: the current date stays pinned while its events scroll under it, until the next date takes over. */
+/* The date bar (DateBar) spans every column of the list's grid. */
 .date {
-  position: sticky;
-  top: var(--xops-spacing-8);
-  z-index: 1;
   grid-column: 1 / -1;
-  padding: var(--xops-spacing-8);
-  border-radius: var(--xops-radius-6);
-  background-color: var(--xops-surface-stat);
-  font-weight: var(--xops-font-weight-medium);
-  font-size: var(--xops-typography-body-14-font-size);
-  line-height: var(--xops-typography-body-14-line-height);
-  color: var(--xops-text-secondary);
-}
-
-.date::before {
-  content: "";
-  position: absolute;
-  top: calc(-1 * var(--xops-spacing-8));
-  right: 0;
-  left: 0;
-  height: var(--xops-spacing-8);
-  background-color: var(--xops-surface-page);
 }
 
 .event {
@@ -101,6 +92,11 @@
 .next .time,
 .next .title {
   color: var(--xops-text-disabled);
+}
+
+.next .dotCell::before {
+  /* The spine runs through the history only. */
+  display: none;
 }
 
 .info {
@@ -147,10 +143,27 @@
   position: relative;
   width: var(--xops-spacing-8);
   height: var(--xops-spacing-8);
-  border-radius: var(--xops-radius-full);
+  /* Same diamond as the orchestration graph's events: the square turned 45°. */
+  transform: rotate(45deg);
 }
 
 .title {
   font-weight: var(--xops-font-weight-medium);
   color: var(--xops-text-primary);
+}
+
+/* The Up Next group is an Accordion that shares the list's columns, so its rows line up with the history below. */
+.upNextRow {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+}
+
+.upNextList {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }

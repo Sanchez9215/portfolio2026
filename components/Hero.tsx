@@ -29,15 +29,17 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import Image from "next/image";
 import gsap from "gsap";
-import Label from "./Label";
 import Title from "./Title";
 import Block from "./Block";
 import TestButton from "./TestButton";
 import styles from "./Hero.module.css";
 
-const HEADLINE_LINES = [
+const HEADLINE_LINES: {
+  text: string;
+  prefix?: string;
+  breakBefore?: "optional";
+}[] = [
   { text: "Building high-stakes" },
   { text: "data systems that turn", breakBefore: "optional" as const },
   { text: "operational complexity", breakBefore: "optional" as const },
@@ -65,10 +67,10 @@ function renderWords(text: string, keyPrefix: string) {
 }
 
 const ROTATING_PHRASES = [
-  "building zero to one.",
-  "shaping their visual identity.",
-  "finding market fit.",
-  "productizing technical edge.",
+  "build from zero to one.",
+  "shape their visual identity.",
+  // "finding market fit.", // hidden
+  "productize their technical edge.",
 ];
 
 // TIMING documents the entrance reveal's numbers (label/headline/subline) —
@@ -270,7 +272,7 @@ export default function Hero() {
               className={styles.subline}
             >
               <span ref={sublineMediumRef} className={styles.sublineMedium}>
-                Startups
+                Helping startups
               </span>{" "}
               <span ref={sublineSlotRef} className={styles.sublineSlot}>
                 {ROTATING_PHRASES.map((phrase, i) => (

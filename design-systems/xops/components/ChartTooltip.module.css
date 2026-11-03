@@ -4,7 +4,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--xops-spacing-8);
-  width: 256px;
+  width: var(--xops-tooltip-width-medium);
   padding: var(--xops-spacing-12);
   background-color: var(--xops-white);
   border: var(--xops-border-width-1) solid var(--xops-border-subtle);
@@ -24,11 +24,12 @@
   gap: var(--xops-spacing-8);
 }
 
+/* A vertical pill bar in the category's color; the default height is one line of the category text. */
 .swatch {
   flex-shrink: 0;
-  width: 12px;
-  height: 12px;
-  border-radius: var(--xops-radius-2);
+  width: var(--xops-swatch-bar-width);
+  height: var(--xops-typography-body-14-line-height);
+  border-radius: var(--xops-radius-full);
 }
 
 .category {
@@ -77,10 +78,9 @@
   width: 100%;
 }
 
-/* Event variant: hugs its content instead of the fixed 256px panel. */
+/* Event variant: same standard width as the panel. */
 /* Never interactive, so the pointer passes through to the graph underneath. */
 .panelEvent {
-  width: max-content;
   /* 8px more than the panel's 12px on the right side. */
   padding-right: calc(var(--xops-spacing-12) + var(--xops-spacing-8));
   pointer-events: none;
@@ -89,16 +89,19 @@
 
 .eventRow {
   display: flex;
-  align-items: flex-start;
+  align-items: stretch;
   gap: var(--xops-spacing-8);
   padding-block: var(--xops-spacing-6);
 }
 
-/* The swatch centers on the first line of text. */
+/* The bar runs the full height of the text beside it. */
 .eventSwatchSlot {
   display: flex;
-  align-items: center;
-  height: var(--xops-typography-body-14-line-height);
+  align-self: stretch;
+}
+
+.eventSwatchSlot .swatch {
+  height: auto;
 }
 
 .eventBody {

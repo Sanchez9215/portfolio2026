@@ -12,6 +12,8 @@ import { Tooltip, TooltipProps } from "./Tooltip";
 import { TagStatus } from "./Tag";
 import { MagicSurface } from "./MagicSurface";
 import { Banner, BannerEmphasis } from "./Banner";
+import { Section } from "./Section";
+import { SectionStack } from "./SectionStack";
 import { formatCount, formatCurrency, formatPercent } from "../lib/format";
 import styles from "./SoftwareProfile.module.css";
 
@@ -184,9 +186,9 @@ export function SoftwareProfile({
     metric === "opportunity" ? formatCurrency(value, { compact: true }) : formatCount(value, { compact: true });
 
   return (
-    <div className={styles.profile}>
+    <SectionStack className={styles.profile}>
       {!distributionOnly && (
-      <div className={styles.headerSection}>
+      <Section className={styles.headerSection}>
         <div className={styles.appHeader}>
           <div className={styles.identity}>
             <LogoTile src={logo} alt={name} size="large" />
@@ -233,12 +235,12 @@ export function SoftwareProfile({
         )}
         {/* Hidden until all 40 authored descriptions are in */}
         {/* <p className={styles.description}>{description}</p> */}
-      </div>
+      </Section>
       )}
-      <div className={styles.content}>
+      <SectionStack className={styles.content}>
         {!distributionOnly && (
         <>
-        <div data-hotspot="opportunity-summary">
+        <Section hotspotId="opportunity-summary">
           <MagicSurface className={styles.summaryCard}>
             <div className={styles.summaryCardContent}>
               <div className={styles.summaryCardHeader}>
@@ -266,8 +268,8 @@ export function SoftwareProfile({
               </div>
             </div>
           </MagicSurface>
-        </div>
-        <div className={styles.licensesCard} data-hotspot="licenses-purchased">
+        </Section>
+        <Section className={styles.licensesCard} hotspotId="licenses-purchased">
           <div className={styles.summaryCardHeader}>
             <p className={styles.summaryCardTitle}>Licenses Purchased</p>
             <p className={styles.summaryCardValue}>{licensesPurchasedTotal}</p>
@@ -294,8 +296,8 @@ export function SoftwareProfile({
               tooltip={utilizationTooltip}
             />
           </div>
-        </div>
-        <div className={styles.utilizationCard} data-hotspot="utilization-status">
+        </Section>
+        <Section className={styles.utilizationCard} hotspotId="utilization-status">
           <p className={styles.summaryCardTitle}>Utilization Status</p>
           <BarChart
             total={licensesPurchasedCount}
@@ -336,11 +338,11 @@ export function SoftwareProfile({
               <span className={styles.unusedLicensesMeta}>{unusedLicensesPercent}</span>
             </div>
           </div>
-        </div>
+        </Section>
         </>
         )}
         {!hideDistribution && (
-        <div className={styles.detailContainer}>
+        <Section className={styles.detailContainer}>
           <div className={styles.detailHeader}>
             <div className={styles.summaryCardTitleRow}>
               <p className={styles.summaryCardTitle}>Inactive License Distribution</p>
@@ -447,10 +449,10 @@ export function SoftwareProfile({
               />
             </Card>
           </div>
-        </div>
+        </Section>
         )}
-      </div>
-    </div>
+      </SectionStack>
+    </SectionStack>
   );
 }
 

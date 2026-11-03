@@ -1,0 +1,27 @@
+/* Sticky: the current date stays pinned while its rows scroll under it, until the next date takes over. */
+.bar {
+  position: sticky;
+  top: var(--xops-spacing-8);
+  z-index: 1;
+  /* The 8px strip above the bar (::before) hides rows scrolling under it; this margin gives it its own space, so it
+     never covers the bottom of the row or group above. */
+  margin-top: var(--xops-spacing-8);
+  padding: var(--xops-spacing-8);
+  border-radius: var(--xops-radius-6);
+  background-color: var(--xops-surface-stat);
+  font-family: var(--xops-font-family);
+  font-weight: var(--xops-font-weight-medium);
+  font-size: var(--xops-typography-body-14-font-size);
+  line-height: var(--xops-typography-body-14-line-height);
+  color: var(--xops-text-secondary);
+}
+
+.bar::before {
+  content: "";
+  position: absolute;
+  top: calc(-1 * var(--xops-spacing-8));
+  right: 0;
+  left: 0;
+  height: var(--xops-spacing-8);
+  background-color: var(--xops-surface-page);
+}

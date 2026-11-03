@@ -1,0 +1,47 @@
+.breadcrumb {
+  font-family: var(--xops-font-family);
+}
+
+.list {
+  display: flex;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+}
+
+.link,
+.current {
+  margin: 0;
+  padding: 0;
+  font-family: var(--xops-font-family);
+  font-weight: var(--xops-font-weight-medium);
+  font-size: var(--xops-typography-title-18-font-size);
+  line-height: var(--xops-typography-title-18-line-height);
+  white-space: nowrap;
+}
+
+.link {
+  border: none;
+  background: none;
+  color: var(--xops-brand-primary);
+  cursor: pointer;
+}
+
+/* Underline on hover, the same affordance as the inline-link button variant. */
+.link:hover {
+  text-decoration: underline;
+}
+
+.current {
+  color: var(--xops-text-primary);
+}
+
+.separator {
+  margin: 0 var(--xops-spacing-4);
+}

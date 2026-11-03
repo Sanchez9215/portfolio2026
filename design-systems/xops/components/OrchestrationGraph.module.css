@@ -1,18 +1,18 @@
 .graph {
   position: relative;
+  /* Trial: room around the graph. */
+  padding: var(--xops-spacing-32);
   display: grid;
   /* [ gutter: Start ] [ plot ] [ codes: ITM-xx / End ] */
   grid-template-columns: max-content 1fr max-content;
   /* Every lane's track ends at the edge of the left column, this far from the ITM code. */
   column-gap: var(--xops-spacing-8);
   min-height: var(--graph-min-height);
-  padding: var(--xops-spacing-16);
-  border-bottom: var(--xops-border-width-1) solid var(--xops-border-divider);
   align-content: center;
   --graph-dot-size: var(--xops-spacing-8);
   /* Branches and merges leave a dot along the lane for a short stub, then ease round a corner. */
-  --graph-elbow-stub: 8px;
-  --graph-elbow-radius: 6px;
+  --graph-elbow-stub: 12px;
+  --graph-elbow-radius: 10px;
   /* The check badge on a finished item lane (StatusIcon's default size); the trunk's last point centres on it. */
   --graph-check-size: var(--xops-icon-size-16);
   /* The point under the pointer: a white disc with a lane-colored ring, the dot inside, and a tinted halo (same 35% tint as the chart halos). */
@@ -23,12 +23,39 @@
   /* Trial: how fast the highlighter grows from its center when the pointer enters the graph. */
   --graph-highlight-scale-duration: 150ms;
   /* Trial: the graph never gets shorter than this; the lanes stay compact and sit in the middle of it. */
-  --graph-min-height: 320px;
+  --graph-min-height: 200px;
   /* How far the other item lanes fade while one is hovered. */
-  /* Trial: line weight of the lanes. */
-  --graph-line-width: 1.5px;
+  /* Trial: the flowing dash on in-progress lanes — length, weight, and one loop. */
+  --graph-flow-dash: 64px;
+  --graph-flow-width: 1.5px;
+  --graph-flow-duration: 1.5s;
+  --graph-flow-easing: cubic-bezier(01, 0.75, 0.65, 1);
+  /* Rest between one pass ending and the next starting. */
+  --graph-flow-interval: 1s;
+  /* How much sooner than the pass's end the pulse and shimmer start (0ms = exactly as the dash lands). */
+  --graph-pulse-lead: 250ms;
+  /* Trial: the Up Next diamond's single pulse as the dash lands — peak size, duration and easing. */
+  --graph-pulse-scale: 1.4;
+  --graph-pulse-duration: 400ms;
+  --graph-pulse-easing: ease-out;
+  /* Trial: the label shimmer starts with the pulse (the dash landing) and plays in the rest. */
+  --graph-shimmer-duration: 1s;
+  --graph-shimmer-easing: ease-in-out;
+  /* Trial: the draw-in (1.5s in all) — trunk draw, when the first item lane starts, how far the other lane starts are spread
+     over (so any lane count ends together), one item lane's window, and an event's scale-in. */
+  /* Start fades in first; the rest of the draw-in begins after it. */
+  --graph-enter-start: 150ms;
+  --graph-enter-trunk: 500ms;
+  --graph-enter-lane-start: 400ms;
+  --graph-enter-spread: 600ms;
+  --graph-enter-lane: 350ms;
+  --graph-enter-pop: 150ms;
+  /* Trial: dotted remaining track — dash and gap. */
+  --graph-dash-length: 2px;
+  --graph-dash-gap: 4px;
   --graph-dim-opacity: 0.3;
   --graph-dim-duration: 250ms;
+  --graph-head-gap: var(--xops-spacing-24);
   font-family: var(--xops-font-family);
 }
 
@@ -39,6 +66,12 @@
   grid-column: 2;
   grid-row: 1 / span var(--lane-count);
   pointer-events: none;
+  transition: opacity var(--graph-dim-duration) var(--xops-motion-easing-default);
+}
+
+/* Hidden until the plot has measured itself, so a first frame can never draw everything bunched at the origin. */
+.plotPending {
+  opacity: 0;
 }
 
 .lines {
@@ -52,7 +85,8 @@
 .slot,
 .head,
 .lane {
-  transition: opacity var(--graph-dim-duration) var(--xops-motion-easing-default);
+  transition: opacity var(--graph-dim-duration)
+    var(--xops-motion-easing-default);
 }
 
 .dimmed {
@@ -61,18 +95,41 @@
 
 .laneLine {
   fill: none;
-  stroke-width: var(--graph-line-width);
+  stroke-width: var(--xops-border-width-2);
   stroke-linejoin: round;
   stroke-linecap: round;
 }
 
-/* Exception: the line into the head is a stronger red than the exception tag's background. */
-.laneLineException {
-  stroke: var(--xops-danger-300);
+/* The stretch an in-progress lane's dash runs on: the same grey and weight as an unstarted lane's track. */
+.frontierTrack {
+  fill: none;
+  stroke: var(--xops-surface-track);
+  stroke-width: var(--xops-border-width-2);
+  stroke-linecap: round;
+  transition: opacity var(--graph-dim-duration)
+    var(--xops-motion-easing-default);
 }
 
-.laneLineWarning {
-  stroke: var(--xops-warning-300);
+/* Trial: the track still to come (predicted rest of each unfinished lane, the trunk's remainder) is dotted. Butt caps keep each dash its set length. */
+.remainingTrack {
+  stroke-dasharray: var(--graph-dash-length) var(--graph-dash-gap);
+  stroke-linecap: butt;
+}
+
+/* Trial: a lens that follows an in-progress lane's whole path, from its origin to the head, on a loop. Stuck lanes (exception,
+   warning) and finished ones stay still, so motion reads as "alive". */
+.flow {
+  /* One pass per mount: the graph remounts it every duration + interval (see OrchestrationGraph.tsx), so the rest
+     between passes is a real pause. Hidden outside the pass (the animation makes it visible while it plays). */
+  visibility: hidden;
+  transition: opacity var(--graph-dim-duration)
+    var(--xops-motion-easing-default);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flow {
+    display: none;
+  }
 }
 
 .slot {
@@ -87,7 +144,26 @@
   display: block;
   width: var(--graph-dot-size);
   height: var(--graph-dot-size);
-  border-radius: var(--xops-radius-full);
+  /* A square turned 45° into a diamond, same width and height as before. */
+  transform: rotate(45deg);
+}
+
+/* Trial: the in-progress Up Next diamond swells once as the dash lands, then settles. Waits out the pass, then plays in the rest. */
+.dotPulse {
+  animation: pulse var(--graph-pulse-duration) var(--graph-pulse-easing)
+    calc(var(--graph-flow-duration) - var(--graph-pulse-lead));
+}
+
+@keyframes pulse {
+  50% {
+    transform: rotate(45deg) scale(var(--graph-pulse-scale));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dotPulse {
+    animation: none;
+  }
 }
 
 /* The head: status icon on the frontier, then the label, then the grey remainder of the track. */
@@ -97,23 +173,130 @@
   display: flex;
   align-items: center;
   gap: var(--xops-spacing-8);
-  transform: translate(calc(-1 * var(--xops-icon-size-16) / 2), -50%);
+  /* The icon sits inside the label box's padding, so shift by that too to keep it centered on the frontier point. */
+  transform: translate(
+    calc(-1 * (var(--xops-icon-size-16) / 2 + var(--xops-spacing-12))),
+    -50%
+  );
+}
+
+/* No icon: the in-progress event is a placeholder diamond on the frontier, and the label's padded box starts just after it. */
+.headPlain {
+  /* The diamond's tip reaches dot-size × √2 / 2 past the point; the outline sits 1px outside the box; then an 8px gap. */
+  transform: translate(
+    calc(
+      var(--graph-dot-size) * 0.7071 + var(--xops-border-width-1) +
+        var(--xops-spacing-8)
+    ),
+    -50%
+  );
+}
+
+/* Icon + label in one box: padded, pill-shaped, no fill at rest, the page behind it blurred (same blur as Pagination). */
+.headLabel {
+  display: flex;
+  align-items: center;
+  gap: var(--xops-spacing-8);
+  padding: var(--xops-spacing-2) var(--xops-spacing-4);
+  /* A pill, so the tint fill follows the outline's shape. */
+  border-radius: var(--xops-radius-full);
+  min-width: 0;
+  position: relative;
+  isolation: isolate;
+  transition: background-color var(--graph-dim-duration) var(--xops-motion-easing-default);
+}
+
+/* The blur is a layer behind the content, exactly the box's size: a hard edge, no feathering past it. */
+.headLabel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  border-radius: var(--xops-radius-full);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* Trial: the outline is its own layer just outside the box, so it adds no size to the box. */
+.headLabel::after {
+  content: "";
+  position: absolute;
+  inset: calc(-1 * var(--xops-border-width-1));
+  border: var(--xops-border-width-1) solid var(--xops-border-subtle);
+  border-radius: var(--xops-radius-full);
+  pointer-events: none;
+  transition: border-color var(--graph-dim-duration) var(--xops-motion-easing-default);
+}
+
+/* Trial: a focused in-progress badge fills with its lane's color (the same 35% tint as the hover halo, so the text stays legible). */
+.headLabelFocused {
+  background-color: color-mix(in srgb, var(--badge-color) var(--graph-highlight-tint), transparent);
+}
+
+/* A focused (tinted) badge drops its outline; the fill is the focus. */
+.headLabelException::after,
+.headLabelWarning::after,
+.headLabelFocused::after {
+  border-color: transparent;
+}
+
+/* Trial: a label with no icon gets more side padding, so its text isn't hugging the pill's curved ends. */
+.headPlain .headLabel {
+  padding-inline: var(--xops-spacing-12);
+}
+
+/* Badges with an icon get the same side padding as the ones without. */
+.head:not(.headPlain) .headLabel {
+  padding-inline: var(--xops-spacing-12);
+}
+
+/* Trial: while hovered, an exception or warning badge takes the same tint as its Tag — that is its focus. */
+.headLabelException {
+  background-color: var(--xops-status-danger-tint);
+}
+
+.headLabelWarning {
+  background-color: var(--xops-status-warning-tint);
+}
+
+.headLabel > .indicator,
+.headLabel > .label {
+  background-color: transparent;
 }
 
 /* A head pushed close to the right edge has little room: the label shrinks with an ellipsis instead of overrunning the ITM code. */
-.head > :first-child {
+.headLabel > :first-child {
   flex-shrink: 0;
 }
 
-.head > .label {
+.headLabel > .label {
+  font-weight: var(--xops-font-weight-regular);
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
+/* Trial: the grey remainder after a head's label is hidden, not removed, so the label's layout and ellipsis don't change. */
+.head .track {
+  visibility: hidden;
+}
+
 /* Trunk: just the grey remainder of the track, from the end of its colored line. */
 .trunkTrack {
   transform: translateY(-50%);
+}
+
+/* The trunk keeps its remaining track (after the hiding rule above, same specificity). */
+.trunkTrack .track {
+  visibility: visible;
+  /* Trial: dotted like the lanes' remaining track — same dash and gap, drawn as a repeating gradient. */
+  border-radius: 0;
+  background: repeating-linear-gradient(
+    to right,
+    var(--xops-surface-track) 0 var(--graph-dash-length),
+    transparent var(--graph-dash-length) calc(var(--graph-dash-length) + var(--graph-dash-gap))
+  );
 }
 
 /* One row per lane: [ left path ] [ ITM code ]. */
@@ -122,7 +305,7 @@
   grid-column: 1 / -1;
   grid-template-columns: subgrid;
   align-items: center;
-  height: var(--xops-control-height-medium);
+  height: var(--xops-control-height-xlarge);
 }
 
 .path {
@@ -138,8 +321,8 @@
 .label {
   background-color: var(--xops-surface-page);
   font-weight: var(--xops-font-weight-medium);
-  font-size: var(--xops-typography-body-12-font-size);
-  line-height: var(--xops-typography-body-12-line-height);
+  font-size: var(--xops-typography-body-14-font-size);
+  line-height: var(--xops-typography-body-14-line-height);
   color: var(--xops-text-disabled);
   white-space: nowrap;
 }
@@ -151,7 +334,45 @@
 }
 
 .labelActive {
-  color: var(--xops-text-primary);
+  color: var(--xops-text-secondary);
+}
+
+/* Trial: a band of the dash's color sweeps through an in-progress label as the dash lands (the handoff). The text is a gradient
+   clipped to its letters: all secondary grey except a soft band a third of the label wide, slid left to right once per cycle. */
+.labelShimmer {
+  background-image: linear-gradient(
+    90deg,
+    var(--xops-text-secondary) 0%,
+    var(--xops-text-secondary) 42.8%,
+    var(--xops-grey-500) 50%,
+    var(--xops-text-secondary) 57.2%,
+    var(--xops-text-secondary) 100%
+  );
+  background-size: 300% 100%;
+  /* Rest position: the band is out of view, so the label reads as plain grey. */
+  background-position: 100% 0;
+  background-repeat: no-repeat;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: shimmer var(--graph-shimmer-duration) var(--graph-shimmer-easing)
+    calc(var(--graph-flow-duration) - var(--graph-pulse-lead));
+}
+
+/* The band enters just left of the label and leaves just right of it. */
+@keyframes shimmer {
+  from {
+    background-position: 85.8% 0;
+  }
+  to {
+    background-position: 14.2% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .labelShimmer {
+    animation: none;
+  }
 }
 
 .labelException {
@@ -175,8 +396,8 @@
   display: flex;
   align-items: center;
   font-weight: var(--xops-font-weight-medium);
-  font-size: var(--xops-typography-body-12-font-size);
-  line-height: var(--xops-typography-body-12-line-height);
+  font-size: var(--xops-typography-body-14-font-size);
+  line-height: var(--xops-typography-body-14-line-height);
   color: var(--xops-text-disabled);
   white-space: nowrap;
 }
@@ -216,8 +437,11 @@
   background-color: var(--xops-border-divider);
   transform: translateX(-50%);
   pointer-events: none;
-  animation: markerIn var(--graph-dim-duration) var(--xops-motion-easing-default);
-  transition: left var(--graph-dim-duration) var(--xops-motion-easing-default), opacity var(--graph-dim-duration) var(--xops-motion-easing-default);
+  animation: markerIn var(--graph-dim-duration)
+    var(--xops-motion-easing-default);
+  transition:
+    left var(--graph-dim-duration) var(--xops-motion-easing-default),
+    opacity var(--graph-dim-duration) var(--xops-motion-easing-default);
 }
 
 .highlighter {
@@ -228,13 +452,22 @@
   width: var(--graph-highlight-size);
   height: var(--graph-highlight-size);
   border: var(--xops-border-width-1) solid var(--highlight-color);
-  border-radius: var(--xops-radius-full);
   background-color: var(--xops-surface-page);
-  box-shadow: 0 0 0 var(--graph-highlight-halo) color-mix(in srgb, var(--highlight-color) var(--graph-highlight-tint), transparent);
-  transform: translate(-50%, -50%);
+  box-shadow: 0 0 0 var(--graph-highlight-halo)
+    color-mix(
+      in srgb,
+      var(--highlight-color) var(--graph-highlight-tint),
+      transparent
+    );
+  /* A diamond, like the event dots: the same square turned 45° (the inner dot turns with it). */
+  transform: translate(-50%, -50%) rotate(45deg);
   pointer-events: none;
-  animation: highlightIn var(--graph-highlight-scale-duration) var(--xops-motion-easing-default);
-  transition: left var(--graph-dim-duration) var(--xops-motion-easing-default), top var(--graph-dim-duration) var(--xops-motion-easing-default), opacity var(--graph-dim-duration) var(--xops-motion-easing-default);
+  animation: highlightIn var(--graph-highlight-scale-duration)
+    var(--xops-motion-easing-default);
+  transition:
+    left var(--graph-dim-duration) var(--xops-motion-easing-default),
+    top var(--graph-dim-duration) var(--xops-motion-easing-default),
+    opacity var(--graph-dim-duration) var(--xops-motion-easing-default);
 }
 
 /* Fading out after the pointer leaves; they stay mounted until the fade is done. */
@@ -244,7 +477,7 @@
 
 @keyframes highlightIn {
   from {
-    transform: translate(-50%, -50%) scale(0);
+    transform: translate(-50%, -50%) rotate(45deg) scale(0);
   }
 }
 
@@ -258,6 +491,12 @@
   content: "";
   width: var(--graph-dot-size);
   height: var(--graph-dot-size);
-  border-radius: var(--xops-radius-full);
   background-color: var(--highlight-color);
+}
+
+/* The in-progress event: the inner diamond is white with the disabled outline, like the diamond it sits on. */
+.highlighterPlaceholder::after {
+  box-sizing: border-box;
+  background-color: var(--xops-surface-page);
+  border: var(--xops-border-width-1) solid var(--highlight-color);
 }

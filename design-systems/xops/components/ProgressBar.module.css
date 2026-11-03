@@ -21,6 +21,10 @@
   height: var(--xops-bar-height-8);
 }
 
+.height6 {
+  height: var(--xops-bar-height-6);
+}
+
 .valueLabel {
   flex-shrink: 0;
   white-space: nowrap;

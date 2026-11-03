@@ -2,7 +2,6 @@
   display: flex;
   flex-direction: column;
   gap: var(--xops-spacing-16);
-  padding: var(--xops-spacing-16);
   font-family: var(--xops-font-family);
 }
 
@@ -15,6 +14,7 @@
 .title {
   display: flex;
   flex-direction: column;
+  gap: var(--xops-spacing-4);
 }
 
 .id {
@@ -25,12 +25,12 @@
   color: var(--xops-text-primary);
 }
 
-/* Same style as the runbook name under a request in the list. */
+/* One step up from the runbook name under a request in the list (body-12 there). */
 .runbookName {
   margin: 0;
   font-weight: var(--xops-font-weight-regular);
-  font-size: var(--xops-typography-body-12-font-size);
-  line-height: var(--xops-typography-body-12-line-height);
+  font-size: var(--xops-typography-body-14-font-size);
+  line-height: var(--xops-typography-body-14-line-height);
   color: var(--xops-text-secondary);
 }
 

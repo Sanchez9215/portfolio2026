@@ -54,7 +54,7 @@ export type ChartTooltipEventProps = ChartTooltipBaseProps & {
 export type ChartTooltipProps = ChartTooltipDefaultProps | ChartTooltipEventProps;
 
 // Must match .panel's width in ChartTooltip.module.css — used to detect right-edge overflow before render.
-const PANEL_WIDTH = 256;
+const PANEL_WIDTH = 300;
 const GAP = 4;
 
 type Position = { top: number; left?: number; right?: number };
@@ -101,7 +101,11 @@ export function ChartTooltip(props: ChartTooltipProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [anchorX, anchorY]);
 
-  const panelClass = [styles.panel, props.variant === "event" && styles.panelEvent, className].filter(Boolean).join(" ");
+  const panelClass = [
+    styles.panel,
+    props.variant === "event" && styles.panelEvent,
+    className,
+  ].filter(Boolean).join(" ");
   const isEvent = props.variant === "event";
   const duration = isEvent ? props.glideDuration : undefined;
   const panelStyle: React.CSSProperties = isEvent

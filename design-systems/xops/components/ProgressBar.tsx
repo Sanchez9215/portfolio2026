@@ -3,7 +3,7 @@ import Icon from "./Icon";
 import styles from "./ProgressBar.module.css";
 
 export type ProgressBarStatus = "danger" | "warning" | "success" | "info";
-export type ProgressBarHeight = "16" | "8";
+export type ProgressBarHeight = "16" | "8" | "6";
 
 export type ProgressBarProps = {
   /** Current value, 0-100 */
