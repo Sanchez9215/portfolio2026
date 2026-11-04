@@ -12,7 +12,6 @@ export default function SectionIntroductionEntry() {
   return (
     <SectionIntroduction
       intro={softwareObservabilityIntro}
-      slideUp={false}
       visual={() => <SoftwareExperienceEmbed enableExpandedView />}
     />
   );

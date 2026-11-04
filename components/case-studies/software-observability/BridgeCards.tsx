@@ -44,26 +44,6 @@ const SCROLL_VIEWPORTS_PER_CATEGORY = 1;
 // after the last category.
 const CATEGORY_HOLD = 0.5;
 
-// The category-change scroll plan, shared with whatever drives the cards from
-// outside (BridgeSectionPin pins the whole section and feeds p in via the
-// "bridge-cards-progress" window event).
-export const BRIDGE_PROGRESS_EVENT = "bridge-cards-progress";
-export { SCROLL_VIEWPORTS_PER_CATEGORY };
-const lastIndex = CATEGORIES.length - 1;
-// Scroll length in "units": one unit per change, plus a hold per category.
-export const totalUnits = CATEGORIES.length * CATEGORY_HOLD + lastIndex;
-// Maps scroll units to p (0 → lastIndex): whole numbers are the holds.
-export const toP = (units: number) => {
-  let cursor = 0;
-  for (let index = 0; index <= lastIndex; index++) {
-    cursor += CATEGORY_HOLD;
-    if (units <= cursor || index === lastIndex) return index;
-    if (units <= cursor + 1) return index + (units - cursor);
-    cursor += 1;
-  }
-  return lastIndex;
-};
-
 // Live-tweak. false = background cards show plain legible text (no pixel
 // effect); true brings the pixelate/resolve effect back.
 const PIXELATE_BACKGROUND_CARDS = false;
@@ -205,21 +185,7 @@ function buildPixelGrid(
   return { width: canvas.width, height, paths };
 }
 
-export default function BridgeCards({
-  pinned = true,
-  focusOn = "click",
-  driven = false,
-}: {
-  /** false = no pin, scroll-drawn lines or category change: the first category
-   *  shows statically and the cards stay clickable (focus swap). */
-  pinned?: boolean;
-  /** "hover" = a side card takes focus when the pointer moves over it (a click
-   *  still works, e.g. on touch). Default "click". */
-  focusOn?: "click" | "hover";
-  /** With pinned={false}: follow the category progress fed in from outside via the
-   *  BRIDGE_PROGRESS_EVENT window event (see BridgeSectionPin). */
-  driven?: boolean;
-} = {}) {
+export default function BridgeCards() {
   const [slots, setSlots] = useState<RoleName[]>(INITIAL_SLOTS);
   const focused = slots[1];
 
@@ -408,9 +374,22 @@ export default function BridgeCards({
     if (!stage || !pin || !cards || !dome || !header) return;
     if (!label || !diamond || !lead || !stem || !exit) return;
 
+    const lastIndex = CATEGORIES.length - 1;
+    // Scroll length in "units": one unit per change, plus a hold per category.
+    const totalUnits = CATEGORIES.length * CATEGORY_HOLD + lastIndex;
+    // Maps scroll units to p (0 → lastIndex): whole numbers are the holds.
+    const toP = (units: number) => {
+      let cursor = 0;
+      for (let index = 0; index <= lastIndex; index++) {
+        cursor += CATEGORY_HOLD;
+        if (units <= cursor || index === lastIndex) return index;
+        if (units <= cursor + 1) return index + (units - cursor);
+        cursor += 1;
+      }
+      return lastIndex;
+    };
     const smooth = (t: number) => t * t * (3 - 2 * t);
 
-    let removeProgressListener: (() => void) | null = null;
     const ctx = gsap.context(() => {
       const marginTop = parseFloat(getComputedStyle(stage).marginTop) || 0;
 
@@ -473,18 +452,6 @@ export default function BridgeCards({
           opacity,
         });
       };
-
-      if (!pinned) {
-        render(0);
-        if (driven) {
-          const onProgress = (event: Event) =>
-            render((event as CustomEvent<number>).detail);
-          window.addEventListener(BRIDGE_PROGRESS_EVENT, onProgress);
-          removeProgressListener = () =>
-            window.removeEventListener(BRIDGE_PROGRESS_EVENT, onProgress);
-        }
-        return;
-      }
 
       ScrollTrigger.create({
         trigger: pin,
@@ -560,12 +527,9 @@ export default function BridgeCards({
       );
     }, stage);
     // The pin adds scroll length below this section, so re-measure the page.
-    if (pinned) scheduleScrollTriggerRefresh();
-    return () => {
-      removeProgressListener?.();
-      ctx.revert();
-    };
-  }, [gridsReady, pinned, driven]);
+    scheduleScrollTriggerRefresh();
+    return () => ctx.revert();
+  }, [gridsReady]);
 
   // Slide every card from where it was to its new slot with transforms only (no
   // layout animation, so the text never re-wraps mid-move). The 4:3 card sizes
@@ -587,15 +551,9 @@ export default function BridgeCards({
     }
   }, [slots]);
 
-  // Hover focus: a swap slides the old centre card under a stationary pointer, so
-  // ignore hover briefly after every swap, and only react to real pointer
-  // movement (not the browser re-hit-testing after layout changes).
-  const hoverLockUntil = useRef(0);
-
   const focus = (role: RoleName) => {
     const slot = slots.indexOf(role);
     if (slot === 1) return;
-    hoverLockUntil.current = Date.now() + SWAP_SECONDS * 1000 + 150;
     // Measure the cards un-fanned (no tilt/lift, no transition) so the swap's
     // transforms don't inherit the fan's rotation; the fan is restored once the
     // swap has been set up (see the layout effect below).
@@ -614,11 +572,7 @@ export default function BridgeCards({
   };
 
   return (
-    <div
-      className={styles.stage}
-      ref={stageRef}
-      data-static={pinned ? undefined : ""}
-    >
+    <div className={styles.stage} ref={stageRef}>
       <div className={styles.pin} ref={pinRef}>
         <div
           className={styles.header}
@@ -659,20 +613,6 @@ export default function BridgeCards({
                   tabIndex={isFocused ? undefined : 0}
                   aria-label={isFocused ? undefined : `Focus ${role}`}
                   onClick={() => focus(role)}
-                  onPointerMove={
-                    focusOn === "hover"
-                      ? (event) => {
-                          if (
-                            !isFocused &&
-                            event.pointerType !== "touch" &&
-                            (event.movementX !== 0 || event.movementY !== 0) &&
-                            Date.now() > hoverLockUntil.current
-                          ) {
-                            focus(role);
-                          }
-                        }
-                      : undefined
-                  }
                   onKeyDown={(event) => {
                     if (event.key === "Enter" || event.key === " ") {
                       event.preventDefault();

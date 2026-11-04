@@ -4,25 +4,15 @@
    All values resolve through CSS custom properties → tokens.json.
    ============================================================ */
 
-/* slideUp={false}: the entrance fades only — the hidden states' 24px offset is 0 */
-.noSlide {
-  --intro-slide-distance: 0px;
-}
-
 /* section.introduction — grid container */
 .introduction {
-  /* bottom: opt-in hook so a page can tighten it (--intro-padding-bottom) */
-  padding-block: var(--spacing-3xl) var(--intro-padding-bottom, var(--spacing-5xl));
+  padding-block: var(--spacing-3xl) var(--spacing-5xl);
   row-gap: var(--spacing-5xl);
 }
 
 /* full-width hero wrapper */
 .heroImage {
   grid-column: 1 / -1;
-  padding-top: var(--spacing-4xl);
-  padding-inline: var(--spacing-4xl);
-  background-color: var(--color-grey-200);
-  border-radius: var(--border-radius-sm);
 }
 
 /* plain 16/9 box (same footprint the ImgCard held); centers the live embed */
@@ -33,14 +23,14 @@
   justify-content: center;
   /* entrance-animation hidden state — GSAP fades/translates this to visible on mount */
   opacity: 0;
-  transform: translateY(var(--intro-slide-distance, 24px));
+  transform: translateY(24px);
 }
 
-/* live hero visual — full width, full window height, scrolls internally.
+/* live hero visual — 80% width, full window height, scrolls internally.
    Radius/clip live on the visual's own wrapper instead — this rule only
    sizes it. */
 .heroEmbed > * {
-  width: 100%;
+  width: 80%;
   height: 100%;
 }
 
@@ -63,24 +53,20 @@
   font-size: var(--text-display-md-size);
   line-height: var(--text-display-md-lh);
   letter-spacing: var(--text-display-md-ls);
-  color: var(--title-color, var(--text-primary));
+  color: var(--text-primary);
 }
 
 /* each title line — entrance-animation target, staggered in */
 .titleRow {
   display: inline-block;
   opacity: 0;
-  transform: translateY(var(--intro-slide-distance, 24px));
+  transform: translateY(24px);
 }
 
-/* description Block — entrance-animation hidden state. p.description (element-
-   qualified) so the subtle color beats Block's own .secondary color. */
-p.description {
-  color: var(--text-subtle);
-  /* spans 3 of the 5 columns .projectOverview covers: 3 col widths + 2 gaps */
-  width: calc((100% - 4 * var(--spacing-xl)) / 5 * 3 + 2 * var(--spacing-xl));
+/* description Block — entrance-animation hidden state */
+.description {
   opacity: 0;
-  transform: translateY(var(--intro-slide-distance, 24px));
+  transform: translateY(24px);
 }
 
 /* div.project-impact — cols 6–12; meta row stacked above impact cards */
@@ -96,7 +82,7 @@ p.description {
   display: flex;
   gap: var(--spacing-xl);
   padding-bottom: var(--spacing-md);
-  border-bottom: 1px solid var(--color-grey-300);
+  border-bottom: 1px solid var(--surface-card-border);
   /* entrance-animation hidden state — the border lives on this container
      itself, not just its children, so it needs its own hidden state or it
      renders immediately while its content fades in separately */
@@ -107,7 +93,7 @@ p.description {
   flex: 1;
   /* entrance-animation hidden state */
   opacity: 0;
-  transform: translateY(var(--intro-slide-distance, 24px));
+  transform: translateY(24px);
 }
 
 /* "Company" label + info-icon tooltip trigger, matches WorkCaseStudyRow's
@@ -122,10 +108,6 @@ p.description {
 .impactCards {
   display: flex;
   gap: var(--spacing-xl);
-  /* Impact headings (Title/TitleBlock default color) read --text-secondary and
-     the bodies read --text-tertiary; both redirect to subtle inside this row. */
-  --text-secondary: var(--text-subtle);
-  --text-tertiary: var(--text-subtle);
 }
 
 .impactCards > * {
@@ -133,7 +115,7 @@ p.description {
   min-width: 0;
   /* entrance-animation hidden state */
   opacity: 0;
-  transform: translateY(var(--intro-slide-distance, 24px));
+  transform: translateY(24px);
 }
 
 /* Holds width in the row for a study with fewer than IMPACT_SLOTS items —
@@ -162,8 +144,8 @@ p.description {
   justify-content: center;
   flex-shrink: 0;
   border-radius: var(--radius-pill);
-  background: var(--text-subtle);
-  color: var(--color-grey-100);
+  background: var(--surface-card);
+  color: var(--badge-text);
   font-family: var(--font-family-body);
   font-weight: var(--font-weight-bold);
   font-size: var(--text-label-xs-size);

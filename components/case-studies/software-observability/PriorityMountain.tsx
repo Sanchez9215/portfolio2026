@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import Label from "@/components/Label";
 import annotationStyles from "../AnnotationCallout.module.css";
 import MountainTerrain, { DEFAULT_LINES, getSamples } from "./MountainTerrain";
 import { PRIORITY_ITEMS } from "./priorityItems";
@@ -261,18 +262,18 @@ export default function PriorityMountain() {
         <div className={styles.terrain}>
           <MountainTerrain solidUntil={mvpBottomFraction} />
         </div>
-        <p
+        <div
           className={styles.peakLabel}
           style={{ top: `calc(${(tipFraction * 100).toFixed(3)}% - var(--mountain-label-offset))` }}
         >
-          MVP
-        </p>
+          <Label size="md">MVP</Label>
+        </div>
         <div
           data-followups
           className={styles.followUpsLabel}
           style={{ top: `${(mvpBottomFraction * 100).toFixed(3)}%`, opacity: 0 }}
         >
-          <p className={styles.followUpsText}>Follow Ups</p>
+          <Label size="md">Follow Ups</Label>
           <span className={styles.followUpsLine} />
         </div>
         <svg

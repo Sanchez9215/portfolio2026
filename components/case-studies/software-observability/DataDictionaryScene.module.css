@@ -62,40 +62,19 @@
   padding: var(--spacing-3xl);
 }
 
-/* Label above the detail text, stacked 8px apart (same as the page's text
-   blocks). 4 grid columns wide: the scene spans all 12 columns (W, = this
-   block's content width plus its two paddings), so 4 columns + 3 gaps =
-   W/3 - 2/3 gap. */
-.textBlockCopy {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-sm);
-  width: calc(
-    (100% + 2 * var(--spacing-3xl) - 2 * var(--spacing-xl)) / 3
-  );
+/* The label + display statement keep their own width; the detail text takes all
+   the remaining width of the row. */
+.textBlock > :first-child {
+  flex: none;
 }
 
-/* Same as .opportunityLabel in the page stylesheet. */
-.dataDictionaryLabel {
-  margin: 0;
-  font-family: var(--font-family-body);
-  font-weight: var(--font-weight-semibold);
-  font-size: var(--text-label-sm-size);
-  line-height: var(--text-label-sm-lh);
-  letter-spacing: var(--text-label-sm-ls);
-  color: var(--color-grey-800);
-}
-
-/* Detail text: the page's small body style (same as .opportunityBody in the
-   page stylesheet). */
+/* Detail text: 32px detail block (Block 2xl, 1.2 line height — see .brief in the
+   page stylesheet) filling the rest of the header row. */
 .dataDictionaryDetailBlock {
-  margin: 0;
-  font-family: var(--font-family-body);
-  font-weight: var(--font-weight-regular);
-  font-size: var(--text-body-sm-size);
-  line-height: var(--text-body-sm-lh);
-  letter-spacing: var(--text-body-sm-ls);
-  color: var(--color-grey-750);
+  flex: 1 1 0;
+  min-width: 0;
+  color: var(--text-primary);
+  line-height: 1.2;
 }
 
 /* ── Perspective wrapper (card + table) ──
@@ -178,7 +157,7 @@
      rotateX/transform-origin control its tilt, unaffected by this. */
   transform: translate(-112px, -88px) rotateX(24deg);
   transform-origin: bottom;
-  background: var(--color-grey-300);
+  background: var(--surface-base);
   border: var(--border-card) solid var(--color-grey-650);
   border-radius: var(--radius-default);
   overflow: hidden;
@@ -232,7 +211,7 @@
 }
 
 .headerRow {
-  background: var(--color-grey-400);
+  background: var(--color-grey-1000);
 }
 
 .bodyRow:not(:last-child) {
